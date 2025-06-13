@@ -1,0 +1,475 @@
+using System;
+using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
+using UnityEngine.Pool;
+using UnityEngine.Serialization;
+using UnityEngine.UI;
+
+public class UIManager : Singleton<UIManager>
+{
+    private int _order = 10; // 10 is magic number
+    private readonly Stack<PopupUI> popupStacks = new Stack<PopupUI>();
+    private readonly Dictionary<string, Type> keyTypeDictionary = new Dictionary<string, Type>();
+    private readonly Dictionary<Type, ObjectPool<PopupUI>> popupPools = new Dictionary<Type, ObjectPool<PopupUI>>();
+    
+    [SerializeField] private Transform root;
+    [SerializeField] private Transform overlayRoot;
+    
+    private GraphicRaycaster sceneUIGraphicRaycaster;
+    public GraphicRaycaster SceneUIGraphicRaycaster { get { return sceneUIGraphicRaycaster; } }
+    // public event Action<int> OnTimeScaleChanged; // 현재 미사용
+    
+    private const float popupOpenThreshold = 0.05f;
+    private float lastPopupOpenTime;
+    
+    #region Frequently Used UI
+    
+    public TooltipUI Tooltip; 
+
+    private bool isOptionMenuActive = false;
+    
+    #endregion
+    
+    protected override void Awake()
+    {
+        base.Awake();
+        if (IsInvalidInstance()) return; // 중복 인스턴스인 경우 Init() 실행x
+        Init();
+    }
+
+    #region Deprecated
+
+    // private void Update()
+    // {
+    //     if (Keyboard.current.escapeKey.wasPressedThisFrame )
+    //     {
+    //         ShowOptionMenu();
+    //     }
+    //
+    //     if (Mouse.current.leftButton.wasPressedThisFrame)
+    //     {
+    //         if (Time.unscaledTime - lastPopupOpenTime < popupOpenThreshold)
+    //             return;
+    //
+    //         if (popupStacks.TryPeek(out var popup) && popup is { CloseOnOuterBackgroundClick: true })
+    //         {
+    //             if (!RectTransformUtility.RectangleContainsScreenPoint(popup.Rect, Mouse.current.position.ReadValue()))
+    //             {
+    //                 // Util.Log("Outer background touched. close popup");
+    //                 ClosePopupUI(popup);
+    //             }
+    //         }
+    //     }
+    // }
+
+    #endregion
+    
+
+    protected override void OnSceneLoaded(bool dummy)
+    {
+        Init();
+    }
+
+    private void Init()
+    {
+        Util.SetMainCameraForUtilClass();
+        if (root == null)
+        {
+            GameObject go = GameObject.FindWithTag("UI_Root");
+            if (go == null)
+            {
+                go = GameObject.FindFirstObjectByType<Canvas>().gameObject; // UI_Root 오브젝트가 없으면 씬에 존재하는 아무 Canvas 컴포넌트가 부착된 게임 오브젝트를 임시 UI_Root로 사용
+            }
+            root = go.transform;
+        }
+        
+        overlayRoot = root.Find("Canvas Overlay"); // 현재 씬 UI 탐색 todo: 씬 UI 네이밍 규칙 추가 고려
+        if (overlayRoot == null)
+        {
+            GameObject overlayGo = new GameObject("Canvas Overlay");
+            overlayGo.transform.SetParent(root);
+            overlayRoot = overlayGo.transform;
+        }
+        SetCanvas(overlayRoot.gameObject, isInteractable: true);
+        sceneUIGraphicRaycaster = overlayRoot.GetComponent<GraphicRaycaster>();
+        
+        ResourceManager.Instance.SubscribePreLoad(InitAfterLoad);
+        GameSceneManager.Instance.RegisterCleanupTask(async () =>
+        {
+            await Clear();
+        });
+    }
+    
+    private void InitAfterLoad(bool done)
+    {
+        if (!done) return;
+        
+        //todo: 리소스 매니저에서 필요한 리소스 레퍼런스 받아와서 사용
+        Tooltip = ResourceManager.Instance.Instantiate("TooltipUI.prefab", overlayRoot)?.GetComponent<TooltipUI>();
+        if (Tooltip == null)
+        {   
+            Util.Log($"Tooltip is null");
+            return;
+        }
+        
+        // InputManager.Instance.OnClick -= OnPopupOutSideSelected; // 중복 구독 방지
+        // InputManager.Instance.OnClick += OnPopupOutSideSelected;
+
+        // InputManager.Instance.OnEscaped += OnEscapeCalled;
+    }
+
+    private void OnEscapeCalled()
+    { // 현재 사용x. Input System 관련 코드 구현 후 사용 예정
+        if (popupStacks.Count != 0)
+        {
+            ClosePopupUI();
+        }
+        else
+        {
+            ToggleOptionMenu();
+        }
+    }
+    
+    #region Common UI Method
+
+    // UI에 일괄적으로 설정 적용 목적
+    // sort = true일 경우 자동으로 최상단으로 배치
+    // sort = false, sortOrder = {숫자}일 경우 sortOrder값 기준으로 sortingOrder 적용
+    // isToast는 현재 미사용 (추후 삭제 혹은 ToastUI 기능 추가 고려)
+    // PopupUI 인스턴스의 OnCreateFromPool()에서 호출
+    // renderWorldSpace: Canvas의 render mode 결정: true: world space, false: overlay (현재 구현x. 사용x)
+    public void SetCanvas(GameObject go, bool sort = true, int sortOrder = 0, bool isInteractable = true,  bool renderWorldSpace = false)
+    { 
+        Canvas canvas = go.GetOrAddComponent<Canvas>();
+        if (canvas != null)
+        {
+            canvas.renderMode = renderWorldSpace ? RenderMode.WorldSpace : RenderMode.ScreenSpaceOverlay;
+            canvas.overrideSorting = true;
+        }
+        
+        CanvasScaler cs = go.GetOrAddComponent<CanvasScaler>();
+        if (cs != null)
+        {
+            cs.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        }
+        
+        if (isInteractable)
+            go.GetOrAddComponent<GraphicRaycaster>();
+        
+        SortCanvas(canvas, sort, sortOrder);
+    }
+
+    public void SetCanvas(PopupUI popup, bool sort = true, int sortOrder = 0, bool isInteractable = true)
+    {
+        Canvas canvas = popup.gameObject.GetOrAddComponent<Canvas>();
+        if (canvas != null)
+        {
+            canvas.renderMode = popup.UiRenderType switch
+            {
+                Enums.UIRenderType.WorldSpace => RenderMode.WorldSpace,
+                Enums.UIRenderType.ScreenCamera => RenderMode.ScreenSpaceCamera,
+                _ => RenderMode.ScreenSpaceOverlay
+            };
+            canvas.overrideSorting = true;
+        }
+
+        CanvasGroup cg = popup.gameObject.GetOrAddComponent<CanvasGroup>();
+        if (cg != null)
+        {
+            cg.alpha = 0f; // UI 애니메이션, 애니메이션 전처리를 위해 투명화 -> PopupUI.OnGetFromPool()에서 투명도 제거처리
+        }
+        
+        CanvasScaler cs = popup.gameObject.GetOrAddComponent<CanvasScaler>();
+        if (cs != null)
+        {
+            cs.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        }
+        
+        if (isInteractable)
+            popup.gameObject.GetOrAddComponent<GraphicRaycaster>();
+        
+        SortCanvas(canvas, sort, sortOrder);
+    }
+
+    public void SortCanvas(Canvas canvas, bool autoSort = true, int sortOrder = 0)
+    { // 캔버스 렌더링 순서 정렬
+        if (autoSort)
+        {
+            canvas.sortingOrder = _order;
+            _order++;
+        }
+        else
+        {
+            canvas.sortingOrder = sortOrder;
+        }
+    }
+
+    #endregion
+
+    #region Popup UI Method
+    
+    // 팝업UI 호출 기능 함수
+    // uiName: key값으로 사용해 어드레서블에서 팝업 프리팹을 불러오고, 풀링 적용하여 화면에 띄움
+    // allowDuplicatePopup: 중복 팝업 허용 여부
+    // uiName 입력하지 않으면 "클래스명.prefab"으로 탐색함 -> 팝업 프리팹 어드레서블 key값을 클래스명과 동일하게 설정하는 것을 권장
+    public T ShowPopupUI<T>(string uiName = null, bool allowDuplicatePopup = true) where T : PopupUI
+    {
+        T popup;
+        Type type = typeof(T);
+        if (popupPools.TryGetValue(type, out var pool))
+        {
+            popup = pool.Get() as T;
+        }
+        else
+        {
+            string key = uiName ?? $"{type.Name}.prefab"; 
+            var loadedUI = (ResourceManager.Instance.Load<UnityEngine.Object>(key) as GameObject);
+            if (loadedUI == null) return null;
+            
+            var uiPool = PoolingManager.Instance.GetPool<PopupUI>(
+                    loadedUI, GetUIContainer(loadedUI.GetComponent<PopupUI>().UiRenderType), capacity: 2, maxSize: 10, registerPool: false); // 2, 10 is magic number
+            
+            popupPools[type] = uiPool;
+            popup = popupPools[type].Get() as T;
+            keyTypeDictionary.TryAdd(key, type); // 임시로 key-type 매칭용 딕셔너리에 저장 (현재 미사용. 추후 제거 고려)
+        }
+
+        if (!allowDuplicatePopup)
+        {
+            CloseDuplicatePopup<T>();
+        }
+        
+        popupStacks.Push(popup);
+        
+        if (popup.PauseRequired)
+        {
+            // GameManager.Instance.PauseGame();
+        }
+
+        lastPopupOpenTime = Time.unscaledTime; // 팝업 닫기 지연 시간
+        
+        return popup;
+    }
+
+    public void ClosePopupUI(PopupUI popup, bool escapableCheck = false)
+    {
+        if (popupStacks.Count == 0 || (escapableCheck && !popupStacks.Peek().Escapable))
+            return;
+        
+        if (popupStacks.Peek() != popup)
+        {
+            Util.Log($"{nameof(UIManager)}.ClosePopupUI: failed to close popup : {popup.name}");
+            return;
+        }
+        ClosePopupUI();
+    }
+
+    public void ClosePopupUI(bool escapableCheck = true, bool waitForAnimation = true)
+    {
+        if (popupStacks.Count == 0 || (escapableCheck && !popupStacks.Peek().Escapable))
+            return;
+
+        PopupUI popup = popupStacks.Pop();
+        if (popup is OptionMenuUI)
+        {
+            OnOptionMenuUIClose();
+        }
+        if (popup == null)
+        {
+            Util.Log($"{nameof(UIManager)}.{nameof(ClosePopupUI)}: popupStacks.Peek is empty. trying to close next popup");
+            ClosePopupUI(true); // 다음 순서 팝업 닫기
+            return;
+        }
+        
+        if (popupPools.TryGetValue(popup.GetType(), out var popupPool))
+        {
+            if (waitForAnimation)
+            {
+                popup.OnPopupClosedAsync().ContinueWith(() =>
+                {
+                    try
+                    {
+                        HandleTimePauseAndReleasePopup();
+                    }
+                    catch (Exception e)
+                    {
+                        Util.LogError($"[{nameof(UIManager)}] Error during popup closing: {e}");
+                    }
+                }).Forget();
+            }
+            else
+            {
+                popup.OnPopupClosed(); // 팝업 종료 직전 필요한 작업 수행
+                HandleTimePauseAndReleasePopup();
+            }
+        }
+        
+        return; // separator for local method HandleTimePauseAndReleasePopup()
+        
+        void HandleTimePauseAndReleasePopup()
+        {
+            if (popupStacks.Count == 1 || !IsPausedRequired()) // 일시정지가 필요한 팝업이 없다면
+            {
+                // GameManager.Instance.ResumeGame(); // 게임 일시정지 해제
+            }
+
+            popupPool.Release(popup); // 팝업 닫기 (풀에 반환)
+            _order--;
+        }
+    }
+
+    public void CloseAllPopupUI()
+    {
+        while (popupStacks.Count > 0)
+            ClosePopupUI();
+    }
+
+    public int GetPopupCount() => popupStacks.Count;
+
+    private bool IsPausedRequired()
+    {
+        if (popupStacks.Count == 0) return false;
+
+        foreach (var popup in popupStacks)
+        {
+            if (popup.PauseRequired) return true; // 팝업 중 하나라도 일시정지를 요구한다면 true 반환
+        }
+
+        return false;
+    }
+
+    private Transform GetUIContainer(Enums.UIRenderType type)
+    {
+        return type switch
+        {
+            Enums.UIRenderType.ScreenOverlay => overlayRoot,
+            Enums.UIRenderType.ScreenCamera => root,
+            Enums.UIRenderType.WorldSpace => root,
+            _ =>  null
+        };
+    }
+
+    private void OnPopupOutSideSelected(Vector2 selectedPos)
+    {
+        if (Time.unscaledTime - lastPopupOpenTime < popupOpenThreshold)
+            return;
+        
+        if (popupStacks.TryPeek(out var popup) && popup is { CloseOnOuterBackgroundClick: true })
+        {
+            if (!RectTransformUtility.RectangleContainsScreenPoint(popup.Rect, selectedPos))
+            {
+                // Util.Log("Outer background touched. close popup");
+                ClosePopupUI(popup);
+            }
+        }
+    }
+    
+    #endregion
+
+    #region Frequently Used UI Call
+
+    public void ShowTooltip(int errorType, bool hideAfterDelay = false, float delayDuration = 2.0f) // 3.0f is magic number
+    {
+        if (errorType == (int)Enums.TooltipErrorType.Empty) return;
+        Tooltip.tooltipCanvas.sortingOrder = _order; // 언제나 최상단 팝업 UI보다 한단계 더 위로
+        Tooltip.Show(errorType, hideAfterDelay, delayDuration);
+    }
+
+    public void ShowTooltip(string tooltipString, bool hideAfterDelay = false, float delayDuration = 3.0f)
+    {
+        Tooltip.tooltipCanvas.sortingOrder = _order + 1; // 언제나 최상단 팝업 UI보다 한단계 더 위로
+        Tooltip.Show(tooltipString, hideAfterDelay, delayDuration);
+    }
+
+    public void HideTooltip()
+    {
+        Tooltip.Hide();
+    }
+
+    private void ToggleOptionMenu()
+    {
+        if (isOptionMenuActive)
+        {
+            ClosePopupUI();
+        }
+        else
+        {
+            ShowOptionMenu();
+        }
+    }
+
+    public void ShowOptionMenu() 
+    {
+        if (isOptionMenuActive)
+        {
+            Util.Log("isOptionMenuActive is true");
+            return;
+        }
+        
+        ShowPopupUI<OptionMenuUI>("OptionMenuUI.prefab");
+    }
+
+    public void OnOptionMenuUIOpen() // OptionMenuUI.OnGetFromPool()에서 실행
+    {
+        isOptionMenuActive = true;
+    }
+        
+    public void OnOptionMenuUIClose() // OptionMenuUI.OnPopupClosed()에서 실행
+    {
+        isOptionMenuActive = false;
+    }
+
+    private bool IsAlreadyDuplicatePopup<T>()
+    {
+        if (popupStacks.Count == 0) return false;
+
+        foreach (var popup in popupStacks)
+        {
+            if (popup is T duplicatePopup)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+    private void CloseDuplicatePopup<T>()
+    {
+        if (popupStacks.Count != 0 && popupStacks.Peek() is T duplicatePopup)
+        {
+            ClosePopupUI(duplicatePopup as PopupUI);
+            // Util.Log($"duplicate popup closed: {duplicatePopup}");
+        }
+        else
+        {
+            // Util.Log("There is no duplicate popup");
+        }
+    }
+
+    #endregion
+
+    private UniTask Clear()
+    {
+        keyTypeDictionary.Clear();
+
+        foreach (var pool in popupPools.Values)
+        {
+            pool.Clear();
+        }
+        popupPools.Clear();
+        popupStacks.Clear();
+        
+        ClearValue();
+        
+        return UniTask.CompletedTask;
+    }
+
+    private void ClearValue()
+    {
+        _order = 10; // 10 is magic number
+        isOptionMenuActive = false;
+    }
+}
