@@ -11,6 +11,13 @@
 /[Ll]ogs/
 /[Uu]ser[Ss]ettings/
 *.log
+GameDevPractice/[Ll]ibrary/
+GameDevPractice/[Tt]emp/
+GameDevPractice/[Oo]bj/
+GameDevPractice/[Bb]uild/
+GameDevPractice/[Bb]uilds/
+GameDevPractice/[Ll]ogs/
+GameDevPractice/[Uu]ser[Ss]ettings/
 
 # MemoryCaptures can get excessive in size.
 # They also could contain extremely sensitive data
