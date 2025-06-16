@@ -17,6 +17,7 @@ public class ResourceManager : Singleton<ResourceManager>
     private bool preLoadState = false;
     public bool PreLoadState => preLoadState;
 
+    private const string PreLoadLabel = "PreLoad";
     private const string SpriteAtlasSuffix = "(Clone)"; // 스프라이트 아틀라스 내부 리소스 접근용 문자열
     private int atlasSuffixLength; // 캐싱된 "(Clone)" 문자열 길이
 
@@ -48,10 +49,10 @@ public class ResourceManager : Singleton<ResourceManager>
     private void PreLoad()
     {
         // 프로그램 시작과 동시에 필요한(PreLoad 라벨이 붙은) 모든 리소스 로드
-        LoadAllAsync<UnityEngine.Object>("PreLoad", 
+        LoadAllAsync<UnityEngine.Object>(PreLoadLabel, 
             (key, count, totalCount) =>
             {
-                // Util.Log($"{key} {count} / {totalCount}"); // 디버깅용 로그
+                Util.Log($"{key} {count} / {totalCount}"); // 디버깅용 로그
                 if (count == totalCount)
                 {
                     NotifyPreLoad?.SafeInvoke(true); // 리소스 로딩 대기중인 클래스들에게 로딩 완료 이벤트 전달

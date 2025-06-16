@@ -76,25 +76,31 @@ public class UIManager : Singleton<UIManager>
     private void Init()
     {
         Util.SetMainCameraForUtilClass();
-        if (root == null)
-        {
-            GameObject go = GameObject.FindWithTag("UI_Root");
-            if (go == null)
-            {
-                go = GameObject.FindFirstObjectByType<Canvas>().gameObject; // UI_Root 오브젝트가 없으면 씬에 존재하는 아무 Canvas 컴포넌트가 부착된 게임 오브젝트를 임시 UI_Root로 사용
-            }
-            root = go.transform;
-        }
+        GameObject rootGo = new GameObject("UI_Root");
+        SetCanvas(rootGo, isInteractable: true);
+        sceneUIGraphicRaycaster = rootGo.GetOrAddComponent<GraphicRaycaster>();
+
+        root = rootGo.transform;
         
-        overlayRoot = root.Find("Canvas Overlay"); // 현재 씬 UI 탐색 todo: 씬 UI 네이밍 규칙 추가 고려
-        if (overlayRoot == null)
-        {
-            GameObject overlayGo = new GameObject("Canvas Overlay");
-            overlayGo.transform.SetParent(root);
-            overlayRoot = overlayGo.transform;
-        }
-        SetCanvas(overlayRoot.gameObject, isInteractable: true);
-        sceneUIGraphicRaycaster = overlayRoot.GetComponent<GraphicRaycaster>();
+        // if (root == null)
+        // {
+        //     GameObject go = GameObject.FindWithTag("UI_Root");
+        //     if (go == null)
+        //     {
+        //         go = GameObject.FindFirstObjectByType<Canvas>().gameObject; // UI_Root 오브젝트가 없으면 씬에 존재하는 아무 Canvas 컴포넌트가 부착된 게임 오브젝트를 임시 UI_Root로 사용
+        //     }
+        //     root = go.transform;
+        // }
+        //
+        // overlayRoot = root.Find("Canvas Overlay"); // 현재 씬 UI 탐색 todo: 씬 UI 네이밍 규칙 추가 고려
+        // if (overlayRoot == null)
+        // {
+        //     GameObject overlayGo = new GameObject("Canvas Overlay");
+        //     overlayGo.transform.SetParent(root);
+        //     overlayRoot = overlayGo.transform;
+        // }
+        // SetCanvas(overlayRoot.gameObject, isInteractable: true);
+        // sceneUIGraphicRaycaster = overlayRoot.gameObject.GetOrAddComponent<GraphicRaycaster>();
         
         ResourceManager.Instance.SubscribePreLoad(InitAfterLoad);
         GameSceneManager.Instance.RegisterCleanupTask(async () =>
@@ -154,6 +160,7 @@ public class UIManager : Singleton<UIManager>
         if (cs != null)
         {
             cs.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            cs.referenceResolution = new Vector2(1920, 1080); // (1920, 1080) is magic number
         }
         
         if (isInteractable)
@@ -182,11 +189,11 @@ public class UIManager : Singleton<UIManager>
             cg.alpha = 0f; // UI 애니메이션, 애니메이션 전처리를 위해 투명화 -> PopupUI.OnGetFromPool()에서 투명도 제거처리
         }
         
-        CanvasScaler cs = popup.gameObject.GetOrAddComponent<CanvasScaler>();
-        if (cs != null)
-        {
-            cs.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        }
+        // CanvasScaler cs = popup.gameObject.GetOrAddComponent<CanvasScaler>();
+        // if (cs != null)
+        // {
+        //     cs.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        // }
         
         if (isInteractable)
             popup.gameObject.GetOrAddComponent<GraphicRaycaster>();
@@ -229,8 +236,13 @@ public class UIManager : Singleton<UIManager>
             var loadedUI = (ResourceManager.Instance.Load<UnityEngine.Object>(key) as GameObject);
             if (loadedUI == null) return null;
             
+            // var uiPool = PoolingManager.Instance.GetPool<PopupUI>(
+            //         loadedUI, GetUIContainer(loadedUI.GetComponent<PopupUI>().UiRenderType), capacity: 2, maxSize: 10, registerPool: false); // 2, 10 is magic number
             var uiPool = PoolingManager.Instance.GetPool<PopupUI>(
-                    loadedUI, GetUIContainer(loadedUI.GetComponent<PopupUI>().UiRenderType), capacity: 2, maxSize: 10, registerPool: false); // 2, 10 is magic number
+                loadedUI, 
+                parent: root, 
+                capacity: 2, maxSize: 10, registerPool: false
+                ); // 2, 10 is magic number
             
             popupPools[type] = uiPool;
             popup = popupPools[type].Get() as T;

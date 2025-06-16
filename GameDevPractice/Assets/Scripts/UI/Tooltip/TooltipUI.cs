@@ -36,8 +36,6 @@ public class TooltipUI : BaseUI
 
     public override bool Init()
     {
-        // controls = new InputActions();
-        // controls.Enable();
         if (base.Init() == false) return false;
 
         BindObject(typeof(GameObjects));
@@ -45,14 +43,14 @@ public class TooltipUI : BaseUI
 
         if (canvasRect == null)
         {
-            if (transform.parent.name == "Canvas Overlay")
+            var result = FindFirstObjectByType<Canvas>();
+            if (result == null)
             {
-                canvasRect = transform.parent.GetComponent<RectTransform>();
+                Util.Log($"[{typeof(TooltipUI)}] Failed to find canvas for overlay");
+                return false;
             }
-            else
-            {
-                canvasRect = transform.parent.Find("Canvas Overlay")?.GetComponent<RectTransform>();
-            }
+            
+            canvasRect = result.GetComponent<RectTransform>();
         }
         tooltipCanvas = GetComponent<Canvas>();
         tooltipRect = GetComponent<RectTransform>();
@@ -117,8 +115,7 @@ public class TooltipUI : BaseUI
 
     private void HandleMouseFollow()
     {
-        // Vector2 pointerPos = InputManager.Instance.PointerPos;
-        Vector2 pointerPos = Input.mousePosition;
+        Vector2 pointerPos = InputManager.Instance.PointerPos;
 
 // #if UNITY_EDITOR
 //         pointerPos = Mouse.current.position.ReadValue();

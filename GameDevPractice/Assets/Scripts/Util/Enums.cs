@@ -66,6 +66,12 @@ public static class Enums
         PerAdd, // 퍼센트 합연산
         PerMul, // 퍼센트 곱연산
     }
+
+    public enum StatType
+    {
+        Attack,
+    }
+    
     public enum GameDifficulty
     {
         Easy,
@@ -73,6 +79,34 @@ public static class Enums
         Hard
 
 
+    }
+
+    public enum ObjectType
+    {
+        
+    }
+
+    public enum EquippedItemSlotType
+    {
+        
+        Weapon,
+        Head,
+        
+        Max
+    }
+
+    public enum EquipmentType
+    {
+        Armor,
+        Weapon,
+    }
+
+    public enum ItemType
+    {
+        Equipment,
+        Countable,
+        Single,
+        Special,
     }
 }
 

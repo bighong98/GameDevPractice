@@ -32,13 +32,12 @@ public class Singleton<T> : MonoBehaviour where T : MonoBehaviour
         {
             _instance = this as T;
             DontDestroyOnLoad(gameObject);
-            
         }
         else if (_instance != this)
         {
-            // Util.Log($"{typeof(T).Name}: 중복 인스턴스가 존재하여 파괴됩니다.");
+            Util.Log($"{typeof(T).Name}: 중복 인스턴스가 존재하여 파괴됩니다.");
             Destroy(gameObject);
-        }   
+        }
     }
 
     protected virtual void Start()
