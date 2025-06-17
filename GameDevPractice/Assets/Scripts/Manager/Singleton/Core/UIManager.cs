@@ -16,7 +16,7 @@ public class UIManager : Singleton<UIManager>
     private readonly Dictionary<Type, ObjectPool<PopupUI>> popupPools = new Dictionary<Type, ObjectPool<PopupUI>>();
     
     [SerializeField] private Transform root;
-    [SerializeField] private Transform overlayRoot;
+    // [SerializeField] private Transform overlayRoot; // not used now
     
     private GraphicRaycaster sceneUIGraphicRaycaster;
     public GraphicRaycaster SceneUIGraphicRaycaster { get { return sceneUIGraphicRaycaster; } }
@@ -114,7 +114,8 @@ public class UIManager : Singleton<UIManager>
         if (!done) return;
         
         //todo: 리소스 매니저에서 필요한 리소스 레퍼런스 받아와서 사용
-        Tooltip = ResourceManager.Instance.Instantiate("TooltipUI.prefab", overlayRoot)?.GetComponent<TooltipUI>();
+        InputManager.Instance.OnEscaped += OnEscapeCalled;
+        Tooltip = ResourceManager.Instance.Instantiate("TooltipUI.prefab", root)?.GetComponent<TooltipUI>();
         if (Tooltip == null)
         {   
             Util.Log($"Tooltip is null");
@@ -128,7 +129,7 @@ public class UIManager : Singleton<UIManager>
     }
 
     private void OnEscapeCalled()
-    { // 현재 사용x. Input System 관련 코드 구현 후 사용 예정
+    { 
         if (popupStacks.Count != 0)
         {
             ClosePopupUI();
@@ -357,7 +358,7 @@ public class UIManager : Singleton<UIManager>
     {
         return type switch
         {
-            Enums.UIRenderType.ScreenOverlay => overlayRoot,
+            Enums.UIRenderType.ScreenOverlay => root,
             Enums.UIRenderType.ScreenCamera => root,
             Enums.UIRenderType.WorldSpace => root,
             _ =>  null
@@ -413,8 +414,10 @@ public class UIManager : Singleton<UIManager>
         }
     }
 
-    public void ShowOptionMenu() 
+    public void ShowOptionMenu()
     {
+        Util.Log($"OptionMenu UI is not ready yet");
+        return;
         if (isOptionMenuActive)
         {
             Util.Log("isOptionMenuActive is true");

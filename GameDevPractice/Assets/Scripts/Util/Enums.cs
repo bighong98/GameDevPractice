@@ -88,10 +88,11 @@ public static class Enums
 
     public enum EquippedItemSlotType
     {
-        
         Weapon,
         Head,
-        
+        Body,
+        Hand,
+        Foot,
         Max
     }
 
