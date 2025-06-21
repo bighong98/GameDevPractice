@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using RPG.Item;
 using UnityEngine;
 
 //인벤토리 아이템 설명 툴팁용 스크립트
@@ -45,6 +46,19 @@ public class UI_ItemTooltip : BaseUI
         ShowTooltip();
         GetTMPText((int)TMPTexts.ItemNameText).text = item.ItemName;
         GetTMPText((int)TMPTexts.ItemDescText).text = item.ItemDesc;
+    }
+
+    public void ShowTooltip(ItemSlot item)
+    {
+        if (item == null)
+        {
+            Util.Log("itemTooltip: itemData is null");
+            return;
+        }
+        
+        ShowTooltip();
+        GetTMPText((int)TMPTexts.ItemNameText).text = item.GetItemInfo.name;
+        GetTMPText((int)TMPTexts.ItemDescText).text = item.GetItemInfo.desc;
     }
 
     public void ShowTooltip(string itemName, string itemDesc)

@@ -43,7 +43,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5781152288054750793}
-  - component: {fileID: 5859811384443331990}
+  - component: {fileID: 7592361104251972594}
   m_Layer: 0
   m_Name: Inventory
   m_TagString: Untagged
@@ -66,7 +66,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 7051912391648671693}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &5859811384443331990
+--- !u!114 &7592361104251972594
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -75,11 +75,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 3583058475163607430}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 49bd444a7172e1c4eb16b26ecdff7e31, type: 3}
+  m_Script: {fileID: 11500000, guid: c0559c8d979cc024cbed38037a1bc1f2, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::InventorySystem
-  _initialCapacity: 64
-  _inventoryPopup: {fileID: 0}
+  m_EditorClassIdentifier: Assembly-CSharp::RPG.Item.InventorySystem
+  initialCapacity: 64
+  inventoryUI: {fileID: 0}
 --- !u!1 &5930427936987428941
 GameObject:
   m_ObjectHideFlags: 0

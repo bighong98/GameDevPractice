@@ -258,17 +258,35 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": ""Drag"",
-                    ""type"": ""Value"",
+                    ""type"": ""PassThrough"",
                     ""id"": ""bb5c7129-fa67-4ad7-8257-1f7f8c5d932f"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Hold"",
+                    ""type"": ""Button"",
+                    ""id"": ""59195fa3-44bf-456d-aab4-52bc61081c83"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""PointUI"",
+                    ""type"": ""Value"",
+                    ""id"": ""c80e2aca-ec05-46b4-8888-d6092211aafc"",
                     ""expectedControlType"": ""Vector2"",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
                 },
                 {
-                    ""name"": ""Hold"",
+                    ""name"": ""Release"",
                     ""type"": ""Button"",
-                    ""id"": ""59195fa3-44bf-456d-aab4-52bc61081c83"",
+                    ""id"": ""48750da0-73b3-4977-965a-fa5fa6c79da4"",
                     ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
@@ -341,6 +359,28 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
                     ""action"": ""DoubleClick"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""39e9ce58-bc6d-4350-9d13-94579803145f"",
+                    ""path"": ""<Pointer>/{Point}"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""PointUI"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""863659ab-ca38-4027-b4cb-36a670f9429f"",
+                    ""path"": ""<Pointer>/press"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Release"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         },
@@ -405,6 +445,8 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
         m_UI_DoubleClick = m_UI.FindAction("DoubleClick", throwIfNotFound: true);
         m_UI_Drag = m_UI.FindAction("Drag", throwIfNotFound: true);
         m_UI_Hold = m_UI.FindAction("Hold", throwIfNotFound: true);
+        m_UI_PointUI = m_UI.FindAction("PointUI", throwIfNotFound: true);
+        m_UI_Release = m_UI.FindAction("Release", throwIfNotFound: true);
         // Global
         m_Global = asset.FindActionMap("Global", throwIfNotFound: true);
         m_Global_Escape = m_Global.FindAction("Escape", throwIfNotFound: true);
@@ -602,6 +644,8 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
     private readonly InputAction m_UI_DoubleClick;
     private readonly InputAction m_UI_Drag;
     private readonly InputAction m_UI_Hold;
+    private readonly InputAction m_UI_PointUI;
+    private readonly InputAction m_UI_Release;
     /// <summary>
     /// Provides access to input actions defined in input action map "UI".
     /// </summary>
@@ -629,6 +673,14 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "UI/Hold".
         /// </summary>
         public InputAction @Hold => m_Wrapper.m_UI_Hold;
+        /// <summary>
+        /// Provides access to the underlying input action "UI/PointUI".
+        /// </summary>
+        public InputAction @PointUI => m_Wrapper.m_UI_PointUI;
+        /// <summary>
+        /// Provides access to the underlying input action "UI/Release".
+        /// </summary>
+        public InputAction @Release => m_Wrapper.m_UI_Release;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -667,6 +719,12 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
             @Hold.started += instance.OnHold;
             @Hold.performed += instance.OnHold;
             @Hold.canceled += instance.OnHold;
+            @PointUI.started += instance.OnPointUI;
+            @PointUI.performed += instance.OnPointUI;
+            @PointUI.canceled += instance.OnPointUI;
+            @Release.started += instance.OnRelease;
+            @Release.performed += instance.OnRelease;
+            @Release.canceled += instance.OnRelease;
         }
 
         /// <summary>
@@ -690,6 +748,12 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
             @Hold.started -= instance.OnHold;
             @Hold.performed -= instance.OnHold;
             @Hold.canceled -= instance.OnHold;
+            @PointUI.started -= instance.OnPointUI;
+            @PointUI.performed -= instance.OnPointUI;
+            @PointUI.canceled -= instance.OnPointUI;
+            @Release.started -= instance.OnRelease;
+            @Release.performed -= instance.OnRelease;
+            @Release.canceled -= instance.OnRelease;
         }
 
         /// <summary>
@@ -887,6 +951,20 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnHold(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "PointUI" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnPointUI(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Release" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnRelease(InputAction.CallbackContext context);
     }
     /// <summary>
     /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "Global" which allows adding and removing callbacks.

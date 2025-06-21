@@ -40,34 +40,6 @@ public class UIManager : Singleton<UIManager>
         Init();
     }
 
-    #region Deprecated
-
-    // private void Update()
-    // {
-    //     if (Keyboard.current.escapeKey.wasPressedThisFrame )
-    //     {
-    //         ShowOptionMenu();
-    //     }
-    //
-    //     if (Mouse.current.leftButton.wasPressedThisFrame)
-    //     {
-    //         if (Time.unscaledTime - lastPopupOpenTime < popupOpenThreshold)
-    //             return;
-    //
-    //         if (popupStacks.TryPeek(out var popup) && popup is { CloseOnOuterBackgroundClick: true })
-    //         {
-    //             if (!RectTransformUtility.RectangleContainsScreenPoint(popup.Rect, Mouse.current.position.ReadValue()))
-    //             {
-    //                 // Util.Log("Outer background touched. close popup");
-    //                 ClosePopupUI(popup);
-    //             }
-    //         }
-    //     }
-    // }
-
-    #endregion
-    
-
     protected override void OnSceneLoaded(bool dummy)
     {
         Init();
@@ -81,26 +53,6 @@ public class UIManager : Singleton<UIManager>
         sceneUIGraphicRaycaster = rootGo.GetOrAddComponent<GraphicRaycaster>();
 
         root = rootGo.transform;
-        
-        // if (root == null)
-        // {
-        //     GameObject go = GameObject.FindWithTag("UI_Root");
-        //     if (go == null)
-        //     {
-        //         go = GameObject.FindFirstObjectByType<Canvas>().gameObject; // UI_Root 오브젝트가 없으면 씬에 존재하는 아무 Canvas 컴포넌트가 부착된 게임 오브젝트를 임시 UI_Root로 사용
-        //     }
-        //     root = go.transform;
-        // }
-        //
-        // overlayRoot = root.Find("Canvas Overlay"); // 현재 씬 UI 탐색 todo: 씬 UI 네이밍 규칙 추가 고려
-        // if (overlayRoot == null)
-        // {
-        //     GameObject overlayGo = new GameObject("Canvas Overlay");
-        //     overlayGo.transform.SetParent(root);
-        //     overlayRoot = overlayGo.transform;
-        // }
-        // SetCanvas(overlayRoot.gameObject, isInteractable: true);
-        // sceneUIGraphicRaycaster = overlayRoot.gameObject.GetOrAddComponent<GraphicRaycaster>();
         
         ResourceManager.Instance.SubscribePreLoad(InitAfterLoad);
         GameSceneManager.Instance.RegisterCleanupTask(async () =>
@@ -264,6 +216,8 @@ public class UIManager : Singleton<UIManager>
 
         lastPopupOpenTime = Time.unscaledTime; // 팝업 닫기 지연 시간
         
+        InputManager.Instance.EnableUIActionMap();
+        
         return popup;
     }
 
@@ -319,6 +273,9 @@ public class UIManager : Singleton<UIManager>
                 HandleTimePauseAndReleasePopup();
             }
         }
+        
+        if (popupStacks.Count == 0)
+            InputManager.Instance.DisableUIActionMap();
         
         return; // separator for local method HandleTimePauseAndReleasePopup()
         
@@ -487,4 +444,68 @@ public class UIManager : Singleton<UIManager>
         _order = 10; // 10 is magic number
         isOptionMenuActive = false;
     }
+
+    #region Deprecated
+
+    // private void Init()
+    // {
+    //     Util.SetMainCameraForUtilClass();
+    //     GameObject rootGo = new GameObject("UI_Root");
+    //     SetCanvas(rootGo, isInteractable: true);
+    //     sceneUIGraphicRaycaster = rootGo.GetOrAddComponent<GraphicRaycaster>();
+    //
+    //     root = rootGo.transform;
+    //     
+    //     // if (root == null)
+    //     // {
+    //     //     GameObject go = GameObject.FindWithTag("UI_Root");
+    //     //     if (go == null)
+    //     //     {
+    //     //         go = GameObject.FindFirstObjectByType<Canvas>().gameObject; // UI_Root 오브젝트가 없으면 씬에 존재하는 아무 Canvas 컴포넌트가 부착된 게임 오브젝트를 임시 UI_Root로 사용
+    //     //     }
+    //     //     root = go.transform;
+    //     // }
+    //     //
+    //     // overlayRoot = root.Find("Canvas Overlay"); // 현재 씬 UI 탐색 todo: 씬 UI 네이밍 규칙 추가 고려
+    //     // if (overlayRoot == null)
+    //     // {
+    //     //     GameObject overlayGo = new GameObject("Canvas Overlay");
+    //     //     overlayGo.transform.SetParent(root);
+    //     //     overlayRoot = overlayGo.transform;
+    //     // }
+    //     // SetCanvas(overlayRoot.gameObject, isInteractable: true);
+    //     // sceneUIGraphicRaycaster = overlayRoot.gameObject.GetOrAddComponent<GraphicRaycaster>();
+    //     
+    //     ResourceManager.Instance.SubscribePreLoad(InitAfterLoad);
+    //     GameSceneManager.Instance.RegisterCleanupTask(async () =>
+    //     {
+    //         await Clear();
+    //     });
+    // }
+    
+    // private void Update()
+    // {
+    //     if (Keyboard.current.escapeKey.wasPressedThisFrame )
+    //     {
+    //         ShowOptionMenu();
+    //     }
+    //
+    //     if (Mouse.current.leftButton.wasPressedThisFrame)
+    //     {
+    //         if (Time.unscaledTime - lastPopupOpenTime < popupOpenThreshold)
+    //             return;
+    //
+    //         if (popupStacks.TryPeek(out var popup) && popup is { CloseOnOuterBackgroundClick: true })
+    //         {
+    //             if (!RectTransformUtility.RectangleContainsScreenPoint(popup.Rect, Mouse.current.position.ReadValue()))
+    //             {
+    //                 // Util.Log("Outer background touched. close popup");
+    //                 ClosePopupUI(popup);
+    //             }
+    //         }
+    //     }
+    // }
+    
+    #endregion
+    
 }

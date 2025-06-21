@@ -109,5 +109,15 @@ public static class Enums
         Single,
         Special,
     }
+
+    public enum ArmorType
+    {
+        
+    }
+
+    public enum WeaponType
+    {
+        
+    }
 }
 

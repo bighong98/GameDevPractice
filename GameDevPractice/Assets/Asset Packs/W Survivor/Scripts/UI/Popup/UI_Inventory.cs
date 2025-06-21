@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
+using RPG.Item;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
@@ -180,7 +180,7 @@ public class UI_Inventory : PopupUI // 이름에 popup이라고 명시되어있�
 
         var prevSlot = _mouseOverSlot;
         _mouseOverSlot = RaycastAndGetFirstComponent<UI_ItemSlotBase>();
-
+        
         if (prevSlot == _mouseOverSlot) return; // 포인터가 위치한 슬롯이 이전과 동일하다면 중지
         
         ShowSlotInfo(prevSlot);
@@ -431,6 +431,15 @@ public class UI_Inventory : PopupUI // 이름에 popup이라고 명시되어있�
 
     public void CleanEquipmentSlot(int index) => _uiEquipmentSlots[index].RemoveIcon();
 
+    public void SetSlotIcon(int index, RPG.Item.ItemSlot itemSlot)
+    {
+        if (!_uiItemSlots[index].IsAccessibleSlot)
+        {
+            Util.Log("InAccessible slot");
+            return;
+        }
+        _uiItemSlots[index].SetIcon(itemSlot.GetItemInfo.sprite);
+    }
     public void SetSlotIcon(int index, BaseItem item)
     {
         if (_uiItemSlots[index].IsAccessibleSlot == false)

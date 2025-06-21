@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using RPG.Item;
 using UnityEngine;
 using UnityEngine.U2D;
 using UnityEngine.UI;
@@ -13,7 +14,7 @@ public class InventorySystem : MonoBehaviour
     
     private BaseItem[] _items; // 인벤토리에 저장된 아이템
     private EquipmentItem[] _equipments; // 장착 중인 장비 (아이템)
-    
+
     private UseItemSystem _useItemSystem = new UseItemSystem();
     
     private void Awake()

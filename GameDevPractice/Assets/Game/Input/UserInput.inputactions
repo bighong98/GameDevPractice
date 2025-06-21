@@ -172,17 +172,35 @@
                 },
                 {
                     "name": "Drag",
-                    "type": "Value",
+                    "type": "PassThrough",
                     "id": "bb5c7129-fa67-4ad7-8257-1f7f8c5d932f",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Hold",
+                    "type": "Button",
+                    "id": "59195fa3-44bf-456d-aab4-52bc61081c83",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "PointUI",
+                    "type": "Value",
+                    "id": "c80e2aca-ec05-46b4-8888-d6092211aafc",
                     "expectedControlType": "Vector2",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": true
                 },
                 {
-                    "name": "Hold",
+                    "name": "Release",
                     "type": "Button",
-                    "id": "59195fa3-44bf-456d-aab4-52bc61081c83",
+                    "id": "48750da0-73b3-4977-965a-fa5fa6c79da4",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -253,6 +271,28 @@
                     "processors": "",
                     "groups": "",
                     "action": "DoubleClick",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "39e9ce58-bc6d-4350-9d13-94579803145f",
+                    "path": "<Pointer>/{Point}",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "PointUI",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "863659ab-ca38-4027-b4cb-36a670f9429f",
+                    "path": "<Pointer>/press",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Release",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

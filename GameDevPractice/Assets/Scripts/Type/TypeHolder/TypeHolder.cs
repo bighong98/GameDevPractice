@@ -3,12 +3,14 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 
+// 타입 데이터(TypeSO), 원본 프리팹 객체(Origin)을 포함하는 MonoBehaviour 기반 컴포넌트
+// 가능한 오브젝트 풀링해서 사용할 것 (PoolingManager.cs 참조)
 public class TypeHolder<T> : MonoBehaviour, ITypeHolder, IPoolObject where T : BaseTypeSO
 {
     private T _type;
     public T type;
     public AssetReferenceT<T> typeRef;
-    public GameObject Origin { get; set; } // 오브젝트 풀링 적용시 원본 프리팹 참조 저장 목적. setter가 있지만 수동으로 수정하지 않도록
+    public GameObject Origin { get; set; } // 오브젝트 풀링 적용시 원본 프리팹 참조 저장 목적. setter가 있지만 PoolingManager 이외
     public BaseTypeSO BaseType => type;
 
     public event Action OnCreate;
@@ -42,7 +44,9 @@ public class TypeHolder<T> : MonoBehaviour, ITypeHolder, IPoolObject where T : B
         }
         
         return _type;
-    } 
+    }
+
+    #region Pool Method (IPoolObject)
 
     public virtual void OnCreateFromPool()
     {
@@ -64,14 +68,16 @@ public class TypeHolder<T> : MonoBehaviour, ITypeHolder, IPoolObject where T : B
     {
         OnDestroy?.Invoke();
     }
-
-    // 제네릭 문제로 반드시 하위 클래스에서 오버라이드해서 사용할 것
+    
     public virtual void ReleaseSelf()
     {
+        // 제네릭 문제로 반드시 하위 클래스에서 다음과 같이 오버라이드해서 사용할 것
         // if (gameObject.activeSelf && Origin != null)
         //     PoolingManager.Instance.ReleaseFromPool(this);
     }
 
+    #endregion
+    
     private void SetMinimapSprite()
     {
         if (type.showInMinimap)
