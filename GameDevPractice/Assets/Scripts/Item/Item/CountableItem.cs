@@ -2,13 +2,13 @@ using UnityEngine;
 
 namespace RPG.Item
 {
-    public class CountableItemSlot : ItemSlot
+    public class CountableItem : Item
     {
-        public CountableItemSlot(ItemTypeSO data, int amount = 1) : base(data)
+        public CountableItem(ItemTypeSO data, int amount = 1) : base(data)
         {
-            this.Amount = amount;
+            Amount = amount;
         }
-
+        
         public bool IsFull => Amount >= ItemData.maxAmount;
         
         public void SetAmount(int num)
@@ -26,7 +26,7 @@ namespace RPG.Item
             return (total > max) ? (total - max) : 0; // 최대 개수 초과시 초과분 반환(초과하지 않으면 0 반환)
         }
 
-        public T SeparateAndClone<T>(int amount) where T : CountableItemSlot
+        public T SeparateAndClone<T>(int amount) where T : CountableItem
         {
             if (base.Amount <= 1) return null; // 1개 이하로는 분리 불가능, null 반환
 
@@ -37,7 +37,7 @@ namespace RPG.Item
             return Clone<T>(amount);
         }
 
-        public T Clone<T>(int amount, out int excess) where T : CountableItemSlot
+        public T Clone<T>(int amount, out int excess) where T : CountableItem
         {
             int max = ItemData.maxAmount;
             
@@ -54,16 +54,17 @@ namespace RPG.Item
             return Clone<T>(amount);
         }
 
-        public T Clone<T>(int amount = 1) where T : CountableItemSlot
+        public T Clone<T>(int amount = 1) where T : CountableItem
         {
             T clone = base.Clone<T>();
-            if (clone is CountableItemSlot countableClone)
+            if (clone is CountableItem countableClone)
             {
                 countableClone.SetAmount(amount);
             }
 
             return clone;
         }
+        
     }
 }
 

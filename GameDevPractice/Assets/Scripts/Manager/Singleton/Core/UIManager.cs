@@ -375,13 +375,13 @@ public class UIManager : Singleton<UIManager>
     {
         Util.Log($"OptionMenu UI is not ready yet");
         return;
-        if (isOptionMenuActive)
-        {
-            Util.Log("isOptionMenuActive is true");
-            return;
-        }
-        
-        ShowPopupUI<OptionMenuUI>("OptionMenuUI.prefab");
+        // if (isOptionMenuActive)
+        // {
+        //     Util.Log("isOptionMenuActive is true");
+        //     return;
+        // }
+        //
+        // ShowPopupUI<OptionMenuUI>("OptionMenuUI.prefab");
     }
 
     public void OnOptionMenuUIOpen() // OptionMenuUI.OnGetFromPool()에서 실행

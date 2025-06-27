@@ -29,7 +29,7 @@ namespace Item
 
         #endregion
         
-        [SerializeField] private RPG.Item.InventorySystem inventorySystem;
+        [SerializeField] private RPG.Item.InventorySystem inventorySystem; // serialize for debug
         private GraphicRaycaster graphicRaycaster;
         private PointerEventData pointerEventData;
         private List<RaycastResult> raycastResults;
@@ -152,27 +152,44 @@ namespace Item
 
         #endregion
 
+        #region Validation
+
+        private bool IsValidInventoryIndex(int index)
+        {
+            return !(index < 0 || index >= itemSlotUIs.Count);
+        }
+
+        private bool IsValidEquipIndex(int index)
+        {
+            return !(index < 0 || index >= equipmentSlotUIs.Length);
+        }
+
+        #endregion
+        
         #region Update Slot UI
 
         private void UpdateSlotUI(int index)
         {
-            var item = inventorySystem.GetInventorySlotInfo(index, checkAccessibility: true);
-            if (item == null)
+            var itemSlot = inventorySystem.GetInventorySlot(index);
+            if (itemSlot is not { HasItem: true })
             {
                 CleanSlot(index);
                 return;
             }
             
-            SetInventorySlotIcon(index, item);
+            SetInventorySlotIcon(index, itemSlot);
 
-            if (item is CountableItemSlot cItem) // 1-1. 셀 수 있는 아이템 
+            if (itemSlot.GetItem is RPG.Item.CountableItem cItem) // 1-1. 셀 수 있는 아이템 
             {
+                Util.Log($"[UpdateSlotUI(index: {index})] item is countableItem");
                 if (cItem.IsEmpty)
                 {
+                    Util.Log($"[UpdateSlotUI(index: {index})] cItem is empty");
                     CleanSlot(index);
                 }
                 else
                 {
+                    // Util.Log($"[UpdateSlotUI(index: {index})] Trying to SetSlotAmountText amount: {cItem.GetAmount}");
                     SetSlotAmountText(index, cItem.GetAmount);
                     ShowSlotAmountText(index);
                 }
@@ -185,8 +202,8 @@ namespace Item
 
         private void UpdateEquippedSlotUI(int index)
         {
-            var equippedItem = inventorySystem.GetEquippedSlotInfo(index, checkAccessibility: true);
-            if (equippedItem == null)
+            var equippedItem = inventorySystem.GetEquippedSlot(index);
+            if (equippedItem is null or { HasItem: false } )
             {
                 equipmentSlotUIs[index].RemoveIcon(); // todo: 함수로 래핑
                 return;
@@ -251,7 +268,7 @@ namespace Item
 
         private void OffDrag(Vector2 pos)
         {
-            if (beginDragSlot != null)
+            if (beginDragSlot != null && beginDragSlot.HasItem) // 드래그 종료 시점에서 드래그 시작 지점 슬롯 재검사
             {
                 beginDragIconTransform.position = beginDragIconPoint;
                 beginDragIconTransform.SetParent(beginDragSlot.transform, worldPositionStays: true); // 원래 부모 슬롯에게로 원복
@@ -275,8 +292,8 @@ namespace Item
         private void EndDrag()
         {
             UI_ItemSlotBase endDragSlot = RaycastAndGetFirstComponent<UI_ItemSlotBase>();
-            
-            if (endDragSlot != null && endDragSlot.IsAccessibleSlot)
+
+            if (endDragSlot is { IsAccessibleSlot: true } && endDragSlot != beginDragSlot)
             {
                 TrySwapItems(beginDragSlot, endDragSlot);
             }
@@ -289,26 +306,8 @@ namespace Item
         private void TrySwapItems(UI_ItemSlotBase fromSlotUI, UI_ItemSlotBase toSlotUI)
         {
             Util.Log($"trying to TrySwapItems({fromSlotUI}.{fromSlotUI.Index}, {toSlotUI}.{toSlotUI.Index})");
-            return;
-
-            if (fromSlotUI is UI_EquipmentSlot fromEquipSlotUI)
-            {
-                // todo: UnEquip
-            }
-            if (toSlotUI is UI_EquipmentSlot toEquipSlotUI)
-            {
-                // todo: Equip
-            }
-            else
-            {
-                // todo: Swap
-            }
             
-            // if (fromSlotUI is UI_EquipmentSlot fromEquipSlotUI ||
-            //     toSlotUI is UI_EquipmentSlot toEquipSlotUI) 
-            // {
-            //     
-            // }
+            inventorySystem.TrySwapItems(fromSlotUI, toSlotUI);
         }
 
         #endregion
@@ -328,6 +327,9 @@ namespace Item
 
         public void CleanSlot(int index)
         {
+            // Util.Log($"CleanSlot(index: {index})");
+            if (!IsValidInventoryIndex(index)) return;
+            
             itemSlotUIs[index].RemoveIcon();
             itemSlotUIs[index].HideText();
             itemSlotUIs[index].HideHighlight();
@@ -370,7 +372,14 @@ namespace Item
         void HighlightSuitableEquipmentSlot()
         {
             UnHighlightEquipmentSlot(); // 이전에 강조된 슬롯이 존재하면 강조 해제
-            return;
+            
+            if (inventorySystem.FindUITargetSlot(beginDragSlot) is not { HasItem: true } targetSlot) return;
+            if (targetSlot.GetItemInfo is not EquipmentTypeSO equipmentData) return;
+            if (!IsValidEquipIndex((int)equipmentData.slotType)) return;
+            
+            equipmentSlotUIs[(int)equipmentData.slotType].ShowHighlight();
+            highlightedEquipmentSlotIdx = (int)equipmentData.slotType;
+            
             // BaseItem item = inventorySystem.GetItemInSlot(beginDragSlot);
             // int idx = item switch
             // {
@@ -400,7 +409,7 @@ namespace Item
         {
             switch (mouseOverSlot)
             {
-                case UI_EquipmentSlot equipmentSlot when isDragging && !inventorySystem.IsValidSlotForEquipment(equipmentSlot, inventorySystem.GetInventorySlotInfo(beginDragSlot.Index)) :
+                case UI_EquipmentSlot equipmentSlot when isDragging && !inventorySystem.CanStore(beginDragSlot, mouseOverSlot) :
                     UnHighlightPrevSlot();
                     WarningCurrSlot();
                     if (equipmentSlot.HasItem)
@@ -440,8 +449,8 @@ namespace Item
                 itemTooltip.ShowTooltip(
                     mouseOverSlot switch
                     {
-                        UI_ItemSlot inventorySlot => inventorySystem.GetInventorySlotInfo(inventorySlot.Index),
-                        UI_EquipmentSlot equipmentSlot => inventorySystem.GetEquippedSlotInfo(equipmentSlot.Index),
+                        UI_ItemSlot inventorySlot => inventorySystem.GetInventorySlot(inventorySlot.Index),
+                        UI_EquipmentSlot equipmentSlot => inventorySystem.GetEquippedSlot(equipmentSlot.Index),
                         _ => null
                     }
                 );

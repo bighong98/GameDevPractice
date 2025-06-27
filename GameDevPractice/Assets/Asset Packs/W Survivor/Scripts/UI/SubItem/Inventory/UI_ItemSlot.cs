@@ -43,7 +43,7 @@ public class UI_ItemSlot : UI_ItemSlotBase
     
     public void SetItemAmount(int amount)
     {
-        if (HasItem && amount > 1)
+        if (HasItem && amount > 0)
             ShowText();
         else
             HideText(); 

@@ -13,12 +13,12 @@ MonoBehaviour:
   m_Name: TestData 4
   m_EditorClassIdentifier: Assembly-CSharp::ItemTypeSO
   prefab: {fileID: 0}
-  nameString: Test Item 1
+  nameString: Test Item 4
   sprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   showInMinimap: 0
   minimapSprite: {fileID: 0}
   minimapSpriteColor: {r: 1, g: 1, b: 1, a: 1}
-  itemType: 1
+  itemType: 3
   maxAmount: 10
   desc: Test Item 4 Desc
   isUsable: 0

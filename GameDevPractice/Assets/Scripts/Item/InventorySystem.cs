@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace RPG.Item
 {
-    public class InventorySystem : MonoBehaviour
+    public class InventorySystem: MonoBehaviour
     {
         public int Capacity { get; private set; }
         [SerializeField, Range(8, 256)] private int initialCapacity = 64; //실제론 inspector 값이 들어가니 주의 //todo: Constants에서 선언하고 사용할지 고민
@@ -25,132 +25,206 @@ namespace RPG.Item
             inventoryItems = new ItemSlot[initialCapacity];
             equippedItems = new EquipmentSlot[(int)Enums.EquippedItemSlotType.Max];
             
+            //todo: 장비 착용 관련 로직 처리방식 결정 및 구현
+            // 빈 인벤토리 슬롯 초기화
+            for (int i = 0; i < Capacity; i++)
+            {
+                inventoryItems[i] = MakeEmptyItemSlot(index: i);
+            }
+            
+            // 빈 장비 슬롯 초기화
+            for (int i = 0; i < (int)Enums.EquippedItemSlotType.Max; i++)
+            {
+                equippedItems[i] = new EquipmentSlot(
+                    null, i,
+                    equippedValidItemTypes, true,
+                    validEquipSlotType: (Enums.EquippedItemSlotType) i
+                    );
+            }
+            
+            //todo: TestData 적용
             ResourceManager.Instance.SubscribePreLoad((_) =>
             {
-                InventoryTestData testData =
-                    ResourceManager.Instance.Load<GameObject>("InventoryTestData.prefab").GetComponent<InventoryTestData>();
+             InventoryTestData testData =
+                 ResourceManager.Instance.Load<GameObject>("InventoryTestData.prefab").GetComponent<InventoryTestData>();
 
-                if (testData == null)
-                {
-                    Util.Log("TestData is null");
-                    return;
-                }
-                
-                foreach (var data in testData.itemTypeHolders)
-                {
-                    Util.Log($"Trying to add {data.type}");
-                    AddItem(data.type, data.amount);
-                }
+             if (testData == null)
+             {
+                 Util.Log("TestData is null");
+                 return;
+             }
+             
+             foreach (var item in testData.items)
+             {
+                 Util.Log($"Trying to add {item}");
+                 AddItem(item, checkInstanceType: true);
+             }
             });
         }
 
         #region Read Slot
 
         public IEnumerable<ItemSlot> ReadOnlyInventorySlots => inventoryItems;
-        public IEnumerable<ItemSlot> ReadOnlyEquippedSlots => equippedItems;
+        public IEnumerable<EquipmentSlot> ReadOnlyEquippedSlots => equippedItems;
+
+        private int ValidInventoryEndIndex => Mathf.Min(Capacity, inventoryItems.Length);
         
-        public ItemSlot GetInventorySlotInfo(int index, bool checkAccessibility = false)
+        private bool IsValidInventorySlot(int index)
         {
-            if (checkAccessibility && !IsValidIndex(index))
+            return (index >= 0 && index < Mathf.Min(Capacity, inventoryItems.Length)); // todo: Length가 GC 발생시키는지 확인
+        }
+
+        private bool IsValidEquippedSlot(int index)
+        {
+            return index >= 0 && index < equippedItems.Length; // todo: Length가 GC 발생시키는지 확인
+        }
+
+        private bool IsEmptySlot(int index) // 인벤토리 슬롯이 비어있는지 확인
+        {
+            if (!IsValidInventorySlot(index)) return false;
+
+            return inventoryItems[index] is null or { IsAccessible: true, HasItem: false }; // 해당 인덱스에 생성된 ItemSlot 인스턴스가 없거나, 아이템 개수가 0으로 설정된 경우(CountableItem 한정)
+        }
+        
+        public ItemSlot GetInventorySlot(int index)
+        {
+            // Util.Log($"Trying to GetInventorySlot: {index}");
+            if (!IsValidInventorySlot(index)) return null;
+            if (inventoryItems[index] is { IsAccessible: true } slot)
             {
-                Util.Log($"[GetInventorySlotInfo] return null");
-                return null;
+                return slot;
             }
             
-            return inventoryItems[index];
+            Util.Log($"[InventorySystem.GetInventorySlot()] return null");
+            return null;
+        }
+        
+        public ItemSlot GetEquippedSlot(int index)
+        {
+            if (!IsValidEquippedSlot(index)) return null;
+            if (equippedItems[index] is { IsAccessible: true } slot)
+            {
+                return slot;
+            }
+            
+            Util.Log($"[InventorySystem.GetEquippedSlot()] return null");
+            return null;
+        }
+        
+        public int GetItemAmount(int index) // 인벤토리 슬롯에 저장된 아이템 개수 확인 (CountableItem 타입에 사용 목적)
+        {
+            if (!IsValidInventorySlot(index)) return 0;
+            if (inventoryItems[index] is { IsAccessible:true, IsValid: true, HasItem:true } itemSlot )
+            {
+                return itemSlot.GetAmount;
+            }
+            
+            return 0;
         }
 
-        public ItemSlot GetEquippedSlotInfo(int index, bool checkAccessibility = false)
+        public bool CanStore(UI_ItemSlotBase fromSlotUI, UI_ItemSlotBase toSlotUI)
         {
-            if (checkAccessibility && !IsValidIndex(index)) return null;
-            return equippedItems[index];
-        } 
+            return CanStore(FindUITargetSlot(fromSlotUI), FindUITargetSlot(toSlotUI));
+        }
+        
+        public bool CanStore(ItemSlot fromSlot, ItemSlot toSlot)
+        {
+            if (fromSlot is null or { HasItem: false } ) return false;
+            if (toSlot == null) return false;
 
-        private int FindEmptySlotIndex(int start = 0)
+            return toSlot.CanStore(fromSlot.GetItemInfo);
+        }
+        
+        #endregion
+
+        #region Find Slot
+        private int FindEmptySlotIndex(int start = 0) // 빈 인벤토리 슬롯 탐색
         {
-            for (int i = start; i < Capacity; i++)
+            int end = ValidInventoryEndIndex;
+            for (int i = start; i < end; i++)
             {
-                if (inventoryItems[i] != null) continue;
-                return i;
+                if (inventoryItems[i] == null)
+                {
+                    inventoryItems[i] = MakeEmptyItemSlot(index: i); // 해당 인덱스에 최초 접근시, ItemSlot 인스턴스 생성
+                    return i;
+                }
+                
+                if (inventoryItems[i] is { IsAccessible: true, HasItem: false } )
+                    return i;
             }
-
+            
             return -1; // 빈칸이 없으면 -1 반환
         }
-
-        private int FindCountableItemSlotIndex(CountableItemSlot cItemSlot, int start = 0)
+        
+        private int FindCountableItemSlotIndex(CountableItem cItem, int start = 0) // 동일한 CountableItem을 보관중인 슬롯 탐색
         {
-            for (int i = start; i < Capacity; i++)
+            if (!IsValidInventorySlot(start)) return -1;
+            int end = ValidInventoryEndIndex;
+            for (int i = start; i < end; i++)
             {
-                if (inventoryItems[i] == null) continue;
-                if (inventoryItems[i].GetItemInfo.itemType != Enums.ItemType.Countable) continue;
-                if (!IsSameItem(inventoryItems[i].GetItemInfo, cItemSlot.GetItemInfo)) continue;
+                var itemSlot = inventoryItems[i];
+                if (itemSlot is not { HasItem: true }) continue;
+                if (itemSlot.GetItemInfo.itemType != Enums.ItemType.Countable) continue;
+                if (!IsSameItem(itemSlot.GetItem, cItem)) continue;
 
                 return i; // 동일한 Countable 타입 아이템을 찾은 경우, 해당 인덱스 반환
             }
 
             return -1; // 인벤토리에 동일 아이템이 없는 경우 -1 반환 (=실패)
         }
-
-        private bool IsSameItem(ItemTypeSO a, ItemTypeSO b)
-        {
-            return (a == b);
-        }
-
-        public int GetItemAmount(int index)
-        {
-            if (!IsValidIndex(index)) return 0;
-            return inventoryItems[index].GetAmount;
-        }
         
-        public bool IsValidIndex(int index)
+        public ItemSlot FindUITargetSlot(UI_ItemSlotBase slotUI)
         {
-            return (index >= 0 && index < Capacity);
-        }
-
-        public bool IsValidIndexForEquipmentSlot(int index) => index is
-            >= (int)Enums.EquippedItemSlotType.Weapon
-            and
-            < (int)Enums.EquippedItemSlotType.Max;
-
-        public bool IsValidSlotForEquipment(UI_ItemSlotBase slotUI, ItemSlot item)
-        {
-            //todo: 타입 추가 후 구현
-            return item switch
+            if (slotUI is UI_EquipmentSlot)
             {
-                _ => false
-            };
-        }
-        
-        public bool HasItem(int index)
-        {
-            return (IsValidIndex(index) && inventoryItems[index] != null);
-        }
-        
-        #endregion
-
-        #region Update Slot
-        
-        public int AddItem(ItemTypeSO typeData, int amount)
-        {
-            switch (typeData.itemType)
+                Util.Log($"[FindUITargetSlot] UI_EquipmentSlot index:{slotUI.Index}");
+                if (!IsValidEquippedSlot(slotUI.Index)) return null;
+                
+                return equippedItems[slotUI.Index];
+            }
+            else
             {
-                case Enums.ItemType.Countable:
-                    return AddItem(new CountableItemSlot(typeData, amount)); // CountableItem을 제외하고 amount는 무시됨 (기본값 1 적용)
-                case Enums.ItemType.Equipment:
-                    return AddItem(new EquipmentSlot(typeData));
-                default:
-                    return AddItem(new ItemSlot(typeData));
+                if (!IsValidInventorySlot(slotUI.Index)) return null;
+                if (inventoryItems[slotUI.Index] == null)
+                {
+                    inventoryItems[slotUI.Index] = MakeEmptyItemSlot(slotUI.Index, ItemSlotValidationStandard.All);
+                }
+                
+                return inventoryItems[slotUI.Index];
+            }
+        }
+        
+        private void NotifySlotUpdated(ItemSlot slot)
+        {
+            if (slot is EquipmentSlot equipmentSlot) // todo: EquipmentSlot 구현
+            {
+                OnEquippedSlotChanged?.Invoke(equipmentSlot.Index);
+            }
+            else
+            {
+                OnInventorySlotChanged?.Invoke(slot.Index);
             }
         }
 
-        public int AddItem(ItemSlot itemSlot, int amount = 1)
+        #endregion
+
+        #region Add/Remove/Transfer Item(Inventory)
+        
+        public int AddItem(Item item, int amount = 1, bool checkInstanceType = false) // 인벤토리 슬롯에 아이템 추가, CountableItem
         {
+            if (checkInstanceType)
+            {
+                item = ModifyItemInstanceByType(item);
+            }
+            
             int index;
-            if (itemSlot is CountableItemSlot countItem)
+            if ((!item?.IsValid) ?? true) return 0;
+            if (item is CountableItem countItem)
             {
                 bool findNextCountable = true;
                 index = -1;
-
+                amount *= countItem.GetAmount;
+                
                 while (amount > 0)
                 {
                     if (findNextCountable)
@@ -162,20 +236,44 @@ namespace RPG.Item
                         }
                         else
                         {
-                            amount = (inventoryItems[index] as CountableItemSlot)?.AddAmount(amount) ?? 0; // 개수 추가 및 슬롯당 최대개수 초과량을 반환 (개수 추가 실패시 0 반환)
-                            NotifySlotUpdated(inventoryItems[index]);
+                            // 개수 추가 및 슬롯 최대개수 초과량을 반환 (개수 추가 실패시 0 반환)
+                            amount = (inventoryItems[index].GetItem as CountableItem)?.AddAmount(amount) ?? 0;
+                            OnInventorySlotChanged?.Invoke(index);
                         }
                     }
                     else // 한도수량에 도달하지 않은 동일 아이템이 존재하지 않는 경우, 빈 슬롯 탐색
                     {
                         index = FindEmptySlotIndex(index + 1);
-                        if (index == -1)    
-                            break;
-                    
-                        inventoryItems[index] = countItem.Clone<CountableItemSlot>(amount, out int excess);
-                        amount = excess;
-                        
-                        NotifySlotUpdated(inventoryItems[index]);
+                        if (index == -1)
+                        {
+                            return amount; // 빈 슬롯이 없는 경우, 남은 개수 반환
+                        }
+
+                        int maxAmount = countItem.GetItemInfo.maxAmount;
+                        if (countItem.GetAmount > maxAmount)
+                        {
+                            countItem.SetAmount(maxAmount);
+                            if (inventoryItems[index].Store(countItem))
+                            {
+                                amount -= maxAmount; // 슬롯에 아이템 저장 성공시, 저장한 개수만큼 차감
+                            }
+                            else
+                            {
+                                return amount; // 실패시 즉시 남은 개수 반환
+                            }
+                        }
+                        else
+                        {
+                            countItem.SetAmount(amount);
+                            if (inventoryItems[index].Store(countItem))
+                            {
+                                return 0;
+                            }
+                            else
+                            {
+                                return amount;
+                            }
+                        }
                     }
                 }
             }
@@ -185,101 +283,197 @@ namespace RPG.Item
                 while (amount > 0)
                 {
                     index = FindEmptySlotIndex(index + 1);
-                    if (index == -1)
-                        break;
-                
-                    inventoryItems[index] = itemSlot.Clone<ItemSlot>();
-                    amount--;
-                    
-                    NotifySlotUpdated(inventoryItems[index]);
+                    if (index == -1) break; // 빈칸을 찾지 못한 경우, 루프 탈출
+
+                    if (inventoryItems[index].Store(item.Clone<Item>())) // 빈칸에 아이템 저장 성공 시 
+                    {
+                        amount--; // 남은 개수 -1
+                        NotifySlotUpdated(inventoryItems[index]); // 해당 슬롯 데이터 변동 알림
+                    }
+                    else // 아이템 저장 실패 시
+                    {
+                        return amount; // 남은 개수 즉시 반환
+                    }
                 }
             }
 
             return amount;
         }
-
-        public void RemoveItem(int index)
+        
+        public bool RemoveItem(int index) // 해당 인덱스 위치 슬롯의 아이템 제거 (슬롯 비우기)
         {
-            if (inventoryItems[index].GetItemInfo.itemType == Enums.ItemType.Special)
-            {
-                // todo: 스페셜 아이템은 지우지 못하도록 UI팝업으로도 안내
-                return;
-            }
+            if (!IsValidInventorySlot(index)) return false;
+            if (!inventoryItems[index].IsAccessible) return false;
+            if (inventoryItems[index].GetItemInfo.itemType == Enums.ItemType.Special) return false;
 
-            inventoryItems[index] = null;
-            NotifySlotUpdated(inventoryItems[index]);
+            return inventoryItems[index].Clear();
         }
 
-        public void TrySwapItems(UI_ItemSlotBase fromSlotUI, UI_ItemSlotBase toSlotUI)
+        public bool TransferItem(ItemSlot fromSlot, ItemSlot toSlot) // fromSlot에 있는 아이템을 toSlot으로 옮기기
         {
-            var fromSlot = GetUITargetSlot(fromSlotUI);
-            var toSlot = GetUITargetSlot(toSlotUI);
+            if (fromSlot is not { HasItem: true } || toSlot == null) return false; // fromSlot이 비어있거나, toSlot이 null이면 실패
             
-            if (fromSlot is CountableItemSlot fromCountItem &&
-                toSlot is CountableItemSlot toCountItem &&
-                IsSameItem(fromCountItem.GetItemInfo, toCountItem.GetItemInfo)) 
-                // 동일한 CountableItem인 경우, 개수 합치기
+            try
             {
-                int excess = toCountItem.AddAmount(fromCountItem.GetAmount);
-                fromCountItem.SetAmount(excess);
-            }
-            else
-            {
-                var fromClone = fromSlot.Clone<ItemSlot>();
-                var toClone = toSlot.Clone<ItemSlot>();
+                if (fromSlot.GetItem is CountableItem fromCountItem &&
+                    toSlot.GetItem is CountableItem toCountItem &&
+                    IsSameItem(fromCountItem, toCountItem))
+                    // 동일한 CountableItem인 경우 => toSlot에 최대치만큼 채우고, 나머지가 존재하면 fromSlot에 반환
+                {
+                    int excess = toCountItem.AddAmount(fromCountItem.GetAmount);
+                    fromCountItem.SetAmount(excess);
+                    return true;
+                }
                 
-                //todo: 실제 데이터에 반영
+                // 각 슬롯에 보관중인 아이템 사본 생성
+                var fromSlotItem = fromSlot.GetItem.Clone<Item>();
+                var toSlotItem = toSlot.GetItem?.Clone<Item>();
+
+                if (toSlot.HasItem) // toSlot에 아이템이 존재하는 경우 => Swap
+                {
+                    if (fromSlot.CanStore(toSlotItem?.GetItemInfo))
+                    {
+                        return toSlot.Store(fromSlotItem) && fromSlot.Store(toSlotItem, true);
+                    }
+
+                    return false;
+                }
+
+                // toSlot이 비어있는 경우 => 단순 이동
+                return toSlot.Store(fromSlotItem) && fromSlot.Clear(); // toSlot에 fromSlot의 Item 저장 성공 + fromSlot 비우기
             }
-            
-            NotifySlotUpdated(fromSlot);
-            NotifySlotUpdated(toSlot);
+            finally // fromSlot과 toSlot의 변동 알림
+            {
+                NotifySlotUpdated(fromSlot);
+                NotifySlotUpdated(toSlot);
+            }
         }
         
-        private void SwapItem(ref ItemSlot fromSlot, ref ItemSlot toSlot)
+        #endregion
+
+        #region UI Interaction
+
+        public void TrySwapItems(UI_ItemSlotBase fromSlotUI, UI_ItemSlotBase toSlotUI) // 아이템 드래그&드랍
         {
-            if (fromSlot is CountableItemSlot fromCountItem &&
-                toSlot is CountableItemSlot toCountItem &&
-                IsSameItem(fromCountItem.GetItemInfo, toCountItem.GetItemInfo)) 
-                // 동일한 CountableItem인 경우, 개수 합치기
-            {
-                int excess = toCountItem.AddAmount(fromCountItem.GetAmount);
-                fromCountItem.SetAmount(excess);
-            }
-            else // 그 외의 경우 자리 교체
-            {
-                (fromSlot, toSlot) = (toSlot, fromSlot);
-            }
-            NotifySlotUpdated(fromSlot);
-            NotifySlotUpdated(toSlot);
+            // UI_ItemSlotBase를 가지는 다른 오브젝트(ex-창고)가 생길 경우, FindUITargetSlot()이 제대로 작동하지 않을 수 있음
+            // todo: 인벤토리 외 아이템 보관을 포함하는 기능이 추가될 경우 매서드 확장 혹은 기능 이전 필요
+            var fromSlot = FindUITargetSlot(fromSlotUI);
+            var toSlot = FindUITargetSlot(toSlotUI);
+            
+            TransferItem(fromSlot, toSlot);
         }
 
         #endregion
-
-        private ItemSlot GetUITargetSlot(UI_ItemSlotBase slotUI)
+        
+        #region Compare Items
+        
+        public enum ItemComparator
         {
-            if (slotUI is UI_EquipmentSlot)
+            Exact, // 정확히 동일한 아이템인지 (ItemTypeSO 기준)
+            Type, // 동일한 타입인지 (Enums.ItemType 기준)
+            EquipmentType, // 장비 대분류가 동일한지 (Enums.EquipmentType 기준)
+            EquipSlotType, // 장착 가능한 슬롯 종류가 동일한지 (Enums.EquippedSlotType 기준)
+            SpecifiedEquipmentType, // 동일 장비군인지
+        }
+
+        public bool CompareItems(Item a, Item b, ItemComparator comparator)
+        {
+
+            return comparator switch
             {
-                if (!IsValidIndexForEquipmentSlot(slotUI.Index)) return null;
-                return equippedItems[slotUI.Index];
+                ItemComparator.Exact => IsSameItem(a, b),
+                ItemComparator.Type => IsSameType(a, b),
+                ItemComparator.EquipmentType => IsSameEquipmentType(a, b),
+                ItemComparator.EquipSlotType => IsSameEquipSlotType(a, b),
+                _ => false // todo: 나머지 ItemComparator 대응 매서드 추가
+            };
+        }
+
+        private bool IsSameItem(Item a, Item b) // 정확히 동일한 아이템인지 검사 (ItemTypeSO 기준)
+        {
+            return (a?.GetItemInfo == b?.GetItemInfo);
+        }
+
+        private bool IsSameType(Item a, Item b) // 동일한 타입인지 검사 (Enums.ItemType 기준)
+        {
+            return (a?.GetItemInfo.itemType == b?.GetItemInfo.itemType);
+        }
+
+        private bool IsSameEquipmentType(Item a, Item b) // 장비 대분류가 동일한지 검사 (Enums.EquipmentType 기준)
+        {
+            if (a?.GetItemInfo is EquipmentTypeSO aData && b?.GetItemInfo is EquipmentTypeSO bData)
+            {
+                return aData.equipmentType == bData.equipmentType;
             }
-            else
+            
+            return false;
+        }
+
+        private bool IsSameEquipSlotType(Item a, Item b) // 장착 슬롯 종류가 동일한지 검사 (Enums.EquippedSlotType 기준)
+        {
+            if (a?.GetItemInfo is EquipmentTypeSO aData && b?.GetItemInfo is EquipmentTypeSO bData)
             {
-                if (!IsValidIndex(slotUI.Index)) return null;
-                return inventoryItems[slotUI.Index];
+                return aData.slotType == bData.slotType;
+            }
+            
+            return false;
+        }
+
+        // private bool IsSameSpecifiedEquipment(Item a, Item b) // 동일 무기군인지 검사 (미구현)
+        // {
+        //     return false;
+        // }
+
+        #endregion
+        
+        #region Item Validation, ItemSlot Validation
+
+        public Item ModifyItemInstanceByType(Item item) 
+        {
+            // 파일, 프리팹 등의 데이터에서 받아온 Item 인스턴스를 아이템타입 데이터에 맞는 Item 상속 클래스 인스턴스로 변환
+            switch (item.GetItemInfo.itemType)
+            {
+                case Enums.ItemType.Countable:
+                    if (item is CountableItem) return item;
+                    return new CountableItem(item.GetItemInfo, item.GetAmount);
+                case Enums.ItemType.Equipment:
+                    if (item is EquipmentItem) return item;
+                    return new EquipmentItem(item.GetItemInfo);
+                default:
+                    // todo: 필요한 경우 Single, Special 등 아이템 타입 구현 
+                    return item;
             }
         }
         
-        private void NotifySlotUpdated(ItemSlot slot)
+        private ItemSlot MakeEmptyItemSlot(int index = -1, ItemSlotValidationStandard validation = ItemSlotValidationStandard.All)
         {
-            if (slot is EquipmentSlot equipmentSlot)
+            return validation switch
             {
-                OnEquippedSlotChanged?.Invoke(equipmentSlot.GetIndex);
-            }
-            else
-            {
-                OnInventorySlotChanged?.Invoke(slot.GetIndex);
-            }
+                ItemSlotValidationStandard.All => new ItemSlot(null, index, inventoryValidItemTypes),
+                _ => new ItemSlot(null, index, inventoryValidItemTypes)
+            };
         }
+        
+        private enum ItemSlotValidationStandard // 슬롯에 들어갈 수 있는 아이템 타입 기준 (타입별 readonly 배열 추가해서 사용)
+        {
+            All, // inventoryValidItemTypes
+            // todo 추가
+        }
+        
+        private readonly Enums.ItemType[] inventoryValidItemTypes = // 인벤토리 슬롯: 모든 아이템 가능
+        {
+            Enums.ItemType.Countable,
+            Enums.ItemType.Special,
+            Enums.ItemType.Equipment,
+            Enums.ItemType.Single,
+        };
+
+        private readonly Enums.ItemType[] equippedValidItemTypes = // 장착 장비 슬롯: 장비(EquipmentItem)만 가능
+        {
+            Enums.ItemType.Equipment,
+        };
+
+        #endregion
         
     }
 }

@@ -9,16 +9,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c883f9b1e725d0142a4c2b8df41ec1b4, type: 3}
-  m_Name: TestData 3
-  m_EditorClassIdentifier: Assembly-CSharp::ItemTypeSO
+  m_Script: {fileID: 11500000, guid: 2127a28afdb0e474781023dba74f3231, type: 3}
+  m_Name: TestDataArmor 1
+  m_EditorClassIdentifier: Assembly-CSharp::ArmorTypeSO
   prefab: {fileID: 0}
-  nameString: Test Item 3
-  sprite: {fileID: 10915, guid: 0000000000000000f000000000000000, type: 0}
+  nameString: Test Armor 1
+  sprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   showInMinimap: 0
   minimapSprite: {fileID: 0}
   minimapSpriteColor: {r: 1, g: 1, b: 1, a: 1}
-  itemType: 2
-  maxAmount: 10
-  desc: Test Item 3 Desc
-  isUsable: 0
+  itemType: 1
+  maxAmount: 1
+  desc: Test Armor 1
+  isUsable: 1
+  equipmentType: 0
+  slotType: 1
+  armorType: 0

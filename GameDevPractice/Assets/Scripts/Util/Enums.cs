@@ -104,6 +104,7 @@ public static class Enums
 
     public enum ItemType
     {
+        Default,
         Equipment,
         Countable,
         Single,

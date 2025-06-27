@@ -31,7 +31,7 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
     public event Action<Vector2> OnHolded;
     // UI.Drag
     public event Action<Vector2> OnDragStarted;
-    public event Action<Vector2> OnDragging;
+    // public event Action<Vector2> OnDragging;
     public event Action<Vector2> OnDragEnded;
 
     #endregion 

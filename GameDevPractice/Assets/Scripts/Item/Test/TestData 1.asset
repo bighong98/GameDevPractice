@@ -18,7 +18,7 @@ MonoBehaviour:
   showInMinimap: 0
   minimapSprite: {fileID: 0}
   minimapSpriteColor: {r: 1, g: 1, b: 1, a: 1}
-  itemType: 1
+  itemType: 2
   maxAmount: 10
   desc: Test Item 1 Desc
   isUsable: 0
