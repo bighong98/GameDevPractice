@@ -4,6 +4,7 @@ namespace RPG.Item
 {
     public class CountableItem : Item
     {
+        public CountableItem() {}
         public CountableItem(ItemTypeSO data, int amount = 1) : base(data)
         {
             Amount = amount;

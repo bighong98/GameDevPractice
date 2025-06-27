@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
+using RPG.Saving;
 using UnityEngine;
 
 namespace RPG.Item
 {
-    public class InventorySystem: MonoBehaviour
+    public class InventorySystem: MonoBehaviour, ISavable
     {
         public int Capacity { get; private set; }
         [SerializeField, Range(8, 256)] private int initialCapacity = 64; //실제론 inspector 값이 들어가니 주의 //todo: Constants에서 선언하고 사용할지 고민
@@ -472,6 +473,38 @@ namespace RPG.Item
         {
             Enums.ItemType.Equipment,
         };
+
+        #endregion
+
+        #region Save/Load (ISavable)
+
+        
+        public object CaptureState()
+        {
+            List<Item> invenItems = new();
+
+            foreach (var itemSlot in inventoryItems)
+            {
+                if (itemSlot is { HasItem: true })
+                {
+                    invenItems.Add(itemSlot.GetItem);
+                }
+            }
+
+            return invenItems;
+        }
+
+        public bool RestoreState(object state)
+        {
+            List<Item> loadedInvenItems = (List<Item>)state;
+
+            foreach (var item in loadedInvenItems)
+            {
+                AddItem(item, checkInstanceType: true);
+            }
+
+            return true;
+        }
 
         #endregion
         

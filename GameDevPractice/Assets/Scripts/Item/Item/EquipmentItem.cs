@@ -4,6 +4,7 @@ namespace RPG.Item
 {
     public class EquipmentItem : Item
     {
+        public EquipmentItem() {}
         public EquipmentItem(ItemTypeSO data) : base(data)
         {
             

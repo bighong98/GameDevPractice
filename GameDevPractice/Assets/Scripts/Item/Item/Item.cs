@@ -10,6 +10,7 @@ namespace RPG.Item
         [SerializeField] protected int Amount = 1; // 아이템 개수 (기본값: 1) -> 0인 경우 임의로 빈 슬롯으로 만들었음을 의미함
             
         // 생성자
+        public Item() {}
         public Item(ItemTypeSO data)
         {
             ItemData = data;
