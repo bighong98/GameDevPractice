@@ -23,7 +23,7 @@ public class SkyboxExtendedShaderGUI : ShaderGUI
         {
             var prop = props[i];
 
-            if (prop.propertyFlags == UnityEngine.Rendering.ShaderPropertyFlags.HideInInspector)
+            if (prop.flags == MaterialProperty.PropFlags.HideInInspector)
                 continue;
 
             customPropsList.Add(prop);
