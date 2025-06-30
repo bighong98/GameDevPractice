@@ -81,7 +81,8 @@ public class UIManager : Singleton<UIManager>
     }
 
     private void OnEscapeCalled()
-    { 
+    {
+        Util.Log($"[UIManager]OnEscapeCalled");
         if (popupStacks.Count != 0)
         {
             ClosePopupUI();
@@ -209,7 +210,7 @@ public class UIManager : Singleton<UIManager>
         
         popupStacks.Push(popup);
         
-        if (popup.PauseRequired)
+        if (popup?.PauseRequired ?? false)
         {
             // GameManager.Instance.PauseGame();
         }

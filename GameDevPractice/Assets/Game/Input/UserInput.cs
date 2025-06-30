@@ -412,7 +412,7 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
                     ""name"": """",
                     ""id"": ""3488683a-aa3c-4cf4-aaf5-2f7f7dbe8ad2"",
                     ""path"": ""<Keyboard>/escape"",
-                    ""interactions"": """",
+                    ""interactions"": ""Press"",
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Escape"",

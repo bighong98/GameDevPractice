@@ -496,6 +496,11 @@ namespace RPG.Item
 
         public bool RestoreState(object state)
         {
+            foreach (var itemSlot in inventoryItems)
+            {
+                itemSlot?.Clear();
+            }
+            
             List<Item> loadedInvenItems = (List<Item>)state;
 
             foreach (var item in loadedInvenItems)

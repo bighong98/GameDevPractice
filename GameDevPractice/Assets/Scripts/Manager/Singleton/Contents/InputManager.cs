@@ -62,7 +62,9 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
         userInput.Global.SetCallbacks(this);
         userInput.UI.SetCallbacks(this);
         
-        userInput.Player.Enable(); // default: PlayerActions 활성화
+        // default: GlobalActions, PlayerActions 활성화
+        userInput.Global.Enable();
+        userInput.Player.Enable(); 
     }
 
     protected override void OnSceneLoaded(bool dummy)
@@ -90,7 +92,10 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
 
     public void OnEscape(InputAction.CallbackContext context)
     {
-        OnEscaped?.Invoke();
+        if (context.phase == InputActionPhase.Performed)
+        {
+            OnEscaped?.Invoke();
+        }
     }
 
     public void OnPoint(InputAction.CallbackContext context)
