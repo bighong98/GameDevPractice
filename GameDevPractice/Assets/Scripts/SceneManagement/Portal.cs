@@ -43,7 +43,8 @@ namespace RPG.SceneManagement
             SavingWrapper savingWrapper = FindFirstObjectByType<SavingWrapper>();
             await savingWrapper.Save(); // 다음 씬 로드 전 현재 씬 상태 저장
             
-            await SceneManager.LoadSceneAsync(sceneToLoad); // 씬 로드
+            // await SceneManager.LoadSceneAsync(sceneToLoad); // 씬 로드
+            await GameSceneManager.Instance.LoadSceneAsync(sceneToLoad);
             await UniTask.Yield(); // 씬 로드 직후 한 프레임 대기
             await savingWrapper.Load(); // 다음 씬 로드 후 상태 로드
 

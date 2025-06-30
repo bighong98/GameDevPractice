@@ -35,6 +35,11 @@ public class GameSceneManager : Singleton<GameSceneManager>
         await SceneManager.LoadSceneAsync(sceneName);
     }
 
+    public async UniTask LoadSceneAsync(int sceneIndex)
+    {
+        await CleanupAllAsync();
+        await SceneManager.LoadSceneAsync(sceneIndex);
+    }
 
     public async UniTask QuitGame()
     {
