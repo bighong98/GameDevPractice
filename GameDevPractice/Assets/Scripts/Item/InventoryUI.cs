@@ -236,6 +236,8 @@ namespace Item
 
             InputManager.Instance.OnDragStarted += OnDrag;
             InputManager.Instance.OnDragEnded += OffDrag;
+
+            InputManager.Instance.OnDoubleClicked += OnDoubleClicked;
         }
 
         private void DeSubscribeInputEvents()
@@ -246,6 +248,8 @@ namespace Item
             
             InputManager.Instance.OnDragStarted -= OnDrag;
             InputManager.Instance.OnDragEnded -= OffDrag;
+            
+            InputManager.Instance.OnDoubleClicked -= OnDoubleClicked;
         }
         
         private void OnPointerMove(Vector2 pos)
@@ -316,11 +320,23 @@ namespace Item
             }
         }
 
+        private void OnDoubleClicked(Vector2 pos)
+        {
+            UI_ItemSlotBase slotUI = RaycastAndGetFirstComponent<UI_ItemSlotBase>();
+            if (slotUI == null) return;
+            TryUseItem(slotUI);
+        }
+
         private void TrySwapItems(UI_ItemSlotBase fromSlotUI, UI_ItemSlotBase toSlotUI)
         {
             Util.Log($"trying to TrySwapItems({fromSlotUI}.{fromSlotUI.Index}, {toSlotUI}.{toSlotUI.Index})");
             
             inventorySystem.TrySwapItems(fromSlotUI, toSlotUI);
+        }
+
+        private void TryUseItem(UI_ItemSlotBase targetSlotUI)
+        {
+            inventorySystem.TryUseItem(targetSlotUI);
         }
 
         #endregion

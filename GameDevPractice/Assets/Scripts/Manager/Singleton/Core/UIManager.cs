@@ -213,18 +213,13 @@ public class UIManager : Singleton<UIManager>
                 break;
             case PopupUI.DuplicatedPopupHandle.Toggle:
                 if (CloseDuplicatePopup<T>()) {
-                    popup.ReleaseSelf();
+                    popup.ReleaseSelf(); // 띄우려 시도한 팝업을 즉시 풀에 반환(팝업 닫기 연출x)
                     return null; // 중복 팝업이 있다면 닫고 즉시 함수 호출 종료 (null 리턴)
                 }
                 break;
             default:
                 break;
         }
-        
-        // if (!allowDuplicatePopup)
-        // {
-        //     CloseDuplicatePopup<T>();
-        // }
         
         popupStacks.Push(popup);
         

@@ -127,5 +127,11 @@ namespace RPG.Combat
             if (weapon == null || animator == null) return;
             weapon.Spawn(handTransform, animator);
         }
+
+        public void EquipWeapon(WeaponTypeSO weapon)
+        {
+            this.weapon = weapon;
+            SpawnWeapon();
+        }
     }
 }

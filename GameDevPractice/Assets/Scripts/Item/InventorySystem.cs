@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using RPG.Combat;
 using RPG.Saving;
 using UnityEngine;
 
@@ -41,6 +42,7 @@ namespace RPG.Item
                     equippedValidItemTypes, true,
                     validEquipSlotType: (Enums.EquippedItemSlotType) i
                     );
+                equippedItems[i].OnEquipmentChanged += this.OnEquipmentChanged;
             }
             
             //todo: TestData 적용
@@ -209,7 +211,7 @@ namespace RPG.Item
 
         #endregion
 
-        #region Add/Remove/Transfer Item(Inventory)
+        #region Add/Remove/Transfer/Consume Item(Inventory)
         
         public int AddItem(Item item, int amount = 1, bool checkInstanceType = false) // 인벤토리 슬롯에 아이템 추가, CountableItem
         {
@@ -350,8 +352,35 @@ namespace RPG.Item
             }
         }
         
+        private bool Consume(Item item)
+        {
+            Util.Log($"ConsumeItem is not ready");
+            return false;
+        }
+
+        
+        
         #endregion
 
+        #region Equip/UnEquip
+
+        private void OnEquipmentChanged(object sender, EquipmentSlotArgs args)
+        {
+            if (args.State == EquipmentSlotArgs.EquipEventState.Equip)
+            {
+                if (args.Item.GetItemInfo is WeaponTypeSO weaponTypeSO)
+                {
+                    var player = GameObject.FindWithTag("Player");
+                    var playerFighter = player.GetComponent<Fighter>();
+                    if (playerFighter == null) return;
+                    
+                    playerFighter.EquipWeapon(weaponTypeSO);
+                }
+            }
+        }
+
+        #endregion
+        
         #region UI Interaction
 
         public void TrySwapItems(UI_ItemSlotBase fromSlotUI, UI_ItemSlotBase toSlotUI) // 아이템 드래그&드랍
@@ -362,6 +391,25 @@ namespace RPG.Item
             var toSlot = FindUITargetSlot(toSlotUI);
             
             TransferItem(fromSlot, toSlot);
+        }
+
+        public void TryUseItem(UI_ItemSlotBase targetSlotUI)
+        {
+            var targetSlot = FindUITargetSlot(targetSlotUI);
+            if (!targetSlot.GetItemInfo.isUsable) return;
+
+            if (targetSlot.GetItem is EquipmentItem equipment)
+            {
+                //todo: 장착 시도한 아이템에 적합한 슬롯 찾기
+                //todo: TransferItem(targetSlot, 찾은슬롯);
+            }
+            else
+            {
+                if (this.Consume(targetSlot.GetItem))
+                {
+                    NotifySlotUpdated(targetSlot);
+                }
+            }
         }
 
         #endregion
