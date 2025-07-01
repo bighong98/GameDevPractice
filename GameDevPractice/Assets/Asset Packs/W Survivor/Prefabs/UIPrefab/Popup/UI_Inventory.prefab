@@ -576,6 +576,7 @@ MonoBehaviour:
   pauseRequired: 1
   closeOnOuterBackgroundClick: 0
   placePointerPosition: 0
+  duplicatedPopupHandle: 1
   blurBackground: 0
   anchorWorldObject: 0
   playEnterAnimation: 0

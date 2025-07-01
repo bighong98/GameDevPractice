@@ -119,6 +119,11 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!4 &15613489 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6996366387040114764, guid: 979fea7d1693c584cb00a39a9d762e0d, type: 3}
+  m_PrefabInstance: {fileID: 872156245}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &25142502 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 465096, guid: f65a7bee03bbc4542a4af2c67922b549, type: 3}
@@ -244,11 +249,7 @@ PrefabInstance:
       objectReference: {fileID: 632226258}
     - target: {fileID: 5174886537910745246, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}
       propertyPath: uniqueIdentifier
-      value: a9ed1a5e-0685-4067-8635-978084eadb09
-      objectReference: {fileID: 0}
-    - target: {fileID: 8803653262989167314, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}
-      propertyPath: uniqueIdentifier
-      value: 6d17c983-9419-4b4b-951c-ae14e041bc94
+      value: b45464ea-c4a3-4782-a62f-c367e3740504
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -909,6 +910,10 @@ PrefabInstance:
       propertyPath: Target.LookAtTarget
       value: 
       objectReference: {fileID: 1796192024}
+    - target: {fileID: 4171815722146848543, guid: 979fea7d1693c584cb00a39a9d762e0d, type: 3}
+      propertyPath: handTransform
+      value: 
+      objectReference: {fileID: 15613489}
     - target: {fileID: 7403052176598494208, guid: 979fea7d1693c584cb00a39a9d762e0d, type: 3}
       propertyPath: Target.LookAtTarget
       value: 
@@ -917,6 +922,10 @@ PrefabInstance:
       propertyPath: Target.LookAtTarget
       value: 
       objectReference: {fileID: 359824846}
+    - target: {fileID: 8633859076912641504, guid: 979fea7d1693c584cb00a39a9d762e0d, type: 3}
+      propertyPath: uniqueIdentifier
+      value: player
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

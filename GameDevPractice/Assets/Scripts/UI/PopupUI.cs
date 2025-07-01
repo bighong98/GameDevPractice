@@ -16,7 +16,9 @@ public class PopupUI : BaseUI, IPoolObject
     [SerializeField] [Tooltip("UI 영역 바깥을 누르면 UI가 비활성화")]
     protected bool closeOnOuterBackgroundClick = false;
     [SerializeField] [Tooltip("UI 호출 시 포인터(마우스/터치) 위치를 기준으로 호출")]
-    protected bool placePointerPosition = false; 
+    protected bool placePointerPosition = false;
+    [SerializeField] [Tooltip("동일 타입 중복 팝업UI 호출시 처리 방식")] 
+    protected DuplicatedPopupHandle duplicatedPopupHandle;
     
     [Header("Deprecated/Developing")]
     [SerializeField] [Tooltip("미개발 기능. 사용하지 말것")]
@@ -37,12 +39,20 @@ public class PopupUI : BaseUI, IPoolObject
     public bool PlacePointerPosition { get { return placePointerPosition; } }
     public Enums.UIRenderType UiRenderType { get { return uiRenderType; } }
     public bool AnchorWorldObject { get { return anchorWorldObject; } }
+    public DuplicatedPopupHandle DuplicatedPopupHandling { get { return duplicatedPopupHandle; } }
     
     public RectTransform Rect { get; private set; }
     private RectTransform parentRect;
 
     private Vector3 cachedPosition;
     private CancellationTokenSource trackingPositionCTS;
+
+    public enum DuplicatedPopupHandle
+    {
+        Allow, // 복수의 동일 타입 팝업UI 호출 가능 (Show only)
+        Toggle, // 기존에 활성화된 동일 타입 팝업UI가 있으면 Close(only), 없으면 Show(only)
+        Replace, // 기존에 활성화된 동일 타입 팝업UI를 닫고, 새 팝업UI를 호출 (Close + Show)
+    }
     
     public override bool Init()
     {
@@ -184,12 +194,6 @@ public class PopupUI : BaseUI, IPoolObject
 
     public void ReleaseSelf()
     {
-        Util.Log($"Don't use ReleaseSelf() for {typeof(PopupUI)}");
-        return;
-        
-        // 필요시 아래와 같이 구현한되, PopupUI는 ReleaseSelf() 대신 ClosePopupUI() 사용을 권장
-        
-        // if (gameObject.activeSelf && Origin != null)
-        //     PoolingManager.Instance.ReleaseFromPool(this);
+        UIManager.Instance.ClosePopupUIImmediately(this);
     }
 }

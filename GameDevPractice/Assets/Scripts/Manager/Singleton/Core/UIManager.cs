@@ -82,15 +82,15 @@ public class UIManager : Singleton<UIManager>
 
     private void OnEscapeCalled()
     {
-        Util.Log($"[UIManager]OnEscapeCalled");
-        if (popupStacks.Count != 0)
+        Util.Log($"[UIManager]OnEscapeCalled. popupStack.Count: {popupStacks?.Count}");
+        if (popupStacks?.Count != 0)
         {
             ClosePopupUI();
         }
-        else
-        {
-            ToggleOptionMenu();
-        }
+        // else
+        // {
+        //     ToggleOptionMenu();
+        // }
     }
     
     #region Common UI Method
@@ -176,10 +176,11 @@ public class UIManager : Singleton<UIManager>
     // uiName: key값으로 사용해 어드레서블에서 팝업 프리팹을 불러오고, 풀링 적용하여 화면에 띄움
     // allowDuplicatePopup: 중복 팝업 허용 여부
     // uiName 입력하지 않으면 "클래스명.prefab"으로 탐색함 -> 팝업 프리팹 어드레서블 key값을 클래스명과 동일하게 설정하는 것을 권장
-    public T ShowPopupUI<T>(string uiName = null, bool allowDuplicatePopup = true) where T : PopupUI
+    public T ShowPopupUI<T>(string uiName = null) where T : PopupUI
     {
         T popup;
         Type type = typeof(T);
+        
         if (popupPools.TryGetValue(type, out var pool))
         {
             popup = pool.Get() as T;
@@ -203,14 +204,31 @@ public class UIManager : Singleton<UIManager>
             keyTypeDictionary.TryAdd(key, type); // 임시로 key-type 매칭용 딕셔너리에 저장 (현재 미사용. 추후 제거 고려)
         }
 
-        if (!allowDuplicatePopup)
+        if (popup == null) return null;
+
+        switch (popup.DuplicatedPopupHandling)
         {
-            CloseDuplicatePopup<T>();
+            case PopupUI.DuplicatedPopupHandle.Replace:
+                CloseDuplicatePopup<T>(); // 중복 팝업 닫기 시도
+                break;
+            case PopupUI.DuplicatedPopupHandle.Toggle:
+                if (CloseDuplicatePopup<T>()) {
+                    popup.ReleaseSelf();
+                    return null; // 중복 팝업이 있다면 닫고 즉시 함수 호출 종료 (null 리턴)
+                }
+                break;
+            default:
+                break;
         }
+        
+        // if (!allowDuplicatePopup)
+        // {
+        //     CloseDuplicatePopup<T>();
+        // }
         
         popupStacks.Push(popup);
         
-        if (popup?.PauseRequired ?? false)
+        if (popup.PauseRequired)
         {
             // GameManager.Instance.PauseGame();
         }
@@ -274,9 +292,12 @@ public class UIManager : Singleton<UIManager>
                 HandleTimePauseAndReleasePopup();
             }
         }
-        
+
         if (popupStacks.Count == 0)
+        {
+            if (Util.IsQuitting) return;
             InputManager.Instance.DisableUIActionMap();
+        }
         
         return; // separator for local method HandleTimePauseAndReleasePopup()
         
@@ -289,6 +310,15 @@ public class UIManager : Singleton<UIManager>
 
             popupPool.Release(popup); // 팝업 닫기 (풀에 반환)
             _order--;
+        }
+    }
+
+    public void ClosePopupUIImmediately<T>(T popup) where T : PopupUI
+    {
+        Type type = popup.GetType();
+        if (popupPools.TryGetValue(type, out var pool))
+        {
+            pool.Release(popup);
         }
     }
 
@@ -409,16 +439,18 @@ public class UIManager : Singleton<UIManager>
 
         return false;
     }
-    private void CloseDuplicatePopup<T>()
+    private bool CloseDuplicatePopup<T>()
     {
         if (popupStacks.Count != 0 && popupStacks.Peek() is T duplicatePopup)
         {
             ClosePopupUI(duplicatePopup as PopupUI);
             // Util.Log($"duplicate popup closed: {duplicatePopup}");
+            return true;
         }
         else
         {
             // Util.Log("There is no duplicate popup");
+            return false;
         }
     }
 

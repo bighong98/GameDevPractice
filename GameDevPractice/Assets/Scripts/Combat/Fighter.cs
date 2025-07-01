@@ -4,15 +4,17 @@ using System.Collections.Generic;
 using UnityEngine;
 using RPG.Movement;
 using RPG.Core;
+using UnityEngine.Serialization;
 
 namespace RPG.Combat
 {
     public class Fighter : MonoBehaviour, IAction
     {
-        [SerializeField] private float weaponRange = 2f;
-        [SerializeField] private float weaponDamage = 2f;
         [SerializeField] private float timeBetweenAttacks = 1f; // todo: move to equipped weapon
         private float timeSinceLastAttack = 0;
+        
+        [SerializeField] private Transform handTransform;
+        [SerializeField] private WeaponTypeSO weapon;
         
         [SerializeField] private Health target;
         
@@ -22,13 +24,24 @@ namespace RPG.Combat
         private static readonly int Attack1 = Animator.StringToHash("attack");
         private static readonly int StopAttack = Animator.StringToHash("stopAttack");
         public ActoinScheduler ActionScheduler { get; private set; }
-        
+
+
+        private void Awake()
+        {
+            if (handTransform == null)
+            {
+                var result = Util.FindChildContainName<Transform>(gameObject, "hand", true, false);
+                if (result != null) handTransform = result;
+            }
+        }
 
         private void Start()
         {
             mover = GetComponent<Mover>();
             animator = GetComponent<Animator>();
             ActionScheduler = GetComponent<ActoinScheduler>();
+            
+            SpawnWeapon();
         }
 
         private void Update()
@@ -46,7 +59,7 @@ namespace RPG.Combat
             }
         }
 
-        private bool IsInRange => Vector3.Distance(transform.position, target.transform.position) < weaponRange;
+        private bool IsInRange => Vector3.Distance(transform.position, target.transform.position) < weapon?.GetRange;
 
         private void AttackBehaviour()
         {
@@ -61,7 +74,7 @@ namespace RPG.Combat
         void Hit() // Animation Event Method
         {
             if (target == null) return;
-            target.TakeDamage(weaponDamage);
+            target.TakeDamage(weapon?.GetDamage ?? 0);
         }
         
         public void Attack(CombatTarget combatTarget)
@@ -79,7 +92,7 @@ namespace RPG.Combat
         public bool CanAttack(GameObject combatTarget, out Health targetHealth)
         {
             targetHealth = null;
-            if (combatTarget == null) return false;
+            if (combatTarget == null || combatTarget == gameObject) return false;
 
             if (combatTarget.GetComponent<Health>() is { } health)
             {
@@ -109,6 +122,10 @@ namespace RPG.Combat
             target = null;
         }
 
-        
+        private void SpawnWeapon()
+        {
+            if (weapon == null || animator == null) return;
+            weapon.Spawn(handTransform, animator);
+        }
     }
 }

@@ -79,6 +79,11 @@ namespace Item
             DeSubscribeInputEvents();
         }
 
+        private void OnDestroy()
+        {
+            DisConnectDataWithSlotUIs();
+        }
+
         private void Update()
         {
             OnPointerDrag();
@@ -142,6 +147,14 @@ namespace Item
             {
                 UpdateSlotUI(i);
             }
+        }
+
+        private void DisConnectDataWithSlotUIs()
+        {
+            if (Util.IsQuitting) return;
+            
+            inventorySystem.OnInventorySlotChanged -= UpdateSlotUI;
+            inventorySystem.OnEquippedSlotChanged -= UpdateEquippedSlotUI;
         }
 
         public InventoryUI InitImmediately()

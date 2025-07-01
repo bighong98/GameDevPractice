@@ -76,7 +76,7 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
     {
         if (Input.GetKeyDown(KeyCode.I))
         {
-            UIManager.Instance.ShowPopupUI<InventoryUI>("UI_Inventory.prefab", allowDuplicatePopup: false);
+            UIManager.Instance.ShowPopupUI<InventoryUI>("UI_Inventory.prefab");
         }
     }
 

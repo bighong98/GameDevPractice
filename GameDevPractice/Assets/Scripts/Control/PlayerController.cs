@@ -11,14 +11,14 @@ namespace RPG.Control
     public class PlayerController : MonoBehaviour
     {
         private Camera _camera;
-        private Mover _mover;
+        private Mover mover;
         private Fighter fighter;
         private Health health;
 
         private void Start()
         {
             _camera = Camera.main;
-            _mover = GetComponent<Mover>();
+            mover = GetComponent<Mover>();
             fighter = GetComponent<Fighter>();
             health = GetComponent<Health>();
         }
@@ -37,7 +37,7 @@ namespace RPG.Control
             if (Physics.Raycast(GetMouseRay, out var hit))
             {
                 if (Input.GetMouseButton(0))
-                    _mover.StartMoveAction(hit.point);
+                    mover.StartMoveAction(hit.point);
                 return true;
             }
                 
