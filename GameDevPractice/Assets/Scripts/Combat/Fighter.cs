@@ -14,7 +14,8 @@ namespace RPG.Combat
         private float timeSinceLastAttack = 0;
         
         [SerializeField] private Transform handTransform;
-        [SerializeField] private WeaponTypeSO weapon;
+        [SerializeField] private WeaponTypeSO currentWeapon; // 현재 장착 중인 무기
+        [SerializeField] private WeaponTypeSO defaultWeapon; // 장비 장착해제시 적용되어야할 무기종(ex-Unarmed)
         
         [SerializeField] private Health target;
         
@@ -59,7 +60,7 @@ namespace RPG.Combat
             }
         }
 
-        private bool IsInRange => Vector3.Distance(transform.position, target.transform.position) < weapon?.GetRange;
+        private bool IsInRange => Vector3.Distance(transform.position, target.transform.position) < currentWeapon?.GetRange;
 
         private void AttackBehaviour()
         {
@@ -74,7 +75,7 @@ namespace RPG.Combat
         void Hit() // Animation Event Method
         {
             if (target == null) return;
-            target.TakeDamage(weapon?.GetDamage ?? 0);
+            target.TakeDamage(currentWeapon?.GetDamage ?? 0);
         }
         
         public void Attack(CombatTarget combatTarget)
@@ -103,6 +104,8 @@ namespace RPG.Combat
             return false;
         }
 
+        #region Animate
+
         private void AnimateAttack()
         {
             animator.ResetTrigger(StopAttack); // 공격이 강제로 취소된 경우를 위한 초기화
@@ -114,6 +117,9 @@ namespace RPG.Combat
             animator.ResetTrigger(Attack1);
             animator.SetTrigger(StopAttack);
         }
+
+        #endregion
+        
         
         public void Cancel()
         {
@@ -122,16 +128,21 @@ namespace RPG.Combat
             target = null;
         }
 
+        #region Weapon
+
         private void SpawnWeapon()
         {
-            if (weapon == null || animator == null) return;
-            weapon.Spawn(handTransform, animator);
+            if (currentWeapon == null || animator == null) return;
+            currentWeapon.Spawn(handTransform, animator);
         }
 
-        public void EquipWeapon(WeaponTypeSO weapon)
+        public void EquipWeapon(WeaponTypeSO weaponTypeSO)
         {
-            this.weapon = weapon;
+            this.currentWeapon = weaponTypeSO;
             SpawnWeapon();
         }
+
+        #endregion
+        
     }
 }

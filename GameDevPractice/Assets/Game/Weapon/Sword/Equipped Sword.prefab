@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 9052991684634475232}
+  - component: {fileID: 5924651444064211416}
   m_Layer: 0
   m_Name: Equipped Sword
   m_TagString: Untagged
@@ -32,6 +33,26 @@ Transform:
   - {fileID: 6551476007300370656}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5924651444064211416
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7611175050138226527}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 54ea4a17db4d11d468bfb144d1dae8f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ItemTypeHolder
+  type: {fileID: 11400000, guid: 24a647810f57bb345a370aa349b7758c, type: 2}
+  typeRef:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
+  amount: 1
 --- !u!1001 &6551476007300590318
 PrefabInstance:
   m_ObjectHideFlags: 0

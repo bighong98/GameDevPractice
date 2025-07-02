@@ -9,4 +9,16 @@ public class ItemTypeHolder : TypeHolder<ItemTypeSO>
     [SerializeField] private int amount;
 
     public int GetAmount => amount;
+
+    public override void ReleaseSelf()
+    {
+        if (gameObject.activeSelf && Origin != null)
+        {
+            PoolingManager.Instance.ReleaseFromPool(this);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
 }

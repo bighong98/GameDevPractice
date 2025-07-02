@@ -214,9 +214,14 @@ namespace RPG.Item
         
         #endregion
 
-        #region Add/Remove/Transfer/Consume Item(Inventory)
+        #region Add/Remove/Transfer/Use(Consume+Equip) Item(Inventory)
         
-        public int AddItem(Item item, int amount = 1, bool checkInstanceType = false) // 인벤토리 슬롯에 아이템 추가, CountableItem
+        // 인벤토리에 아이템 추가
+        // item: 인벤토리에 추가하려는 아이템(데이터 SO + 개수(CountableItem만 적용))
+        // amount: 추가하려는 아이템의 개수
+        // checkInstanceType: 인스턴스 재생성 확인 여부 (한 번에 여러개의 아이템을 추가하는 경우는 거의 true로 사용, 외부파일/테이블 포함)
+        // useImmediately: 인벤토리에 추가 후 즉시 사용(소비 혹은 장착) 여부 (CountableItem은 불가능)
+        public int AddItem(Item item, int amount = 1, bool checkInstanceType = false, bool useImmediately = false) // 인벤토리 슬롯에 아이템 추가, CountableItem
         {
             if (checkInstanceType)
             {
@@ -294,6 +299,10 @@ namespace RPG.Item
                     if (inventoryItems[index].Store(item.Clone<Item>())) // 빈칸에 아이템 저장 성공 시 
                     {
                         amount--; // 남은 개수 -1
+                        if (useImmediately)
+                        {
+                            UseItem(inventoryItems[index]);
+                        }
                         NotifySlotUpdated(inventoryItems[index]); // 해당 슬롯 데이터 변동 알림
                     }
                     else // 아이템 저장 실패 시
@@ -361,7 +370,25 @@ namespace RPG.Item
             return false;
         }
 
-        
+        private void UseItem(ItemSlot targetSlot)
+        {
+            if (targetSlot.GetItemInfo is not { isUsable: true }) return;
+
+            if (targetSlot.GetItem is EquipmentItem equipment)
+            {
+                if (FindSuitableEquipSlot(equipment) is { } equipSlot)
+                {
+                    TransferItem(targetSlot, equipSlot);
+                }
+            }
+            else
+            {
+                if (this.Consume(targetSlot.GetItem))
+                {
+                    NotifySlotUpdated(targetSlot);
+                }
+            }
+        }
         
         #endregion
         
@@ -441,22 +468,7 @@ namespace RPG.Item
         public void TryUseItem(UI_ItemSlotBase targetSlotUI)
         {
             var targetSlot = FindUITargetSlot(targetSlotUI);
-            if (targetSlot.GetItemInfo is not { isUsable: true }) return;
-
-            if (targetSlot.GetItem is EquipmentItem equipment)
-            {
-                if (FindSuitableEquipSlot(equipment) is { } equipSlot)
-                {
-                    TransferItem(targetSlot, equipSlot);
-                }
-            }
-            else
-            {
-                if (this.Consume(targetSlot.GetItem))
-                {
-                    NotifySlotUpdated(targetSlot);
-                }
-            }
+            UseItem(targetSlot);
         }
 
         #endregion
