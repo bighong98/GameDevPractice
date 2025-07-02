@@ -155,15 +155,6 @@
                 {
                     "name": "Click",
                     "type": "Button",
-                    "id": "bc0e33ee-268c-48ef-a871-387866807d2e",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "DoubleClick",
-                    "type": "Button",
                     "id": "87299f9f-c254-473e-94dc-6d1c39c1fa2e",
                     "expectedControlType": "",
                     "processors": "",
@@ -180,15 +171,6 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Hold",
-                    "type": "Button",
-                    "id": "59195fa3-44bf-456d-aab4-52bc61081c83",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
                     "name": "PointUI",
                     "type": "Value",
                     "id": "c80e2aca-ec05-46b4-8888-d6092211aafc",
@@ -200,7 +182,7 @@
                 {
                     "name": "Release",
                     "type": "Button",
-                    "id": "48750da0-73b3-4977-965a-fa5fa6c79da4",
+                    "id": "33fe1359-3da3-45ce-ab1b-b4e4f92387ec",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -208,17 +190,6 @@
                 }
             ],
             "bindings": [
-                {
-                    "name": "",
-                    "id": "1f02fbd1-1bad-43cf-afe1-f0a34c4a6a36",
-                    "path": "<Pointer>/press",
-                    "interactions": "Tap",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Click",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
                 {
                     "name": "One Modifier",
                     "id": "158ae279-f990-4cfc-ad26-013ad8ef2d5c",
@@ -254,23 +225,12 @@
                 },
                 {
                     "name": "",
-                    "id": "14d948e7-3894-4484-87a3-b693abc95d09",
+                    "id": "864830c9-7976-41cb-8e88-e2c4a1d0e0ba",
                     "path": "<Pointer>/press",
-                    "interactions": "Hold",
+                    "interactions": "MultiTap(tapTime=0.2),Tap",
                     "processors": "",
                     "groups": "",
-                    "action": "Hold",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "611ceb24-2ba8-49b1-974d-d04065c8a877",
-                    "path": "<Pointer>/press",
-                    "interactions": "MultiTap",
-                    "processors": "",
-                    "groups": "",
-                    "action": "DoubleClick",
+                    "action": "Click",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -287,7 +247,7 @@
                 },
                 {
                     "name": "",
-                    "id": "863659ab-ca38-4027-b4cb-36a670f9429f",
+                    "id": "cc16fce0-7823-49e9-bbe3-c74c3c939d88",
                     "path": "<Pointer>/press",
                     "interactions": "",
                     "processors": "",

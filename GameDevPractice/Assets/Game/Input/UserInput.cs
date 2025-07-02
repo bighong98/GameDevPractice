@@ -241,15 +241,6 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
                 {
                     ""name"": ""Click"",
                     ""type"": ""Button"",
-                    ""id"": ""bc0e33ee-268c-48ef-a871-387866807d2e"",
-                    ""expectedControlType"": """",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false
-                },
-                {
-                    ""name"": ""DoubleClick"",
-                    ""type"": ""Button"",
                     ""id"": ""87299f9f-c254-473e-94dc-6d1c39c1fa2e"",
                     ""expectedControlType"": """",
                     ""processors"": """",
@@ -266,15 +257,6 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""Hold"",
-                    ""type"": ""Button"",
-                    ""id"": ""59195fa3-44bf-456d-aab4-52bc61081c83"",
-                    ""expectedControlType"": """",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false
-                },
-                {
                     ""name"": ""PointUI"",
                     ""type"": ""Value"",
                     ""id"": ""c80e2aca-ec05-46b4-8888-d6092211aafc"",
@@ -286,7 +268,7 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
                 {
                     ""name"": ""Release"",
                     ""type"": ""Button"",
-                    ""id"": ""48750da0-73b3-4977-965a-fa5fa6c79da4"",
+                    ""id"": ""33fe1359-3da3-45ce-ab1b-b4e4f92387ec"",
                     ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
@@ -294,17 +276,6 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
                 }
             ],
             ""bindings"": [
-                {
-                    ""name"": """",
-                    ""id"": ""1f02fbd1-1bad-43cf-afe1-f0a34c4a6a36"",
-                    ""path"": ""<Pointer>/press"",
-                    ""interactions"": ""Tap"",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Click"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
                 {
                     ""name"": ""One Modifier"",
                     ""id"": ""158ae279-f990-4cfc-ad26-013ad8ef2d5c"",
@@ -340,23 +311,12 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""14d948e7-3894-4484-87a3-b693abc95d09"",
+                    ""id"": ""864830c9-7976-41cb-8e88-e2c4a1d0e0ba"",
                     ""path"": ""<Pointer>/press"",
-                    ""interactions"": ""Hold"",
+                    ""interactions"": ""MultiTap(tapTime=0.2),Tap"",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""Hold"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""611ceb24-2ba8-49b1-974d-d04065c8a877"",
-                    ""path"": ""<Pointer>/press"",
-                    ""interactions"": ""MultiTap"",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""DoubleClick"",
+                    ""action"": ""Click"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -373,7 +333,7 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""863659ab-ca38-4027-b4cb-36a670f9429f"",
+                    ""id"": ""cc16fce0-7823-49e9-bbe3-c74c3c939d88"",
                     ""path"": ""<Pointer>/press"",
                     ""interactions"": """",
                     ""processors"": """",
@@ -442,9 +402,7 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_Click = m_UI.FindAction("Click", throwIfNotFound: true);
-        m_UI_DoubleClick = m_UI.FindAction("DoubleClick", throwIfNotFound: true);
         m_UI_Drag = m_UI.FindAction("Drag", throwIfNotFound: true);
-        m_UI_Hold = m_UI.FindAction("Hold", throwIfNotFound: true);
         m_UI_PointUI = m_UI.FindAction("PointUI", throwIfNotFound: true);
         m_UI_Release = m_UI.FindAction("Release", throwIfNotFound: true);
         // Global
@@ -641,9 +599,7 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
     private readonly InputActionMap m_UI;
     private List<IUIActions> m_UIActionsCallbackInterfaces = new List<IUIActions>();
     private readonly InputAction m_UI_Click;
-    private readonly InputAction m_UI_DoubleClick;
     private readonly InputAction m_UI_Drag;
-    private readonly InputAction m_UI_Hold;
     private readonly InputAction m_UI_PointUI;
     private readonly InputAction m_UI_Release;
     /// <summary>
@@ -662,17 +618,9 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
         /// </summary>
         public InputAction @Click => m_Wrapper.m_UI_Click;
         /// <summary>
-        /// Provides access to the underlying input action "UI/DoubleClick".
-        /// </summary>
-        public InputAction @DoubleClick => m_Wrapper.m_UI_DoubleClick;
-        /// <summary>
         /// Provides access to the underlying input action "UI/Drag".
         /// </summary>
         public InputAction @Drag => m_Wrapper.m_UI_Drag;
-        /// <summary>
-        /// Provides access to the underlying input action "UI/Hold".
-        /// </summary>
-        public InputAction @Hold => m_Wrapper.m_UI_Hold;
         /// <summary>
         /// Provides access to the underlying input action "UI/PointUI".
         /// </summary>
@@ -710,15 +658,9 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
             @Click.started += instance.OnClick;
             @Click.performed += instance.OnClick;
             @Click.canceled += instance.OnClick;
-            @DoubleClick.started += instance.OnDoubleClick;
-            @DoubleClick.performed += instance.OnDoubleClick;
-            @DoubleClick.canceled += instance.OnDoubleClick;
             @Drag.started += instance.OnDrag;
             @Drag.performed += instance.OnDrag;
             @Drag.canceled += instance.OnDrag;
-            @Hold.started += instance.OnHold;
-            @Hold.performed += instance.OnHold;
-            @Hold.canceled += instance.OnHold;
             @PointUI.started += instance.OnPointUI;
             @PointUI.performed += instance.OnPointUI;
             @PointUI.canceled += instance.OnPointUI;
@@ -739,15 +681,9 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
             @Click.started -= instance.OnClick;
             @Click.performed -= instance.OnClick;
             @Click.canceled -= instance.OnClick;
-            @DoubleClick.started -= instance.OnDoubleClick;
-            @DoubleClick.performed -= instance.OnDoubleClick;
-            @DoubleClick.canceled -= instance.OnDoubleClick;
             @Drag.started -= instance.OnDrag;
             @Drag.performed -= instance.OnDrag;
             @Drag.canceled -= instance.OnDrag;
-            @Hold.started -= instance.OnHold;
-            @Hold.performed -= instance.OnHold;
-            @Hold.canceled -= instance.OnHold;
             @PointUI.started -= instance.OnPointUI;
             @PointUI.performed -= instance.OnPointUI;
             @PointUI.canceled -= instance.OnPointUI;
@@ -931,26 +867,12 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnClick(InputAction.CallbackContext context);
         /// <summary>
-        /// Method invoked when associated input action "DoubleClick" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
-        /// </summary>
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-        void OnDoubleClick(InputAction.CallbackContext context);
-        /// <summary>
         /// Method invoked when associated input action "Drag" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
         /// </summary>
         /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnDrag(InputAction.CallbackContext context);
-        /// <summary>
-        /// Method invoked when associated input action "Hold" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
-        /// </summary>
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-        void OnHold(InputAction.CallbackContext context);
         /// <summary>
         /// Method invoked when associated input action "PointUI" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
         /// </summary>

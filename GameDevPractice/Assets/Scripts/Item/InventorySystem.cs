@@ -28,6 +28,7 @@ namespace RPG.Item
             equippedItems = new EquipmentSlot[(int)Enums.EquippedItemSlotType.Max];
             
             //todo: 장비 착용 관련 로직 처리방식 결정 및 구현
+            
             // 빈 인벤토리 슬롯 초기화
             for (int i = 0; i < Capacity; i++)
             {
@@ -45,7 +46,6 @@ namespace RPG.Item
                 equippedItems[i].OnEquipmentChanged += this.OnEquipmentChanged;
             }
             
-            //todo: TestData 적용
             ResourceManager.Instance.SubscribePreLoad((_) =>
             {
              InventoryTestData testData =
@@ -196,19 +196,22 @@ namespace RPG.Item
                 return inventoryItems[slotUI.Index];
             }
         }
-        
-        private void NotifySlotUpdated(ItemSlot slot)
-        {
-            if (slot is EquipmentSlot equipmentSlot) // todo: EquipmentSlot 구현
-            {
-                OnEquippedSlotChanged?.Invoke(equipmentSlot.Index);
-            }
-            else
-            {
-                OnInventorySlotChanged?.Invoke(slot.Index);
-            }
-        }
 
+        private EquipmentSlot FindSuitableEquipSlot(Item item)
+        {
+            if (item?.GetItemInfo is EquipmentTypeSO equipmentSO)
+            {
+                // todo: 동일 타입의 장비슬롯이 복수 존재할 수 있을 경우, 로직 변경 필요
+                int idx = (int)equipmentSO.slotType;
+                if (IsValidEquippedSlot(idx))
+                {
+                    return equippedItems[idx];
+                }
+            }
+
+            return null;
+        }
+        
         #endregion
 
         #region Add/Remove/Transfer/Consume Item(Inventory)
@@ -361,58 +364,6 @@ namespace RPG.Item
         
         
         #endregion
-
-        #region Equip/UnEquip
-
-        private void OnEquipmentChanged(object sender, EquipmentSlotArgs args)
-        {
-            if (args.State == EquipmentSlotArgs.EquipEventState.Equip)
-            {
-                if (args.Item.GetItemInfo is WeaponTypeSO weaponTypeSO)
-                {
-                    var player = GameObject.FindWithTag("Player");
-                    var playerFighter = player.GetComponent<Fighter>();
-                    if (playerFighter == null) return;
-                    
-                    playerFighter.EquipWeapon(weaponTypeSO);
-                }
-            }
-        }
-
-        #endregion
-        
-        #region UI Interaction
-
-        public void TrySwapItems(UI_ItemSlotBase fromSlotUI, UI_ItemSlotBase toSlotUI) // 아이템 드래그&드랍
-        {
-            // UI_ItemSlotBase를 가지는 다른 오브젝트(ex-창고)가 생길 경우, FindUITargetSlot()이 제대로 작동하지 않을 수 있음
-            // todo: 인벤토리 외 아이템 보관을 포함하는 기능이 추가될 경우 매서드 확장 혹은 기능 이전 필요
-            var fromSlot = FindUITargetSlot(fromSlotUI);
-            var toSlot = FindUITargetSlot(toSlotUI);
-            
-            TransferItem(fromSlot, toSlot);
-        }
-
-        public void TryUseItem(UI_ItemSlotBase targetSlotUI)
-        {
-            var targetSlot = FindUITargetSlot(targetSlotUI);
-            if (!targetSlot.GetItemInfo.isUsable) return;
-
-            if (targetSlot.GetItem is EquipmentItem equipment)
-            {
-                //todo: 장착 시도한 아이템에 적합한 슬롯 찾기
-                //todo: TransferItem(targetSlot, 찾은슬롯);
-            }
-            else
-            {
-                if (this.Consume(targetSlot.GetItem))
-                {
-                    NotifySlotUpdated(targetSlot);
-                }
-            }
-        }
-
-        #endregion
         
         #region Compare Items
         
@@ -475,7 +426,73 @@ namespace RPG.Item
 
         #endregion
         
-        #region Item Validation, ItemSlot Validation
+        #region UI Interaction
+
+        public void TrySwapItems(UI_ItemSlotBase fromSlotUI, UI_ItemSlotBase toSlotUI) // 아이템 드래그&드랍
+        {
+            // UI_ItemSlotBase를 가지는 다른 오브젝트(ex-창고)가 생길 경우, FindUITargetSlot()이 제대로 작동하지 않을 수 있음
+            // todo: 인벤토리 외 아이템 보관을 포함하는 기능이 추가될 경우 매서드 확장 혹은 기능 이전 필요
+            var fromSlot = FindUITargetSlot(fromSlotUI);
+            var toSlot = FindUITargetSlot(toSlotUI);
+            
+            TransferItem(fromSlot, toSlot);
+        }
+
+        public void TryUseItem(UI_ItemSlotBase targetSlotUI)
+        {
+            var targetSlot = FindUITargetSlot(targetSlotUI);
+            if (targetSlot.GetItemInfo is not { isUsable: true }) return;
+
+            if (targetSlot.GetItem is EquipmentItem equipment)
+            {
+                if (FindSuitableEquipSlot(equipment) is { } equipSlot)
+                {
+                    TransferItem(targetSlot, equipSlot);
+                }
+            }
+            else
+            {
+                if (this.Consume(targetSlot.GetItem))
+                {
+                    NotifySlotUpdated(targetSlot);
+                }
+            }
+        }
+
+        #endregion
+
+        #region Notify/Listen Event
+
+        private void NotifySlotUpdated(ItemSlot slot)
+        {
+            if (slot is EquipmentSlot equipmentSlot)
+            {
+                OnEquippedSlotChanged?.Invoke(equipmentSlot.Index);
+            }
+            else
+            {
+                OnInventorySlotChanged?.Invoke(slot.Index);
+            }
+        }
+        
+        private void OnEquipmentChanged(object sender, EquipmentSlotArgs args)
+        {
+            if (args.State == EquipmentSlotArgs.EquipEventState.Equip)
+            {
+                if (args.Item.GetItemInfo is WeaponTypeSO weaponTypeSO)
+                {
+                    var player = GameObject.FindWithTag("Player");
+                    var playerFighter = player.GetComponent<Fighter>();
+                    if (playerFighter == null) return;
+                    
+                    playerFighter.EquipWeapon(weaponTypeSO);
+                }
+            }
+        }
+
+        #endregion
+        
+        #region Item/Slot Validation
 
         public Item ModifyItemInstanceByType(Item item) 
         {
@@ -525,7 +542,6 @@ namespace RPG.Item
         #endregion
 
         #region Save/Load (ISavable)
-
         
         public object CaptureState()
         {

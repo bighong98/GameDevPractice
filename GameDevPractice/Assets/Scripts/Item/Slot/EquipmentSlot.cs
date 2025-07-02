@@ -41,9 +41,11 @@ namespace RPG.Item
                 if (prevItem is { IsValid: true }) // 기존에 슬롯에 장착되었던 아이템이 있었다면
                 {
                     // 기존 장비 장착해제 이벤트 전달
+                    Util.Log($"[EquipmentSlot[{Index}]]: Item UnEquipped");
                     OnEquipmentChanged?.Invoke(this, new EquipmentSlotArgs(prevItem, EquipmentSlotArgs.EquipEventState.UnEquip));
                 }
                 // 새 장비 장착 이벤트 전달
+                Util.Log($"[EquipmentSlot[{Index}]]: New Item Equipped");
                 OnEquipmentChanged?.Invoke(this, new EquipmentSlotArgs(this.Item, EquipmentSlotArgs.EquipEventState.Equip));
                 return true;
             }

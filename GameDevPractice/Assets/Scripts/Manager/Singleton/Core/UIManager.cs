@@ -226,6 +226,7 @@ public class UIManager : Singleton<UIManager>
         if (popup.PauseRequired)
         {
             // GameManager.Instance.PauseGame();
+            InputManager.Instance.PauseGame();
         }
 
         lastPopupOpenTime = Time.unscaledTime; // 팝업 닫기 지연 시간
@@ -301,6 +302,7 @@ public class UIManager : Singleton<UIManager>
             if (popupStacks.Count == 1 || !IsPausedRequired()) // 일시정지가 필요한 팝업이 없다면
             {
                 // GameManager.Instance.ResumeGame(); // 게임 일시정지 해제
+                InputManager.Instance.ResumeGame(); // 게임 일시정지 해제
             }
 
             popupPool.Release(popup); // 팝업 닫기 (풀에 반환)

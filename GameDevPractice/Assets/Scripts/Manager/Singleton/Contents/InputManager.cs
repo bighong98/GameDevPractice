@@ -43,12 +43,10 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
     private Vector2 currentPointerPos = Vector2.zero; // update by OnPoint()
     private Vector2 dragStartPosition = Vector2.zero; // update by OnDrag()
     
-    public Vector2 PointerPos
-    {
-        get { return currentPointerPos; }
-    }
+    public Vector2 PointerPos { get { return currentPointerPos; } }
 
     private bool isDragging = false;
+    private bool wasDraggingOneFrameAgo = false;
     private CancellationTokenSource clickCTS;
     
     protected override void Awake()
@@ -87,7 +85,7 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
 
     public void OnSelect(InputAction.CallbackContext context)
     {
-        OnSelected?.Invoke(context.ReadValue<Vector2>());
+        OnSelected?.Invoke(currentPointerPos);
     }
 
     public void OnEscape(InputAction.CallbackContext context)
@@ -106,17 +104,17 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
 
     public void OnClick(InputAction.CallbackContext context)
     {
-        if (context.interaction is UnityEngine.InputSystem.Interactions.TapInteraction)
-        {
-            OnSingleClicked?.Invoke(context.ReadValue<Vector2>());
-        }
-    }
+        if (isDragging || wasDraggingOneFrameAgo) return;
 
-    public void OnDoubleClick(InputAction.CallbackContext context)
-    {
-        if (context.interaction is UnityEngine.InputSystem.Interactions.MultiTapInteraction multiTapInteraction)
+        if (context is { interaction: UnityEngine.InputSystem.Interactions.MultiTapInteraction, phase: InputActionPhase.Performed })
         {
-            OnDoubleClicked?.Invoke(context.ReadValue<Vector2>());
+            // Util.Log("Double Click Occured");
+            OnDoubleClicked?.Invoke(currentPointerPos);
+        }
+        else if (context is { interaction: UnityEngine.InputSystem.Interactions.TapInteraction, phase: InputActionPhase.Performed })
+        {
+            // Util.Log("Single Click Occured");
+            OnSingleClicked?.Invoke(currentPointerPos);
         }
     }
     
@@ -137,7 +135,7 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
 
     public void OnHold(InputAction.CallbackContext context)
     {
-        OnHolded?.Invoke(context.ReadValue<Vector2>());
+        // OnHolded?.Invoke(context.ReadValue<Vector2>()); // 현재 미구현 추후 구현 예정
     }
 
     public void OnPointUI(InputAction.CallbackContext context)
@@ -153,6 +151,13 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
         {
             isDragging = false;
             OnDragEnded?.Invoke(currentPointerPos);
+            
+            wasDraggingOneFrameAgo = true;
+            UniTask.Void(async () =>
+            {
+                await UniTask.NextFrame();
+                wasDraggingOneFrameAgo = false;
+            });
         }
     }
 
@@ -185,5 +190,29 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
     {
         if (UIActions.enabled)
             UIActions.Disable();
+    }
+
+    // 임시기능 (별도의 매니저로 기능 이관 예정)
+    private bool isPaused;
+    public void PauseGame()
+    {
+        if (isPaused) return;
+        
+        isPaused = true;
+        Time.timeScale = 0f;
+        
+        if (PlayerActions.enabled)
+            PlayerActions.Disable();
+    }
+
+    public void ResumeGame()
+    {
+        if (!isPaused) return;
+        
+        isPaused = false;
+        Time.timeScale = 1f;
+        
+        if (!PlayerActions.enabled)
+            PlayerActions.Enable();
     }
 }
