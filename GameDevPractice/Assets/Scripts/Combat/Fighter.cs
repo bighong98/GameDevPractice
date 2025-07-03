@@ -41,8 +41,8 @@ namespace RPG.Combat
             mover = GetComponent<Mover>();
             animator = GetComponent<Animator>();
             ActionScheduler = GetComponent<ActoinScheduler>();
-            
-            SpawnWeapon();
+
+            EquipWeapon(currentWeapon == null ? defaultWeapon : currentWeapon);
         }
 
         private void Update()
@@ -92,15 +92,19 @@ namespace RPG.Combat
 
         public bool CanAttack(GameObject combatTarget, out Health targetHealth)
         {
-            targetHealth = null;
-            if (combatTarget == null || combatTarget == gameObject) return false;
-
+            if (combatTarget == null || combatTarget == gameObject)
+            {
+                targetHealth = null;
+                return false;
+            }
+            
             if (combatTarget.GetComponent<Health>() is { } health)
             {
                 targetHealth = health;
                 return true;
             }
 
+            targetHealth = null;
             return false;
         }
 

@@ -14,50 +14,47 @@ namespace RPG.Control
         private Mover mover;
         private Fighter fighter;
         private Health health;
+        
+        private bool fightEnabled = true;
 
         private void Start()
         {
-            _camera = Camera.main;
             mover = GetComponent<Mover>();
             fighter = GetComponent<Fighter>();
             health = GetComponent<Health>();
         }
 
-        private void Update()
+        private void OnEnable()
         {
-            if (health.IsDead) return;
-            if (InteractWithCombat()) return; // 우선순위: 전투 > 이동
-            if (InteractWithMovement()) return;
-            
-            // print("Nothing to do. mouse is out of world");
-        }
-        
-        private bool InteractWithMovement()
-        {
-            if (Physics.Raycast(GetMouseRay, out var hit))
-            {
-                if (Input.GetMouseButton(0))
-                    mover.StartMoveAction(hit.point);
-                return true;
-            }
-                
-            return false;
+            _camera = Camera.main;
+            InputManager.Instance.OnSelected += OnPointerPressed;
         }
 
-        private readonly RaycastHit[] lastHits = new RaycastHit[100]; // 100 is magic number
-        private bool InteractWithCombat()
+        private void OnDisable()
         {
-            if (Physics.RaycastNonAlloc(GetMouseRay, lastHits) is int hitLength and > 0) // 여러명일 때는 전부 때릴 것 같은데?
+            if (Util.IsQuitting) return;
+            _camera = null;
+            InputManager.Instance.OnSelected -= OnPointerPressed;
+        }
+
+        private void OnPointerPressed(Vector2 pos)
+        {
+            if (Time.timeScale <= float.Epsilon || health is {IsDead: true} ) return; // 게임이 일시정지 중인 경우 반응x //todo: 게임 일시정지 여부 확인 로직 수정
+            if (fightEnabled && TryCombat(pos)) return; // 우선순위: 전투 > 이동
+            TryMoveTo(pos);
+        }
+
+        private const int MaxRaycastHitNum = 100;
+        private readonly RaycastHit[] lastHits = new RaycastHit[MaxRaycastHitNum];
+        private bool TryCombat(Vector2 pos)
+        {
+            if (Physics.RaycastNonAlloc(GetPointerRay(pos), lastHits) is int hitLength and > 0)
             {
                 for (int i = 0 ; i < hitLength; i++)
                 {
-                    GameObject target = lastHits[i].transform.gameObject;
+                    if (!fighter.CanAttack(lastHits[i].transform.gameObject, out Health targetHealth)) continue;
                     
-                    if (!fighter.CanAttack(target, out Health targetHealth)) continue; // 현재 fighter.Attack과 함께 두번 GetComponent를 실행하고 있음     
-                    
-                    if (Input.GetMouseButtonDown(0))
-                        fighter.Attack(targetHealth);
-                    
+                    fighter.Attack(targetHealth);
                     return true;
                 }
             }
@@ -65,6 +62,53 @@ namespace RPG.Control
             return false;
         }
 
-        private Ray GetMouseRay => _camera.ScreenPointToRay(Input.mousePosition);
+        private bool TryMoveTo(Vector2 pos)
+        {
+            if (!Physics.Raycast(GetPointerRay(pos), out var hit)) return false;
+            
+            mover.StartMoveAction(hit.point);
+            return true;
+        }
+        
+        private Ray GetPointerRay(Vector2 pos)
+        {
+            return _camera.ScreenPointToRay(pos);
+        }
+
+        #region Deprecated
+
+        // private bool InteractWithCombat()
+        // {
+        //     if (Physics.RaycastNonAlloc(GetMouseRay, lastHits) is int hitLength and > 0) // 여러명일 때는 전부 때릴 것 같은데?
+        //     {
+        //         for (int i = 0 ; i < hitLength; i++)
+        //         {
+        //             GameObject target = lastHits[i].transform.gameObject;
+        //             
+        //             if (!fighter.CanAttack(target, out Health targetHealth)) continue; // 현재 fighter.Attack과 함께 두번 GetComponent를 실행하고 있음     
+        //             
+        //             if (Input.GetMouseButtonDown(0))
+        //                 fighter.Attack(targetHealth);
+        //             
+        //             return true;
+        //         }
+        //     }
+        //
+        //     return false;
+        // }
+        // private bool InteractWithMovement()
+        // {
+        //     if (Physics.Raycast(GetMouseRay, out var hit))
+        //     {
+        //         if (Input.GetMouseButton(0))
+        //             mover.StartMoveAction(hit.point);
+        //         return true;
+        //     }
+        //     
+        //     return false;
+        // }
+        // private Ray GetMouseRay => _camera.ScreenPointToRay(Input.mousePosition);
+
+        #endregion
     }
 }

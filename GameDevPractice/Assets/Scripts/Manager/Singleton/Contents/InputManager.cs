@@ -21,18 +21,19 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
     #region 외부 접근용 인풋 이벤트
     // global
     public event Action OnEscaped;
-    public event Action<Vector2> OnPointerMoved;
+    public event Action<Vector2> OnPointerMoved; // 마우스/터치 등의 포인터 움직임 발생시 (UI 팝업과 무관하게 항상 사용 가능)
+    
     // player
-    public event Action<Vector2> OnMoved;
-    public event Action<Vector2> OnSelected;
+    public event Action<Vector2> OnMoved; // 플레이어 캐릭터가 이동시 (현재는 사용x)
+    public event Action<Vector2> OnSelected; // 게임 오브젝트에 터치/클릭 시 (팝업UI와 상호작용은 미포함)
+    
     // UI
-    public event Action<Vector2> OnUIPointerMoved;
+    public event Action<Vector2> OnUIPointerMoved; // UI 팝업이 활성화된 상태에서 포인터 움직임 발생시
     public event Action<Vector2> OnSingleClicked;
     public event Action<Vector2> OnDoubleClicked;
     public event Action<Vector2> OnHolded;
     // UI.Drag
     public event Action<Vector2> OnDragStarted;
-    // public event Action<Vector2> OnDragging;
     public event Action<Vector2> OnDragEnded;
 
     #endregion 
@@ -85,7 +86,10 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
 
     public void OnSelect(InputAction.CallbackContext context)
     {
-        OnSelected?.Invoke(currentPointerPos);
+        if (context.phase == InputActionPhase.Performed)
+        {
+            OnSelected?.Invoke(currentPointerPos);
+        }
     }
 
     public void OnEscape(InputAction.CallbackContext context)

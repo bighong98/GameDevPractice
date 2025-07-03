@@ -171,15 +171,6 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "PointUI",
-                    "type": "Value",
-                    "id": "c80e2aca-ec05-46b4-8888-d6092211aafc",
-                    "expectedControlType": "Vector2",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": true
-                },
-                {
                     "name": "Release",
                     "type": "Button",
                     "id": "33fe1359-3da3-45ce-ab1b-b4e4f92387ec",
@@ -187,6 +178,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "PointUI",
+                    "type": "Value",
+                    "id": "56798f2c-e2b5-4d86-972a-394360bc029e",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
                 }
             ],
             "bindings": [
@@ -236,23 +236,23 @@
                 },
                 {
                     "name": "",
-                    "id": "39e9ce58-bc6d-4350-9d13-94579803145f",
-                    "path": "<Pointer>/{Point}",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "PointUI",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
                     "id": "cc16fce0-7823-49e9-bbe3-c74c3c939d88",
                     "path": "<Pointer>/press",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
                     "action": "Release",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "cd4b9a0b-7152-42da-8eff-69ffe8b959e6",
+                    "path": "<Pointer>/{Point}",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "PointUI",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
