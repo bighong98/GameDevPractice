@@ -32,7 +32,7 @@ namespace RPG.Item
                 Util.FindChildContainName<Transform>(root, "hand_r", true, false) is {} rResult)
             {
                 var rightGo = (new GameObject("weapon_r")).transform;
-                rightGo.SetParent(rResult);
+                rightGo.SetParent(rResult, worldPositionStays: false);
                 rightHandTransform = rightGo;
             }
 
@@ -40,7 +40,7 @@ namespace RPG.Item
                 Util.FindChildContainName<Transform>(root, "hand_l", true, false) is {} lResult)
             {
                 var leftGo = (new GameObject("weapon_l")).transform;
-                leftGo.SetParent(lResult);
+                leftGo.SetParent(lResult, worldPositionStays: false);
                 leftHandTransform = leftGo;
             }
         }
@@ -99,9 +99,9 @@ namespace RPG.Item
                 weaponPools[weaponType] = weaponPool; // 풀 딕셔너리에 신규 풀 등록
             }
 
-            if (weaponPool.Get() is { } result)
+            if (weaponPool is { } pool && pool.Get() is { } result)
             {
-                currentWeapon = result; // 오브젝트 풀에 무기 요청
+                currentWeapon = result;
                 return true;
             }
 

@@ -18,6 +18,7 @@ GameObject:
   - component: {fileID: 7584443095867729444}
   - component: {fileID: -4321172655345262780}
   - component: {fileID: 1599618502693370758}
+  - component: {fileID: -193848170717944432}
   m_Layer: 0
   m_Name: Character
   m_TagString: Untagged
@@ -170,7 +171,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   timeBetweenAttacks: 1
-  handTransform: {fileID: 0}
+  rightHandTransform: {fileID: 0}
+  leftHandTransform: {fileID: 0}
   currentWeapon: {fileID: 0}
   defaultWeapon: {fileID: 11400000, guid: 0a600904131b2d64994bee447b8efe39, type: 2}
   target: {fileID: 0}
@@ -224,3 +226,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   uniqueIdentifier: 50bb8acb-9ae0-4896-8005-847505098f18
   isGlobal: 0
+--- !u!114 &-193848170717944432
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6061633697407881761}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 26e8151728f9ba345ab23baf8c706be7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RPG.Item.Equipper
+  fighter: {fileID: 6342785507549057401}
+  rightHandTransform: {fileID: 0}
+  leftHandTransform: {fileID: 0}

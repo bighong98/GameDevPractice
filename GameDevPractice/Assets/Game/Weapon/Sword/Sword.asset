@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 361e7764f46e225498b2d9903851f06d, type: 3}
   m_Name: Sword
   m_EditorClassIdentifier: Assembly-CSharp::WeaponTypeSO
-  prefab: {fileID: 9052991684634475232, guid: e9c5026466f82134bbe89b783f2a920d, type: 3}
+  prefab: {fileID: 4046124720144945870, guid: f88d5b41db4f06b4e8240c80f2f734db, type: 3}
   nameString: Sword Test1
   sprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   showInMinimap: 0
@@ -26,7 +26,7 @@ MonoBehaviour:
   slotType: 0
   weaponType: 0
   weaponAnimatorOverride: {fileID: 22100000, guid: bad3b4482a681fb4bb377898a52a866d, type: 2}
-  EquippedPrefab: {fileID: 7611175050138226527, guid: e9c5026466f82134bbe89b783f2a920d, type: 3}
+  EquippedPrefab: {fileID: 8466340430826345119, guid: f88d5b41db4f06b4e8240c80f2f734db, type: 3}
   damage: 10
   range: 3
   hand: 0

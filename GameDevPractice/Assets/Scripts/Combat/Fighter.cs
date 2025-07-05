@@ -13,8 +13,6 @@ namespace RPG.Combat
         [SerializeField] private float timeBetweenAttacks = 1f; // todo: move to equipped weapon
         private float timeSinceLastAttack = 0;
         
-        [SerializeField] private Transform rightHandTransform;
-        [SerializeField] private Transform leftHandTransform;
         [SerializeField] private WeaponTypeSO currentWeapon; // 현재 장착 중인 무기
         [SerializeField] private WeaponTypeSO defaultWeapon; // 장비 장착해제시 적용되어야할 무기종(ex-Unarmed)
         
@@ -32,28 +30,6 @@ namespace RPG.Combat
         public bool IsEquippingWeapon => currentWeapon != null;
         public (WeaponTypeSO weapon, Animator animator) GetWeaponEquipperInfo => (this.currentWeapon, this.animator);
         
-
-        private void Awake()
-        {
-            // if (Util.FindChild(gameObject, "Root", recursive: true) is not { } root)
-            // {
-            //     Util.Log($"failed to find root for hand: {gameObject.name}");
-            //     return;
-            // }
-            //
-            // if (rightHandTransform == null && 
-            //     Util.FindChildContainName<Transform>(root, "hand_r", true, false) is {} rResult)
-            // {
-            //     rightHandTransform = rResult;
-            // }
-            //
-            // if (leftHandTransform == null && 
-            //     Util.FindChildContainName<Transform>(root, "hand_l", true, false) is {} lResult)
-            // {
-            //     leftHandTransform = lResult;
-            // }
-        }
-
         private void Start()
         {
             mover = GetComponent<Mover>();
@@ -151,19 +127,7 @@ namespace RPG.Combat
         }
 
         #region Weapon
-
-        private void SpawnWeapon()
-        {
-            if (currentWeapon == null || animator == null) return;
-            Transform handTransform = currentWeapon.GetGripHand switch
-            {
-                WeaponTypeSO.Hand.Right => rightHandTransform,
-                WeaponTypeSO.Hand.Left => leftHandTransform,
-                _ => leftHandTransform
-            };
-            currentWeapon.Spawn(handTransform, animator);
-        }
-
+        
         public void EquipWeapon(WeaponTypeSO weaponTypeSO)
         {
             this.currentWeapon = weaponTypeSO;

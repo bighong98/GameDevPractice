@@ -491,13 +491,20 @@ namespace RPG.Item
         {
             if (args.State == EquipmentSlotArgs.EquipEventState.Equip)
             {
-                if (args.Item.GetItemInfo is WeaponTypeSO weaponTypeSO)
+                if (args.Item.GetItemInfo is not WeaponTypeSO weaponTypeSO) return;
+                
+                if (GameObject.FindWithTag("Player") is { } player &&
+                    player.GetComponent<Fighter>() is { } pFighter)
                 {
-                    var player = GameObject.FindWithTag("Player");
-                    var playerFighter = player.GetComponent<Fighter>();
-                    if (playerFighter == null) return;
-                    
-                    playerFighter.EquipWeapon(weaponTypeSO);
+                    pFighter.EquipWeapon(weaponTypeSO);
+                }
+            }
+            else // case: args.State == EquipmentSlotArgs.EquipEventState.UnEquip)
+            {
+                if (GameObject.FindWithTag("Player") is { } player &&
+                    player.GetComponent<Fighter>() is { } pFighter)
+                {
+                    pFighter.UnEquipWeapon();;
                 }
             }
         }
