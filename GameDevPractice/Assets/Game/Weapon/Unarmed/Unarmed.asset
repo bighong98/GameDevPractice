@@ -25,6 +25,8 @@ MonoBehaviour:
   equipmentType: 1
   slotType: 0
   weaponType: 0
-  weaponAnimatorOverride: {fileID: 0}
+  weaponAnimatorOverride: {fileID: 22100000, guid: 5c7039ae908815140967aa18fab57f0f, type: 2}
+  EquippedPrefab: {fileID: 5088213496915237569, guid: eac1cc46fd2c94b49bcf0c53a7cb1626, type: 3}
   damage: 5
   range: 2
+  hand: 0

@@ -13,7 +13,8 @@ namespace RPG.Combat
         [SerializeField] private float timeBetweenAttacks = 1f; // todo: move to equipped weapon
         private float timeSinceLastAttack = 0;
         
-        [SerializeField] private Transform handTransform;
+        [SerializeField] private Transform rightHandTransform;
+        [SerializeField] private Transform leftHandTransform;
         [SerializeField] private WeaponTypeSO currentWeapon; // 현재 장착 중인 무기
         [SerializeField] private WeaponTypeSO defaultWeapon; // 장비 장착해제시 적용되어야할 무기종(ex-Unarmed)
         
@@ -25,15 +26,32 @@ namespace RPG.Combat
         private static readonly int Attack1 = Animator.StringToHash("attack");
         private static readonly int StopAttack = Animator.StringToHash("stopAttack");
         public ActoinScheduler ActionScheduler { get; private set; }
-
+        
+        public event Action<WeaponTypeSO, Animator> OnEquipWeapon;
+        
+        public bool IsEquippingWeapon => currentWeapon != null;
+        public (WeaponTypeSO weapon, Animator animator) GetWeaponEquipperInfo => (this.currentWeapon, this.animator);
+        
 
         private void Awake()
         {
-            if (handTransform == null)
-            {
-                var result = Util.FindChildContainName<Transform>(gameObject, "hand", true, false);
-                if (result != null) handTransform = result;
-            }
+            // if (Util.FindChild(gameObject, "Root", recursive: true) is not { } root)
+            // {
+            //     Util.Log($"failed to find root for hand: {gameObject.name}");
+            //     return;
+            // }
+            //
+            // if (rightHandTransform == null && 
+            //     Util.FindChildContainName<Transform>(root, "hand_r", true, false) is {} rResult)
+            // {
+            //     rightHandTransform = rResult;
+            // }
+            //
+            // if (leftHandTransform == null && 
+            //     Util.FindChildContainName<Transform>(root, "hand_l", true, false) is {} lResult)
+            // {
+            //     leftHandTransform = lResult;
+            // }
         }
 
         private void Start()
@@ -137,13 +155,28 @@ namespace RPG.Combat
         private void SpawnWeapon()
         {
             if (currentWeapon == null || animator == null) return;
+            Transform handTransform = currentWeapon.GetGripHand switch
+            {
+                WeaponTypeSO.Hand.Right => rightHandTransform,
+                WeaponTypeSO.Hand.Left => leftHandTransform,
+                _ => leftHandTransform
+            };
             currentWeapon.Spawn(handTransform, animator);
         }
 
         public void EquipWeapon(WeaponTypeSO weaponTypeSO)
         {
             this.currentWeapon = weaponTypeSO;
-            SpawnWeapon();
+            OnEquipWeapon?.Invoke(weaponTypeSO, animator);
+        }
+
+        public void UnEquipWeapon()
+        {
+            if (defaultWeapon != null)
+            {
+                currentWeapon = defaultWeapon;
+                OnEquipWeapon?.Invoke(defaultWeapon, animator);
+            }
         }
 
         #endregion

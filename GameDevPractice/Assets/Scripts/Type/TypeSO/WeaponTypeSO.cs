@@ -6,8 +6,10 @@ public class WeaponTypeSO : EquipmentTypeSO
     [Header("Weapon")] 
     public Enums.WeaponType weaponType;
     public AnimatorOverrideController weaponAnimatorOverride;
+    public GameObject EquippedPrefab;
     [SerializeField] private float damage;
     [SerializeField] private float range;
+    [SerializeField] private Hand hand;
     public void Spawn(Transform handTransform, Animator animator)
     {
         Instantiate(prefab, handTransform); // todo: Object Pooling 적용
@@ -19,4 +21,12 @@ public class WeaponTypeSO : EquipmentTypeSO
 
     public float GetDamage => damage;
     public float GetRange => range;
+    public Hand GetGripHand => hand;
+
+    public enum Hand
+    {
+        Right,
+        Left,
+        Both,
+    }
 }
