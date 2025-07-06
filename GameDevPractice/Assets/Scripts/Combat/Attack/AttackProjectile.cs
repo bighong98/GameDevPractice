@@ -12,6 +12,13 @@ public class AttackProjectile : MonoBehaviour, IPoolObject
     private void Update()
     {
         if (target == null) return;
+
+        lifeTime += Time.deltaTime;
+        if (lifeTime > maxLifeTime)
+        {
+            ReleaseSelf();
+            return;
+        }
         
         transform.LookAt(target.transform.position);
         transform.Translate(Vector3.forward * (speed * Time.deltaTime));
@@ -40,12 +47,12 @@ public class AttackProjectile : MonoBehaviour, IPoolObject
 
     public void OnGetFromPool()
     {
-        
+        lifeTime = 0;
     }
 
     public void OnReleaseFromPool()
     {
-        
+        target = null;
     }
 
     public void OnDestroyFromPool()

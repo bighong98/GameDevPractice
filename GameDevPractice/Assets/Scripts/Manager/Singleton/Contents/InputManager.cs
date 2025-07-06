@@ -31,7 +31,7 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
     public event Action<Vector2> OnUIPointerMoved; // UI 팝업이 활성화된 상태에서 포인터 움직임 발생시
     public event Action<Vector2> OnSingleClicked;
     public event Action<Vector2> OnDoubleClicked;
-    public event Action<Vector2> OnHolded;
+    // public event Action<Vector2> OnHolded;
     // UI.Drag
     public event Action<Vector2> OnDragStarted;
     public event Action<Vector2> OnDragEnded;

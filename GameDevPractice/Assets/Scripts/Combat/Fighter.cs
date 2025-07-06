@@ -25,7 +25,9 @@ namespace RPG.Combat
         private static readonly int StopAttack = Animator.StringToHash("stopAttack");
         public ActoinScheduler ActionScheduler { get; private set; }
         
-        public event Action<WeaponTypeSO, Animator> OnEquipWeapon;
+        public event Action<WeaponTypeSO, Animator> OnEquipWeapon; // 장비 변경(장착, 장착해제) 시
+        public event Action OnAttack; // 공격 시도 시
+        public event Action<Health> OnTargetChanged; // 공격 타겟(target) 변경 시
         
         public bool IsEquippingWeapon => currentWeapon != null;
         public (WeaponTypeSO weapon, Animator animator) GetWeaponEquipperInfo => (this.currentWeapon, this.animator);
@@ -55,7 +57,7 @@ namespace RPG.Combat
         }
 
         private bool IsInRange => Vector3.Distance(transform.position, target.transform.position) < currentWeapon?.GetRange;
-
+        
         private void AttackBehaviour()
         {
             transform.LookAt(target.transform);
@@ -66,22 +68,51 @@ namespace RPG.Combat
             }
         }
         
+        public void Cancel()
+        {
+            timeSinceLastAttack = 0;
+            AnimateStopAttack();
+            target = null;
+        }
+
+        #region Animation Event Method
+
         void Hit() // Animation Event Method
         {
             if (target == null) return;
+            OnAttack?.Invoke();
             target.TakeDamage(currentWeapon?.GetDamage ?? 0);
         }
-        
+
+        void Shoot()
+        {
+            OnAttack?.Invoke();
+        }
+
+        #endregion
+
+        #region Attack
+
+        private void ChangeTarget(Health newTarget)
+        {
+            // if (target is { } prevTarget && prevTarget == newTarget) return;
+            
+            target = newTarget;
+            OnTargetChanged?.Invoke(target);
+        }
         public void Attack(CombatTarget combatTarget)
         {
             ActionScheduler.StartAction(this);
-            target = combatTarget.GetComponent<Health>();
+            if (combatTarget.GetComponent<Health>() is {} newTarget)
+            {
+                ChangeTarget(newTarget);
+            }
         }
 
         public void Attack(Health targetHealth)
         {
             ActionScheduler.StartAction(this);
-            target = targetHealth;
+            ChangeTarget(targetHealth);
         }
 
         public bool CanAttack(GameObject combatTarget, out Health targetHealth)
@@ -102,6 +133,8 @@ namespace RPG.Combat
             return false;
         }
 
+        #endregion
+        
         #region Animate
 
         private void AnimateAttack()
@@ -117,14 +150,6 @@ namespace RPG.Combat
         }
 
         #endregion
-        
-        
-        public void Cancel()
-        {
-            timeSinceLastAttack = 0;
-            AnimateStopAttack();
-            target = null;
-        }
 
         #region Weapon
         

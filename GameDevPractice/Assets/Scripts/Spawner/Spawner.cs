@@ -11,6 +11,12 @@ public class Spawner<T> : MonoBehaviour where T : UnityEngine.Component, IPoolOb
     
     public Action<T> onGet;
     public Action<T> onRelease;
+
+    protected virtual void Awake()
+    {
+        // todo: Awake() 타이밍에 필요한 기능 구현
+        // 현재 Spawner<T> 상속 클래스 위해 만들어두었음
+    }
     
     protected virtual void Start()
     {
@@ -28,9 +34,12 @@ public class Spawner<T> : MonoBehaviour where T : UnityEngine.Component, IPoolOb
     }
     protected virtual void SetPool(int capacity, int max)
     {
-        pool = PoolingManager.Instance.GetPool<T>(prefab, null, onGet, onRelease, capacity, max);
-        if (pool != null)
+        if (PoolingManager.Instance.GetPool<T>(prefab, null, onGet, onRelease, capacity, max)
+            is { } newPool)
+        {
+            pool = newPool;
             isInit = true;
+        }
     }
 
     public T Spawn()

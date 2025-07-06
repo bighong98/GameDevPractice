@@ -11,10 +11,16 @@ public class WeaponTypeSO : EquipmentTypeSO
     [SerializeField] private float damage;
     [SerializeField] private float range;
     [SerializeField] private Hand hand;
+
+    [SerializeField] private bool hasProjectile;
+    [SerializeField] private GameObject projectilePrefab;
     
     public float GetDamage => damage;
     public float GetRange => range;
     public Hand GetGripHand => hand;
+    
+    public bool HasProjectile => hasProjectile;
+    public GameObject GetProjectilePrefab => projectilePrefab;
 
     public enum Hand
     {

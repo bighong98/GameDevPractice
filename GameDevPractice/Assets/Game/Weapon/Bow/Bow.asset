@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WeaponTypeSO
   prefab: {fileID: 4417232197914387483, guid: 347289ade72adaf4e91172386d9fab9a, type: 3}
   nameString: Bow Test1
-  sprite: {fileID: 0}
+  sprite: {fileID: 10901, guid: 0000000000000000f000000000000000, type: 0}
   showInMinimap: 0
   minimapSprite: {fileID: 0}
   minimapSpriteColor: {r: 1, g: 1, b: 1, a: 1}
@@ -27,6 +27,8 @@ MonoBehaviour:
   weaponType: 0
   weaponAnimatorOverride: {fileID: 22100000, guid: d790194a637262f45a1ea9df7bf7fdad, type: 2}
   EquippedPrefab: {fileID: 8076619319902921802, guid: 347289ade72adaf4e91172386d9fab9a, type: 3}
-  damage: 0
-  range: 0
+  damage: 10
+  range: 8
   hand: 1
+  hasProjectile: 1
+  projectilePrefab: {fileID: 1111895543867379590, guid: b416bcde3a37cf34ba576d700dde20a3, type: 3}

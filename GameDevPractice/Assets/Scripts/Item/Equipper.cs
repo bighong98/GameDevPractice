@@ -90,6 +90,8 @@ namespace RPG.Item
 
         private bool SpawnWeapon(WeaponTypeSO weaponType)
         {
+            if (!isInit) return false;
+            
             if (!weaponPools.TryGetValue(weaponType, out var weaponPool))
             {
                 weaponPool = PoolingManager.Instance.GetPool<WeaponTypeHolder>(
@@ -101,6 +103,7 @@ namespace RPG.Item
 
             if (weaponPool is { } pool && pool.Get() is { } result)
             {
+                result.owner = fighter;
                 currentWeapon = result;
                 return true;
             }
