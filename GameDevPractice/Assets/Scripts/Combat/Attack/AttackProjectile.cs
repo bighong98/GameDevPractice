@@ -1,19 +1,23 @@
 using System;
+using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using RPG.Core;
 using UnityEngine;
+using Vector3 = UnityEngine.Vector3;
 
 public class AttackProjectile : MonoBehaviour, IPoolObject
 {
     [SerializeField] private Health target;
     [SerializeField] private float speed = 12;
     [SerializeField] private float maxLifeTime = 5f;
-
+    
     private CancellationTokenSource projectileCTS;
     private TimeSpan lifeTimeSpan;
     private bool isLaunched;
+
+    public event Action<Vector3> OnHit;
     
     private void Update()
     {
@@ -103,6 +107,7 @@ public class AttackProjectile : MonoBehaviour, IPoolObject
         //todo: Target이 아닐 때 처리
         //todo: 대상이 사망 상태일 때 처리
         //todo: 논타겟팅/타겟팅 스킬의 투사체일 때 처리
+        OnHit?.Invoke(transform.position);
         KillSelf();
     }
 

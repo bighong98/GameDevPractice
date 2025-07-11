@@ -14,6 +14,9 @@ public class WeaponTypeSO : EquipmentTypeSO
 
     [SerializeField] private bool hasProjectile;
     [SerializeField] private GameObject projectilePrefab;
+
+    [SerializeField] private bool hasImpactEffect;
+    [SerializeField] private GameObject impactParticlePrefab;
     
     public float GetDamage => damage;
     public float GetRange => range;
@@ -22,23 +25,13 @@ public class WeaponTypeSO : EquipmentTypeSO
     public bool HasProjectile => hasProjectile;
     public GameObject GetProjectilePrefab => projectilePrefab;
 
+    public bool HasImpactEffect => hasImpactEffect;
+    public GameObject GetImpactEffect => impactParticlePrefab;
+
     public enum Hand
     {
         Right,
         Left,
         Both,
     }
-
-    #region Deprecated
-
-    // public void Spawn(Transform handTransform, Animator animator)
-    // {
-    //     Instantiate(prefab, handTransform); // todo: Object Pooling 적용
-    //     if (weaponAnimatorOverride != null)
-    //     {
-    //         animator.runtimeAnimatorController = weaponAnimatorOverride;
-    //     }
-    // }
-
-    #endregion
 }

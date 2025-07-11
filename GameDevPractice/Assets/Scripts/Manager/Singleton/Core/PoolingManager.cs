@@ -60,7 +60,7 @@ public class PoolingManager : Singleton<PoolingManager>
     // getAction: GetFromPool<T>() 직후 호출, releaseAction: ReleaseFromPool<T>() 직후 호출
     // registerPool: PoolingManager의 딕셔너리에 오브젝트 풀을 등록할 건지 여부 (기본값: true)
     //// UI는 registerPool = false로 두고 UIManager의 popupPools에 저장해 사용할 것
-    public ObjectPool<T> GetPool<T>(GameObject prefab, Transform parent = null, Action<T> getAction = null, Action<T> releaseAction = null, int capacity = DefaultCapacity, int maxSize = DefaultMaxSize, bool registerPool = true) where T : UnityEngine.Component, IPoolObject
+    public ObjectPool<T> GetPool<T>(GameObject prefab, Transform parent = null, Action<T> createAction = null, Action<T> getAction = null, Action<T> releaseAction = null, int capacity = DefaultCapacity, int maxSize = DefaultMaxSize, bool registerPool = true) where T : UnityEngine.Component, IPoolObject
     { // 풀 탐색, 생성을 겸하는 public 함수. 반드시 인자로 프리펩을 사용할 것
         var instance = prefab.GetComponent<T>();
         if (instance == null) return null;
@@ -72,7 +72,7 @@ public class PoolingManager : Singleton<PoolingManager>
             parent = poolContainer.GetPoolContainer<T>(prefab);
 
         if (registerPool == false)
-            return CreatePool<T>(prefab, parent, getAction, releaseAction, capacity, maxSize);
+            return CreatePool<T>(prefab, parent, createAction, getAction, releaseAction, capacity, maxSize);
         
         if (typePoolDictionary.TryGetValue(typeof(T), out var poolListWrapperBase))
         { // case: 같은 타입 클래스의 풀이 존재하는 경우
@@ -82,19 +82,19 @@ public class PoolingManager : Singleton<PoolingManager>
                 {
                     return pool; // 기존 풀이 있다면 반환
                 }
-                var newPool = CreatePool<T>(prefab, parent, getAction, releaseAction, capacity, maxSize); // 존재하는 풀이 없다면 생성
+                var newPool = CreatePool<T>(prefab, parent, createAction, getAction, releaseAction, capacity, maxSize); // 존재하는 풀이 없다면 생성
                 poolListWrapper.Pools[prefab] = newPool;
                 return newPool;
             }
         }
         // case: 같은 타입 클래스의 풀이 존재하지 않는 경우
         var poolDict = typePoolDictionary[typeof(T)] = CreatePoolDictionary<T>();
-        var poolInDict = ((PoolDictWrapper<T>)poolDict).Pools[prefab] = CreatePool<T>(prefab, parent, getAction, releaseAction, capacity, maxSize);
+        var poolInDict = ((PoolDictWrapper<T>)poolDict).Pools[prefab] = CreatePool<T>(prefab, parent, createAction, getAction, releaseAction, capacity, maxSize);
         
         return poolInDict;
     }
     
-    private ObjectPool<T> CreatePool<T>(GameObject prefab, Transform parent,  Action<T> getAction, Action<T> releaseAction, int capacity, int maxSize) where T : UnityEngine.Component, IPoolObject
+    private ObjectPool<T> CreatePool<T>(GameObject prefab, Transform parent, Action<T> createAction, Action<T> getAction, Action<T> releaseAction, int capacity, int maxSize) where T : UnityEngine.Component, IPoolObject
     { // 풀 생성 함수. GetPool을 통해 호출됨
         var pool = new ObjectPool<T>(
             createFunc: () =>
@@ -106,6 +106,7 @@ public class PoolingManager : Singleton<PoolingManager>
                     // todo: worldPositionStays 값을 어떻게 결정할지 (CreatePool()의 인자로 받을지, 타입으로 자동 결정할지 등) 기획 후 수정
                     component.transform.SetParent(parent, worldPositionStays: false);
                     component.Origin = prefab;
+                    createAction?.Invoke(component);
                     component.OnCreateFromPool();
                 }
                 return component;
