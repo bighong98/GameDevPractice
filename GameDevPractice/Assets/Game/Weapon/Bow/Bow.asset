@@ -31,4 +31,4 @@ MonoBehaviour:
   range: 8
   hand: 1
   hasProjectile: 1
-  projectilePrefab: {fileID: 1111895543867379590, guid: b416bcde3a37cf34ba576d700dde20a3, type: 3}
+  projectilePrefab: {fileID: 1289635461784948618, guid: 02b8b96d23dd89d4a9bb14ba8363e83c, type: 3}

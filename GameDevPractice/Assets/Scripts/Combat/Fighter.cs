@@ -25,7 +25,7 @@ namespace RPG.Combat
         private static readonly int StopAttack = Animator.StringToHash("stopAttack");
         public ActoinScheduler ActionScheduler { get; private set; }
         
-        public event Action<WeaponTypeSO, Animator> OnEquipWeapon; // 장비 변경(장착, 장착해제) 시
+        public event Action<WeaponTypeSO, Animator> OnEquipWeapon; // 장비 변경(장착, 장착해제) 시, Equipper.cs 에서 사용
         public event Action OnAttack; // 공격 시도 시
         public event Action<Health> OnTargetChanged; // 공격 타겟(target) 변경 시
         

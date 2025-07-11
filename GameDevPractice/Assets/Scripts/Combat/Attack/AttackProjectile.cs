@@ -1,33 +1,58 @@
 using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using RPG.Core;
 using UnityEngine;
 
 public class AttackProjectile : MonoBehaviour, IPoolObject
 {
     [SerializeField] private Health target;
-    [SerializeField] private float speed = 8;
+    [SerializeField] private float speed = 12;
     [SerializeField] private float maxLifeTime = 5f;
+
+    private CancellationTokenSource projectileCTS;
+    private TimeSpan lifeTimeSpan;
+    private bool isLaunched;
     
-    private float lifeTime;
     private void Update()
     {
-        if (target == null) return;
-
-        lifeTime += Time.deltaTime;
-        if (lifeTime > maxLifeTime)
-        {
-            ReleaseSelf();
-            return;
-        }
+        if (!isLaunched) return;
         
-        transform.LookAt(target.transform.position);
         transform.Translate(Vector3.forward * (speed * Time.deltaTime));
     }
 
-    public void SetTarget(Health newTarget)
+    public void SetTarget(Health newTarget, bool homing)
     {
         if (newTarget == null) return;
+        
         target = newTarget;
+        transform.LookAt(GetAim());
+
+        ResetProjectileCTS();
+        Launch(homing);
+    }
+
+    private void ResetProjectileCTS()
+    {
+        if (projectileCTS is { } cts)
+        {
+            if (!cts.IsCancellationRequested)
+                cts.Cancel();
+            cts.Dispose();
+        }
+
+        projectileCTS = new CancellationTokenSource();
+    }
+
+    private void Launch(bool homing)
+    {
+        if (homing)
+        {
+            TrackTargetAsync().Forget();
+        }
+        WaitForLifeTimeAsync().Forget();
+        isLaunched = true;
     }
 
     private Vector3 GetAim() // todo: 로직 최적화/보완
@@ -38,26 +63,74 @@ public class AttackProjectile : MonoBehaviour, IPoolObject
         }
         return target.transform.position;
     }
-    
+
+    private async UniTaskVoid WaitForLifeTimeAsync()
+    {
+        await UniTask.Delay(lifeTimeSpan, DelayType.DeltaTime, delayTiming: PlayerLoopTiming.Update, projectileCTS.Token).SuppressCancellationThrow();
+        
+        KillSelf();
+    }
+
+    private async UniTaskVoid TrackTargetAsync()
+    {
+        var token = projectileCTS.Token;
+        while (!token.IsCancellationRequested)
+        {
+            transform.LookAt(GetAim());
+            await UniTask.Yield(PlayerLoopTiming.PreLateUpdate, token).SuppressCancellationThrow();
+        }
+    }
+
+    private void SetTimeSpan() // 최초 초기화 이후 maxLifeTime이 변동되는 케이스에 대한 처리 없음
+    {
+        if (lifeTimeSpan == default)
+        {
+            lifeTimeSpan = TimeSpan.FromSeconds(maxLifeTime);
+        }
+    }
+
+    private void KillSelf()
+    {
+        if (projectileCTS is { IsCancellationRequested: false } currCTS)
+        {
+            currCTS.Cancel();
+        }
+        ReleaseSelf();
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        //todo: Target이 아닐 때 처리
+        //todo: 대상이 사망 상태일 때 처리
+        //todo: 논타겟팅/타겟팅 스킬의 투사체일 때 처리
+        KillSelf();
+    }
+
     public GameObject Origin { get; set; }
     public void OnCreateFromPool()
     {
-        
+        SetTimeSpan();
     }
 
     public void OnGetFromPool()
     {
-        lifeTime = 0;
+        
     }
 
     public void OnReleaseFromPool()
     {
         target = null;
+        isLaunched = false;
     }
 
     public void OnDestroyFromPool()
     {
+        if (Util.IsQuitting) return;
+        if (projectileCTS == null) return;
         
+        if (!projectileCTS.IsCancellationRequested)
+            projectileCTS.Cancel();
+        projectileCTS.Dispose();
     }
 
     public void ReleaseSelf()

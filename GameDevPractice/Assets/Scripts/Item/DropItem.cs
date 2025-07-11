@@ -10,20 +10,6 @@ namespace RPG.Item
         [SerializeField] private ItemTypeHolder itemTypeHolder;
         [SerializeField] private InventorySystem inventory; // serialize for debug
         [SerializeField] private bool useImmediately;
-        
-        private void Awake()
-        {
-            if (GetComponent<Collider>() is {} coll)
-            {
-                coll.isTrigger = true;
-            }
-
-            if (GetComponent<Rigidbody>() is { } rigid)
-            {
-                rigid.useGravity = false;
-                rigid.isKinematic = true;
-            }
-        }
 
         private void Start()
         {

@@ -7,6 +7,7 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
 {
     [SerializeField] private Health projectileTarget; // serialized for debug
     private bool hasTarget;
+    private bool isHoming;
     
     public void InitializeProjectileSpawner(Fighter owner)
     {
@@ -28,6 +29,6 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
     private void Shoot()
     {
         if (!hasTarget) return; // 타겟이 없다면 쏘지 않음
-        base.Spawn(transform.position).SetTarget(projectileTarget);
+        base.Spawn(transform.position).SetTarget(projectileTarget, isHoming);
     }
 }
