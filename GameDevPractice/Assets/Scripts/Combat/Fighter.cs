@@ -4,11 +4,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using RPG.Movement;
 using RPG.Core;
+using RPG.Saving;
+using RPG.Attribute;
 using UnityEngine.Serialization;
 
 namespace RPG.Combat
 {
-    public class Fighter : MonoBehaviour, IAction
+    public class Fighter : MonoBehaviour, IAction, ISavable
     {
         [SerializeField] private float timeBetweenAttacks = 1f; // todo: move to equipped weapon
         private float timeSinceLastAttack = 0;
@@ -169,6 +171,46 @@ namespace RPG.Combat
         }
 
         #endregion
+
+        #region Save/Load
+
+        public object CaptureState()
+        {
+            if (currentWeapon == null || currentWeapon == defaultWeapon)
+            {
+                return new FighterSaveData();
+            }
+            
+            return new FighterSaveData(currentWeapon);
+        }
+
+        public bool RestoreState(object state)
+        {
+            if (state is not FighterSaveData { EquippedWeapon: { } savedWeapon })
+            {
+                EquipWeapon(defaultWeapon);
+                return false;
+            }
+            
+            EquipWeapon(savedWeapon);
+            return true;
+        }
+        
+        public struct FighterSaveData
+        {
+            // 무기에 강화 등의 기능이 추가될 경우 WeaponTypeSO 대신 다른 데이터 컨테이너로 교체해야함
+            // 장착중인 장비의 데이터를 Fighter에서 저장, 불러오기하는 대신 Inventory에서 관리하는 것을 고려
+            // 또한 weaponTypeSO를 직접 저장하는 대신 추후 id로 관리하는 것을 고려
+            public WeaponTypeSO EquippedWeapon;
+
+            public FighterSaveData (WeaponTypeSO equippedWeapon)
+            {
+                EquippedWeapon = equippedWeapon;
+            }
+        }
+
+        #endregion
+
         
     }
 }

@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 89581c0621921a24fa3b87ec9420c882, type: 3}
+  m_Name: ProgressionSO
+  m_EditorClassIdentifier: Assembly-CSharp::RPG.Stats.ProgressionSO
+  characterClasses:
+  - characterClass: 1
+    progressionStats:
+    - stat: 0
+      levels:
+      - 100
+      - 200
+      - 300
+      - 400
+      - 500
+  - characterClass: 2
+    progressionStats:
+    - stat: 0
+      levels:
+      - 30
+      - 60
+      - 90
+      - 120
+      - 150
+    - stat: 1
+      levels:
+      - 5
+      - 10
+      - 15
+      - 20
+      - 25
+  - characterClass: 3
+    progressionStats:
+    - stat: 0
+      levels:
+      - 35
+      - 70
+      - 105
+      - 140
+      - 175
+    - stat: 1
+      levels:
+      - 6
+      - 12
+      - 18
+      - 24
+      - 30

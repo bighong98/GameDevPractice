@@ -1,10 +1,9 @@
 using System;
-using System.Numerics;
 using System.Threading;
-using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
-using RPG.Core;
+using RPG.Attribute;
 using UnityEngine;
+
 using Vector3 = UnityEngine.Vector3;
 
 public class AttackProjectile : MonoBehaviour, IPoolObject

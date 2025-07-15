@@ -66,6 +66,7 @@ namespace RPG.Item
         private void OnEquipWeapon(WeaponTypeSO weaponType, Animator animator)
         {
             if (!isInit) return;
+            if (animator == null) return;
 
             if (currentWeapon is { type: { } currWeaponType }) // 기존에 사용 중인 무기가 있었다면
             {
@@ -74,9 +75,19 @@ namespace RPG.Item
                 DeSpawnWeapon(); // 다른 무기라면 기존 무기 비활성화
             }
 
-            if (SpawnWeapon(weaponType)) // 새로 장착한 무기 생성(활성화)에 성공했다면
+            if (!SpawnWeapon(weaponType)) return; // 새로 장착한 무기 생성(활성화)에 실패했다면 즉시 실행 중지
+            
+            if (weaponType.weaponAnimatorOverride is {} newWeaponAnimatorOverride) // 새로 장착한 무기의 weaponAnimatorOverride가 비어있지 않다면 (!= null)
             {
-                animator.runtimeAnimatorController = weaponType.weaponAnimatorOverride; // 해당 무기의 애니메이션 오버라이드 적용
+                animator.runtimeAnimatorController = newWeaponAnimatorOverride; // 해당 무기의 애니메이션 오버라이드 적용
+            }
+            else if (animator.runtimeAnimatorController is AnimatorOverrideController { } overrideController) 
+                // 새로 장착한 무기의 weaponAnimatorOverride가 비어있다면 (== null)
+                // 또한 현재 runtimeAnimatorController가 override 된 적이 있다면    
+            {
+                // AnimatorOverrideController.runtimeAnimatorController : 원본 AnimatorController의 참조를 가지고 있음
+                // 해당 참조를 통해 Override 되기 전으로 원복
+                animator.runtimeAnimatorController = overrideController.runtimeAnimatorController; 
             }
         }
 
@@ -121,5 +132,4 @@ namespace RPG.Item
             };
         }
     }
-
 }

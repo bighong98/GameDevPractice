@@ -1,10 +1,9 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using RPG.Saving;
 using UnityEngine;
+using RPG.Core;
+using RPG.Saving;
 
-namespace RPG.Core
+namespace RPG.Attribute
 {
     [Serializable]
     public struct HealthSaveData
@@ -23,7 +22,7 @@ namespace RPG.Core
         {
             animator = GetComponent<Animator>();
         }
-
+        
         public bool IsDead { get; private set; }
 
         public void TakeDamage(float damage)

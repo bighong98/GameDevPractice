@@ -1,6 +1,6 @@
 using System;
 using RPG.Combat;
-using RPG.Core;
+using RPG.Attribute;
 using UnityEngine;
 
 public class ProjectileSpawner : Spawner<AttackProjectile>

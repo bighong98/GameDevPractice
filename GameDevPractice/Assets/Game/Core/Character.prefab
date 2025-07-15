@@ -19,6 +19,7 @@ GameObject:
   - component: {fileID: -4321172655345262780}
   - component: {fileID: 1599618502693370758}
   - component: {fileID: -193848170717944432}
+  - component: {fileID: 4623480271148808600}
   m_Layer: 0
   m_Name: Character
   m_TagString: Untagged
@@ -171,8 +172,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   timeBetweenAttacks: 1
-  rightHandTransform: {fileID: 0}
-  leftHandTransform: {fileID: 0}
   currentWeapon: {fileID: 0}
   defaultWeapon: {fileID: 11400000, guid: 0a600904131b2d64994bee447b8efe39, type: 2}
   target: {fileID: 0}
@@ -241,3 +240,18 @@ MonoBehaviour:
   fighter: {fileID: 6342785507549057401}
   rightHandTransform: {fileID: 0}
   leftHandTransform: {fileID: 0}
+--- !u!114 &4623480271148808600
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6061633697407881761}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e55801e99b89064caae7130dd0cb83f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RPG.Stats.CharacterStat
+  startingLevel: 1
+  characterClass: 0
+  progression: {fileID: 11400000, guid: 62995c9fc2d3e694c88ffa854f08dcc4, type: 2}
