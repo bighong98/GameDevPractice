@@ -28,6 +28,17 @@ namespace RPG.Stats
             return 0; // 테이블에 없다면 0 반환
         }
 
+        public int GetMaxLevel(GameStat statType, CharacterClass characterClass)
+        {
+            if (characterProgressionLookup.TryGetValue(characterClass, out var progressionStats) &&
+                progressionStats.TryGetValue(statType, out var levels))
+            {
+                return levels.Length;
+            }
+
+            return 0;
+        }
+
         private void InitializeLookupTable()
         {
             if (characterProgressionLookup.Count > 0) return; // 이미 초기화된 상태라면 취소

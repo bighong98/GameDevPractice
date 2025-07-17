@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using RPG.Core;
 using RPG.Saving;
+using RPG.Stats;
 
 namespace RPG.Attribute
 {
@@ -12,17 +13,27 @@ namespace RPG.Attribute
     }
     public class Health : MonoBehaviour, ISavable
     {
-        [SerializeField] private float healthPoints = 100f;
+        [SerializeField] private float healthPoints = -1f; // -1 means not initialized(= not Start() && not RestoreState())
 
         private Animator animator;
+        private CharacterStats stats;
         
         private static readonly int DieAnimHash = Animator.StringToHash("die");
 
         private void Awake()
         {
             animator = GetComponent<Animator>();
+            stats = GetComponent<CharacterStats>();
         }
-        
+
+        private void Start()
+        {
+            if (healthPoints < 0 && stats != null) // healthPoints가 초기화되지 않은 경우에만 초기화 시도
+            {
+                healthPoints = stats.GetStat(GameStat.Health); // 레벨에 맞는 최대체력값 불러오기
+            }
+        }
+
         public bool IsDead { get; private set; }
 
         public void TakeDamage(float damage)

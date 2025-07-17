@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using RPG.Saving;
 using UnityEngine;
@@ -17,9 +18,10 @@ namespace RPG.SceneManagement
         private void Awake()
         {
             saveSystem = GetComponent<SaveSystem>();
+            LoadLastScene().Forget();
         }
-
-        private async void Start()
+        
+        private async UniTask LoadLastScene()
         {
             Fader fader = FindFirstObjectByType<Fader>();
             fader.FadeOutImmediately();
@@ -39,6 +41,11 @@ namespace RPG.SceneManagement
             {
                 Save().Forget();
             }
+
+            if (Input.GetKeyDown(KeyCode.Delete))
+            {
+                Delete().Forget();
+            }
         }
 
         public async UniTask Save()
@@ -49,6 +56,11 @@ namespace RPG.SceneManagement
         public async UniTask Load()
         {
             await saveSystem.LoadAsync(defaultSaveFile);
+        }
+
+        public async UniTask Delete()
+        {
+            await saveSystem.DeleteAsync(defaultSaveFile);
         }
     }
 }

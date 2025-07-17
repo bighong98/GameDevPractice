@@ -12,7 +12,6 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
     [SerializeField] private GameObject onHitParticlePrefab;
     private bool hasOnHitEffect;
     
-    
     public void InitializeProjectileSpawner(Fighter owner, WeaponTypeSO weaponTypeSO)
     {
         if (owner is not { } shootingWeaponOwner)

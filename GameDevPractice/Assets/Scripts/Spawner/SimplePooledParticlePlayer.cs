@@ -4,13 +4,24 @@ using UnityEngine;
 public class SimplePooledParticlePlayer : MonoBehaviour, IPoolObject
 {
     private bool init;
-    private ParticleSystem particle;
+    [SerializeField] private ParticleSystem particle;
 
     private void Init()
     {
         if (init) return;
+
+        if (particle == null)
+        {
+            if (GetComponent<ParticleSystem>() is { } getCompoResult)
+            {
+                particle = getCompoResult;
+            }
+            else if (Util.FindChild<ParticleSystem>(gameObject, recursive: true) is {} findChildResult)
+            {
+                particle = findChildResult;
+            }
+        }
         
-        particle = GetComponent<ParticleSystem>();
         init = (particle != null);
     }
 
