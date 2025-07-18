@@ -1,5 +1,6 @@
 using System;
 using Cysharp.Threading.Tasks;
+using GameDevTV.Utils;
 using RPG.Attribute;
 using UnityEngine;
 
@@ -32,7 +33,8 @@ namespace RPG.Stats
         [SerializeField] private ProgressionSO progression;
 
         // 레벨 (레벨, 레벨업 이펙트 관련 기능 이관 고려)
-        [SerializeField] private int currentLevel = 0;
+        // [SerializeField] private int currentLevel = 0;
+        private LazyValue<int> currentLevel;
         [SerializeField] private GameObject levelUpEffectPrefab;
         private bool hasLevelUpEffect;
         public event Action<int> OnLevelUp;
@@ -50,13 +52,12 @@ namespace RPG.Stats
             }
 
             hasLevelUpEffect = levelUpEffectPrefab != null;
+            currentLevel = new LazyValue<int>(CalculateLevel);
         }
 
         private void Start()
         {
-            if (experience == null) return;
-            
-            currentLevel = CalculateLevel();
+            currentLevel.ForceInit();
             
             LevelUpTestMethod().Forget(); // 테스트용 매서드
         }
@@ -104,21 +105,17 @@ namespace RPG.Stats
 
         public int GetCurrentLevel()
         {
-            if (currentLevel < 1)
-            {
-                currentLevel = CalculateLevel();
-            }
-            return currentLevel;
+            return currentLevel.value;
         }
 
         private void UpdateLevel(float xp)
         {
             int newLevel = CalculateLevel(xp);
-            if (newLevel > currentLevel)
+            if (newLevel > currentLevel.value)
             {
-                currentLevel = newLevel;
-                Util.Log($"level up: {gameObject.name}.{currentLevel}");
-                OnLevelUp?.Invoke(currentLevel);
+                currentLevel.value = newLevel;
+                Util.Log($"level up: {gameObject.name}.{currentLevel.value}");
+                OnLevelUp?.Invoke(currentLevel.value);
                 if (hasLevelUpEffect)
                 {
                     ShowLevelUpEffect();

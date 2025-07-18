@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using GameDevTV.Utils;
 using UnityEngine;
 using RPG.Movement;
 using RPG.Core;
@@ -15,7 +16,7 @@ namespace RPG.Combat
         [SerializeField] private float timeBetweenAttacks = 1f; // todo: move to equipped weapon
         private float timeSinceLastAttack = 0;
         
-        [SerializeField] private WeaponTypeSO currentWeapon; // 현재 장착 중인 무기
+        private LazyValue<WeaponTypeSO> currentWeapon; // 현재 장착 중인 무기
         [SerializeField] private WeaponTypeSO defaultWeapon; // 장비 장착해제시 적용되어야할 무기종(ex-Unarmed)
         
         [SerializeField] private Health target;
@@ -32,18 +33,21 @@ namespace RPG.Combat
         public event Action<Health> OnTargetChanged; // 공격 타겟(target) 변경 시
         
         public bool IsEquippingWeapon => currentWeapon != null;
-        public (WeaponTypeSO weapon, Animator animator) GetWeaponEquipperInfo => (this.currentWeapon, this.animator);
+        public (WeaponTypeSO weapon, Animator animator) GetWeaponEquipperInfo => (this.currentWeapon.value, this.animator);
 
         private void Awake()
         {
             mover = GetComponent<Mover>();
             animator = GetComponent<Animator>();
             ActionScheduler = GetComponent<ActoinScheduler>();
+
+            currentWeapon = new LazyValue<WeaponTypeSO>(SetDefaultWeapon);
         }
 
         private void Start()
         {
-            EquipWeapon(currentWeapon == null ? defaultWeapon : currentWeapon);
+            currentWeapon.ForceInit();
+            EquipWeapon(currentWeapon.value);
         }
 
         private void Update()
@@ -61,7 +65,7 @@ namespace RPG.Combat
             }
         }
 
-        private bool IsInRange => Vector3.Distance(transform.position, target.transform.position) < currentWeapon?.GetRange;
+        private bool IsInRange => Vector3.Distance(transform.position, target.transform.position) < currentWeapon.value.GetRange;
         
         private void AttackBehaviour()
         {
@@ -86,7 +90,7 @@ namespace RPG.Combat
         {
             if (target == null) return;
             OnAttack?.Invoke();
-            target.TakeDamage(currentWeapon?.GetDamage ?? 0);
+            target.TakeDamage(currentWeapon.value.GetDamage);
         }
 
         void Shoot()
@@ -157,10 +161,15 @@ namespace RPG.Combat
         #endregion
 
         #region Weapon
+
+        private WeaponTypeSO SetDefaultWeapon() 
+        {
+            return defaultWeapon; // defaultWeapon:null 인 케이스 방어 없음
+        }
         
         public void EquipWeapon(WeaponTypeSO weaponTypeSO)
         {
-            this.currentWeapon = weaponTypeSO;
+            this.currentWeapon.value = weaponTypeSO;
             OnEquipWeapon?.Invoke(weaponTypeSO, animator);
         }
 
@@ -168,7 +177,7 @@ namespace RPG.Combat
         {
             if (defaultWeapon != null)
             {
-                currentWeapon = defaultWeapon;
+                currentWeapon.value = defaultWeapon;
                 OnEquipWeapon?.Invoke(defaultWeapon, animator);
             }
         }
@@ -179,12 +188,12 @@ namespace RPG.Combat
 
         public object CaptureState()
         {
-            if (currentWeapon == null || currentWeapon == defaultWeapon)
+            if (currentWeapon == null || currentWeapon.value == defaultWeapon)
             {
                 return new FighterSaveData();
             }
             
-            return new FighterSaveData(currentWeapon);
+            return new FighterSaveData(currentWeapon.value);
         }
 
         public bool RestoreState(object state)

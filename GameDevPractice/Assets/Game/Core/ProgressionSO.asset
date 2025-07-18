@@ -28,7 +28,6 @@ MonoBehaviour:
       - 20
       - 30
       - 40
-      - 50
   - characterClass: 2
     progressionStats:
     - stat: 0

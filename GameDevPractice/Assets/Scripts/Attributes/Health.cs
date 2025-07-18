@@ -78,7 +78,7 @@ namespace RPG.Attribute
         {
             float newMaxHp = stats.GetStat(GameStat.Health, level);
             hp.value = Mathf.Min(newMaxHp, hp.value + newMaxHp * ((float)LevelUpRegenerationPercentage/100));
-            Util.Log($"OnLevelUp: hp: {hp.value}");
+            // Util.Log($"OnLevelUp: hp: {hp.value}");
         }
 
         public object CaptureState()
