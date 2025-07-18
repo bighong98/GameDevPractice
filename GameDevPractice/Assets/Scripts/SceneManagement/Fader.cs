@@ -12,8 +12,8 @@ namespace RPG.SceneManagement
     {
         private CanvasGroup canvasGroup;
         private CancellationTokenSource fadeCTS;
-
-        private void Start()
+        
+        private void Awake()
         {
             canvasGroup = GetComponent<CanvasGroup>();
             if (canvasGroup == null)

@@ -19,7 +19,11 @@ namespace RPG.Stats
             if (characterProgressionLookup.TryGetValue(characterClass, out var progressionStats) &&
                 progressionStats.TryGetValue(statType, out var levels))
             {
-                if (levels is not { Length: { } length } || length < level) return 0; // out of boundary exception 방어
+                if (levels is not { Length: { } length } || length < level) 
+                {
+                    Util.Log($"[{nameof(ProgressionSO)}.{nameof(GetProgressionStat)}] failed to get stat. character: {Enum.GetName(typeof(CharacterClass), characterClass)}, stat: {Enum.GetName(typeof(GameStat), statType)}");
+                    return 0; // out of boundary exception 방어
+                }   
                 return levels[level - 1];
             }
 

@@ -1,4 +1,5 @@
 using System;
+using Cysharp.Threading.Tasks;
 using RPG.Attribute;
 using UnityEngine;
 
@@ -20,7 +21,7 @@ namespace RPG.Stats
     {
         Health, // 최대체력
         ExperienceReward, // 경험치량(몬스터 처치 시, 플레이어에게는 없음)
-        ExperienceToLevelUp, // 레벨업에 필요한 경험치 필요량
+        ExperienceToLevelUp, // 레벨업에 필요한 경험치 필요량 (반드시 배열 길이가 (최대레벨-1)이어야함)
     }
     
     public class CharacterStats : MonoBehaviour
@@ -30,8 +31,13 @@ namespace RPG.Stats
         [SerializeField] private CharacterClass characterClass;
         [SerializeField] private ProgressionSO progression;
 
+        // 레벨 (레벨, 레벨업 이펙트 관련 기능 이관 고려)
         [SerializeField] private int currentLevel = 0;
-
+        [SerializeField] private GameObject levelUpEffectPrefab;
+        private bool hasLevelUpEffect;
+        public event Action<int> OnLevelUp;
+        
+        // 경험치
         private Experience experience;
         private bool hasExperience;
 
@@ -42,6 +48,8 @@ namespace RPG.Stats
                 experience = result;
                 hasExperience = true;
             }
+
+            hasLevelUpEffect = levelUpEffectPrefab != null;
         }
 
         private void Start()
@@ -49,13 +57,50 @@ namespace RPG.Stats
             if (experience == null) return;
             
             currentLevel = CalculateLevel();
+            
+            LevelUpTestMethod().Forget(); // 테스트용 매서드
+        }
+
+        private void OnEnable()
+        {
+            if (experience == null) return;
             experience.OnExperienceGained += UpdateLevel;
         }
+
+        private void OnDisable()
+        {
+            if (experience == null) return;
+            experience.OnExperienceGained -= UpdateLevel;
+        }
+
+        private readonly TimeSpan oneSecond = TimeSpan.FromSeconds(1);
+        private async UniTaskVoid LevelUpTestMethod()
+        {
+            if (!gameObject.CompareTag("Player")) return;
+            
+            while (true)
+            {
+                await UniTask.Delay(oneSecond, DelayType.DeltaTime);
+                if (this == null || gameObject == null) break;
+                if (hasExperience)
+                {
+                    experience.GainExperience(10);
+                    Util.Log("Experience Gained");
+                }
+            }
+        } 
 
         public float GetStat(GameStat statType)
         {
             return progression.GetProgressionStat(statType, characterClass, startingLevel);
         }
+
+        public float GetStat(GameStat statType, int level)
+        {
+            return progression.GetProgressionStat(statType, characterClass, level);
+        }
+
+        #region Level
 
         public int GetCurrentLevel()
         {
@@ -72,7 +117,12 @@ namespace RPG.Stats
             if (newLevel > currentLevel)
             {
                 currentLevel = newLevel;
-                Util.Log($"level up: {gameObject.name}");
+                Util.Log($"level up: {gameObject.name}.{currentLevel}");
+                OnLevelUp?.Invoke(currentLevel);
+                if (hasLevelUpEffect)
+                {
+                    ShowLevelUpEffect();
+                }
             }
         }
 
@@ -90,13 +140,20 @@ namespace RPG.Stats
             for (int level = 1; level <= penultimateLevel; level++)
             {
                 if (progression.GetProgressionStat(GameStat.ExperienceToLevelUp, characterClass, level) is
-                        { } XPToLevelUp && XPToLevelUp > currentXP)
+                        { } xpToLevelUp && xpToLevelUp > currentXP)
                 {
                     return level;
                 }
             }
 
             return penultimateLevel + 1;
+        }
+
+        #endregion
+
+        private void ShowLevelUpEffect()
+        {
+            PoolingManager.Instance.GetFromPool<SimplePooledParticlePlayer>(levelUpEffectPrefab, transform.position);
         }
     }
 }

@@ -29,21 +29,28 @@ namespace RPG.Control
         private float timeSinceLastSawPlayer = Mathf.Infinity;
         private float timeSinceArrivedAtWaypoint = Mathf.Infinity;
         private int currentWaypointIndex = 0;
-        
-        private void Start()
+
+        private void Awake()
         {
-            player = GameObject.FindWithTag("Player").GetComponent<PlayerController>();
             fighter = GetComponent<Fighter>();
             health = GetComponent<Health>();
             mover = GetComponent<Mover>();
             actionScheduler = GetComponent<ActoinScheduler>();
+            
+            if (GameObject.FindWithTag("Player") is { } foundPlayer)
+            {
+                player = foundPlayer.GetComponent<PlayerController>();
+            }
+        }
 
+        private void Start()
+        {
             guardPosition = transform.position;
         }
 
         private void Update()
         {
-            if (health.IsDead) return;
+            if (health.IsDead) return; // 사망 상태라면 실행 취소
             if (IsInAttackRange && fighter.CanAttack(player.gameObject, out Health playerHealth))
             {
                 timeSinceLastSawPlayer = 0;

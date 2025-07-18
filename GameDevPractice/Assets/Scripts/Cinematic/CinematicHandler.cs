@@ -6,20 +6,34 @@ using UnityEngine.Playables;
 
 namespace RPG.Cinematic
 {
+    [RequireComponent(typeof(PlayableDirector))]
     public class CinematicHandler : MonoBehaviour
     {
         private GameObject player;
-
-        private void Start()
+        private PlayableDirector pd;
+        
+        private void Awake()
         {
             player = GameObject.FindWithTag("Player");
-            var pd = GetComponent<PlayableDirector>();
-            if (pd == null) return;
+            pd = GetComponent<PlayableDirector>();
+        }
+
+        private void OnEnable()
+        {
+            if (player == null) return;
 
             pd.played += OnPDStarted;
             pd.stopped += OnPDStopped;
         }
-        
+
+        private void OnDisable()
+        {
+            if (player == null) return;
+            
+            pd.played -= OnPDStarted;
+            pd.stopped -= OnPDStopped;
+        }
+
         private void OnPDStarted(PlayableDirector pd)
         {
             Debug.Log("OnPDStarted called");

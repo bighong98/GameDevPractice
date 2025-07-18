@@ -23,6 +23,8 @@ namespace RPG.SceneManagement
         
         private async UniTask LoadLastScene()
         {
+            await UniTask.Yield(); // 1 프레임 지연 (Awake()에서 실행됨으로써 발생 가능한 fader 초기화 순서 오류 방지)
+            
             Fader fader = FindFirstObjectByType<Fader>();
             fader.FadeOutImmediately();
             

@@ -33,13 +33,16 @@ namespace RPG.Combat
         
         public bool IsEquippingWeapon => currentWeapon != null;
         public (WeaponTypeSO weapon, Animator animator) GetWeaponEquipperInfo => (this.currentWeapon, this.animator);
-        
-        private void Start()
+
+        private void Awake()
         {
             mover = GetComponent<Mover>();
             animator = GetComponent<Animator>();
             ActionScheduler = GetComponent<ActoinScheduler>();
+        }
 
+        private void Start()
+        {
             EquipWeapon(currentWeapon == null ? defaultWeapon : currentWeapon);
         }
 

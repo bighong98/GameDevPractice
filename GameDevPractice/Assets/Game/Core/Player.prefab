@@ -2378,6 +2378,10 @@ PrefabInstance:
       propertyPath: characterClass
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 4623480271148808600, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
+      propertyPath: levelUpEffectPrefab
+      value: 
+      objectReference: {fileID: 672893909101835284, guid: 94089ecaec66ba248b810e3bfaf74600, type: 3}
     - target: {fileID: 6061633697407881761, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
       propertyPath: m_Name
       value: Player
@@ -2485,6 +2489,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 449495931f1a21f4c8516cd02aa59c80, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RPG.Attribute.Experience
+  XP: 0
 --- !u!4 &7253599445613321251 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8132568554257588984, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}

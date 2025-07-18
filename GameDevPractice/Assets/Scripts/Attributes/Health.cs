@@ -3,6 +3,7 @@ using UnityEngine;
 using RPG.Core;
 using RPG.Saving;
 using RPG.Stats;
+using GameDevTV.Utils;
 
 namespace RPG.Attribute
 {
@@ -13,38 +14,52 @@ namespace RPG.Attribute
     }
     public class Health : MonoBehaviour, ISavable
     {
-        [SerializeField] private float healthPoints = -1f; // -1 means not initialized(= not Start() && not RestoreState())
-
+        // [SerializeField] private float healthPoints = -1f; // -1 means not initialized(= not Start() && not RestoreState())
+        private LazyValue<float> hp;
+        
         private Animator animator;
         private CharacterStats stats;
         
         private static readonly int DieAnimHash = Animator.StringToHash("die");
-
+        public bool IsDead { get; private set; }
+        
         private void Awake()
         {
             animator = GetComponent<Animator>();
             stats = GetComponent<CharacterStats>();
+
+            hp = new LazyValue<float>(GetInitialHealth);
         }
 
         private void Start()
         {
-            if (healthPoints < 0 && stats != null) // healthPoints가 초기화되지 않은 경우에만 초기화 시도
-            {
-                healthPoints = stats.GetStat(GameStat.Health); // 레벨에 맞는 최대체력값 불러오기
-            }
+            hp.ForceInit();
         }
 
-        public bool IsDead { get; private set; }
+        private void OnEnable()
+        {
+            stats.OnLevelUp += this.OnLevelUp;
+        }
 
+        private void OnDisable()
+        {
+            stats.OnLevelUp -= this.OnLevelUp;
+        }
+
+        private float GetInitialHealth()
+        {
+            return GetComponent<CharacterStats>().GetStat(GameStat.Health);
+        }
+        
         public void TakeDamage(float damage)
         {
-            healthPoints = Mathf.Max(healthPoints - damage, 0); print($"health: {healthPoints}");
+            hp.value = Mathf.Max(hp.value - damage, 0); print($"health: {hp.value}");
             RefreshAliveState();
         }
 
         private void RefreshAliveState()
         {
-            if (healthPoints <= 0)
+            if (hp.value <= 0)
             {
                 Die();
             }
@@ -58,6 +73,14 @@ namespace RPG.Attribute
             GetComponent<ActoinScheduler>().CancelCurrentAction();
         }
 
+        private const int LevelUpRegenerationPercentage = 50;
+        private void OnLevelUp(int level)
+        {
+            float newMaxHp = stats.GetStat(GameStat.Health, level);
+            hp.value = Mathf.Min(newMaxHp, hp.value + newMaxHp * ((float)LevelUpRegenerationPercentage/100));
+            Util.Log($"OnLevelUp: hp: {hp.value}");
+        }
+
         public object CaptureState()
         {
             #region For Debug
@@ -68,7 +91,7 @@ namespace RPG.Attribute
 
             #endregion
             
-            return new HealthSaveData { hp = healthPoints };
+            return new HealthSaveData { hp = hp.value };
         }
 
         public bool RestoreState(object state)
@@ -77,7 +100,7 @@ namespace RPG.Attribute
             
             // Debug.Log($"RestoreState for Health: hp to {data.hp}"); 
 
-            healthPoints = data.hp;
+            hp.value = data.hp;
             RefreshAliveState();
 
             return true;
