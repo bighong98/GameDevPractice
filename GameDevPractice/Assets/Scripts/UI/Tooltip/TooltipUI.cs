@@ -115,7 +115,7 @@ public class TooltipUI : BaseUI
 
     private void HandleMouseFollow()
     {
-        if (Util.IsQuitting) return;
+        // if (Util.IsQuitting) return;
         
         Vector2 pointerPos = InputManager.Instance.PointerPos;
 

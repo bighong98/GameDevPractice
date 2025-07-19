@@ -129,7 +129,7 @@ public class AttackProjectile : MonoBehaviour, IPoolObject
 
     public void OnDestroyFromPool()
     {
-        if (Util.IsQuitting) return;
+        // if (Util.IsQuitting) return;
         if (projectileCTS == null) return;
         
         if (!projectileCTS.IsCancellationRequested)

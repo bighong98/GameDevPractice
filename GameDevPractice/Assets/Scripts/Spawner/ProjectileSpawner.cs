@@ -10,7 +10,7 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
     private bool isHoming;
 
     [SerializeField] private GameObject onHitParticlePrefab;
-    private bool hasOnHitEffect;
+    // private bool hasOnHitEffect;
     
     public void InitializeProjectileSpawner(Fighter owner, WeaponTypeSO weaponTypeSO)
     {
@@ -26,7 +26,7 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
         if (weaponTypeSO is { HasImpactEffect: true, GetImpactEffect: { } particlePrefab })
         {
             Util.Log("Trying to Add PlayOnHitEffect as delegate");
-            hasOnHitEffect = true;
+            // hasOnHitEffect = true;
             onHitParticlePrefab = particlePrefab;
 
             onCreate = obj =>

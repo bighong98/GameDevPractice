@@ -151,7 +151,7 @@ namespace Item
 
         private void DisConnectDataWithSlotUIs()
         {
-            if (Util.IsQuitting) return;
+            // if (Util.IsQuitting) return;
             
             inventorySystem.OnInventorySlotChanged -= UpdateSlotUI;
             inventorySystem.OnEquippedSlotChanged -= UpdateEquippedSlotUI;
@@ -231,7 +231,9 @@ namespace Item
 
         private void SubscribeInputEvents()
         {
+            // if (Util.IsQuitting) return; // 어플리케이션 종료 중이라면 취소
             DeSubscribeInputEvents(); // 중복 델리게이트 등록 방지
+            
             InputManager.Instance.OnUIPointerMoved += OnPointerMove;
 
             InputManager.Instance.OnDragStarted += OnDrag;
@@ -242,7 +244,7 @@ namespace Item
 
         private void DeSubscribeInputEvents()
         {
-            if (Util.IsQuitting) return; // 어플리케이션 종료 중이라면 취소
+            // if (Util.IsQuitting) return; // 어플리케이션 종료 중이라면 취소
             
             InputManager.Instance.OnUIPointerMoved -= OnPointerMove;
             

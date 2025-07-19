@@ -64,6 +64,7 @@ public class UIManager : Singleton<UIManager>
     private void InitAfterLoad(bool done)
     {
         if (!done) return;
+        // if (Util.IsQuitting) return; // 어플리케이션 종료 중이라면 취소
         
         //todo: 리소스 매니저에서 필요한 리소스 레퍼런스 받아와서 사용
         InputManager.Instance.OnEscaped += OnEscapeCalled;
@@ -291,7 +292,7 @@ public class UIManager : Singleton<UIManager>
 
         if (popupStacks.Count == 0)
         {
-            if (Util.IsQuitting) return;
+            // if (Util.IsQuitting) return;
             InputManager.Instance.DisableUIActionMap();
         }
         

@@ -11,8 +11,8 @@ public class Singleton<T> : MonoBehaviour where T : MonoBehaviour
             if (_instance != null)
                 return _instance;
 
-            if (Util.IsQuitting)
-                return null;
+            // if (Util.IsQuitting)
+            //     return null;
             
             _instance = FindFirstObjectByType<T>();
             if (_instance == null)
