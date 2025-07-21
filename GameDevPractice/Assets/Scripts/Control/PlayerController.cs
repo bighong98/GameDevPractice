@@ -5,6 +5,7 @@ using UnityEngine;
 using RPG.Attribute;
 using RPG.Movement;
 using RPG.Combat;
+using UnityEngine.AI;
 
 namespace RPG.Control
 {
@@ -16,6 +17,7 @@ namespace RPG.Control
         private Health health;
         
         private bool fightEnabled = true;
+        private const float MaxNavMeshProjectionDistance = 1f;
 
         private void Awake()
         {
@@ -91,11 +93,25 @@ namespace RPG.Control
 
         private bool TryMoveTo(Vector2 pos)
         {
-            if (!Physics.Raycast(GetPointerRay(pos), out var hit)) return false;
+            if (!RaycastWithNavMesh(pos, out var navMeshPos)) return false;
             
             SetCursor(CursorType.Movement);
-            mover.StartMoveAction(hit.point);
+            mover.StartMoveAction(navMeshPos);
             return true;
+        }
+
+        private readonly NavMeshPath navMeshPath = new ();
+        private bool RaycastWithNavMesh(Vector2 pointerPos, out Vector3 target)
+        {
+            if (Physics.Raycast(GetPointerRay(pointerPos), out RaycastHit hit) &&
+                NavMesh.SamplePosition(hit.point, out NavMeshHit navMeshHit, MaxNavMeshProjectionDistance, NavMesh.AllAreas))
+            {
+                target = navMeshHit.position;
+                return true;
+            }
+
+            target = Vector3.zero;
+            return false;
         }
         
         private Ray GetPointerRay(Vector2 pos)
@@ -110,37 +126,50 @@ namespace RPG.Control
 
         #region Deprecated
 
-        // private bool InteractWithCombat()
+        // private bool TryMoveTo(Vector2 pos)
         // {
-        //     if (Physics.RaycastNonAlloc(GetMouseRay, lastHits) is int hitLength and > 0) // 여러명일 때는 전부 때릴 것 같은데?
+        //     if (!Physics.Raycast(GetPointerRay(pos), out var hit)) return false;
+        //     
+        //     SetCursor(CursorType.Movement);
+        //     mover.StartMoveAction(hit.point);
+        //     return true;
+        // }
+        
+        
+        // // Check Path Length Version
+        // private float GetPathLength(NavMeshPath path) // Not Using Yet
+        // {
+        //     if (path.corners.Length is not ({ } cornerLength and >= 2)) return 0;
+        //
+        //     float total = 0;
+        //     for (int i = 0; i < cornerLength - 1; i++)
         //     {
-        //         for (int i = 0 ; i < hitLength; i++)
-        //         {
-        //             GameObject target = lastHits[i].transform.gameObject;
-        //             
-        //             if (!fighter.CanAttack(target, out Health targetHealth)) continue; // 현재 fighter.Attack과 함께 두번 GetComponent를 실행하고 있음     
-        //             
-        //             if (Input.GetMouseButtonDown(0))
-        //                 fighter.Attack(targetHealth);
-        //             
-        //             return true;
-        //         }
+        //         total += Vector3.Distance(path.corners[i], path.corners[i + 1]);
         //     }
         //
-        //     return false;
+        //     return total;
         // }
-        // private bool InteractWithMovement()
+        // private const float MaxPathLength = 40f;
+        // private bool RaycastWithNavMesh(Vector2 pointerPos, out Vector3 target)
         // {
-        //     if (Physics.Raycast(GetMouseRay, out var hit))
+        //     if (Physics.Raycast(GetPointerRay(pointerPos), out RaycastHit hit) &&
+        //         NavMesh.SamplePosition(hit.point, out NavMeshHit navMeshHit, MaxNavMeshProjectionDistance, NavMesh.AllAreas))
         //     {
-        //         if (Input.GetMouseButton(0))
-        //             mover.StartMoveAction(hit.point);
-        //         return true;
+        //         target = navMeshHit.position;
+        //
+        //         if (NavMesh.CalculatePath(transform.position, target, NavMesh.AllAreas, navMeshPath) &&
+        //             navMeshPath.status == NavMeshPathStatus.PathComplete &&
+        //             GetPathLength(navMeshPath) > MaxPathLength)
+        //         {
+        //             return true;
+        //         }
+        //
+        //         return false;
         //     }
-        //     
+        //
+        //     target = Vector3.zero;
         //     return false;
         // }
-        // private Ray GetMouseRay => _camera.ScreenPointToRay(Input.mousePosition);
 
         #endregion
     }
