@@ -99,8 +99,7 @@ namespace RPG.Control
             mover.StartMoveAction(navMeshPos);
             return true;
         }
-
-        private readonly NavMeshPath navMeshPath = new ();
+        
         private bool RaycastWithNavMesh(Vector2 pointerPos, out Vector3 target)
         {
             if (Physics.Raycast(GetPointerRay(pointerPos), out RaycastHit hit) &&
@@ -137,6 +136,7 @@ namespace RPG.Control
         
         
         // // Check Path Length Version
+        // private readonly NavMeshPath navMeshPath = new ();
         // private float GetPathLength(NavMeshPath path) // Not Using Yet
         // {
         //     if (path.corners.Length is not ({ } cornerLength and >= 2)) return 0;
