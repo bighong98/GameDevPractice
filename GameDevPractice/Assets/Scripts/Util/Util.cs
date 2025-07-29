@@ -23,6 +23,8 @@ public static class Util
             mainCamera = Camera.main;
     }
 
+    #region Position Conversion (WorldSpace <-> Screen, etc)
+
     private static Vector3 GetMouseWorldPosition(bool nullCheck = true)
     {
         if (nullCheck && mainCamera == null)
@@ -49,12 +51,15 @@ public static class Util
         return mouseWorldPosition;
     }
 
-    public static Vector3 GetWorldScreenPosition(Vector3 pos, bool nullCheck = true)
+    public static Vector3 GetWorldScreenPosition(Vector3 pos, bool ignoreDepthZ = true, bool nullCheck = true)
     {
         if (nullCheck && mainCamera == null)
             mainCamera = Camera.main;
         Vector3 worldScreenPosition = mainCamera.WorldToScreenPoint(pos);
-        worldScreenPosition.z = 0f;
+        
+        if (ignoreDepthZ)
+            worldScreenPosition.z = 0f;
+        
         return worldScreenPosition;
     }
 
@@ -68,6 +73,25 @@ public static class Util
         );
     }
 
+    public static bool IsInsideScreen(Vector3 worldPosition, out Vector3 screenPosition, bool ignoreLOD = true, float maxDistance = 0)
+    {
+        if (GetWorldScreenPosition(worldPosition, false, false) 
+                is { x: {} x and > 0, y: {} y and > 0, z: {} z and >= 0 } result 
+            && x < Screen.width && y < Screen.width // 화면 안에 존재하는지 확인
+            && !(!ignoreLOD && z > maxDistance)) // LOD 확인
+        {
+            screenPosition = result;
+            return true;
+        }
+
+        screenPosition = Vector3.zero;
+        return false;
+    }
+    
+    
+
+    #endregion
+    
     public static T GetOrAddComponent<T>(GameObject go) where T : UnityEngine.Component
     {
         T component = go.GetComponent<T>();
@@ -75,6 +99,8 @@ public static class Util
             component = go.AddComponent<T>();
         return component;
     }
+
+    #region Hierarchy
 
     public static GameObject FindChild(GameObject go, string name = null, bool recursive = false)
     {
@@ -156,6 +182,10 @@ public static class Util
         return caseSensitive ? search.Contains(targetName) : search.IndexOf(targetName, StringComparison.OrdinalIgnoreCase) >= 0;
     }
     
+    #endregion
+
+    #region Vector
+    
     public static Vector2 GetVectorTwo(Vector3 vector)
     {
         return new Vector2(vector.x, vector.y);
@@ -193,6 +223,10 @@ public static class Util
         }
     }
 
+    #endregion
+
+    #region Raycast
+
     private static readonly List<RaycastResult> _raycastResults = new List<RaycastResult>();
     public static T RaycastAndGetFirstUIComponent<T>(GraphicRaycaster raycaster, PointerEventData pointerEventData = null, int targetOrder = 0) where T : Component
     {
@@ -218,13 +252,21 @@ public static class Util
         return Physics2D.OverlapPoint(GetScreenWorldPosition(pos), layerMask)?.GetComponent<T>();
     }
 
+    #endregion
+
+    #region UniTask
+
     public static void ClearUniTaskCTS(CancellationTokenSource tokenSource)
     {
         if (!tokenSource?.IsCancellationRequested ?? false)
             tokenSource?.Cancel();
         tokenSource?.Dispose();
     }
-    
+
+    #endregion
+
+    #region Addressables
+
     public static async UniTask<T> ExtractAssetRefAsync<T>(AssetReferenceT<T> reference) where T : UnityEngine.Object
     {
         if (reference == null)
@@ -254,6 +296,8 @@ public static class Util
         return handle.Result as T;
     }
 
+    #endregion
+    
     #region Debug
     [System.Diagnostics.Conditional("UNITY_EDITOR")]
     public static void Log(object msg) => UnityEngine.Debug.Log(msg);

@@ -1119,6 +1119,10 @@ PrefabInstance:
       propertyPath: handTransform
       value: 
       objectReference: {fileID: 15613489}
+    - target: {fileID: 4222077925850697604, guid: 979fea7d1693c584cb00a39a9d762e0d, type: 3}
+      propertyPath: m_DynamicPixelsPerUnit
+      value: 1000
+      objectReference: {fileID: 0}
     - target: {fileID: 7403052176598494208, guid: 979fea7d1693c584cb00a39a9d762e0d, type: 3}
       propertyPath: Target.LookAtTarget
       value: 
@@ -1131,7 +1135,8 @@ PrefabInstance:
       propertyPath: uniqueIdentifier
       value: player
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 3671253752364499768, guid: 979fea7d1693c584cb00a39a9d762e0d, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []

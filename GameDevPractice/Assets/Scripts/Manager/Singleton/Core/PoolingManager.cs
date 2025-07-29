@@ -2,9 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Pool;
+using RPG.UI;
 
 public abstract class PoolDictWrapperBase { // 제네릭 사용 목적 래퍼의 래퍼
     public abstract void Clear();
@@ -134,30 +134,35 @@ public class PoolingManager : Singleton<PoolingManager>
         return pool;
     }
 
-    public T GetFromPool<T>(GameObject prefab) where T : Component, IPoolObject
+    public T GetFromPool<T>(GameObject prefab, Transform parent = null) where T : Component, IPoolObject
     {
-        ObjectPool<T> pool = GetPool<T>(prefab);
+        ObjectPool<T> pool = GetPool<T>(prefab, parent);
         return pool.Get();
     }
 
-    public T GetFromPool<T>(GameObject prefab, Vector3 position) where T : Component, IPoolObject
+    public T GetFromPool<T>(GameObject prefab, Transform parent, Vector3 position) where T : Component, IPoolObject
     {
-        ObjectPool<T> pool = GetPool<T>(prefab);
+        ObjectPool<T> pool = GetPool<T>(prefab, parent);
         var clone = pool.Get();
         clone.transform.position = position; // 현재 OnGetFromPool()보다 늦게 실행됨
         return clone;
     }
     
-    public T GetFromPool<T>(GameObject prefab, Vector3 position, Quaternion rotation) where T : Component, IPoolObject
+    public T GetFromPool<T>(GameObject prefab, Transform parent, Vector3 position, Quaternion rotation) where T : Component, IPoolObject
     {
-        ObjectPool<T> pool = GetPool<T>(prefab);
+        ObjectPool<T> pool = GetPool<T>(prefab, parent);
         var clone = pool.Get();
-        clone.transform.position = position;
+        if (clone.transform is {} trs)
+        {
+            trs.position = position;
+            trs.rotation = rotation;
+        }
+
         return clone;
     }
     
     #endregion
-
+    
     #region Release
 
     public void ReleaseFromPool<T>(T component) where T : UnityEngine.Component, IPoolObject

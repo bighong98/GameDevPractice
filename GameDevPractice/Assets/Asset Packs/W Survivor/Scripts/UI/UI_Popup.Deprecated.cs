@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using RPG.UI;
 
 public class UI_Popup : UI_Base
 {

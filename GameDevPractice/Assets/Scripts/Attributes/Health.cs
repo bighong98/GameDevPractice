@@ -1,9 +1,11 @@
 using System;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using RPG.Core;
 using RPG.Saving;
 using RPG.Stats;
 using GameDevTV.Utils;
+using RPG.UI;
 
 namespace RPG.Attribute
 {
@@ -14,7 +16,7 @@ namespace RPG.Attribute
     }
     public class Health : MonoBehaviour, ISavable
     {
-        // [SerializeField] private float healthPoints = -1f; // -1 means not initialized(= not Start() && not RestoreState())
+        private LazyValue<float> maxHp;
         private LazyValue<float> hp;
         
         private Animator animator;
@@ -22,18 +24,35 @@ namespace RPG.Attribute
         
         private static readonly int DieAnimHash = Animator.StringToHash("die");
         public bool IsDead { get; private set; }
+        public float GetCurrentHealth => hp.value;
+        public float GetMaxHealth => maxHp.value;
+        public float GetCurrentHealthRatio => (hp.value / maxHp.value);
+
+        public Action<float> OnHealthRatioChanged; // 현재 체력에 변동이 생긴 경우 (피격, 회복 등)
+        public Action<float> OnMaxHealthChanged; // 최대 체력에 변동이 생긴 경우 (레벨 업, 장비 변경 등)
+
+        [SerializeField] private GameObject HPBarPrefab; // testing
         
         private void Awake()
         {
             animator = GetComponent<Animator>();
             stats = GetComponent<CharacterStats>();
 
+            maxHp = new LazyValue<float>(GetInitialHealth);
             hp = new LazyValue<float>(GetInitialHealth);
         }
 
-        private void Start()
+        private async void Start()
         {
+            maxHp.ForceInit();
             hp.ForceInit();
+            
+
+            await UniTask.Delay(TimeSpan.FromSeconds(3), cancellationToken: this.GetCancellationTokenOnDestroy()).SuppressCancellationThrow();
+            if (this != null)
+            {
+                UIManager.Instance.GetUIFromPool<HPBar>(HPBarPrefab, UICanvas.Overlay).SetOwner(this);
+            }
         }
 
         private void OnEnable()
@@ -50,11 +69,31 @@ namespace RPG.Attribute
         {
             return GetComponent<CharacterStats>().GetStat(GameStat.Health);
         }
+
+        private void SetCurrentHealth(float amount)
+        {
+            if (maxHp.value is not ({ } max and > 0))
+            {
+                Util.Log("Max Hp is less or equal to 0. failed to set HP");
+                return;
+            }
+            
+            var curr = hp.value = Mathf.Clamp(amount, 0, max);
+            OnHealthRatioChanged?.Invoke(curr / max);
+        }
+
+        private void SetMaxHealth(float amount)
+        {
+            maxHp.value = amount;
+            OnMaxHealthChanged?.Invoke(maxHp.value);
+        }
         
         public void TakeDamage(float damage)
         {
-            hp.value = Mathf.Max(hp.value - damage, 0); print($"health: {hp.value}");
-            RefreshAliveState();
+            SetCurrentHealth(hp.value - damage); 
+            RefreshAliveState(); // SetCurrentHealth()로 옮길지 고려
+            
+            Util.Log($"health: {hp.value}");
         }
 
         private void RefreshAliveState()
@@ -76,8 +115,8 @@ namespace RPG.Attribute
         private const int LevelUpRegenerationPercentage = 50;
         private void OnLevelUp(int level)
         {
-            float newMaxHp = stats.GetStat(GameStat.Health, level);
-            hp.value = Mathf.Min(newMaxHp, hp.value + newMaxHp * ((float)LevelUpRegenerationPercentage/100));
+            SetMaxHealth(stats.GetStat(GameStat.Health, level));
+            SetCurrentHealth(hp.value + maxHp.value * ((float)LevelUpRegenerationPercentage / 100));
             // Util.Log($"OnLevelUp: hp: {hp.value}");
         }
 
@@ -91,7 +130,10 @@ namespace RPG.Attribute
 
             #endregion
             
-            return new HealthSaveData { hp = hp.value };
+            return new HealthSaveData
+            {
+                hp = hp.value
+            };
         }
 
         public bool RestoreState(object state)
@@ -99,8 +141,8 @@ namespace RPG.Attribute
             if (state is not HealthSaveData data) return false;
             
             // Debug.Log($"RestoreState for Health: hp to {data.hp}"); 
-
-            hp.value = data.hp;
+            
+            SetCurrentHealth(data.hp);
             RefreshAliveState();
 
             return true;

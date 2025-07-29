@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 using RPG.Combat;
 using RPG.Saving;
-using UnityEngine;
+using RPG.UI;
 
 namespace RPG.Item
 {

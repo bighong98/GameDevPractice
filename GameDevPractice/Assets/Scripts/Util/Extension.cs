@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using RPG.UI;
 
 // 확장 메소드 구현 목적의 static 클래스
 

@@ -4,38 +4,42 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-// 장비 슬롯 UI 스크립트
-public class UI_EquipmentSlot : UI_ItemSlotBase
+namespace RPG.UI
 {
-    private Color _originalHighlightColor;
-    private static readonly Color WarningHighlightColor = new Color(0.8f, 0.2f, 0.2f, 0.5f);
-    private void Awake()
+    // 장비 슬롯 UI 스크립트
+    public class UI_EquipmentSlot : UI_ItemSlotBase
     {
-        Init();
-    }
+        private Color _originalHighlightColor;
+        private static readonly Color WarningHighlightColor = new Color(0.8f, 0.2f, 0.2f, 0.5f);
+        private void Awake()
+        {
+            Init();
+        }
 
-    public override bool Init()
-    {
-        if (base.Init() == false)
-            return false;
+        public override bool Init()
+        {
+            if (base.Init() == false)
+                return false;
 
-        _originalHighlightColor = GetImage((int)Images.HighLightImage).color;
+            _originalHighlightColor = GetImage((int)Images.HighLightImage).color;
+            
+            return true;
+        }
         
-        return true;
+        public bool IsValidIndex(int idx) =>
+            idx is >= (int)Enums.EquippedItemSlotType.Weapon and (int)Enums.EquippedItemSlotType.Max;
+        
+        public void ShowWarningHighlight()
+        {
+            GetImage((int)Images.HighLightImage).color = WarningHighlightColor;
+            ShowHighlight();
+        }
+        public override void HideHighlight()
+        {
+            GetImage((int)Images.HighLightImage).color = _originalHighlightColor;
+            base.HideHighlight();
+        }
+        
     }
-    
-    public bool IsValidIndex(int idx) =>
-        idx is >= (int)Enums.EquippedItemSlotType.Weapon and (int)Enums.EquippedItemSlotType.Max;
-    
-    public void ShowWarningHighlight()
-    {
-        GetImage((int)Images.HighLightImage).color = WarningHighlightColor;
-        ShowHighlight();
-    }
-    public override void HideHighlight()
-    {
-        GetImage((int)Images.HighLightImage).color = _originalHighlightColor;
-        base.HideHighlight();
-    }
-    
 }
+    

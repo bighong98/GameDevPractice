@@ -1,28 +1,28 @@
 using System;
 using UnityEngine;
 
-public class MainMenuUI : BaseUI
+namespace RPG.UI
 {
-    #region Enum
-
-    enum Buttons
+    public class MainMenuUI : BaseUI
     {
-        playButton,
-        quitButton,
-    }
+        #region Enum
 
-    #endregion
-    private void Awake()
-    {
-        BindButton(typeof(Buttons));
-        BindAsyncEvent(GetButton((int)Buttons.playButton).gameObject, async () =>
+        enum Buttons
         {
-            await GameSceneManager.Instance.LoadSceneAsync(Enums.Scene.SelectScene);
-        });
-        
-        BindAsyncEvent(GetButton((int)Buttons.quitButton).gameObject, async () =>
+            playButton,
+            quitButton,
+        }
+
+        #endregion
+
+        private void Awake()
         {
-            await GameSceneManager.Instance.QuitGame();
-        });
+            BindButton(typeof(Buttons));
+            BindAsyncEvent(GetButton((int)Buttons.playButton).gameObject,
+                async () => { await GameSceneManager.Instance.LoadSceneAsync(Enums.Scene.SelectScene); });
+
+            BindAsyncEvent(GetButton((int)Buttons.quitButton).gameObject,
+                async () => { await GameSceneManager.Instance.QuitGame(); });
+        }
     }
 }

@@ -3,38 +3,42 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class UI_QuestionPopup : PopupUI
+namespace RPG.UI
 {
-    #region Enums
+    public class UI_QuestionPopup : PopupUI
+    {
+        #region Enums
     
-    enum TMPTexts
-    {
-        QuestionText,
-        YesText,
-        NoText,
-    }
+        enum TMPTexts
+        {
+            QuestionText,
+            YesText,
+            NoText,
+        }
 
-    enum Buttons
-    {
-        YesButton,
-        NoButton,
-    }
+        enum Buttons
+        {
+            YesButton,
+            NoButton,
+        }
 
-    #endregion
+        #endregion
 
-    private void Awake()
-    {
-        Init();
-    }
+        private void Awake()
+        {
+            Init();
+        }
 
-    public override bool Init()
-    {
-        if (base.Init() == false)
-            return false;
+        public override bool Init()
+        {
+            if (base.Init() == false)
+                return false;
 
-        BindButton(typeof(Buttons));
-        BindTMPText(typeof(TMPTexts));
+            BindButton(typeof(Buttons));
+            BindTMPText(typeof(TMPTexts));
         
-        return true;
+            return true;
+        }
     }
 }
+

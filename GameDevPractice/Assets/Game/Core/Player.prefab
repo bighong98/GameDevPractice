@@ -2374,6 +2374,22 @@ PrefabInstance:
       propertyPath: uniqueIdentifier
       value: 6b6a91cc-814a-465b-a7e0-eddc74a04faf
       objectReference: {fileID: 0}
+    - target: {fileID: 4072935400606114782, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4072935400606114782, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4072935400606114782, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
+      propertyPath: m_LocalScale.x
+      value: -1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4450625146899199819, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
+      propertyPath: m_IgnoreReversedGraphics
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4623480271148808600, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
       propertyPath: characterClass
       value: 1
@@ -2382,6 +2398,22 @@ PrefabInstance:
       propertyPath: levelUpEffectPrefab
       value: 
       objectReference: {fileID: 672893909101835284, guid: 94089ecaec66ba248b810e3bfaf74600, type: 3}
+    - target: {fileID: 4760804282058260106, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+    - target: {fileID: 4760804282058260106, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
+      propertyPath: m_isRightToLeft
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4760804282058260106, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+    - target: {fileID: 4760804282058260106, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
+      propertyPath: m_hasFontAssetChanged
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6061633697407881761, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
       propertyPath: m_Name
       value: Player
@@ -2406,6 +2438,10 @@ PrefabInstance:
       propertyPath: handTransform
       value: 
       objectReference: {fileID: 1481136660917594353}
+    - target: {fileID: 7090989060227526641, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8132568554257588984, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
       propertyPath: m_LocalPosition.x
       value: 3.9437873

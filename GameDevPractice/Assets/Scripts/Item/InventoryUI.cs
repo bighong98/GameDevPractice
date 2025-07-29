@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace Item
+namespace RPG.UI
 {
     public class InventoryUI : PopupUI
     {

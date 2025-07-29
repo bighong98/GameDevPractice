@@ -50,6 +50,6 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
 
     private void PlayOnHitEffect(Vector3 pos)
     {
-        PoolingManager.Instance.GetFromPool<SimplePooledParticlePlayer>(onHitParticlePrefab, pos);
+        PoolingManager.Instance.GetFromPool<SimplePooledParticlePlayer>(onHitParticlePrefab, null, pos);
     }
 }
