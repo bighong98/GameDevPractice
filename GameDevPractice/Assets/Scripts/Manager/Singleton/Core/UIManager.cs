@@ -45,8 +45,9 @@ namespace RPG.UI
             Init();
         }
 
-        protected override void OnSceneLoaded(bool dummy)
+        protected override void OnSceneLoaded(bool isDone)
         {
+            if (!isDone) return;
             Init();
         }
 
@@ -568,7 +569,6 @@ namespace RPG.UI
         // }
         
         #endregion
-        
     }
 }
 

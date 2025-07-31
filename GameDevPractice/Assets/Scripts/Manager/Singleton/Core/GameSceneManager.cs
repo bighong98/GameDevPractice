@@ -69,4 +69,9 @@ public class GameSceneManager : Singleton<GameSceneManager>
         }
         cleanupTasks.Clear(); // Clean-up Task 종료 후 리스트 비우기
     }
+
+    protected override void OnSceneLoaded(bool isDone)
+    {
+        
+    }
 }

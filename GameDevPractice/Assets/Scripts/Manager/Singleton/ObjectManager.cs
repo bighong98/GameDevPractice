@@ -12,8 +12,9 @@ public class ObjectManager : Singleton<ObjectManager>
         Init();
     }
 
-    protected override void OnSceneLoaded(bool dummy)
+    protected override void OnSceneLoaded(bool isDone)
     {
+        if (!isDone) return;
         Init();
     }
 

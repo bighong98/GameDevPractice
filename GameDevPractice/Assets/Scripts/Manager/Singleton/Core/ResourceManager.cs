@@ -83,6 +83,11 @@ public class ResourceManager : Singleton<ResourceManager>
             NotifyPreLoad += callback;
     }
 
+    protected override void OnSceneLoaded(bool isDone)
+    {
+        if (!isDone) return;
+    }
+
     #endregion
 
     #region Load from Cached Dicionary (resources<string, Object>)

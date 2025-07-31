@@ -22,6 +22,11 @@ public class SoundManager : Singleton<SoundManager>
 
     #region Initialization
 
+    protected override void OnSceneLoaded(bool isDone)
+    {
+        if (!isDone) return;
+    }
+
     private void Init()
     {
         if (soundRoot == null)

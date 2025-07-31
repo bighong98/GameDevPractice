@@ -66,9 +66,9 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
         userInput.Player.Enable(); 
     }
 
-    protected override void OnSceneLoaded(bool dummy)
+    protected override void OnSceneLoaded(bool isDone)
     {
-        
+        if (!isDone) return;
     }
 
     private void Update()

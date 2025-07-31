@@ -1,7 +1,7 @@
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
-public class Singleton<T> : MonoBehaviour where T : MonoBehaviour
+public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
 {
     private static T _instance;
     public static T Instance
@@ -51,28 +51,5 @@ public class Singleton<T> : MonoBehaviour where T : MonoBehaviour
         return _instance != this;
     }
 
-    protected virtual void OnSceneLoaded(bool dummy)
-    {
-        // 씬 이동/재시작마다 초기화가 필요한 참조, 데이터가 있을 경우 오버라이드해서 사용
-    }
-
-    #region Deprecated
-
-    // private static GameObject CreateManagerRoot()
-    // {
-    //     GameObject go = new GameObject("Managers");
-    //     try
-    //     {
-    //         go.tag = "Manager"; // 태그가 등록되지 않았다면 Unity 에디터에서 경고 발생할 수 있음
-    //     }
-    //     catch
-    //     {
-    //         Util.Log("There is no 'Manager' tag");
-    //     }
-    //
-    //     return go;
-    // }
-
-    #endregion
-    
+    protected abstract void OnSceneLoaded(bool isDone);
 }

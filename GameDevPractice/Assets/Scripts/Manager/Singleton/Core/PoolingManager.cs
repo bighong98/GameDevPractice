@@ -35,8 +35,9 @@ public class PoolingManager : Singleton<PoolingManager>
         poolContainer?.Init(transform);
     }
 
-    protected override void OnSceneLoaded(bool dummy)
+    protected override void OnSceneLoaded(bool isDone)
     {
+        if (!isDone) return;
         Init();
     }
     
