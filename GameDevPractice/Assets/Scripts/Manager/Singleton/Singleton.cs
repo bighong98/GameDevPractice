@@ -13,8 +13,10 @@ public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
             if (_instance != null)
                 return _instance;
 
-            // if (Util.IsQuitting)
-            //     return null;
+            if (Util.IsQuitting)
+            {
+                Util.LogError($"[{typeof(T).Name}] 파괴 이후에 Instance에 접근 시도 발생. {Environment.StackTrace}");
+            }
             
             _instance = FindFirstObjectByType<T>();
             if (_instance == null)
@@ -47,12 +49,12 @@ public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
         }
     }
 
-    protected virtual void Start()
+    private void Start()
     {
         if (IsInvalidInstance()) return; // 중복 인스턴스일 경우 실행x
-        
-        // GameSceneManager.Instance.notifySceneLoaded += AfterSceneLoaded;
+        if (Util.IsQuitting) return;
         if (_instance is Singleton<GameSceneManager>) return; // 자기 자신이 GameSceneManager일 경우 실행x
+        
         GameSceneManager.Instance.RegisterInitializationTask(AfterSceneLoaded);
     }
     
@@ -144,6 +146,7 @@ public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
     
     protected virtual void OnDestroy()
     {
+        // Util.Log($"[{typeof(T).Name}] OnDestroy Stack: {Environment.StackTrace}");
         if (Util.IsQuitting) return;
         if (_instance == this && _instance is not Singleton<GameSceneManager>)
         {

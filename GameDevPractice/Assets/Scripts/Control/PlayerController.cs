@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using RPG.Attribute;
 using RPG.Movement;
@@ -34,7 +31,7 @@ namespace RPG.Control
 
         private void OnDisable()
         {
-            // if (Util.IsQuitting) return;
+            if (Util.IsQuitting) return;
             _camera = null;
             InputManager.Instance.OnSelected -= OnPointerPressed;
         }

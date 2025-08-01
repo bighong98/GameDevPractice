@@ -37,14 +37,7 @@ namespace RPG.UI
         private bool isOptionMenuActive = false;
         
         #endregion
-
-        protected override void Awake()
-        {
-            base.Awake();
-            // if (IsInvalidInstance()) return; // 중복 인스턴스인 경우 Init() 실행x
-            // Init();
-        }
-
+        
         protected override void InitOnce()
         {
             // GameSceneManager.Instance.RegisterCleanupTask(async () =>
@@ -60,7 +53,7 @@ namespace RPG.UI
 
         protected override void Init()
         {
-            Util.SetMainCameraForUtilClass();
+            // Util.SetMainCameraForUtilClass();
             
             root = new GameObject("UI_Root").transform;
             canvases = new();

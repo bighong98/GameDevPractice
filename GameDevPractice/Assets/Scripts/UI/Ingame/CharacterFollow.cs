@@ -10,7 +10,7 @@ public class CharacterFollow : MonoBehaviour
 
     private void Awake()
     {
-        Util.SetMainCameraForUtilClass();
+        // Util.SetMainCameraForUtilClass();
         selfRect = GetComponent<RectTransform>();
         image = GetComponent<Image>();
     }

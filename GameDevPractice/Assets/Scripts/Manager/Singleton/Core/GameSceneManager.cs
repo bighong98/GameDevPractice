@@ -19,6 +19,7 @@ public class GameSceneManager : Singleton<GameSceneManager>
         SceneManager.sceneLoaded += ((scene, mode) =>
         {
             // notifySceneLoaded?.SafeInvoke(true);
+            Util.SetMainCameraForUtilClass();
             initializationTasks?.SafeInvoke(true);
             currentSceneLoaded = true;
         });
@@ -98,6 +99,7 @@ public class GameSceneManager : Singleton<GameSceneManager>
     {
         cleanupTasks.Enqueue(async() =>
         {
+            // if (Util.IsQuitting) return;
             await cleanupTask();
         });
     }

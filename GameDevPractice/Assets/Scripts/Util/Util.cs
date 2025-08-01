@@ -1,13 +1,12 @@
 using System;
-using Unity.VisualScripting;
-using UnityEngine;
-using Random = UnityEngine.Random;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using Random = UnityEngine.Random;
 using UnityEngine.InputSystem;
 using UnityEngine.ResourceManagement.AsyncOperations; // [InputSystem]
 
@@ -305,14 +304,13 @@ public static class Util
     public static void LogError(object msg) => UnityEngine.Debug.LogError(msg);
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-    public static void ResetIsQuitting()
+    private static void InitForUtil()
     {
-        _isQuitting = false;
+        Application.quitting += () =>
+        {
+            _isQuitting = true;
+        };
     }
-
-    public static void SetIsQuitting()
-    {
-        _isQuitting = true;
-    }
+    
     #endregion
 }

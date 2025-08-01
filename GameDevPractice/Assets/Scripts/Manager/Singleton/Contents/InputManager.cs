@@ -1,12 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Cysharp.Threading.Tasks;
 using RPG.UI;
-using RPG.SceneManagement;
+
 
 public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, UserInput.IGlobalActions, UserInput.IUIActions
 {
@@ -51,24 +49,7 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
     protected override void Awake()
     {
         base.Awake();
-        if (IsInvalidInstance()) return;
-        // todo: 초기화 작업/마무리 작업 OnSceneLoaded(), GameSceneManger.Instance.RegisterCleanupTask()로 이전
-        userInput = new UserInput();
-        
-        userInput.Player.SetCallbacks(this);
-        userInput.Global.SetCallbacks(this);
-        userInput.UI.SetCallbacks(this);
-        
-        // default: GlobalActions, PlayerActions 활성화
-        userInput.Global.Enable();
-        userInput.Player.Enable(); 
-    }
-
-    #region Initialization
-
-    protected override void InitOnce()
-    {
-        if (IsInvalidInstance()) return;
+        // if (IsInvalidInstance()) return;
         // // todo: 초기화 작업/마무리 작업 OnSceneLoaded(), GameSceneManger.Instance.RegisterCleanupTask()로 이전
         // userInput = new UserInput();
         //
@@ -81,6 +62,17 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
         // userInput.Player.Enable(); 
     }
 
+    #region Initialization
+
+    protected override void InitOnce()
+    {
+        userInput = new UserInput();
+        
+        userInput.Player.SetCallbacks(this);
+        userInput.Global.SetCallbacks(this);
+        userInput.UI.SetCallbacks(this);
+    }
+
     protected override void InitOnceAfterPreLoad(bool isLoadCompleted)
     {
         
@@ -88,7 +80,9 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
 
     protected override void Init()
     {
-        
+        // default: GlobalActions, PlayerActions 활성화
+        userInput.Global.Enable();
+        userInput.Player.Enable(); 
     }
 
     protected override void InitAfterPreLoad(bool isLoadCompleted)
@@ -98,7 +92,20 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
 
     protected override UniTask Clear()
     {
-        return base.Clear();
+        base.Clear();
+        
+        userInput.Global.Disable();
+        userInput.Player.Disable();
+        userInput.UI.Disable();
+
+        userInput.Global.RemoveCallbacks(this);
+        userInput.Player.RemoveCallbacks(this);
+        userInput.UI.RemoveCallbacks(this);
+        
+        userInput?.Disable();
+        userInput?.Dispose();
+
+        return UniTask.CompletedTask;
     }
 
     #endregion
