@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -14,6 +15,7 @@ public class ResourceManager : Singleton<ResourceManager>
     private readonly List<AsyncOperationHandle<UnityEngine.Object>> handles = new List<AsyncOperationHandle<Object>>();
     
     public event Action<bool> NotifyPreLoad;
+    private readonly Queue<Action<bool>> reservedPreLoadTasks = new();
     private bool preLoadState = false;
     public bool PreLoadState => preLoadState;
 
@@ -24,11 +26,38 @@ public class ResourceManager : Singleton<ResourceManager>
     protected override void Awake()
     {
         base.Awake();
-        if (IsInvalidInstance()) return; // 중복 인스턴스인 경우 Init() 실행x
-        Init();
+        // if (IsInvalidInstance()) return; // 중복 인스턴스인 경우 Init() 실행x
+        // Init();
     }
 
     #region Initialization
+
+    protected override void InitOnce()
+    {
+        atlasSuffixLength = SpriteAtlasSuffix.Length;
+        // PreLoad();
+        PreLoadAsync().Forget();
+    }
+
+    protected override void InitOnceAfterPreLoad(bool isLoadCompleted) { }
+
+    protected override void Init()
+    {
+        // atlasSuffixLength = SpriteAtlasSuffix.Length;
+        // // PreLoad();
+        // PreLoadAsync().Forget();
+    }
+
+    protected override void InitAfterPreLoad(bool isLoadCompleted) { }
+
+    protected override UniTask Clear()
+    {
+        return base.Clear();
+    }
+    
+    #endregion
+
+    #region PreLoad
 
     private enum PreLoadSequence
     {
@@ -39,13 +68,6 @@ public class ResourceManager : Singleton<ResourceManager>
         // 마지막에 PreLoad 라벨의 에셋을 로드
     }
     
-    private void Init()
-    {
-        atlasSuffixLength = SpriteAtlasSuffix.Length;
-        // PreLoad();
-        PreLoadAsync().Forget();
-    }
-
     private void PreLoad()
     {
         // 프로그램 시작과 동시에 필요한(PreLoad 라벨이 붙은) 모든 리소스 로드
@@ -75,17 +97,14 @@ public class ResourceManager : Singleton<ResourceManager>
 
     public void SubscribePreLoad(Action<bool> callback)
     {
-        if (preLoadState)
-        {
-            callback?.Invoke(true);
-        }
-        else
-            NotifyPreLoad += callback;
+        if (preLoadState) callback?.Invoke(true);
+        else NotifyPreLoad += callback;
     }
 
-    protected override void OnSceneLoaded(bool isDone)
+    public void SubscribePreLoadOnlyOnce(Action<bool> callback)
     {
-        if (!isDone) return;
+        if (preLoadState) callback?.Invoke(true);
+        else reservedPreLoadTasks.Enqueue(callback);
     }
 
     #endregion
@@ -132,7 +151,6 @@ public class ResourceManager : Singleton<ResourceManager>
     #endregion
 
     #region Load from Addressable
-    
     
     private void LoadAsync<T>(string key, Action<T> callback = null) where T : UnityEngine.Object
     { // key를 사용해 어드레서블로부터 단일 리소스 비동기 로딩

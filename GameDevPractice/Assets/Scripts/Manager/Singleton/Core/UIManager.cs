@@ -41,40 +41,28 @@ namespace RPG.UI
         protected override void Awake()
         {
             base.Awake();
-            if (IsInvalidInstance()) return; // 중복 인스턴스인 경우 Init() 실행x
-            Init();
+            // if (IsInvalidInstance()) return; // 중복 인스턴스인 경우 Init() 실행x
+            // Init();
         }
 
-        protected override void OnSceneLoaded(bool isDone)
+        protected override void InitOnce()
         {
-            if (!isDone) return;
-            Init();
+            // GameSceneManager.Instance.RegisterCleanupTask(async () =>
+            // {
+            //     await Clear();
+            // });
         }
 
-        private void Init()
+        protected override void InitOnceAfterPreLoad(bool done)
+        {
+            
+        }
+
+        protected override void Init()
         {
             Util.SetMainCameraForUtilClass();
             
-            ResourceManager.Instance.SubscribePreLoad(InitAfterLoad);
-            GameSceneManager.Instance.RegisterCleanupTask(async () =>
-            {
-                await Clear();
-            });
-        }
-        
-        private void InitAfterLoad(bool done)
-        {
-            if (!done) return;
-            // if (Util.IsQuitting) return; // 어플리케이션 종료 중이라면 취소
-            
-            if (root != null) Destroy(root);
-            
-            GameObject rootGo = new GameObject("UI_Root");
-            // SetCanvas(rootGo, isInteractable: true);
-            // sceneUIGraphicRaycaster = rootGo.GetOrAddComponent<GraphicRaycaster>();
-
-            root = rootGo.transform;
-            
+            root = new GameObject("UI_Root").transform;
             canvases = new();
             
             var t = typeof(UICanvas);
@@ -87,8 +75,20 @@ namespace RPG.UI
                 canvases.Add(go);
             }
             
-            //todo: 리소스 매니저에서 필요한 리소스 레퍼런스 받아와서 사용
             InputManager.Instance.OnEscaped += OnEscapeCalled;
+            
+            // InputManager.Instance.OnClick -= OnPopupOutSideSelected; // 중복 구독 방지
+            // InputManager.Instance.OnClick += OnPopupOutSideSelected;
+
+            // InputManager.Instance.OnEscaped += OnEscapeCalled;
+        }
+        
+        protected override void InitAfterPreLoad(bool done)
+        {
+            if (!done) return;
+            // if (Util.IsQuitting) return; // 어플리케이션 종료 중이라면 취소
+            
+            
             Tooltip = ResourceManager.Instance.Instantiate("TooltipUI.prefab", root)?.GetComponent<TooltipUI>();
             if (Tooltip == null)
             {   
@@ -96,10 +96,7 @@ namespace RPG.UI
                 return;
             }
             
-            // InputManager.Instance.OnClick -= OnPopupOutSideSelected; // 중복 구독 방지
-            // InputManager.Instance.OnClick += OnPopupOutSideSelected;
-
-            // InputManager.Instance.OnEscaped += OnEscapeCalled;
+            //todo: 리소스 매니저에서 필요한 리소스 레퍼런스 받아와서 사용
         }
 
         private void OnEscapeCalled()
@@ -485,8 +482,9 @@ namespace RPG.UI
 
         #endregion
 
-        private UniTask Clear()
+        protected override UniTask Clear()
         {
+            base.Clear();
             keyTypeDictionary.Clear();
 
             foreach (var pool in popupPools.Values)
@@ -497,7 +495,6 @@ namespace RPG.UI
             popupStacks.Clear();
             
             ClearValue();
-            
             return UniTask.CompletedTask;
         }
 
@@ -566,6 +563,47 @@ namespace RPG.UI
         //             }
         //         }
         //     }
+        // }
+        
+        // protected override void Init()
+        // {
+        //     Util.SetMainCameraForUtilClass();
+        //     
+        //     // ResourceManager.Instance.SubscribePreLoad(InitAfterPreLoad);
+        //     // GameSceneManager.Instance.RegisterCleanupTask(async () =>
+        //     // {
+        //     //     await Clear();
+        //     // });
+        //
+        //     if (root != null && root.gameObject is {} rootGameObject)
+        //     {
+        //         Destroy(rootGameObject);
+        //     }
+        //     
+        //     GameObject rootGo = new GameObject("UI_Root");
+        //     // SetCanvas(rootGo, isInteractable: true);
+        //     // sceneUIGraphicRaycaster = rootGo.GetOrAddComponent<GraphicRaycaster>();
+        //
+        //     root = rootGo.transform;
+        //     
+        //     canvases = new();
+        //     
+        //     var t = typeof(UICanvas);
+        //     foreach (var canvasType in Enum.GetValues(t))
+        //     {
+        //         var go = new GameObject(Enum.GetName(t, canvasType));
+        //         go.transform.SetParent(root);
+        //         // todo: 타입별 캔버스 세팅 설정 로직 추가 (Canvas 데이터 관리용 Scriptable Object 사용 고려) 
+        //         SetCanvas(go);
+        //         canvases.Add(go);
+        //     }
+        //     
+        //     InputManager.Instance.OnEscaped += OnEscapeCalled;
+        //     
+        //     // InputManager.Instance.OnClick -= OnPopupOutSideSelected; // 중복 구독 방지
+        //     // InputManager.Instance.OnClick += OnPopupOutSideSelected;
+        //
+        //     // InputManager.Instance.OnEscaped += OnEscapeCalled;
         // }
         
         #endregion

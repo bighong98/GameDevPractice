@@ -1,4 +1,3 @@
-using UnityEngine;
 using UnityEngine.SceneManagement;
 using System;
 using System.Collections.Generic;
@@ -6,41 +5,70 @@ using Cysharp.Threading.Tasks;
 
 public class GameSceneManager : Singleton<GameSceneManager>
 {
-    public Action<bool> notifySceneLoaded;
-    private readonly List<Func<UniTask>> cleanupTasks = new List<Func<UniTask>>();
+    // public Action<bool> notifySceneLoaded;
+    private Action<bool> initializationTasks;
+    private readonly Queue<Func<UniTask>> cleanupTasks = new();
     
+    private bool currentSceneLoaded;
+    private int lastScene = -1;
     protected override void Awake()
     {
         base.Awake();
+        if (IsInvalidInstance()) return;
+        
         SceneManager.sceneLoaded += ((scene, mode) =>
         {
-            notifySceneLoaded?.SafeInvoke(true);
+            // notifySceneLoaded?.SafeInvoke(true);
+            initializationTasks?.SafeInvoke(true);
+            currentSceneLoaded = true;
         });
     }
-    
-    public void LoadScene(Enums.Scene scene) // 즉시 씬 이동 (사용 비권장)
+
+    #region Initialization
+
+    protected override void InitOnce() { }
+
+    protected override void InitOnceAfterPreLoad(bool isLoadCompleted) { }
+
+    protected override void Init() { }
+
+    protected override void InitAfterPreLoad(bool isLoadCompleted) { }
+
+    protected override UniTask Clear()
     {
-        SceneManager.LoadScene(scene.ToString());
+        return base.Clear();
+    }
+    
+    #endregion
+
+    #region Load Scene
+    
+    private async UniTask TaskBeforeLoadSceneAsync()
+    {
+        lastScene = SceneManager.GetActiveScene().buildIndex;
+        currentSceneLoaded = false; // 플래그 초기화
+        await CleanupAllAsync();
     }
 
-    public async UniTask LoadSceneAsync(Enums.Scene scene) // 비동기 씬 이동 (씬 이동 전 초기화 작업 수행)
+    public async UniTask LoadSceneAsync(Enums.Scene scene, bool reload = false) // 비동기 씬 이동 (씬 이동 전 초기화 작업 수행)
     {
-        //todo: 씬 타입별로 필요한 작업 처리 로직 추가
-        await CleanupAllAsync();
+        await TaskBeforeLoadSceneAsync();
         await SceneManager.LoadSceneAsync(scene.ToString()).ToUniTask();
     }
     public async UniTask LoadSceneAsync(string sceneName)
     {
-        await CleanupAllAsync();
-        await SceneManager.LoadSceneAsync(sceneName);
+        await TaskBeforeLoadSceneAsync();
+        await SceneManager.LoadSceneAsync(sceneName).ToUniTask();
     }
 
     public async UniTask LoadSceneAsync(int sceneIndex)
     {
-        await CleanupAllAsync();
-        await SceneManager.LoadSceneAsync(sceneIndex);
+        await TaskBeforeLoadSceneAsync();
+        await SceneManager.LoadSceneAsync(sceneIndex).ToUniTask();
     }
 
+    #endregion
+    
     public async UniTask QuitGame()
     {
         // await GameManager.Instance.EndApplication();
@@ -51,27 +79,37 @@ public class GameSceneManager : Singleton<GameSceneManager>
 #elif UNITY_IOS
     return;
 #else
-    Application.Quit(); // ← 수정된 부분
+    Application.Quit();
 #endif
     }
 
+    public void RegisterInitializationTask(Action<bool> task)
+    {
+        if (currentSceneLoaded) task?.Invoke(true);
+        else initializationTasks += task;
+    }
+
+    public void UnRegisterInitializationTask(Action<bool> task)
+    {
+        initializationTasks -= task;
+    }
+    
     public void RegisterCleanupTask(Func<UniTask> cleanupTask)
     {
-        cleanupTasks?.Add(cleanupTask);
+        cleanupTasks.Enqueue(async() =>
+        {
+            await cleanupTask();
+        });
     }
 
     private async UniTask CleanupAllAsync()
     {
-        foreach (var task in cleanupTasks)
+        while (cleanupTasks.Count < 0)
         {
-            if (task == null) continue;    
-            await task();
+            if (cleanupTasks.Dequeue() is not { } task) continue;
+            
+            try { await task(); }
+            catch (Exception e) { Util.LogError($"Exception occured while Clean-up task. {e}"); }
         }
-        cleanupTasks.Clear(); // Clean-up Task 종료 후 리스트 비우기
-    }
-
-    protected override void OnSceneLoaded(bool isDone)
-    {
-        
     }
 }

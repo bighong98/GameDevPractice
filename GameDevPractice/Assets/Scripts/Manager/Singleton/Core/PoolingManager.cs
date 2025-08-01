@@ -29,31 +29,44 @@ public class PoolingManager : Singleton<PoolingManager>
     protected override void Awake()
     {
         base.Awake();
-        if (IsInvalidInstance()) return; // 중복 인스턴스인 경우 Init() 실행x
+        // if (IsInvalidInstance()) return; // 중복 인스턴스인 경우 Init() 실행x
         
-        Init();
+        // Init();
+        // poolContainer?.Init(transform);
+    }
+
+    #region Initialization
+    
+    protected override void InitOnce()
+    {
+        // GameSceneManager.Instance.RegisterCleanupTask(async () =>
+        // {
+        //     await Clear();  
+        // });
+        //
         poolContainer?.Init(transform);
     }
 
-    protected override void OnSceneLoaded(bool isDone)
-    {
-        if (!isDone) return;
-        Init();
-    }
-    
-    private void Init()
-    {
-        ResourceManager.Instance.SubscribePreLoad(InitAfterLoad);
-        GameSceneManager.Instance.RegisterCleanupTask(async () =>
-        {
-            await Clear();  
-        });
-    }
-
-    private void InitAfterLoad(bool dummy)
+    protected override void InitOnceAfterPreLoad(bool isLoadCompleted)
     {
         
     }
+
+    protected override void Init()
+    {
+        // ResourceManager.Instance.SubscribePreLoad(InitAfterLoad);
+        // GameSceneManager.Instance.RegisterCleanupTask(async () =>
+        // {
+        //     await Clear();  
+        // });
+    }
+
+    protected override void InitAfterPreLoad(bool isLoadCompleted)
+    {
+        
+    }
+    
+    #endregion
 
     #region Get
     // 외부에서 오브젝트 풀을 생성할 때 사용 (이미 오브젝트 풀이 존재하면 기존 풀 반환, 없으면 새로 생성)
@@ -260,8 +273,10 @@ public class PoolingManager : Singleton<PoolingManager>
 
     #endregion
     
-    private UniTask Clear(bool onlyRelease = true)
+    protected override UniTask Clear()
     {
+        base.Clear();
+        bool onlyRelease = true;
         if (onlyRelease)
         {
             poolContainer?.ReleaseAllPooledObjects();

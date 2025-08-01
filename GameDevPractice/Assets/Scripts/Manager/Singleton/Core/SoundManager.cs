@@ -16,18 +16,13 @@ public class SoundManager : Singleton<SoundManager>
     protected override void Awake()
     {
         base.Awake();
-        if (IsInvalidInstance()) return; // 중복 인스턴스인 경우 Init() 실행x
-        Init();
+        // if (IsInvalidInstance()) return; // 중복 인스턴스인 경우 Init() 실행x
+        // Init();
     }
 
     #region Initialization
 
-    protected override void OnSceneLoaded(bool isDone)
-    {
-        if (!isDone) return;
-    }
-
-    private void Init()
+    protected override void InitOnce()
     {
         if (soundRoot == null)
         {
@@ -57,7 +52,7 @@ public class SoundManager : Singleton<SoundManager>
         audioSources[(int)Enums.AudioType.Bgm].loop = true; // Bgm, SubBgm의 기본 설정: 반복 재생
         audioSources[(int)Enums.AudioType.SubBgm].loop = true;
         
-        ResourceManager.Instance.SubscribePreLoad(InitAfterLoad);
+        // ResourceManager.Instance.SubscribePreLoad(InitAfterLoad);
         //todo: 필요하다면, 씬 이동 전 정리작업 등록
         // GameSceneManager.Instance.RegisterCleanupTask(async () =>
         // {
@@ -65,7 +60,50 @@ public class SoundManager : Singleton<SoundManager>
         // });
     }
 
-    private void InitAfterLoad(bool isDone)
+    protected override void InitOnceAfterPreLoad(bool isLoadCompleted)
+    {
+        
+    }
+
+    protected override void Init()
+    {
+        // if (soundRoot == null)
+        // {
+        //     var trans = transform.Find("Sounds");
+        //     if (trans == null)
+        //     {
+        //         GameObject go = new GameObject("Sounds");
+        //         go.transform.SetParent(transform); // 인스펙터로 연결된 대상이 없을 경우 매니저 하위에 임의로 생성
+        //         soundRoot = go.transform;
+        //     }
+        //     else
+        //     {
+        //         soundRoot = trans;
+        //     }
+        // }
+        // string[] soundTypeNames = System.Enum.GetNames(typeof(Enums.AudioType));
+        // for (int i = 0; i < soundTypeNames.Length - 1; i++) // 마지막 타입은 Max이기 때문에 Length -1
+        // {
+        //     GameObject go = new GameObject { name = soundTypeNames[i] };
+        //     audioSources[i] = go.AddComponent<AudioSource>(); // 오디오 재생용 컴포넌트 부착
+        //     audioSources[i].spatialBlend = 0; // 2D 게임이기 때문에 0
+        //     PlayerPrefs.GetFloat($"{soundTypeNames[i]}{VolumeSuffix}", 1.0f); // PlayerPrefs로부터 볼륨 사용자 설정 불러오기. 저장된 설정이 없으면 1.0f 적용
+        //     
+        //     go.transform.SetParent(soundRoot); 
+        // }
+        //
+        // audioSources[(int)Enums.AudioType.Bgm].loop = true; // Bgm, SubBgm의 기본 설정: 반복 재생
+        // audioSources[(int)Enums.AudioType.SubBgm].loop = true;
+        //
+        // // ResourceManager.Instance.SubscribePreLoad(InitAfterLoad);
+        // //todo: 필요하다면, 씬 이동 전 정리작업 등록
+        // // GameSceneManager.Instance.RegisterCleanupTask(async () =>
+        // // {
+        // //     await Clear();  
+        // // });
+    }
+
+    protected override void InitAfterPreLoad(bool isDone)
     {
         //todo: 필요한 리소스 가져오기, 초기화
         TestBGM();
@@ -154,8 +192,9 @@ public class SoundManager : Singleton<SoundManager>
 
     #region Clear
 
-    public UniTask Clear()
+    protected override UniTask Clear()
     {
+        base.Clear();
         foreach (var source in audioSources)
         {
             source.Stop();

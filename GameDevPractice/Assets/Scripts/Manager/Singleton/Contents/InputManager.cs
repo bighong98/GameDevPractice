@@ -38,8 +38,6 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
 
     #endregion 
     
-    
-    
     // 캐싱 좌표
     private Vector2 currentPointerPos = Vector2.zero; // update by OnPoint()
     private Vector2 dragStartPosition = Vector2.zero; // update by OnDrag()
@@ -66,10 +64,44 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
         userInput.Player.Enable(); 
     }
 
-    protected override void OnSceneLoaded(bool isDone)
+    #region Initialization
+
+    protected override void InitOnce()
     {
-        if (!isDone) return;
+        if (IsInvalidInstance()) return;
+        // // todo: 초기화 작업/마무리 작업 OnSceneLoaded(), GameSceneManger.Instance.RegisterCleanupTask()로 이전
+        // userInput = new UserInput();
+        //
+        // userInput.Player.SetCallbacks(this);
+        // userInput.Global.SetCallbacks(this);
+        // userInput.UI.SetCallbacks(this);
+        //
+        // // default: GlobalActions, PlayerActions 활성화
+        // userInput.Global.Enable();
+        // userInput.Player.Enable(); 
     }
+
+    protected override void InitOnceAfterPreLoad(bool isLoadCompleted)
+    {
+        
+    }
+
+    protected override void Init()
+    {
+        
+    }
+
+    protected override void InitAfterPreLoad(bool isLoadCompleted)
+    {
+        
+    }
+
+    protected override UniTask Clear()
+    {
+        return base.Clear();
+    }
+
+    #endregion
 
     private void Update()
     {

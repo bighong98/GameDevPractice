@@ -42,17 +42,23 @@ namespace RPG.Attribute
             hp = new LazyValue<float>(GetInitialHealth);
         }
 
-        private async void Start()
+        private void Start()
         {
             maxHp.ForceInit();
             hp.ForceInit();
             
-
-            await UniTask.Delay(TimeSpan.FromSeconds(3), cancellationToken: this.GetCancellationTokenOnDestroy()).SuppressCancellationThrow();
-            if (this != null)
+            UIManager.Instance.ReserveOperation(() =>
             {
-                UIManager.Instance.GetUIFromPool<HPBar>(HPBarPrefab, UICanvas.Overlay).SetOwner(this);
-            }
+                if (this != null)
+                {
+                    UIManager.Instance.GetUIFromPool<HPBar>(HPBarPrefab, UICanvas.Overlay).SetOwner(this);
+                }
+            });
+            // await UniTask.Delay(TimeSpan.FromSeconds(3), cancellationToken: this.GetCancellationTokenOnDestroy()).SuppressCancellationThrow();
+            // if (this != null)
+            // {
+            //     UIManager.Instance.GetUIFromPool<HPBar>(HPBarPrefab, UICanvas.Overlay).SetOwner(this);
+            // }
         }
 
         private void OnEnable()

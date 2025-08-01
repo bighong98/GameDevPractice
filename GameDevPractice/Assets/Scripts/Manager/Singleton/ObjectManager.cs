@@ -8,34 +8,37 @@ public class ObjectManager : Singleton<ObjectManager>
     protected override void Awake()
     {
         base.Awake();
-        if (IsInvalidInstance()) return;
-        Init();
+        // if (IsInvalidInstance()) return;
+        // Init();
     }
 
-    protected override void OnSceneLoaded(bool isDone)
+    protected override void InitOnce()
     {
-        if (!isDone) return;
-        Init();
+        
     }
 
-    private void Init()
+    protected override void InitOnceAfterPreLoad(bool isDone)
     {
-        ResourceManager.Instance.SubscribePreLoad(InitAfterLoad);
-        GameSceneManager.Instance.RegisterCleanupTask(async () =>
-        {
-            await Clear();  
-        });
+        
     }
 
-    private void InitAfterLoad(bool isDone)
+    protected override void Init()
     {
-        if (!isDone) return;
-        //todo: 리소스 로드 후 처리할 작업 추가
+        // ResourceManager.Instance.SubscribePreLoad(InitAfterPreLoad);
+        // GameSceneManager.Instance.RegisterCleanupTask(async () =>
+        // {
+        //     await Clear();  
+        // });
     }
 
-    private UniTask Clear()
+    protected override void InitAfterPreLoad(bool isDone)
+    {
+        
+    }
+
+    protected override UniTask Clear()
     {
         //todo: 씬 로드 전 정리할 작업 추가
-        return UniTask.CompletedTask;
+        return base.Clear();
     }
 }
