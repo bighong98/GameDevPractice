@@ -24,7 +24,8 @@ namespace RPG.Saving
             await UniTask.Yield(); // 1프레임 지연
             
             int buildIndex = data.lastSceneBuildIndex;
-            await SceneManager.LoadSceneAsync(buildIndex);
+            // await SceneManager.LoadSceneAsync(buildIndex);
+            await GameSceneManager.Instance.LoadSceneAsync(buildIndex);
             await UniTask.Yield(); // 1프레임 지연
             
             RestoreState(data);

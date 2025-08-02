@@ -10,7 +10,7 @@ public class GameSceneManager : Singleton<GameSceneManager>
     private readonly Queue<Func<UniTask>> cleanupTasks = new();
     
     private bool currentSceneLoaded;
-    private int lastScene = -1;
+    
     protected override void Awake()
     {
         base.Awake();
@@ -46,24 +46,22 @@ public class GameSceneManager : Singleton<GameSceneManager>
     
     private async UniTask TaskBeforeLoadSceneAsync()
     {
-        lastScene = SceneManager.GetActiveScene().buildIndex;
         currentSceneLoaded = false; // 플래그 초기화
         await CleanupAllAsync();
     }
 
     public async UniTask LoadSceneAsync(Enums.Scene scene, bool reload = false) // 비동기 씬 이동 (씬 이동 전 초기화 작업 수행)
     {
-        await TaskBeforeLoadSceneAsync();
-        await SceneManager.LoadSceneAsync(scene.ToString()).ToUniTask();
-    }
-    public async UniTask LoadSceneAsync(string sceneName)
-    {
-        await TaskBeforeLoadSceneAsync();
-        await SceneManager.LoadSceneAsync(sceneName).ToUniTask();
+        await LoadSceneAsync((int)scene, reload);
     }
 
-    public async UniTask LoadSceneAsync(int sceneIndex)
+    public async UniTask LoadSceneAsync(int sceneIndex, bool reload = false)
     {
+        if (!reload && SceneManager.GetActiveScene().buildIndex == sceneIndex)
+        {
+            return; // reload 목적이 아니라면, 동일 씬으로의 이동x
+        }
+        
         await TaskBeforeLoadSceneAsync();
         await SceneManager.LoadSceneAsync(sceneIndex).ToUniTask();
     }
