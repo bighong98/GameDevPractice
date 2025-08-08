@@ -76,18 +76,18 @@ public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
     // 씬 로드가 완료된 후 싱글톤 초기화가 진행됨
     private void AfterSceneLoaded(bool isSceneLoadCompleted)
     {
-        Util.Log($"[{typeof(T).Name}] AfterSceneLoaded()");
+        Util.Log($"[{typeof(T).Name}] AfterSceneLoaded()", Util.LoggingMode.Completed);
         if (!isSceneLoadCompleted) return;
 
         if (!hasInitializedOnce) // 인스턴스 생성 후 최초 1회만 초기화가 필요한 작업 처리
         {
-            Util.Log($"[{typeof(T).Name}] InitOnce()");
+            Util.Log($"[{typeof(T).Name}] InitOnce()", Util.LoggingMode.Completed);
             InitOnce();
             
             if (_instance is not Singleton<ResourceManager>) // 본인이 ResourceManager면 실행x
                 ResourceManager.Instance.SubscribePreLoadOnlyOnce((t) =>
                 {
-                    Util.Log($"[{typeof(T).Name}] InitOnceAfterPreLoad()");
+                    Util.Log($"[{typeof(T).Name}] InitOnceAfterPreLoad()", Util.LoggingMode.Completed);
                     InitOnceAfterPreLoad(t);
                 });
 
@@ -96,15 +96,11 @@ public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
 
         if (!isInitialized) // 씬 이동마다 초기화가 필요한 작업 처리
         {
-            Util.Log($"[{typeof(T).Name}] Init()");
+            Util.Log($"[{typeof(T).Name}] Init()", Util.LoggingMode.Completed);
             Init();
             
             if (_instance is not Singleton<ResourceManager>) // 본인이 ResourceManager면 실행x
-                ResourceManager.Instance.SubscribePreLoad((t) =>
-                {
-                    Util.Log($"[{typeof(T).Name}] InitAfterPreLoad()");
-                    InitAfterPreLoad(t);
-                });
+                ResourceManager.Instance.SubscribePreLoad(InitAfterPreLoad);
 
             if (_instance is not Singleton<GameSceneManager>) // 본인이 GameSceneManager면 실행x
                 GameSceneManager.Instance.RegisterCleanupTask(Clear);
@@ -143,22 +139,18 @@ public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
         
         if (singleton.IsInvalidInstance())
         {
-            Util.Log($"[{typeof(T).Name}] fail occured while {{nameof(ReserveOperation)}}. Instance is not valid");
+            Util.Log($"[{typeof(T).Name}] fail occured while {{nameof(ReserveOperation)}}. Instance is not valid", Util.LoggingMode.Completed);
             return;
         }
 
         if (singleton.isInitialized)
         {
-            Util.Log($"[{typeof(T).Name}] trying to do reserved action: {action.Target}");
+            Util.Log($"[{typeof(T).Name}] trying to do reserved action: {action.Target}", Util.LoggingMode.Completed);
             action?.Invoke();
         }
         else
         {
-            singleton.reservedOperations.Enqueue( () =>
-            {
-                Util.Log($"[{typeof(T).Name}] trying to do reserved action: {action.Target}");
-                action?.Invoke();
-            });
+            singleton.reservedOperations.Enqueue(action);
         }
     }
     

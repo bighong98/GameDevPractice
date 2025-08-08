@@ -28,7 +28,6 @@ namespace RPG.Control
             _camera = Camera.main;
             InputManager.Instance.ReserveOperation(() =>
             {
-                Util.Log($"[{nameof(PlayerController)}] reserved OnSelected += OnPointerPressed is runned");
                 InputManager.Instance.OnSelected += OnPointerPressed;
             });
             // InputManager.Instance.OnSelected += OnPointerPressed;

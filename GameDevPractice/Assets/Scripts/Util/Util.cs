@@ -14,7 +14,7 @@ public static class Util
     private static Camera mainCamera;
     private static bool _isQuitting = false;
     public static bool IsQuitting { get { return _isQuitting; } }
-
+    
     public static void SetMainCameraForUtilClass() // UIManager.Init()에서 호출됨
     {
         if (mainCamera == null)
@@ -297,6 +297,33 @@ public static class Util
     #endregion
     
     #region Debug
+
+    public enum LoggingMode
+    {
+        Completed,
+        InProgress,
+    }
+    enum LogLevel
+    {
+        None,
+        OnlyInProgress,
+        All,
+    }
+    private static readonly LogLevel CurrLogLevel = LogLevel.OnlyInProgress;
+
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    public static void Log(object msg, LoggingMode mode)
+    {
+        switch (mode)
+        {
+            case LoggingMode.InProgress when CurrLogLevel is LogLevel.All or LogLevel.OnlyInProgress:
+            case LoggingMode.Completed when CurrLogLevel is LogLevel.All:
+                Log(msg);
+                break;
+            default:
+                break;
+        }
+    }
     [System.Diagnostics.Conditional("UNITY_EDITOR")]
     public static void Log(object msg) => UnityEngine.Debug.Log(msg);
     [System.Diagnostics.Conditional("UNITY_EDITOR")]
