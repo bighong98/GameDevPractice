@@ -98,12 +98,12 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
         userInput.Player.Disable();
         userInput.UI.Disable();
 
-        userInput.Global.RemoveCallbacks(this);
-        userInput.Player.RemoveCallbacks(this);
-        userInput.UI.RemoveCallbacks(this);
-        
-        userInput?.Disable();
-        userInput?.Dispose();
+        // userInput.Global.RemoveCallbacks(this);
+        // userInput.Player.RemoveCallbacks(this);
+        // userInput.UI.RemoveCallbacks(this);
+        //
+        // userInput?.Disable();
+        // userInput?.Dispose();
 
         return UniTask.CompletedTask;
     }

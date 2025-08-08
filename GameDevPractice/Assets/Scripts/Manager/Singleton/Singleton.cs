@@ -49,7 +49,7 @@ public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
         }
     }
 
-    private void Start()
+    protected virtual void Start()
     {
         if (IsInvalidInstance()) return; // 중복 인스턴스일 경우 실행x
         if (Util.IsQuitting) return;
@@ -76,24 +76,35 @@ public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
     // 씬 로드가 완료된 후 싱글톤 초기화가 진행됨
     private void AfterSceneLoaded(bool isSceneLoadCompleted)
     {
+        Util.Log($"[{typeof(T).Name}] AfterSceneLoaded()");
         if (!isSceneLoadCompleted) return;
 
         if (!hasInitializedOnce) // 인스턴스 생성 후 최초 1회만 초기화가 필요한 작업 처리
         {
+            Util.Log($"[{typeof(T).Name}] InitOnce()");
             InitOnce();
             
             if (_instance is not Singleton<ResourceManager>) // 본인이 ResourceManager면 실행x
-                ResourceManager.Instance.SubscribePreLoadOnlyOnce(InitOnceAfterPreLoad);
+                ResourceManager.Instance.SubscribePreLoadOnlyOnce((t) =>
+                {
+                    Util.Log($"[{typeof(T).Name}] InitOnceAfterPreLoad()");
+                    InitOnceAfterPreLoad(t);
+                });
 
             hasInitializedOnce = true;
         }
 
         if (!isInitialized) // 씬 이동마다 초기화가 필요한 작업 처리
         {
+            Util.Log($"[{typeof(T).Name}] Init()");
             Init();
             
             if (_instance is not Singleton<ResourceManager>) // 본인이 ResourceManager면 실행x
-                ResourceManager.Instance.SubscribePreLoad(InitAfterPreLoad);
+                ResourceManager.Instance.SubscribePreLoad((t) =>
+                {
+                    Util.Log($"[{typeof(T).Name}] InitAfterPreLoad()");
+                    InitAfterPreLoad(t);
+                });
 
             if (_instance is not Singleton<GameSceneManager>) // 본인이 GameSceneManager면 실행x
                 GameSceneManager.Instance.RegisterCleanupTask(Clear);
@@ -126,7 +137,9 @@ public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
 
     public void ReserveOperation(Action action)
     {
-        if (_instance is not (Singleton<T> singleton and not Singleton<GameSceneManager>)) return; // 올바른 싱글톤 인스턴스가 아니거나, 자기자신이 Singleton<GameSceneManager> 타입인 경우 실행x
+        if (_instance is not Singleton<T> singleton) return;
+        if (singleton is Singleton<GameSceneManager>) return;
+        // if (_instance is not (Singleton<T> singleton and not Singleton<GameSceneManager>)) return; // 올바른 싱글톤 인스턴스가 아니거나, 자기자신이 Singleton<GameSceneManager> 타입인 경우 실행x
         
         if (singleton.IsInvalidInstance())
         {
@@ -136,11 +149,16 @@ public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
 
         if (singleton.isInitialized)
         {
+            Util.Log($"[{typeof(T).Name}] trying to do reserved action: {action.Target}");
             action?.Invoke();
         }
         else
         {
-            singleton.reservedOperations.Enqueue(action);
+            singleton.reservedOperations.Enqueue( () =>
+            {
+                Util.Log($"[{typeof(T).Name}] trying to do reserved action: {action.Target}");
+                action?.Invoke();
+            });
         }
     }
     

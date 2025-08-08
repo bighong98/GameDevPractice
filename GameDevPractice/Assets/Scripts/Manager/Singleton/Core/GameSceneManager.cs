@@ -10,7 +10,7 @@ public class GameSceneManager : Singleton<GameSceneManager>
     private readonly Queue<Func<UniTask>> cleanupTasks = new();
     
     private bool currentSceneLoaded;
-    
+
     protected override void Awake()
     {
         base.Awake();
@@ -25,6 +25,17 @@ public class GameSceneManager : Singleton<GameSceneManager>
         });
     }
 
+    protected override void Start()
+    {
+        base.Start();
+        if (IsInvalidInstance()) return;
+        if (currentSceneLoaded) return;
+        
+        Util.SetMainCameraForUtilClass();
+        initializationTasks?.SafeInvoke(true);
+        currentSceneLoaded = true;
+    }
+
     #region Initialization
 
     protected override void InitOnce() { }
@@ -37,7 +48,10 @@ public class GameSceneManager : Singleton<GameSceneManager>
 
     protected override UniTask Clear()
     {
-        return base.Clear();
+        base.Clear();
+        
+        currentSceneLoaded = false; // 플래그 초기화
+        return UniTask.CompletedTask;
     }
     
     #endregion
@@ -46,7 +60,7 @@ public class GameSceneManager : Singleton<GameSceneManager>
     
     private async UniTask TaskBeforeLoadSceneAsync()
     {
-        currentSceneLoaded = false; // 플래그 초기화
+        // currentSceneLoaded = false; // 플래그 초기화
         await CleanupAllAsync();
     }
 
@@ -84,7 +98,11 @@ public class GameSceneManager : Singleton<GameSceneManager>
 
     public void RegisterInitializationTask(Action<bool> task)
     {
-        if (currentSceneLoaded) task?.Invoke(true);
+        if (currentSceneLoaded)
+        {
+            Util.Log($"[{nameof(GameSceneManager)}] RegisterInitializationTask: trying to run task");
+            task?.Invoke(true);
+        }
         else initializationTasks += task;
     }
 

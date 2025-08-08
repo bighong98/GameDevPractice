@@ -26,7 +26,12 @@ namespace RPG.Control
         private void OnEnable()
         {
             _camera = Camera.main;
-            InputManager.Instance.OnSelected += OnPointerPressed;
+            InputManager.Instance.ReserveOperation(() =>
+            {
+                Util.Log($"[{nameof(PlayerController)}] reserved OnSelected += OnPointerPressed is runned");
+                InputManager.Instance.OnSelected += OnPointerPressed;
+            });
+            // InputManager.Instance.OnSelected += OnPointerPressed;
         }
 
         private void OnDisable()
@@ -38,6 +43,7 @@ namespace RPG.Control
 
         private void OnPointerPressed(Vector2 pos)
         {
+            Util.Log($"[{nameof(PlayerController)}.{nameof(OnPointerPressed)}()] triggered");
             if (Time.timeScale <= float.Epsilon || health is {IsDead: true} ) return; // 게임이 일시정지 중인 경우 반응x //todo: 게임 일시정지 여부 확인 로직 수정
             // if (fightEnabled && TryCombat(pos)) return; // 우선순위: 전투 > 이동
             if (fightEnabled && TryInteractWithComponent(pos)) return; // 우선순위: 전투 > 이동
