@@ -60,7 +60,7 @@ namespace RPG.Item
              
              foreach (var item in testData.items)
              {
-                 Util.Log($"Trying to add {item}");
+                 Util.Log($"Trying to add {item.GetItemInfo.nameString}");
                  AddItem(item, checkInstanceType: true);
              }
             });
