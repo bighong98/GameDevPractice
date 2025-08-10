@@ -10,13 +10,18 @@ namespace RPG.UI
 {
     public class HPBar : BaseUI, IPoolObject
     {
-        private Transform target;
-        private RectTransform rect;
+        private Transform target; // HPBar가 추적하는 대상
+        private RectTransform rect; // 자기 자신의 RectTransform
         
-        private Slider main;
-        private Slider sub;
+        private Slider main; // 실제 체력바
+        private Slider sub; // 체력이 줄어들었을 때 효과 처리용 바
 
-        private bool easing;
+        private bool easing; // 천천히 움직이는 bar 애니메이션 실행중인지 여부
+        private bool isHiding; // 현재 시각적으로 비활성화중인지 여부
+        
+        private const float FillingUpSpeed = 1.0f; // 체력이 회복되었을 때 체력바 움직임 애니메이션 속도
+        private const float FallingDownSpeed = 0.5f; // 체력이 떨어졌을 때 체력바 움직임 애니메이션 속도
+        private const float DelayHideByDeath = 1.0f; // Bar의 주인이 사망처리시 비활성화까지의 지연시간 (사망 후 {DelayHideByDeath}초 뒤 사라짐) // 현재 사용x
         
         #region Enums
 
@@ -32,14 +37,13 @@ namespace RPG.UI
         private void Awake()
         {
             rect = GetComponent<RectTransform>();
-            
             BindObject(typeof(GameObjects));
             main = GetObject((int)GameObjects.Main).GetComponent<Slider>();
             sub = GetObject((int)GameObjects.Sub).GetComponent<Slider>();
 
             if (main == null || sub == null)
             {
-                Util.Log($"[{nameof(HPBar)}] failed to initialize");
+                Util.Log($"[{nameof(HPBar)}] failed to initialize", Util.LoggingMode.Completed);
                 ReleaseSelf();
             }
         }
@@ -54,6 +58,7 @@ namespace RPG.UI
             }
             else
             {
+                Util.Log($"not in screen. Hide HPBar", Util.LoggingMode.Completed);
                 Hide();
             }
         }
@@ -66,38 +71,41 @@ namespace RPG.UI
             if (to < from) // case : 체력이 줄어듦
             {
                 main.value = to; // main 즉시 변경
-                SlowlyChangeFill(sub, from, to).Forget(); // sub 천천히 변경
+                ChangeFillSlowly(sub, from, to, FallingDownSpeed).Forget(); // sub 천천히 변경
             }
             else // case 체력이 늘어남
             {
-                SlowlyChangeFill(main, from, to, 0.2f).Forget(); // main 천천히 변경
+                ChangeFillSlowly(main, from, to, FillingUpSpeed).Forget(); // main 천천히 변경
             }
-            
         }
 
-        
-        private async UniTask SlowlyChangeFill(Slider slider, float from, float to, float speed = 0.1f)
+        private void ChangeFillImmediately(float ratio)
         {
-            if (easing)
-            {
-                tokenSource.Cancel();
-                tokenSource.Dispose();
-            }
+            if (easing) StopBarAnimation(); // 기존 바 애니메이션 중지
+            
+            var value = Mathf.Clamp01(ratio);
+            main.value = value;
+            sub.value = value;
+        }
+        
+        private async UniTask ChangeFillSlowly(Slider slider, float from, float to, float speed)
+        {
+            if (easing) StopBarAnimation(); // 기존 바 애니메이션 중지
             ClarifyToken();
             
             float curr = from;
             easing = true;
-            while (!token.IsCancellationRequested && !Mathf.Approximately(curr, to))
+            while (!barAnimToken.IsCancellationRequested && !Mathf.Approximately(curr, to))
             {
                 try
                 {
-                    await UniTask.NextFrame(PlayerLoopTiming.LastUpdate, token).SuppressCancellationThrow();
+                    await UniTask.NextFrame(PlayerLoopTiming.LastUpdate, barAnimToken).SuppressCancellationThrow();
                     curr = Mathf.MoveTowards(curr, to, speed * Time.deltaTime);
                     slider.value = curr;
                 }
                 catch (Exception e)
                 {
-                    Util.LogError($"[{nameof(HPBar)}] error occurred while {nameof(SlowlyChangeFill)}(). {e}");
+                    Util.LogError($"[{nameof(HPBar)}] error occurred while {nameof(ChangeFillSlowly)}(). {e}");
                 }
             }
             
@@ -105,14 +113,38 @@ namespace RPG.UI
             easing = false;
         }
 
-        private CancellationTokenSource tokenSource = new CancellationTokenSource();
-        private CancellationToken token;
+        private CancellationTokenSource barAnimCTS = new CancellationTokenSource();
+        private CancellationToken barAnimToken;
+
+        private void StopBarAnimation()
+        {
+            barAnimCTS.Cancel();
+            barAnimCTS.Dispose();
+
+            easing = false;
+        }
         private void ClarifyToken()
         {
-            if (!token.CanBeCanceled || token.IsCancellationRequested)
+            if (!barAnimToken.CanBeCanceled || barAnimToken.IsCancellationRequested)
             {
-                tokenSource = new CancellationTokenSource();
-                token = tokenSource.Token;
+                barAnimCTS = new CancellationTokenSource();
+                barAnimToken = barAnimCTS.Token;
+            }
+        }
+
+        private readonly TimeSpan deathDelaySpan = TimeSpan.FromSeconds(DelayHideByDeath);
+        private async UniTaskVoid HideAfterSecond(float duration)
+        {
+            try
+            {
+                await UniTask
+                    .Delay(deathDelaySpan, DelayType.Realtime, PlayerLoopTiming.PreLateUpdate,
+                        this.destroyCancellationToken).SuppressCancellationThrow();
+                Hide();
+            }
+            catch (Exception e)
+            {
+                Util.LogError($"[{nameof(HPBar)}] unexpected error occurred while {nameof(HideAfterSecond)}. {e}");
             }
         }
         
@@ -125,7 +157,7 @@ namespace RPG.UI
 
         private void OnHealthRatioChanged(float ratio)
         {
-            Util.Log($"{target.gameObject.name}: health ratio is changed. {ratio}");
+            // Util.Log($"{target.gameObject.name}: health ratio is changed. {ratio}");
             SetFill(ratio);
         }
 
@@ -147,7 +179,6 @@ namespace RPG.UI
             if (GetObject((int)GameObjects.Displayer) is not { activeSelf: true } displayer) 
                 return;
             
-            Util.Log($"not in screen. Hide HPBar");
             displayer.SetActive(false);
         }
         
@@ -164,17 +195,17 @@ namespace RPG.UI
 
         public void OnReleaseFromPool()
         {
-            if (!tokenSource.IsCancellationRequested)
-                tokenSource.Cancel();
+            if (!barAnimCTS.IsCancellationRequested)
+                barAnimCTS.Cancel();
         }
 
         public void OnDestroyFromPool()
         {
-            if (!tokenSource.IsCancellationRequested)
+            if (!barAnimCTS.IsCancellationRequested)
             {
-                tokenSource.Cancel();
+                barAnimCTS.Cancel();
             }
-            tokenSource.Dispose();
+            barAnimCTS.Dispose();
         }
 
         public void ReleaseSelf()

@@ -302,10 +302,12 @@ public static class Util
     {
         Completed,
         InProgress,
+        Focussed,
     }
     enum LogLevel
     {
         None,
+        OnlyFocussing,
         OnlyInProgress,
         All,
     }
@@ -317,10 +319,11 @@ public static class Util
         switch (mode)
         {
             case LoggingMode.InProgress when CurrLogLevel is LogLevel.All or LogLevel.OnlyInProgress:
-            case LoggingMode.Completed when CurrLogLevel is LogLevel.All:
+            case LoggingMode.Focussed when CurrLogLevel is not LogLevel.None:
                 Log(msg);
                 break;
             default:
+                if (CurrLogLevel is LogLevel.All) Log(msg);
                 break;
         }
     }

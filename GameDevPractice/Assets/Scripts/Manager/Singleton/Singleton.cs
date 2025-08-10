@@ -160,7 +160,6 @@ public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
         if (Util.IsQuitting) return;
         if (_instance == this && _instance is not Singleton<GameSceneManager>)
         {
-            // gameSceneManager.notifySceneLoaded -= AfterSceneLoaded;
             GameSceneManager.Instance.UnRegisterInitializationTask(AfterSceneLoaded);
         }
     }
