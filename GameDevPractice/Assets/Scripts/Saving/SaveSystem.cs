@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
-using System.Collections.Concurrent;
 using System.Reflection;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -14,7 +13,7 @@ namespace RPG.Saving
     {
         private static readonly Dictionary<Type, MethodInfo> CachedMethodInfos = new Dictionary<Type, MethodInfo>();
         private static readonly Dictionary<string, Type> CachedTypes = new Dictionary<string, Type>();
-
+        
         public async UniTask LoadLastScene(string saveFile)
         {
             if (LoadFile(saveFile) is not { } data) return;
@@ -154,12 +153,16 @@ namespace RPG.Saving
                 Debug.Log("[SaveSystem] No saved global data");
             }
 
-            var grouped = new Dictionary<string, Dictionary<string, object>>();
+            var grouped = new Dictionary<string, Dictionary<string, object>>(entries.Count);
 
             foreach (var entry in entries)
             {
                 var type = GetTypeByName(entry.typeName);
-                if (type == null) continue;
+                if (type == null)
+                {
+                    Util.LogError($"[{nameof(SaveSystem)}.{nameof(RestoreState)}()] Type not found: {entry.typeName}");
+                    continue;
+                }
 
                 object state;
                 try
@@ -169,6 +172,12 @@ namespace RPG.Saving
                         entry.jsonPayload,
                         new JsonSerializationParameters { SerializedType = type }
                     });
+
+                    if (state == null)
+                    {
+                        Util.LogError($"[{nameof(SaveSystem)}.{nameof(RestoreState)}()] FromJson Method missing for: {type.FullName}");
+                        continue;
+                    }
                 }
                 catch (Exception e)
                 {
@@ -227,7 +236,16 @@ namespace RPG.Saving
                 DisableSerializedReferences = true
             });
 
-            File.WriteAllText(tmp, json);
+            try
+            {
+                File.WriteAllText(tmp, json);
+            }
+            catch (Exception e)
+            {
+                Util.LogError($"[{nameof(SaveSystem)}.{nameof(SaveFile)}()] Failed to write new save file. {tmp}: {e.Message}");
+                return; // 세이브 파일 생성 실패 시 중지
+            }
+
             
             if (File.Exists(path)) // 기존 세이브가 존재하는 경우
                 File.Replace(tmp, path, bak);
