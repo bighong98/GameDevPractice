@@ -1,7 +1,7 @@
 using System;
 using System.IO;
-using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Reflection;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -17,15 +17,12 @@ namespace RPG.Saving
 
         public async UniTask LoadLastScene(string saveFile)
         {
-            SaveFileData data = LoadFile(saveFile);
-            if (data == null) return;
+            if (LoadFile(saveFile) is not { } data) return;
             
             await UniTask.SwitchToMainThread();
             await UniTask.Yield(); // 1프레임 지연
             
-            int buildIndex = data.lastSceneBuildIndex;
-            // await SceneManager.LoadSceneAsync(buildIndex);
-            await GameSceneManager.Instance.LoadSceneAsync(buildIndex);
+            await GameSceneManager.Instance.LoadSceneAsync(data.lastSceneBuildIndex);
             await UniTask.Yield(); // 1프레임 지연
             
             RestoreState(data);
@@ -95,7 +92,7 @@ namespace RPG.Saving
             File.Delete(GetPathFromSaveFile(saveFile));
         }
 
-        #region State
+        #region State (CaptureState, RestoreState)
 
         // 씬에 존재하는 모든 SavableEntity의 상태 수집, 저장데이터에 반영
         private void CaptureState(List<SavableEntry> sceneEntries, List<SavableEntry> globalEntries)
@@ -200,7 +197,7 @@ namespace RPG.Saving
 
         #endregion
         
-        #region File
+        #region File (LoadFile, SaveFile)
 
         private SaveFileData LoadFile(string saveFile)
         {
@@ -222,12 +219,21 @@ namespace RPG.Saving
         private void SaveFile(string saveFile, SaveFileData data)
         {
             string path = GetPathFromSaveFile(saveFile);
+            var tmp = path + ".tmp"; // 임시 파일명
+            var bak = path + ".bak"; // 백업 파일명
+            
             string json = JsonSerialization.ToJson(data, new JsonSerializationParameters
             {
                 DisableSerializedReferences = true
             });
 
-            File.WriteAllText(path, json);
+            File.WriteAllText(tmp, json);
+            
+            if (File.Exists(path)) // 기존 세이브가 존재하는 경우
+                File.Replace(tmp, path, bak);
+            else // 신규 세이브
+                File.Move(tmp, path);
+            
         }
         
         // 경로 생성 (임시)
@@ -238,36 +244,38 @@ namespace RPG.Saving
         
         #endregion
         
-        #region Helper Function
+        #region Method Type
+
+        private static readonly MethodInfo FromJsonOpenGeneric = 
+            typeof(JsonSerialization).GetMethod(
+                "FromJson",
+                BindingFlags.Public | BindingFlags.Static, 
+                null,
+                new[] { typeof(string), typeof(JsonSerializationParameters) }, 
+                null
+                );
         
         // 리플렉션 기반 Type to MethodInfo
         private MethodInfo GetMethodByType(Type type)
         {
+            if (type == null) return null;
+            
             if (CachedMethodInfos.TryGetValue(type, out var result))
             {
                 return result;
             }
 
-            var methods = typeof(JsonSerialization).GetMethods(BindingFlags.Public | BindingFlags.Static);
-            foreach (var m in methods)
+            try
             {
-                if (m.Name != "FromJson") continue;
-                if (!m.IsGenericMethodDefinition) continue;
-
-                var parameters = m.GetParameters();
-                if (parameters.Length != 2 ||
-                    parameters[0].ParameterType != typeof(string) ||
-                    parameters[1].ParameterType != typeof(JsonSerializationParameters))
-                {
-                    continue;
-                }
-
-                var method = m.MakeGenericMethod(type);
+                var method = FromJsonOpenGeneric.MakeGenericMethod(type);
                 CachedMethodInfos[type] = method;
                 return method;
             }
-
-            return null;
+            catch (Exception e)
+            {
+                Util.LogError($"[{nameof(SaveSystem)}] MakeGenericMethod failed: {type.FullName}, {e.Message}");
+                return null;
+            }
         }
 
         // 리플렉션 기반 Name to Type
@@ -291,7 +299,39 @@ namespace RPG.Saving
         
         #endregion
         
-        #region Deprecated
+    }
+}
+
+#region Deprecated
+
+        // private MethodInfo GetMethodByType(Type type)
+        // {
+        //     if (CachedMethodInfos.TryGetValue(type, out var result))
+        //     {
+        //         return result;
+        //     }
+        //
+        //     var methods = typeof(JsonSerialization).GetMethods(BindingFlags.Public | BindingFlags.Static);
+        //     foreach (var m in methods)
+        //     {
+        //         if (m.Name != "FromJson") continue;
+        //         if (!m.IsGenericMethodDefinition) continue;
+        //
+        //         var parameters = m.GetParameters();
+        //         if (parameters.Length != 2 ||
+        //             parameters[0].ParameterType != typeof(string) ||
+        //             parameters[1].ParameterType != typeof(JsonSerializationParameters))
+        //         {
+        //             continue;
+        //         }
+        //
+        //         var method = m.MakeGenericMethod(type);
+        //         CachedMethodInfos[type] = method;
+        //         return method;
+        //     }
+        //
+        //     return null;
+        // }
         
         // public void Save(string saveFile)
         // {
@@ -437,6 +477,4 @@ namespace RPG.Saving
         
         #endregion
         
-    }
-}
 

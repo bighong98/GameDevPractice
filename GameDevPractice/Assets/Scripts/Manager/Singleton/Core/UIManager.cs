@@ -9,9 +9,9 @@ namespace RPG.UI
 {
     public enum UICanvas
     {
-        Scene, // 씬UI 캔버스
-        Popup, // 팝업UI 캔버스
-        Overlay, // 게임 오브젝트와 함께 움직이는 UI요소 (상호작용x)
+        Scene, // 씬UI 캔버스, Sorting Order: 0~99
+        AnchoredOverlay, // 게임 오브젝트와 함께 움직이는 UI요소, Sorting Order: 100~199 
+        Popup, // 팝업UI 최상단 캔버스, Sorting Order: 200~
     }
     public class UIManager : Singleton<UIManager>
     {

@@ -77,6 +77,7 @@ namespace RPG.UI
         private void OnDisable()
         {
             DeSubscribeInputEvents();
+            Refresh();
         }
 
         private void OnDestroy()
@@ -86,7 +87,7 @@ namespace RPG.UI
 
         private void Update()
         {
-            OnPointerDrag();
+            MoveIconImageForDragDrop();
         }
 
         #region Initialization
@@ -226,8 +227,8 @@ namespace RPG.UI
         }
 
         #endregion
-        
-        #region Handle Player Input, Interaction
+
+        #region User Input Event Subscribe
 
         private void SubscribeInputEvents()
         {
@@ -253,6 +254,10 @@ namespace RPG.UI
             
             InputManager.Instance.OnDoubleClicked -= OnDoubleClicked;
         }
+
+        #endregion
+        
+        #region User Input Handle
         
         private void OnPointerMove(Vector2 pos)
         {
@@ -271,7 +276,7 @@ namespace RPG.UI
         {
             beginDragSlot = RaycastAndGetFirstComponent<UI_ItemSlotBase>();
         
-            if (beginDragSlot != null && beginDragSlot.HasItem)
+            if (beginDragSlot is { HasItem: true })
             {
                 beginDragIconTransform = beginDragSlot.IconRect;
                 beginDragIconPoint = beginDragIconTransform.position;
@@ -287,39 +292,11 @@ namespace RPG.UI
 
         private void OffDrag(Vector2 pos)
         {
-            if (beginDragSlot != null && beginDragSlot.HasItem) // 드래그 종료 시점에서 드래그 시작 지점 슬롯 재검사
+            if (beginDragSlot is { HasItem: true } ) // 드래그 종료 시점에서 드래그 시작 지점 슬롯 재검사
             {
-                beginDragIconTransform.position = beginDragIconPoint;
-                beginDragIconTransform.SetParent(beginDragSlot.transform, worldPositionStays: true); // 원래 부모 슬롯에게로 원복
-                EndDrag();
-                beginDragSlot = null;
-                beginDragIconTransform = null;
+                DropItem();
             }
-
-            isDragging = false;
-            UnHighlightEquipmentSlot();
-        }
-        
-        private void OnPointerDrag() // 드래그 중
-        {
-            if (!isDragging) return;
-
-            beginDragIconTransform.position = 
-                beginDragIconPoint + (currCursorPoint - beginDragCursorPoint); // _currCursorPoint = Input.mousePosition;
-        }
-
-        private void EndDrag()
-        {
-            UI_ItemSlotBase endDragSlot = RaycastAndGetFirstComponent<UI_ItemSlotBase>();
-
-            if (endDragSlot is { IsAccessibleSlot: true } && endDragSlot != beginDragSlot)
-            {
-                TrySwapItems(beginDragSlot, endDragSlot);
-            }
-            else if (true)
-            {
-                //todo: 인벤토리 영역 밖이면 아이템 버리기
-            }
+            CancelItemDrag();
         }
 
         private void OnDoubleClicked(Vector2 pos)
@@ -343,7 +320,46 @@ namespace RPG.UI
 
         #endregion
 
-        #region Icon
+        #region Drag&Drop
+
+        private void MoveIconImageForDragDrop() // 드래그 중
+        {
+            if (!isDragging || beginDragSlot == null) return;
+
+            beginDragIconTransform.position = 
+                beginDragIconPoint + (currCursorPoint - beginDragCursorPoint); // _currCursorPoint = Input.mousePosition;
+        }
+        
+        private void DropItem()
+        {
+            UI_ItemSlotBase endDragSlot = RaycastAndGetFirstComponent<UI_ItemSlotBase>();
+
+            if (endDragSlot is { IsAccessibleSlot: true } && endDragSlot != beginDragSlot)
+            {
+                TrySwapItems(beginDragSlot, endDragSlot);
+            }
+            else if (true)
+            {
+                //todo: 인벤토리 영역 밖이면 아이템 버리기
+            }
+        }
+
+        private void CancelItemDrag()
+        {
+            if (!isDragging || beginDragSlot == null) return;
+            
+            beginDragIconTransform.position = beginDragIconPoint;
+            beginDragIconTransform.SetParent(beginDragSlot.transform, worldPositionStays: true); // 아이템 아이콘 원래 부모 슬롯에게로 원복
+            
+            beginDragIconTransform = null;
+            beginDragSlot = null;
+            isDragging = false;
+            UnHighlightEquipmentSlot();
+        }
+
+        #endregion
+        
+        #region Slot Icon
         
         private void SetInventorySlotIcon(int index, ItemSlot item) => SetSlotIcon(itemSlotUIs[index], item);
         private void SetEquipmentSlotIcon(int index, ItemSlot item) => SetSlotIcon(equipmentSlotUIs[index], item);
@@ -368,7 +384,7 @@ namespace RPG.UI
 
         #endregion
 
-        #region Text
+        #region Slot Text (Amount)
 
         private void SetSlotAmountText(int index, int amount)
         {
@@ -510,6 +526,7 @@ namespace RPG.UI
 
         private void Clear()
         {
+            CancelItemDrag();
             HideTooltip();
             HideHighlight();
         }

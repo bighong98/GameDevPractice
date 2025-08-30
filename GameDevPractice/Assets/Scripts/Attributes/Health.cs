@@ -51,7 +51,7 @@ namespace RPG.Attribute
             {
                 if (this != null)
                 {
-                    UIManager.Instance.GetUIFromPool<HPBar>(HPBarPrefab, UICanvas.Overlay).SetOwner(this);
+                    UIManager.Instance.GetUIFromPool<HPBar>(HPBarPrefab, UICanvas.AnchoredOverlay).SetOwner(this);
                 }
             });
             // await UniTask.Delay(TimeSpan.FromSeconds(3), cancellationToken: this.GetCancellationTokenOnDestroy()).SuppressCancellationThrow();
