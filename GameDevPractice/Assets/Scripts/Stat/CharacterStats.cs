@@ -86,7 +86,7 @@ namespace RPG.Stats
                 if (hasExperience)
                 {
                     experience.GainExperience(10);
-                    Util.Log("Experience Gained");
+                    Util.Log("Experience Gained", Util.LoggingMode.Completed);
                 }
             }
         } 

@@ -264,6 +264,24 @@ namespace RPG.Saving
         
         #region Method Type
 
+        private static readonly Dictionary<string, Type> BuiltinAliasTypes = new(StringComparer.Ordinal)
+        {
+            ["bool"] = typeof(bool),
+            ["byte"] = typeof(byte),
+            ["sbyte"] = typeof(sbyte),
+            ["char"] = typeof(char),
+            ["decimal"] = typeof(decimal),
+            ["double"] = typeof(double),
+            ["float"] = typeof(float),
+            ["int"] = typeof(int),
+            ["uint"] = typeof(uint),
+            ["long"] = typeof(long),
+            ["ulong"] = typeof(ulong),
+            ["short"] = typeof(short),
+            ["ushort"] = typeof(ushort),
+            ["string"] = typeof(string),
+        };
+
         private static readonly MethodInfo FromJsonOpenGeneric = 
             typeof(JsonSerialization).GetMethod(
                 "FromJson",
@@ -299,7 +317,15 @@ namespace RPG.Saving
         // 리플렉션 기반 Name to Type
         private Type GetTypeByName(string typeName)
         {
+            if (string.IsNullOrEmpty(typeName)) return null;
+            
             if (CachedTypes.TryGetValue(typeName, out var t)) return t;
+
+            if (BuiltinAliasTypes.TryGetValue(typeName, out var aliasType))
+            {
+                CachedTypes[typeName] = aliasType;
+                return aliasType;
+            }
 
             var type = Type.GetType(typeName);
             if (type == null)
