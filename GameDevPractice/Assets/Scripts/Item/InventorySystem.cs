@@ -181,7 +181,7 @@ namespace RPG.Item
         {
             if (slotUI is UI_EquipmentSlot)
             {
-                Util.Log($"[FindUITargetSlot] UI_EquipmentSlot index:{slotUI.Index}");
+                Util.Log($"[FindUITargetSlot] UI_EquipmentSlot index:{slotUI.Index}", Util.LoggingMode.Completed);
                 if (!IsValidEquippedSlot(slotUI.Index)) return null;
                 
                 return equippedItems[slotUI.Index];

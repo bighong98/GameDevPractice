@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using GameDevTV.Utils;
 using RPG.Item;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -13,7 +14,7 @@ namespace RPG.UI
 
         enum GameObjects
         {
-            ContentArea,
+            Contents,
             
             WeaponSlot, // 반드시 Enums.EquippedSlotType과 순서, 개수가 동일해야함
             HeadSlot,
@@ -21,7 +22,7 @@ namespace RPG.UI
             HandSlot,
             FootSlot,
         
-            SlotArea,
+            ItemArea,
             PopupPanel,
             UI_RemoveConfirmPopup,
             UI_ItemTooltip,
@@ -29,10 +30,12 @@ namespace RPG.UI
 
         #endregion
         
-        [SerializeField] private RPG.Item.InventorySystem inventorySystem; // serialize for debug
+        private RPG.Item.InventorySystem inventorySystem; 
         private GraphicRaycaster graphicRaycaster;
         private PointerEventData pointerEventData;
         private List<RaycastResult> raycastResults;
+
+        [SerializeField]private GameObject itemTooltipPrefab;
         private UI_ItemTooltip itemTooltip;
 
         [SerializeField] private List<UI_ItemSlot> itemSlotUIs;
@@ -99,7 +102,7 @@ namespace RPG.UI
             
             BindObject(typeof(GameObjects));
             
-            graphicRaycaster = GetObject((int)GameObjects.ContentArea).GetOrAddComponent<GraphicRaycaster>();
+            graphicRaycaster = GetObject((int)GameObjects.Contents).GetOrAddComponent<GraphicRaycaster>();
 
             InitializeSlotUIs();
             ConnectDataWithSlotUIs();
@@ -122,8 +125,14 @@ namespace RPG.UI
             }
             
             // 툴팁 참조 연결 및 초기화
-            itemTooltip = GetObject((int)GameObjects.UI_ItemTooltip).GetOrAddComponent<UI_ItemTooltip>();
-            itemTooltip.HideTooltip();
+            // itemTooltip = GetObject((int)GameObjects.UI_ItemTooltip).GetOrAddComponent<UI_ItemTooltip>();
+            // itemTooltip.HideTooltip();
+
+            if (itemTooltipPrefab != null)
+            {
+                var go = Instantiate(itemTooltipPrefab, parent: transform);
+                itemTooltip = go.GetComponent<UI_ItemTooltip>();
+            }
             
             // 장비 슬롯 UI 초기화
             for (int i = 0; i < (int)Enums.EquippedItemSlotType.Max; i++)
@@ -195,15 +204,15 @@ namespace RPG.UI
 
             if (itemSlot.GetItem is RPG.Item.CountableItem cItem) // 1-1. 셀 수 있는 아이템 
             {
-                Util.Log($"[UpdateSlotUI(index: {index})] item is countableItem");
+                Util.Log($"[UpdateSlotUI(index: {index})] item is countableItem", Util.LoggingMode.Completed);
                 if (cItem.IsEmpty)
                 {
-                    Util.Log($"[UpdateSlotUI(index: {index})] cItem is empty");
+                    Util.Log($"[UpdateSlotUI(index: {index})] cItem is empty", Util.LoggingMode.Completed);
                     CleanSlot(index);
                 }
                 else
                 {
-                    // Util.Log($"[UpdateSlotUI(index: {index})] Trying to SetSlotAmountText amount: {cItem.GetAmount}");
+                    Util.Log($"[UpdateSlotUI(index: {index})] Trying to SetSlotAmountText amount: {cItem.GetAmount}", Util.LoggingMode.Completed);
                     SetSlotAmountText(index, cItem.GetAmount);
                     ShowSlotAmountText(index);
                 }
@@ -232,7 +241,6 @@ namespace RPG.UI
 
         private void SubscribeInputEvents()
         {
-            // if (Util.IsQuitting) return; // 어플리케이션 종료 중이라면 취소
             DeSubscribeInputEvents(); // 중복 델리게이트 등록 방지
             
             InputManager.Instance.OnUIPointerMoved += OnPointerMove;
@@ -245,7 +253,7 @@ namespace RPG.UI
 
         private void DeSubscribeInputEvents()
         {
-            // if (Util.IsQuitting) return; // 어플리케이션 종료 중이라면 취소
+            if (Util.IsQuitting) return; // 어플리케이션 종료 중이라면 취소
             
             InputManager.Instance.OnUIPointerMoved -= OnPointerMove;
             
