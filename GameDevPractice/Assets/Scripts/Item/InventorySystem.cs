@@ -375,7 +375,12 @@ namespace RPG.Item
         {
             if (targetSlot.GetItemInfo is not { isUsable: true }) return;
 
-            if (targetSlot.GetItem is EquipmentItem equipment)
+            if (targetSlot is EquipmentSlot { } equipmentSlot // 해당 슬롯이 장비 슬롯(장착 목적)인 경우
+                && FindEmptySlotIndex() is {} emptySlotIndex and > 0) // and 인벤토리에 빈 슬롯이 있는 경우
+            {
+                TransferItem(equipmentSlot, inventoryItems[emptySlotIndex]); // 장비칸의 장비를 빈 슬롯으로 이동
+            }
+            else if (targetSlot.GetItem is EquipmentItem equipment) // 인벤토리에 보관된 장비 아이템인 경우
             {
                 if (FindSuitableEquipSlot(equipment) is { } equipSlot)
                 {
@@ -492,7 +497,7 @@ namespace RPG.Item
         {
             if (args.State == EquipmentSlotArgs.EquipEventState.Equip)
             {
-                if (args.Item.GetItemInfo is not WeaponTypeSO weaponTypeSO) return;
+                if (args.Item.GetItemInfo is not WeaponTypeSO weaponTypeSO) return; // todo: 무기 이외 타입 처리 추가
                 
                 if (GameObject.FindWithTag("Player") is { } player &&
                     player.GetComponent<Fighter>() is { } pFighter)
@@ -505,7 +510,7 @@ namespace RPG.Item
                 if (GameObject.FindWithTag("Player") is { } player &&
                     player.GetComponent<Fighter>() is { } pFighter)
                 {
-                    pFighter.UnEquipWeapon();;
+                    pFighter.UnEquipWeapon();
                 }
             }
         }

@@ -286,6 +286,7 @@ namespace RPG.UI
         
             if (beginDragSlot is { HasItem: true })
             {
+                beginDragSlot.IconImage.maskable = false;
                 beginDragIconTransform = beginDragSlot.IconRect;
                 beginDragIconPoint = beginDragIconTransform.position;
                 beginDragCursorPoint = currCursorPoint; 
@@ -309,9 +310,10 @@ namespace RPG.UI
 
         private void OnDoubleClicked(Vector2 pos)
         {
-            UI_ItemSlotBase slotUI = RaycastAndGetFirstComponent<UI_ItemSlotBase>();
-            if (slotUI == null) return;
-            TryUseItem(slotUI);
+            if (RaycastAndGetFirstComponent<UI_ItemSlotBase>() is { } slotUI)
+            {
+                TryUseItem(slotUI);
+            }
         }
 
         private void TrySwapItems(UI_ItemSlotBase fromSlotUI, UI_ItemSlotBase toSlotUI)
@@ -355,7 +357,8 @@ namespace RPG.UI
         private void CancelItemDrag()
         {
             if (!isDragging || beginDragSlot == null) return;
-            
+
+            beginDragSlot.IconImage.maskable = true;
             beginDragIconTransform.position = beginDragIconPoint;
             beginDragIconTransform.SetParent(beginDragSlot.transform, worldPositionStays: true); // 아이템 아이콘 원래 부모 슬롯에게로 원복
             
@@ -483,7 +486,7 @@ namespace RPG.UI
                     HighlightCurrSlot();
                     ShowCurrTooltip();
                     break;
-                case null: // 슬롯x
+                default: // 빈슬롯, 슬롯x
                     UnHighlightPrevSlot();
                     HidePrevTooltip();
                     break;
