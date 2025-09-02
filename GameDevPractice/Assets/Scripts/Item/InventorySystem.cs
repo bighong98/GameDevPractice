@@ -226,7 +226,7 @@ namespace RPG.Item
         {
             if (checkInstanceType)
             {
-                item = ModifyItemInstanceByType(item);
+                item = ModifyItemInstanceByType(item); // 아이템 타입에 적합한 RPG.Item.Item의 하위 클래스 인스턴스로 재생성
             }
             
             int index;
@@ -481,7 +481,7 @@ namespace RPG.Item
 
         #region Notify/Listen Event
 
-        private void NotifySlotUpdated(ItemSlot slot)
+        private void NotifySlotUpdated(ItemSlot slot) // (Equipment, Inventory) 특정 슬롯의 변동 발생을 알림
         {
             if (slot is EquipmentSlot equipmentSlot)
             {
@@ -493,7 +493,7 @@ namespace RPG.Item
             }
         }
         
-        private void OnEquipmentChanged(object sender, EquipmentSlotArgs args)
+        private void OnEquipmentChanged(object sender, EquipmentSlotArgs args) // 장비 아이템의 변동사항(장착/해제) 처리
         {
             if (args.State == EquipmentSlotArgs.EquipEventState.Equip && args.Item.GetItemInfo.itemType == Enums.ItemType.Equipment)
             {
@@ -502,7 +502,7 @@ namespace RPG.Item
                 if (GameObject.FindWithTag("Player") is { } player &&
                     player.GetComponent<Fighter>() is { } pFighter)
                 {
-                    pFighter.EquipWeapon(weaponTypeSO);
+                    pFighter.EquipWeapon(weaponTypeSO); // 플레이어 캐릭터에게 장비 착용
                 }
             }
             else // case: args.State == EquipmentSlotArgs.EquipEventState.UnEquip)
@@ -511,9 +511,12 @@ namespace RPG.Item
                 if (GameObject.FindWithTag("Player") is { } player &&
                     player.GetComponent<Fighter>() is { } pFighter)
                 {
-                    pFighter.UnEquipWeapon();
+                    pFighter.UnEquipWeapon(); // 플레이어 캐릭터의 장비 착용 해제
                 }
             }
+
+            if (sender is ItemSlot changedSlot) 
+                NotifySlotUpdated(changedSlot); // 해당 장비 슬롯의 변동 알림 (인벤토리 UI 등에 동기화 목적)
         }
 
         #endregion

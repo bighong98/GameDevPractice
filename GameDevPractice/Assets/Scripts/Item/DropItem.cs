@@ -20,7 +20,7 @@ namespace RPG.Item
             }
         }
 
-        public void SetInventoryRef(InventorySystem inventorySystem)
+        public void SetInventoryRef(InventorySystem inventorySystem) // 추후 오브젝트 풀링 적용시 아이템을 생성한 쪽에서 inventory의 참조를 전달
         {
             inventory = inventorySystem;
         }
@@ -31,9 +31,9 @@ namespace RPG.Item
             {
                 //todo: 아이템 습득 애니메이션 추가
                 if (itemTypeHolder == null || inventory == null) return;
-                if (inventory.AddItem(new Item(itemTypeHolder.type), itemTypeHolder.GetAmount, true, useImmediately) <= 0)
+                if (inventory.AddItem(new Item(itemTypeHolder.type), itemTypeHolder.GetAmount, true, useImmediately) <= 0) // 플레이어 인벤토리 아이템 추가에 성공했다면 
                 {
-                    itemTypeHolder.ReleaseSelf();
+                    itemTypeHolder.ReleaseSelf(); // 현재 드랍 아이템 객체 풀에 반환
                 }
                 //todo: else { // 아이템 도로 뱉는? 애니메이션 추가 }
             }
