@@ -248,19 +248,19 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""Drag"",
-                    ""type"": ""PassThrough"",
-                    ""id"": ""bb5c7129-fa67-4ad7-8257-1f7f8c5d932f"",
-                    ""expectedControlType"": ""Vector2"",
+                    ""name"": ""Alt"",
+                    ""type"": ""Button"",
+                    ""id"": ""e24645b2-2ee2-4fd9-9806-85928c69fe30"",
+                    ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""Release"",
-                    ""type"": ""Button"",
-                    ""id"": ""33fe1359-3da3-45ce-ab1b-b4e4f92387ec"",
-                    ""expectedControlType"": """",
+                    ""name"": ""Drag"",
+                    ""type"": ""PassThrough"",
+                    ""id"": ""bb5c7129-fa67-4ad7-8257-1f7f8c5d932f"",
+                    ""expectedControlType"": ""Vector2"",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
@@ -322,23 +322,34 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""cc16fce0-7823-49e9-bbe3-c74c3c939d88"",
-                    ""path"": ""<Pointer>/press"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Release"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
                     ""id"": ""cd4b9a0b-7152-42da-8eff-69ffe8b959e6"",
                     ""path"": ""<Pointer>/{Point}"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""PointUI"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""3f48fecb-f695-4b64-85a7-90f5afaacfaa"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Alt"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""859b78d5-9522-433e-abbf-fcc8c39a705f"",
+                    ""path"": ""<VirtualMouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Alt"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -362,6 +373,15 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
                     ""type"": ""PassThrough"",
                     ""id"": ""6a7cb09c-9584-4d6f-a668-2675a1db669e"",
                     ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Release"",
+                    ""type"": ""Button"",
+                    ""id"": ""2473a7ee-e617-406e-85d9-65fc9a43ee9c"",
+                    ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
@@ -389,6 +409,17 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
                     ""action"": ""Point"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""284869ca-0926-4978-bca9-2e1cbd49dba2"",
+                    ""path"": ""<Pointer>/press"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Release"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -402,13 +433,14 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_Click = m_UI.FindAction("Click", throwIfNotFound: true);
+        m_UI_Alt = m_UI.FindAction("Alt", throwIfNotFound: true);
         m_UI_Drag = m_UI.FindAction("Drag", throwIfNotFound: true);
-        m_UI_Release = m_UI.FindAction("Release", throwIfNotFound: true);
         m_UI_PointUI = m_UI.FindAction("PointUI", throwIfNotFound: true);
         // Global
         m_Global = asset.FindActionMap("Global", throwIfNotFound: true);
         m_Global_Escape = m_Global.FindAction("Escape", throwIfNotFound: true);
         m_Global_Point = m_Global.FindAction("Point", throwIfNotFound: true);
+        m_Global_Release = m_Global.FindAction("Release", throwIfNotFound: true);
     }
 
     ~@UserInput()
@@ -599,8 +631,8 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
     private readonly InputActionMap m_UI;
     private List<IUIActions> m_UIActionsCallbackInterfaces = new List<IUIActions>();
     private readonly InputAction m_UI_Click;
+    private readonly InputAction m_UI_Alt;
     private readonly InputAction m_UI_Drag;
-    private readonly InputAction m_UI_Release;
     private readonly InputAction m_UI_PointUI;
     /// <summary>
     /// Provides access to input actions defined in input action map "UI".
@@ -618,13 +650,13 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
         /// </summary>
         public InputAction @Click => m_Wrapper.m_UI_Click;
         /// <summary>
+        /// Provides access to the underlying input action "UI/Alt".
+        /// </summary>
+        public InputAction @Alt => m_Wrapper.m_UI_Alt;
+        /// <summary>
         /// Provides access to the underlying input action "UI/Drag".
         /// </summary>
         public InputAction @Drag => m_Wrapper.m_UI_Drag;
-        /// <summary>
-        /// Provides access to the underlying input action "UI/Release".
-        /// </summary>
-        public InputAction @Release => m_Wrapper.m_UI_Release;
         /// <summary>
         /// Provides access to the underlying input action "UI/PointUI".
         /// </summary>
@@ -658,12 +690,12 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
             @Click.started += instance.OnClick;
             @Click.performed += instance.OnClick;
             @Click.canceled += instance.OnClick;
+            @Alt.started += instance.OnAlt;
+            @Alt.performed += instance.OnAlt;
+            @Alt.canceled += instance.OnAlt;
             @Drag.started += instance.OnDrag;
             @Drag.performed += instance.OnDrag;
             @Drag.canceled += instance.OnDrag;
-            @Release.started += instance.OnRelease;
-            @Release.performed += instance.OnRelease;
-            @Release.canceled += instance.OnRelease;
             @PointUI.started += instance.OnPointUI;
             @PointUI.performed += instance.OnPointUI;
             @PointUI.canceled += instance.OnPointUI;
@@ -681,12 +713,12 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
             @Click.started -= instance.OnClick;
             @Click.performed -= instance.OnClick;
             @Click.canceled -= instance.OnClick;
+            @Alt.started -= instance.OnAlt;
+            @Alt.performed -= instance.OnAlt;
+            @Alt.canceled -= instance.OnAlt;
             @Drag.started -= instance.OnDrag;
             @Drag.performed -= instance.OnDrag;
             @Drag.canceled -= instance.OnDrag;
-            @Release.started -= instance.OnRelease;
-            @Release.performed -= instance.OnRelease;
-            @Release.canceled -= instance.OnRelease;
             @PointUI.started -= instance.OnPointUI;
             @PointUI.performed -= instance.OnPointUI;
             @PointUI.canceled -= instance.OnPointUI;
@@ -729,6 +761,7 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
     private List<IGlobalActions> m_GlobalActionsCallbackInterfaces = new List<IGlobalActions>();
     private readonly InputAction m_Global_Escape;
     private readonly InputAction m_Global_Point;
+    private readonly InputAction m_Global_Release;
     /// <summary>
     /// Provides access to input actions defined in input action map "Global".
     /// </summary>
@@ -748,6 +781,10 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Global/Point".
         /// </summary>
         public InputAction @Point => m_Wrapper.m_Global_Point;
+        /// <summary>
+        /// Provides access to the underlying input action "Global/Release".
+        /// </summary>
+        public InputAction @Release => m_Wrapper.m_Global_Release;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -780,6 +817,9 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
             @Point.started += instance.OnPoint;
             @Point.performed += instance.OnPoint;
             @Point.canceled += instance.OnPoint;
+            @Release.started += instance.OnRelease;
+            @Release.performed += instance.OnRelease;
+            @Release.canceled += instance.OnRelease;
         }
 
         /// <summary>
@@ -797,6 +837,9 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
             @Point.started -= instance.OnPoint;
             @Point.performed -= instance.OnPoint;
             @Point.canceled -= instance.OnPoint;
+            @Release.started -= instance.OnRelease;
+            @Release.performed -= instance.OnRelease;
+            @Release.canceled -= instance.OnRelease;
         }
 
         /// <summary>
@@ -867,19 +910,19 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnClick(InputAction.CallbackContext context);
         /// <summary>
+        /// Method invoked when associated input action "Alt" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnAlt(InputAction.CallbackContext context);
+        /// <summary>
         /// Method invoked when associated input action "Drag" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
         /// </summary>
         /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnDrag(InputAction.CallbackContext context);
-        /// <summary>
-        /// Method invoked when associated input action "Release" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
-        /// </summary>
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-        void OnRelease(InputAction.CallbackContext context);
         /// <summary>
         /// Method invoked when associated input action "PointUI" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
         /// </summary>
@@ -909,5 +952,12 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnPoint(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Release" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnRelease(InputAction.CallbackContext context);
     }
 }

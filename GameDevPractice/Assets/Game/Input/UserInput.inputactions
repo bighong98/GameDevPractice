@@ -162,19 +162,19 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Drag",
-                    "type": "PassThrough",
-                    "id": "bb5c7129-fa67-4ad7-8257-1f7f8c5d932f",
-                    "expectedControlType": "Vector2",
+                    "name": "Alt",
+                    "type": "Button",
+                    "id": "e24645b2-2ee2-4fd9-9806-85928c69fe30",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Release",
-                    "type": "Button",
-                    "id": "33fe1359-3da3-45ce-ab1b-b4e4f92387ec",
-                    "expectedControlType": "",
+                    "name": "Drag",
+                    "type": "PassThrough",
+                    "id": "bb5c7129-fa67-4ad7-8257-1f7f8c5d932f",
+                    "expectedControlType": "Vector2",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -236,23 +236,34 @@
                 },
                 {
                     "name": "",
-                    "id": "cc16fce0-7823-49e9-bbe3-c74c3c939d88",
-                    "path": "<Pointer>/press",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Release",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
                     "id": "cd4b9a0b-7152-42da-8eff-69ffe8b959e6",
                     "path": "<Pointer>/{Point}",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
                     "action": "PointUI",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "3f48fecb-f695-4b64-85a7-90f5afaacfaa",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Alt",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "859b78d5-9522-433e-abbf-fcc8c39a705f",
+                    "path": "<VirtualMouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Alt",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
@@ -279,6 +290,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "Release",
+                    "type": "Button",
+                    "id": "2473a7ee-e617-406e-85d9-65fc9a43ee9c",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -301,6 +321,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "Point",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "284869ca-0926-4978-bca9-2e1cbd49dba2",
+                    "path": "<Pointer>/press",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Release",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

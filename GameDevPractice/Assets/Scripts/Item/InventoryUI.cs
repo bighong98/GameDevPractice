@@ -248,7 +248,8 @@ namespace RPG.UI
             InputManager.Instance.OnDragStarted += OnDrag;
             InputManager.Instance.OnDragEnded += OffDrag;
 
-            InputManager.Instance.OnDoubleClicked += OnDoubleClicked;
+            InputManager.Instance.OnDoubleClicked += TryUseItem;
+            InputManager.Instance.OnAltClicked += TryUseItem;
         }
 
         private void DeSubscribeInputEvents()
@@ -260,7 +261,8 @@ namespace RPG.UI
             InputManager.Instance.OnDragStarted -= OnDrag;
             InputManager.Instance.OnDragEnded -= OffDrag;
             
-            InputManager.Instance.OnDoubleClicked -= OnDoubleClicked;
+            InputManager.Instance.OnDoubleClicked -= TryUseItem;
+            InputManager.Instance.OnAltClicked -= TryUseItem;
         }
 
         #endregion
@@ -308,24 +310,19 @@ namespace RPG.UI
             CancelItemDrag();
         }
 
-        private void OnDoubleClicked(Vector2 pos)
+        private void TryUseItem(Vector2 pos)
         {
             if (RaycastAndGetFirstComponent<UI_ItemSlotBase>() is { } slotUI)
             {
-                TryUseItem(slotUI);
+                inventorySystem.TryUseItem(slotUI);
             }
         }
-
+        
         private void TrySwapItems(UI_ItemSlotBase fromSlotUI, UI_ItemSlotBase toSlotUI)
         {
-            Util.Log($"trying to TrySwapItems({fromSlotUI}.{fromSlotUI.Index}, {toSlotUI}.{toSlotUI.Index})");
+            Util.Log($"trying to TrySwapItems({fromSlotUI}.{fromSlotUI.Index}, {toSlotUI}.{toSlotUI.Index})", Util.LoggingMode.Completed);
             
             inventorySystem.TrySwapItems(fromSlotUI, toSlotUI);
-        }
-
-        private void TryUseItem(UI_ItemSlotBase targetSlotUI)
-        {
-            inventorySystem.TryUseItem(targetSlotUI);
         }
 
         #endregion

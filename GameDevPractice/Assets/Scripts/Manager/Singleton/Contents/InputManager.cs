@@ -28,11 +28,12 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
     // UI
     public event Action<Vector2> OnUIPointerMoved; // UI 팝업이 활성화된 상태에서 포인터 움직임 발생시
     public event Action<Vector2> OnSingleClicked;
-    public event Action<Vector2> OnDoubleClicked;
+    public event Action<Vector2> OnDoubleClicked; // 더블클릭
+    public event Action<Vector2> OnAltClicked; // 보조 입력 발생 시 (마우스 우클릭 등)
     // public event Action<Vector2> OnHolded;
     // UI.Drag
-    public event Action<Vector2> OnDragStarted;
-    public event Action<Vector2> OnDragEnded;
+    public event Action<Vector2> OnDragStarted; // 드래그 시작 시
+    public event Action<Vector2> OnDragEnded; // 드래그 종료 시
 
     #endregion 
     
@@ -118,6 +119,10 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
         }
     }
 
+
+
+    #region Player Input Handle // 플레이어 캐릭터 조작에 사용하는 입력
+
     public void OnMove(InputAction.CallbackContext context)
     {
         OnMoved?.Invoke(context.ReadValue<Vector2>());
@@ -131,7 +136,11 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
         }
     }
 
-    public void OnEscape(InputAction.CallbackContext context)
+    #endregion
+
+    #region Global Input Handle // 전역적 입력 
+
+    public void OnEscape(InputAction.CallbackContext context) // ESC 등
     {
         if (context.phase == InputActionPhase.Performed)
         {
@@ -139,54 +148,13 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
         }
     }
 
-    public void OnPoint(InputAction.CallbackContext context)
+    public void OnPoint(InputAction.CallbackContext context) // 포인터 이동 감지
     {
         currentPointerPos = context.ReadValue<Vector2>();
         OnPointerMoved?.Invoke(currentPointerPos);
     }
-
-    public void OnClick(InputAction.CallbackContext context)
-    {
-        if (isDragging || wasDraggingOneFrameAgo) return;
-
-        if (context is { interaction: UnityEngine.InputSystem.Interactions.MultiTapInteraction, phase: InputActionPhase.Performed })
-        {
-            // Util.Log("Double Click Occured");
-            OnDoubleClicked?.Invoke(currentPointerPos);
-        }
-        else if (context is { interaction: UnityEngine.InputSystem.Interactions.TapInteraction, phase: InputActionPhase.Performed })
-        {
-            // Util.Log("Single Click Occured");
-            OnSingleClicked?.Invoke(currentPointerPos);
-        }
-    }
     
-    public void OnDrag(InputAction.CallbackContext context)
-    {
-        Vector2 delta = context.ReadValue<Vector2>();
-
-        if (context.phase == InputActionPhase.Performed)
-        {
-            if (!isDragging && delta.magnitude > 2f)
-            {
-                isDragging = true;
-                dragStartPosition = PointerPos;
-                OnDragStarted?.Invoke(dragStartPosition);
-            }
-        }
-    }
-
-    public void OnHold(InputAction.CallbackContext context)
-    {
-        // OnHolded?.Invoke(context.ReadValue<Vector2>()); // 현재 미구현 추후 구현 예정
-    }
-
-    public void OnPointUI(InputAction.CallbackContext context)
-    {
-        OnUIPointerMoved?.Invoke(context.ReadValue<Vector2>());
-    }
-
-    public void OnRelease(InputAction.CallbackContext context)
+    public void OnRelease(InputAction.CallbackContext context) // 터치/클릭이 해제되었을 때 (더블클릭 등 처리 목적)
     {
         if (context.phase != InputActionPhase.Canceled) return;
 
@@ -203,6 +171,62 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
             });
         }
     }
+
+    #endregion
+
+    #region UI Input Handle // UI 상호작용 입력
+
+    public void OnClick(InputAction.CallbackContext context) // 마우스 좌클릭, 스크린 터치
+    {
+        if (isDragging || wasDraggingOneFrameAgo) return;
+
+        if (context is { interaction: UnityEngine.InputSystem.Interactions.MultiTapInteraction, phase: InputActionPhase.Performed })
+        {
+            Util.Log("Double Click Occured", Util.LoggingMode.Completed);
+            OnDoubleClicked?.Invoke(currentPointerPos);
+        }
+        else if (context is { interaction: UnityEngine.InputSystem.Interactions.TapInteraction, phase: InputActionPhase.Performed })
+        {
+            Util.Log("Single Click Occured", Util.LoggingMode.Completed);
+            OnSingleClicked?.Invoke(currentPointerPos);
+        }
+    }
+    
+    public void OnDrag(InputAction.CallbackContext context) // 드래그
+    {
+        Vector2 delta = context.ReadValue<Vector2>();
+
+        if (context.phase == InputActionPhase.Performed)
+        {
+            if (!isDragging && delta.magnitude > 2f)
+            {
+                isDragging = true;
+                dragStartPosition = PointerPos;
+                OnDragStarted?.Invoke(dragStartPosition);
+            }
+        }
+    }
+
+    public void OnHold(InputAction.CallbackContext context) // 홀드 (클릭 상태를 움직이지 않고 유지)
+    {
+        // OnHolded?.Invoke(context.ReadValue<Vector2>()); // 현재 미구현 추후 구현 예정
+    }
+
+    public void OnPointUI(InputAction.CallbackContext context)
+    {
+        OnUIPointerMoved?.Invoke(context.ReadValue<Vector2>());
+    }
+    
+    public void OnAlt(InputAction.CallbackContext context) // 마우스 우클릭 등 보조 입력장치 처리
+    {
+        if (context.phase == InputActionPhase.Performed)
+        {
+            OnAltClicked?.Invoke(PointerPos);
+        }
+    }
+
+    #endregion
+    
 
     private void SwitchActionMap(InputActionMap actionMap, bool exclusive)
     {
