@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace RPG.Item
 {
-    // 장비 장착 구현 목적의 아이템 슬롯
+    // 장비 장착 목적의 아이템 슬롯
     // 특정한 부위의 장비 아이템만 저장 가능
     // 장착(장비의 능력치 적용)이 필요한 경우가 아니라면 ItemSlot 혹은 파생클래스 사용할 것
     public class EquipmentSlot : ItemSlot
@@ -40,9 +40,7 @@ namespace RPG.Item
             {
                 if (prevItem is { IsValid: true }) // 기존에 슬롯에 장착되었던 아이템이 있었다면
                 {
-                    // 기존 장비 장착해제 이벤트 전달
-                    Util.Log($"[EquipmentSlot[{Index}]]: Item UnEquipped", Util.LoggingMode.Completed);
-                    OnEquipmentChanged?.Invoke(this, new EquipmentSlotArgs(prevItem, EquipmentSlotArgs.EquipEventState.UnEquip));
+                    Clear(prevItem); // 기존 장비 장착 해제
                 }
                 // 새 장비 장착 이벤트 전달
                 Util.Log($"[EquipmentSlot[{Index}]]: New Item Equipped", Util.LoggingMode.Completed);
@@ -51,6 +49,20 @@ namespace RPG.Item
             }
 
             return false;
+        }
+
+        private bool Clear(Item item)
+        {
+            // 기존 장비 장착해제 이벤트 전달
+            Util.Log($"[EquipmentSlot[{Index}]]: Item UnEquipped", Util.LoggingMode.Completed);
+            OnEquipmentChanged?.Invoke(this, new EquipmentSlotArgs(item, EquipmentSlotArgs.EquipEventState.UnEquip));
+
+            return base.Clear();
+        }
+
+        public override bool Clear()
+        {
+            return Clear(Item);
         }
     }
 

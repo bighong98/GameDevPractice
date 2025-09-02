@@ -60,7 +60,7 @@ namespace RPG.Item
              
              foreach (var item in testData.items)
              {
-                 Util.Log($"Trying to add {item.GetItemInfo.nameString}");
+                 Util.Log($"Trying to add {item.GetItemInfo.nameString}", Util.LoggingMode.Completed);
                  AddItem(item, checkInstanceType: true);
              }
             });
@@ -373,7 +373,7 @@ namespace RPG.Item
 
         private void UseItem(ItemSlot targetSlot)
         {
-            if (targetSlot.GetItemInfo is not { isUsable: true }) return;
+            if (targetSlot.GetItemInfo is not { isUsable: true }) return; // 사용 가능한(소비, 장착) 아이템이 아닌 경우
 
             if (targetSlot is EquipmentSlot { } equipmentSlot // 해당 슬롯이 장비 슬롯(장착 목적)인 경우
                 && FindEmptySlotIndex() is {} emptySlotIndex and > 0) // and 인벤토리에 빈 슬롯이 있는 경우
@@ -495,7 +495,7 @@ namespace RPG.Item
         
         private void OnEquipmentChanged(object sender, EquipmentSlotArgs args)
         {
-            if (args.State == EquipmentSlotArgs.EquipEventState.Equip)
+            if (args.State == EquipmentSlotArgs.EquipEventState.Equip && args.Item.GetItemInfo.itemType == Enums.ItemType.Equipment)
             {
                 if (args.Item.GetItemInfo is not WeaponTypeSO weaponTypeSO) return; // todo: 무기 이외 타입 처리 추가
                 
@@ -506,6 +506,7 @@ namespace RPG.Item
                 }
             }
             else // case: args.State == EquipmentSlotArgs.EquipEventState.UnEquip)
+                 // or 장비가 아닌 아이템 (빈 아이템)을 장착하려 한 경우 -> 장착해제
             {
                 if (GameObject.FindWithTag("Player") is { } player &&
                     player.GetComponent<Fighter>() is { } pFighter)

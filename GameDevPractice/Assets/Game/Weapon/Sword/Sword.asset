@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WeaponTypeSO
   prefab: {fileID: 4046124720144945870, guid: f88d5b41db4f06b4e8240c80f2f734db, type: 3}
   nameString: Sword Test1
-  sprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+  sprite: {fileID: 21300000, guid: 2ddf0348701148a4d8a7c6a0f7f146b3, type: 3}
   showInMinimap: 0
   minimapSprite: {fileID: 0}
   minimapSpriteColor: {r: 1, g: 1, b: 1, a: 1}
@@ -30,3 +30,7 @@ MonoBehaviour:
   damage: 10
   range: 3
   hand: 0
+  hasProjectile: 0
+  projectilePrefab: {fileID: 0}
+  hasImpactEffect: 0
+  impactParticlePrefab: {fileID: 0}
