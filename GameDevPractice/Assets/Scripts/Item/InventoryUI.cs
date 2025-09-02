@@ -37,6 +37,7 @@ namespace RPG.UI
 
         [SerializeField]private GameObject itemTooltipPrefab;
         private UI_ItemTooltip itemTooltip;
+        private ScrollRect scroll;
 
         [SerializeField] private List<UI_ItemSlot> itemSlotUIs;
         [SerializeField] private UI_EquipmentSlot[] equipmentSlotUIs;
@@ -103,7 +104,8 @@ namespace RPG.UI
             BindObject(typeof(GameObjects));
             
             graphicRaycaster = GetObject((int)GameObjects.Contents).GetOrAddComponent<GraphicRaycaster>();
-
+            scroll = GetObject((int)GameObjects.ItemArea).GetComponent<ScrollRect>();
+            
             InitializeSlotUIs();
             ConnectDataWithSlotUIs();
             
@@ -288,6 +290,7 @@ namespace RPG.UI
         
             if (beginDragSlot is { HasItem: true })
             {
+                scroll.vertical = false; // 스크롤링 불가능
                 beginDragSlot.IconImage.maskable = false;
                 beginDragIconTransform = beginDragSlot.IconRect;
                 beginDragIconPoint = beginDragIconTransform.position;
@@ -355,6 +358,7 @@ namespace RPG.UI
         {
             if (!isDragging || beginDragSlot == null) return;
 
+            scroll.vertical = true; // 스크롤링 가능
             beginDragSlot.IconImage.maskable = true;
             beginDragIconTransform.position = beginDragIconPoint;
             beginDragIconTransform.SetParent(beginDragSlot.transform, worldPositionStays: true); // 아이템 아이콘 원래 부모 슬롯에게로 원복
