@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace RPG.UI
 {
-    public class UI_ItemSlot : UI_ItemSlotBase
+    public class ItemSlotUI : ItemSlotBaseUI
     {
         #region Enums
 

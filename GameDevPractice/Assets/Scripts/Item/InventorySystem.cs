@@ -9,23 +9,27 @@ namespace RPG.Item
 {
     public class InventorySystem: MonoBehaviour, ISavable
     {
-        public int Capacity { get; private set; }
-        [SerializeField, Range(8, 256)] private int initialCapacity = 64; //실제론 inspector 값이 들어가니 주의 //todo: Constants에서 선언하고 사용할지 고민
-     
+        // Capacity (인벤토리 칸수)
+        public int Capacity { get; private set; } // SetCapacity()로만 변경할 것
+        public int MaxCapacity =>  maxCapacity;
+        private const int maxCapacity = 256;
+        [SerializeField, Range(8, maxCapacity)] private int initialCapacity = 64; //실제론 inspector 값이 들어가니 주의 //todo: Constants에서 선언하고 사용할지 고민
+        public event Action<int> OnCapacityChanged; // 인벤토리의 칸 수가 변경된 경우
+        
         // item data container (itemSlot)
         private ItemSlot[] inventoryItems; // 인벤토리에 보관된 아이템 목록
         private EquipmentSlot[] equippedItems; // 장착 중인 장비(무기, 방어구) 목록 // todo: 장착된 장비 능력치 반영
         
         // itemSlot Delegate
-        // public event Action OnInventoryChanged; // 인벤토리 전체 초기화가 필요한 경우
-        // public event Action OnEquippedChanged; // 장착 슬롯 전체 초기화가 필요한 경우
         public event Action<int> OnInventorySlotChanged; // 1개의 인벤토리 슬롯 초기화가 필요한 경우 (인덱스 접근)
         public event Action<int> OnEquippedSlotChanged; // 1개의 장비 슬롯 초기화가 필요한 경우 (인덱스 접근)
+        // public event Action OnInventoryChanged; // 인벤토리 전체 초기화가 필요한 경우
+        // public event Action OnEquippedChanged; // 장착 슬롯 전체 초기화가 필요한 경우
         
         private void Awake()
         {
             Capacity = initialCapacity;
-            inventoryItems = new ItemSlot[initialCapacity];
+            inventoryItems = new ItemSlot[maxCapacity];
             equippedItems = new EquipmentSlot[(int)Enums.EquippedItemSlotType.Max];
             
             //todo: 장비 착용 관련 로직 처리방식 결정 및 구현
@@ -65,6 +69,32 @@ namespace RPG.Item
              }
             });
         }
+
+        #region Capacity
+
+        public void SetCapacity(int capa)
+        {
+            if (Capacity == capa || capa > maxCapacity) return;
+            if (Capacity > capa) // case: 인벤토리 칸 감소
+            {
+                for (int i = capa; i < Capacity; i++)
+                {
+                    inventoryItems[i].SetAccessibility(false); // 감소된 칸 만큼 슬롯 비활성화 (뒤에서부터)
+                }
+            }
+            else // case: 인벤토리 칸 증가
+            {
+                for (int i = Capacity; i < capa; i++)
+                {
+                    inventoryItems[i] = MakeEmptyItemSlot(index: i); 
+                }
+            }
+
+            Capacity = capa;
+            OnCapacityChanged?.Invoke(Capacity);
+        }
+
+        #endregion
 
         #region Read Slot
 
@@ -126,7 +156,7 @@ namespace RPG.Item
             return 0;
         }
 
-        public bool CanStore(UI_ItemSlotBase fromSlotUI, UI_ItemSlotBase toSlotUI)
+        public bool CanStore(ItemSlotBaseUI fromSlotUI, ItemSlotBaseUI toSlotUI)
         {
             return CanStore(FindUITargetSlot(fromSlotUI), FindUITargetSlot(toSlotUI));
         }
@@ -177,7 +207,7 @@ namespace RPG.Item
             return -1; // 인벤토리에 동일 아이템이 없는 경우 -1 반환 (=실패)
         }
         
-        public ItemSlot FindUITargetSlot(UI_ItemSlotBase slotUI)
+        public ItemSlot FindUITargetSlot(ItemSlotBaseUI slotUI)
         {
             if (slotUI is UI_EquipmentSlot)
             {
@@ -461,7 +491,7 @@ namespace RPG.Item
         
         #region UI Interaction
 
-        public void TrySwapItems(UI_ItemSlotBase fromSlotUI, UI_ItemSlotBase toSlotUI) // 아이템 드래그&드랍
+        public void TrySwapItems(ItemSlotBaseUI fromSlotUI, ItemSlotBaseUI toSlotUI) // 아이템 드래그&드랍
         {
             // UI_ItemSlotBase를 가지는 다른 오브젝트(ex-창고)가 생길 경우, FindUITargetSlot()이 제대로 작동하지 않을 수 있음
             // todo: 인벤토리 외 아이템 보관을 포함하는 기능이 추가될 경우 매서드 확장 혹은 기능 이전 필요
@@ -471,7 +501,7 @@ namespace RPG.Item
             TransferItem(fromSlot, toSlot);
         }
 
-        public void TryUseItem(UI_ItemSlotBase targetSlotUI)
+        public void TryUseItem(ItemSlotBaseUI targetSlotUI)
         {
             var targetSlot = FindUITargetSlot(targetSlotUI);
             UseItem(targetSlot);

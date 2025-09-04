@@ -7,7 +7,7 @@ using UnityEngine.UI;
 namespace RPG.UI
 {
     // 장비 슬롯 UI 스크립트
-    public class UI_EquipmentSlot : UI_ItemSlotBase
+    public class UI_EquipmentSlot : ItemSlotBaseUI
     {
         private Color _originalHighlightColor;
         private static readonly Color WarningHighlightColor = new Color(0.8f, 0.2f, 0.2f, 0.5f);

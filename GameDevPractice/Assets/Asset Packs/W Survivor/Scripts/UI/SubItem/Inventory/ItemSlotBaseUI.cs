@@ -1,11 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace RPG.UI
 {
     // 모든 아이템 슬롯 UI 스크립트가 상속
-    public abstract class UI_ItemSlotBase : BaseUI
+    public abstract class ItemSlotBaseUI : BaseUI, IPoolObject
     {
         #region Enums
         
@@ -63,12 +61,12 @@ namespace RPG.UI
             }
             else
             {
-                Util.Log("UI_ItemSlotBase: itemSprite is null");
+                Util.Log("UI_ItemSlotBase: itemSprite is null", Util.LoggingMode.Completed);
                 RemoveIcon();
             }
         }
         
-        public void SwapOrMoveIcon(UI_ItemSlotBase otherSlot)
+        public void SwapOrMoveIcon(ItemSlotBaseUI otherSlot)
         {
             if (otherSlot == null || otherSlot == this) return;
             if (!this.IsAccessible || !otherSlot.IsAccessible) return;
@@ -134,6 +132,36 @@ namespace RPG.UI
             }
 
             _isAccessibleItem = newState;
+        }
+
+        #endregion
+
+        #region Object Pooling Method
+
+        public GameObject Origin { get; set; }
+        public void OnCreateFromPool()
+        {
+            
+        }
+
+        public void OnGetFromPool()
+        {
+            
+        }
+
+        public void OnReleaseFromPool()
+        {
+            
+        }
+
+        public void OnDestroyFromPool()
+        {
+            
+        }
+
+        public void ReleaseSelf()
+        {
+            Util.LogError($"ReleaseSelf not supported type: {this.GetType().FullName}");
         }
 
         #endregion

@@ -5,18 +5,20 @@ namespace RPG.Item
     public class ItemSlot
     {
         [SerializeField] protected Item Item;
-        public int Index = -1; // Default: -1 (means not initialized)
+        public int Index = -1; // Default: -1 (not initialized)
 
-        protected bool Accessible;
+        protected bool Accessible; // 슬롯 및 슬롯 내부 아이템 접근 가능 여부
+        protected bool Visible; // 슬롯 가시화 여부 (false일 경우 해당 슬롯UI가 비활성화)
         protected Enums.ItemType[] ValidItemTypes;
         
         // 생성자 (Index는 따로 설정할 것)
-        public ItemSlot(Item item, int index = -1, Enums.ItemType[] validTypes = null, bool accessible = true)
+        public ItemSlot(Item item, int index = -1, Enums.ItemType[] validTypes = null, bool accessible = true, bool visible = true)
         {
             this.Item = item;
             this.Index = index;
             this.ValidItemTypes = validTypes;
             this.Accessible = accessible;
+            this.Visible = visible;
         }
 
         public Item GetItem => this.Item;
@@ -25,6 +27,16 @@ namespace RPG.Item
         public bool IsAccessible => Accessible;
         public bool IsValid => Item != null && Index >= 0; // 아이템 데이터가 존재하고, Index 초기화가 된 경우
         public bool HasItem => this.Item is { GetAmount: > 0 };
+        
+        public void SetAccessibility(bool state)
+        {
+            Accessible = state;
+        }
+
+        public void SetVisibility(bool state)
+        {
+            Visible = state;
+        }
         
         public virtual bool CanStore(ItemTypeSO itemData) // 슬롯에 저장 가능한 아이템 타입 확인
         {

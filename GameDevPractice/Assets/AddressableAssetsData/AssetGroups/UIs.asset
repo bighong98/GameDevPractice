@@ -30,7 +30,14 @@ MonoBehaviour:
     - UI
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 24bacd3c14539a542a988524e7d33efa
-    m_Address: UI_Inventory.prefab
+    m_Address: InventoryUI.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad
+    - UI
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 879b2a5a272e1254cafe1c8f5fde6e3d
+    m_Address: ItemSlotUI.prefab
     m_ReadOnly: 0
     m_SerializedLabels:
     - PreLoad
