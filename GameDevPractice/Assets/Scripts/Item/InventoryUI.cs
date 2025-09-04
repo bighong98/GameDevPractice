@@ -62,6 +62,11 @@ namespace RPG.UI
         private Vector3 currCursorPoint;
         private Vector3 beginDragIconPoint;
         private Vector3 beginDragCursorPoint;
+
+        public void TestMethod()
+        {
+            inventorySystem.CompressInven();
+        }
         
         private void Awake()
         {
@@ -82,6 +87,7 @@ namespace RPG.UI
         {
             SubscribeInputEvents();
             OnInventoryCapacityChanged(inventorySystem.Capacity);
+            inventorySystem.OnInventoryChanged += this.UpdateAllSlotUI;
             inventorySystem.OnCapacityChanged += this.OnInventoryCapacityChanged;
         }
 
@@ -89,6 +95,7 @@ namespace RPG.UI
         {
             DeSubscribeInputEvents();
             inventorySystem.OnCapacityChanged -= this.OnInventoryCapacityChanged;
+            inventorySystem.OnInventoryChanged -= this.UpdateAllSlotUI;
             Refresh();
         }
 
@@ -244,6 +251,14 @@ namespace RPG.UI
             else // 1-2. 셀 수 없는 아이템: 수량 텍스트 제거 
             {
                 HideSlotAmountText(index);
+            }
+        }
+
+        private void UpdateAllSlotUI()
+        {
+            for (int i = 0; i < itemSlotUIs.Count; i++)
+            {
+                UpdateSlotUI(i);
             }
         }
 

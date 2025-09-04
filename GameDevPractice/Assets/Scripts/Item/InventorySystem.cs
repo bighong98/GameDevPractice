@@ -23,8 +23,10 @@ namespace RPG.Item
         // itemSlot Delegate
         public event Action<int> OnInventorySlotChanged; // 1개의 인벤토리 슬롯 초기화가 필요한 경우 (인덱스 접근)
         public event Action<int> OnEquippedSlotChanged; // 1개의 장비 슬롯 초기화가 필요한 경우 (인덱스 접근)
-        // public event Action OnInventoryChanged; // 인벤토리 전체 초기화가 필요한 경우
+        public event Action OnInventoryChanged; // 인벤토리 전체 초기화가 필요한 경우
         // public event Action OnEquippedChanged; // 장착 슬롯 전체 초기화가 필요한 경우
+
+        private InventorySlotComparer testComparer = new();
         
         private void Awake()
         {
@@ -245,7 +247,82 @@ namespace RPG.Item
         
         #endregion
 
-        #region Add/Remove/Transfer/Use(Consume+Equip) Item(Inventory)
+        #region Trim/Sort
+
+        public void CompressInven()
+        {
+            int write = TrimInven(false);
+            SortInven(write);
+            
+            OnInventoryChanged?.Invoke();
+        }
+        
+        private int TrimInven(bool combineStackables)
+        {
+            int write = 0;
+            int cap = Capacity;
+            for (int read = 0; read < cap; read++)
+            {
+                try
+                {
+                    if (!inventoryItems[read].HasItem) continue; // 빈 슬롯은 패스
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"TrimInven: index: {read}, {e.Message}");
+                }
+
+                if (write != read) 
+                    OverwriteSlot(inventoryItems[read], inventoryItems[write]);
+                write++;
+            }
+
+            if (write > 1 && combineStackables)
+            {
+                write = CombineStackables(write);
+            }
+            
+            for (int i = write; i < cap; i++)
+            {
+                inventoryItems[i].Clear();
+            }
+
+            return write;
+        }
+
+        private readonly Dictionary<ItemTypeSO, int> itemStacks = new();
+        private int CombineStackables(int write)
+        {
+            itemStacks.Clear();
+            for (int i = 0; i < write; i++)
+            {
+                if (inventoryItems[i].GetItemInfo is not { } itemInfo) continue;
+
+                if (itemStacks.TryGetValue(itemInfo, out var stack))
+                    itemStacks[itemInfo] = stack + inventoryItems[i].GetAmount;
+                else itemStacks[itemInfo] = inventoryItems[i].GetAmount;
+            }
+
+            int w = 0;
+            foreach (var pair in itemStacks)
+            {
+                var itemInfo = pair.Key;
+                int remain = pair.Value;
+
+                
+            }
+
+            return 0;
+        }
+
+        private void SortInven(int write)
+        {
+            Array.Sort(inventoryItems, 0, write, testComparer); //todo: comparer 추가
+        }
+
+        #endregion
+        
+        #region Add/Remove/Transfer/Use(Consume+Equip) Item (Inventory)
         
         // 인벤토리에 아이템 추가
         // item: 인벤토리에 추가하려는 아이템(데이터 SO + 개수(CountableItem만 적용))
@@ -393,6 +470,27 @@ namespace RPG.Item
                 NotifySlotUpdated(fromSlot);
                 NotifySlotUpdated(toSlot);
             }
+        }
+
+        private void OverwriteSlot(ItemSlot fromSlot, ItemSlot toSlot, bool emptyPrevSlot = false)
+        {
+            if (fromSlot.GetItem.Clone<Item>() is not { } fromSlotItem) return;
+            
+            toSlot.Store(fromSlotItem, true);
+            if (emptyPrevSlot) fromSlot.Clear();
+        }
+
+        private void SwapSlot(int oneIdx, int anotherIdx)
+        {
+            if (oneIdx == anotherIdx || !IsValidInventorySlot(oneIdx) || !IsValidInventorySlot(anotherIdx)) return;
+
+            var one = inventoryItems[oneIdx];
+            var another = inventoryItems[anotherIdx];
+
+            inventoryItems[oneIdx] = another;
+            inventoryItems[oneIdx].Index = oneIdx;
+            inventoryItems[anotherIdx] = one;
+            inventoryItems[anotherIdx].Index = anotherIdx;
         }
         
         private bool Consume(Item item)
@@ -635,7 +733,45 @@ namespace RPG.Item
         }
 
         #endregion
-        
+
+        #region Sort Test
+
+        public sealed class InventorySlotComparer : IComparer<ItemSlot>
+        {
+            public int Compare(ItemSlot x, ItemSlot y)
+            {
+                // null 자체를 뒤로
+                if (ReferenceEquals(x, y)) return 0;
+                if (x is null) return 1;
+                if (y is null) return -1;
+
+                // 빈 슬롯 뒤로
+                bool xe = !x.HasItem;
+                bool ye = !y.HasItem;
+                if (xe && ye) return 0;
+                if (xe) return 1;
+                if (ye) return -1;
+
+                // 안전 가드
+                var xi = x.GetItemInfo;
+                var yi = y.GetItemInfo;
+                var xt = xi.itemType;
+                var yt = yi.itemType;
+                
+
+                // 3) 아이템명 오름차순
+                string xItemName = xi.ToString() ?? string.Empty;
+                string yItemName = yi.ToString() ?? string.Empty;
+                int c = string.Compare(xItemName, yItemName, StringComparison.Ordinal);
+                if (c != 0) return c;
+
+                // 7) 마지막: 정렬 전 위치(안정성 보강)
+                // 정렬 이후에는 Index를 다시 갱신하세요.
+                return x.Index.CompareTo(y.Index);
+            }
+        }
+
+        #endregion
     }
 }
 
