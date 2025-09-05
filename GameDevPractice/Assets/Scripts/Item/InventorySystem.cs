@@ -523,12 +523,21 @@ namespace RPG.Item
             inventoryItems[anotherIdx].Index = anotherIdx;
         }
         
-        private bool Consume(Item item)
+        private bool Consume(Item item) // only for CountableItem
         {
             if (item is not CountableItem countItem || !countItem.GetItemInfo.isUsable) return false;
             
             //todo: 사용효과 구현
-            countItem.SetAmount(countItem.GetAmount - 1);
+            
+            int oneLess = countItem.GetAmount - 1;
+            countItem.SetAmount(oneLess);
+
+            var itemInfo = countItem.GetItemInfo;
+            if (countableDict.TryGetValue(itemInfo, out var total))
+            {
+                countableDict[itemInfo] = total - 1;
+            }
+            
             return true;
         }
 
@@ -769,7 +778,7 @@ namespace RPG.Item
 
         #region Sort Test
 
-        public sealed class InventorySlotComparer : IComparer<ItemSlot>
+        private sealed class InventorySlotComparer : IComparer<ItemSlot>
         {
             public int Compare(ItemSlot x, ItemSlot y)
             {
@@ -788,13 +797,17 @@ namespace RPG.Item
                 // 안전 가드
                 var xi = x.GetItemInfo;
                 var yi = y.GetItemInfo;
-                var xt = xi.itemType;
-                var yt = yi.itemType;
+                var xt = xi?.itemType;
+                var yt = yi?.itemType;
                 
+                // string xTypeName = xt?.ToString() ?? string.Empty;
+                // string yTypeName = yt?.ToString() ?? string.Empty;
+                // int c = string.Compare(xTypeName, yTypeName, StringComparison.Ordinal);
+                // if (c != 0) return c;
 
-                // 3) 아이템명 오름차순
-                string xItemName = xi.ToString() ?? string.Empty;
-                string yItemName = yi.ToString() ?? string.Empty;
+                // 3) 아이템 "이름" 오름차순
+                string xItemName = xi?.nameString ?? string.Empty;
+                string yItemName = yi?.nameString ?? string.Empty;
                 int c = string.Compare(xItemName, yItemName, StringComparison.Ordinal);
                 if (c != 0) return c;
 
