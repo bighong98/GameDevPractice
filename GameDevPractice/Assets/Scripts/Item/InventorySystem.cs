@@ -253,7 +253,7 @@ namespace RPG.Item
         public void CompressInven()
         {
             int write = TrimInven(true);
-            // SortInven(write);
+            SortInven(write);
             
             OnInventoryChanged?.Invoke();
         }
@@ -315,9 +315,13 @@ namespace RPG.Item
             return curr; // Trim -> Combine Countable Item Stack -> 아이템이 있는 인벤토리 칸 수 반환
         }
 
-        private void SortInven(int write)
+        private void SortInven(int last)
         {
-            Array.Sort(inventoryItems, 0, write, testComparer); //todo: comparer 추가
+            Array.Sort(inventoryItems, 0, last, testComparer);
+            for (int i = 0; i < last; i++)
+            {
+                inventoryItems[i].Index = i;
+            }
         }
 
         #endregion
@@ -383,32 +387,6 @@ namespace RPG.Item
                         // 실패시 즉시 남은 개수 반환
                         UpdateCountableDict(amount);
                         return amount;
-                        
-                        // // Deprecated
-                        // if (countItem.GetAmount > maxAmount) // 
-                        // {
-                        //     countItem.SetAmount(maxAmount);
-                        //     if (inventoryItems[index].Store(countItem))
-                        //     {
-                        //         amount -= maxAmount; // 슬롯에 아이템 저장 성공시, 저장한 개수만큼 차감
-                        //     }
-                        //     else
-                        //     {
-                        //         UpdateCountableDict(amount);
-                        //         return amount; // 실패시 즉시 남은 개수 반환
-                        //     }
-                        // }
-                        // else
-                        // {
-                        //     countItem.SetAmount(amount);
-                        //     int remain = 0;
-                        //     if (inventoryItems[index].Store(countItem))
-                        //     {
-                        //         remain = amount;
-                        //     }
-                        //     UpdateCountableDict(remain);
-                        //     return remain;
-                        // }
                     }
                 }
 
@@ -782,38 +760,36 @@ namespace RPG.Item
         {
             public int Compare(ItemSlot x, ItemSlot y)
             {
-                // null 자체를 뒤로
+                // null, 빈 슬롯 뒤로
                 if (ReferenceEquals(x, y)) return 0;
                 if (x is null) return 1;
                 if (y is null) return -1;
-
-                // 빈 슬롯 뒤로
+                
                 bool xe = !x.HasItem;
                 bool ye = !y.HasItem;
                 if (xe && ye) return 0;
                 if (xe) return 1;
                 if (ye) return -1;
-
-                // 안전 가드
+                
                 var xi = x.GetItemInfo;
                 var yi = y.GetItemInfo;
                 var xt = xi?.itemType;
                 var yt = yi?.itemType;
                 
-                // string xTypeName = xt?.ToString() ?? string.Empty;
-                // string yTypeName = yt?.ToString() ?? string.Empty;
-                // int c = string.Compare(xTypeName, yTypeName, StringComparison.Ordinal);
-                // if (c != 0) return c;
-
-                // 3) 아이템 "이름" 오름차순
-                string xItemName = xi?.nameString ?? string.Empty;
-                string yItemName = yi?.nameString ?? string.Empty;
-                int c = string.Compare(xItemName, yItemName, StringComparison.Ordinal);
+                // 1) 아이템 타입명 
+                string xTypeName = xt?.ToString() ?? string.Empty;
+                string yTypeName = yt?.ToString() ?? string.Empty;
+                int c = string.Compare(xTypeName, yTypeName, StringComparison.Ordinal);
                 if (c != 0) return c;
 
-                // 7) 마지막: 정렬 전 위치(안정성 보강)
-                // 정렬 이후에는 Index를 다시 갱신하세요.
-                return x.Index.CompareTo(y.Index);
+                // 2) 아이템 이름
+                string xItemName = xi?.nameString ?? string.Empty;
+                string yItemName = yi?.nameString ?? string.Empty;
+                c = string.Compare(xItemName, yItemName, StringComparison.Ordinal);
+                if (c != 0) return c;
+
+                // 3) 정렬 전 위치 기준
+                return x.Index.CompareTo(y.Index); // 정렬 이후에는 반드시 Index 갱신 필요
             }
         }
 
