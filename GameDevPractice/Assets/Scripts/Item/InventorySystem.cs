@@ -67,8 +67,8 @@ namespace RPG.Item
              
              foreach (var item in testData.items)
              {
-                 Util.Log($"Trying to add {item.GetItemInfo.nameString}", Util.LoggingMode.Completed);
-                 AddItem(item, checkInstanceType: true);
+                Util.Log($"Trying to add {item.GetItemInfo.nameString}", Util.LoggingMode.InProgress);
+                AddItem(item, checkInstanceType: true);
              }
             });
         }
@@ -248,12 +248,12 @@ namespace RPG.Item
         
         #endregion
 
-        #region Trim/Sort
+        #region Trim/Sort Inventory
 
         public void CompressInven()
         {
-            int write = TrimInven(false);
-            SortInven(write);
+            int write = TrimInven(true);
+            // SortInven(write);
             
             OnInventoryChanged?.Invoke();
         }
@@ -266,19 +266,21 @@ namespace RPG.Item
             {
                 try
                 {
-                    if (!inventoryItems[curr].HasItem) continue; // 빈 슬롯은 패스
+                    if (inventoryItems[curr] is not {} itemSlot) continue;
+                    if (itemSlot is { HasItem: false } ) continue; // 빈 슬롯인 경우 패스
+                    if (combineStackables && itemSlot.GetItemInfo.itemType == Enums.ItemType.Countable) continue;
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError($"TrimInven: index: {curr}, {e.Message}");
+                    Debug.LogError($"{nameof(InventorySystem)}.{nameof(TrimInven)}TrimInven: index: {curr}, {e.Message}");
+                    return 0;
                 }
-
-                if (last != curr) 
-                    OverwriteSlot(inventoryItems[curr], inventoryItems[last]);
+                
+                OverwriteSlot(inventoryItems[curr], inventoryItems[last]);
                 last++;
             }
 
-            if (last > 1 && combineStackables)
+            if (combineStackables)
             {
                 last = CombineStackables(last);
             }
@@ -294,26 +296,23 @@ namespace RPG.Item
         
         private int CombineStackables(int last)
         {
-            countableDict.Clear();
-            for (int i = 0; i < last; i++)
-            {
-                if (inventoryItems[i].GetItemInfo is not { } itemInfo) continue;
+            int curr = last;
 
-                if (countableDict.TryGetValue(itemInfo, out var stack))
-                    countableDict[itemInfo] = stack + inventoryItems[i].GetAmount;
-                else countableDict[itemInfo] = inventoryItems[i].GetAmount;
+            foreach ((var itemData, int amount) in countableDict)
+            {
+                Util.Log($"[{nameof(InventorySystem)}.{nameof(CombineStackables)}()] ({itemData.nameString}, {amount})");
+                int remain = amount;
+                while (remain > 0)
+                {
+                    int storingAmount = Mathf.Min(remain, itemData.maxAmount);
+                    if (!inventoryItems[curr].Store(new CountableItem(itemData, storingAmount), true)) continue;
+                    
+                    remain -= storingAmount;
+                    curr++;
+                }
             }
 
-            int w = 0;
-            foreach (var pair in countableDict)
-            {
-                var itemInfo = pair.Key;
-                int remain = pair.Value;
-
-                
-            }
-
-            return 0;
+            return curr; // Trim -> Combine Countable Item Stack -> 아이템이 있는 인벤토리 칸 수 반환
         }
 
         private void SortInven(int write)
@@ -345,6 +344,7 @@ namespace RPG.Item
             {
                 bool findNextCountable = true;
                 amount *= countItem.GetAmount;
+                initialAmount = amount;
                 
                 while (amount > 0)
                 {
@@ -378,7 +378,6 @@ namespace RPG.Item
                         if (inventoryItems[index].Store(countItem)) // 슬롯에 아이템 저장 성공시, 저장한 개수만큼 차감
                         {
                             amount -= storingAmount;
-                            UpdateCountableDict(amount);
                             continue;
                         }
                         // 실패시 즉시 남은 개수 반환
@@ -412,33 +411,35 @@ namespace RPG.Item
                         // }
                     }
                 }
-            }
-            else // 수량이 없는 아이템
-            {
-                while (amount > 0)
-                {
-                    index = FindEmptySlotIndex(index + 1);
-                    if (index == -1) break; // 빈칸을 찾지 못한 경우, 루프 탈출
 
-                    if (inventoryItems[index].Store(item.Clone<Item>())) // 빈칸에 아이템 저장 성공 시 
+                UpdateCountableDict(amount);
+                return amount;
+            }
+
+            // 수량이 없는 아이템
+            while (amount > 0)
+            {
+                index = FindEmptySlotIndex(index + 1);
+                if (index == -1) break; // 빈칸을 찾지 못한 경우, 루프 탈출
+
+                if (inventoryItems[index].Store(item.Clone<Item>())) // 빈칸에 아이템 저장 성공 시 
+                {
+                    amount--; // 남은 개수 -1
+                    if (useImmediately)
                     {
-                        amount--; // 남은 개수 -1
-                        if (useImmediately)
-                        {
-                            UseItem(inventoryItems[index]);
-                        }
-                        NotifySlotUpdated(inventoryItems[index]); // 해당 슬롯 데이터 변동 알림
+                        UseItem(inventoryItems[index]);
                     }
-                    else // 아이템 저장 실패 시
-                    {
-                        return amount; // 남은 개수 즉시 반환
-                    }
+                    NotifySlotUpdated(inventoryItems[index]); // 해당 슬롯 데이터 변동 알림
+                }
+                else // 아이템 저장 실패 시
+                {
+                    return amount; // 남은 개수 즉시 반환
                 }
             }
-
+            
             return amount;
 
-            void UpdateCountableDict(int remain)
+            void UpdateCountableDict(int remain) // 추가된 CountableItem 개수 딕셔너리에 반영 
             {
                 if (item.GetItemInfo is not { } itemInfo) return;
                 int stored = initialAmount - remain;
@@ -448,6 +449,7 @@ namespace RPG.Item
                 }
 
                 countableDict[itemInfo] = stored;
+                Util.Log($"[{nameof(InventorySystem)}.{nameof(UpdateCountableDict)}()] ({itemInfo}, {stored})");
             }
         }
         
@@ -523,8 +525,11 @@ namespace RPG.Item
         
         private bool Consume(Item item)
         {
-            Util.Log($"ConsumeItem is not ready");
-            return false;
+            if (item is not CountableItem countItem || !countItem.GetItemInfo.isUsable) return false;
+            
+            //todo: 사용효과 구현
+            countItem.SetAmount(countItem.GetAmount - 1);
+            return true;
         }
 
         private void UseItem(ItemSlot targetSlot)
@@ -736,7 +741,7 @@ namespace RPG.Item
             {
                 if (itemSlot is { HasItem: true })
                 {
-                    invenItems.Add(itemSlot.GetItem);
+                    invenItems.Add(itemSlot.GetItem.Clone<Item>());
                 }
             }
 
