@@ -19,6 +19,7 @@ namespace RPG.Item
         // item data container (itemSlot)
         private ItemSlot[] inventoryItems; // 인벤토리에 보관된 아이템 목록
         private EquipmentSlot[] equippedItems; // 장착 중인 장비(무기, 방어구) 목록 // todo: 장착된 장비 능력치 반영
+        private readonly Dictionary<ItemTypeSO, int> countableDict = new(); // CountableItem의 종류별 개수 (trim, sort 최적화 목적)
         
         // itemSlot Delegate
         public event Action<int> OnInventorySlotChanged; // 1개의 인벤토리 슬롯 초기화가 필요한 경우 (인덱스 접근)
@@ -259,52 +260,52 @@ namespace RPG.Item
         
         private int TrimInven(bool combineStackables)
         {
-            int write = 0;
+            int last = 0;
             int cap = Capacity;
-            for (int read = 0; read < cap; read++)
+            for (int curr = 0; curr < cap; curr++)
             {
                 try
                 {
-                    if (!inventoryItems[read].HasItem) continue; // 빈 슬롯은 패스
+                    if (!inventoryItems[curr].HasItem) continue; // 빈 슬롯은 패스
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError($"TrimInven: index: {read}, {e.Message}");
+                    Debug.LogError($"TrimInven: index: {curr}, {e.Message}");
                 }
 
-                if (write != read) 
-                    OverwriteSlot(inventoryItems[read], inventoryItems[write]);
-                write++;
+                if (last != curr) 
+                    OverwriteSlot(inventoryItems[curr], inventoryItems[last]);
+                last++;
             }
 
-            if (write > 1 && combineStackables)
+            if (last > 1 && combineStackables)
             {
-                write = CombineStackables(write);
+                last = CombineStackables(last);
             }
             
-            for (int i = write; i < cap; i++)
+            for (int i = last; i < cap; i++)
             {
                 inventoryItems[i].Clear();
             }
 
-            return write;
+            return last;
         }
 
-        private readonly Dictionary<ItemTypeSO, int> itemStacks = new();
-        private int CombineStackables(int write)
+        
+        private int CombineStackables(int last)
         {
-            itemStacks.Clear();
-            for (int i = 0; i < write; i++)
+            countableDict.Clear();
+            for (int i = 0; i < last; i++)
             {
                 if (inventoryItems[i].GetItemInfo is not { } itemInfo) continue;
 
-                if (itemStacks.TryGetValue(itemInfo, out var stack))
-                    itemStacks[itemInfo] = stack + inventoryItems[i].GetAmount;
-                else itemStacks[itemInfo] = inventoryItems[i].GetAmount;
+                if (countableDict.TryGetValue(itemInfo, out var stack))
+                    countableDict[itemInfo] = stack + inventoryItems[i].GetAmount;
+                else countableDict[itemInfo] = inventoryItems[i].GetAmount;
             }
 
             int w = 0;
-            foreach (var pair in itemStacks)
+            foreach (var pair in countableDict)
             {
                 var itemInfo = pair.Key;
                 int remain = pair.Value;
@@ -335,13 +336,14 @@ namespace RPG.Item
             {
                 item = ModifyItemInstanceByType(item); // 아이템 타입에 적합한 RPG.Item.Item의 하위 클래스 인스턴스로 재생성
             }
-            
-            int index;
             if ((!item?.IsValid) ?? true) return 0;
-            if (item is CountableItem countItem)
+            
+            int index = -1;
+            int initialAmount = amount;
+            
+            if (item is CountableItem countItem) // case: 아이템이 Countable 타입인 경우
             {
                 bool findNextCountable = true;
-                index = -1;
                 amount *= countItem.GetAmount;
                 
                 while (amount > 0)
@@ -355,7 +357,7 @@ namespace RPG.Item
                         }
                         else
                         {
-                            // 개수 추가 및 슬롯 최대개수 초과량을 반환 (개수 추가 실패시 0 반환)
+                            // 개수 추가 및 슬롯 최대개수 초과량을 반환
                             amount = (inventoryItems[index].GetItem as CountableItem)?.AddAmount(amount) ?? 0;
                             OnInventorySlotChanged?.Invoke(index);
                         }
@@ -365,40 +367,54 @@ namespace RPG.Item
                         index = FindEmptySlotIndex(index + 1);
                         if (index == -1)
                         {
+                            UpdateCountableDict(amount);
                             return amount; // 빈 슬롯이 없는 경우, 남은 개수 반환
                         }
 
                         int maxAmount = countItem.GetItemInfo.maxAmount;
-                        if (countItem.GetAmount > maxAmount)
+                        int storingAmount = Mathf.Min(amount, maxAmount);
+                        
+                        countItem.SetAmount(storingAmount);
+                        if (inventoryItems[index].Store(countItem)) // 슬롯에 아이템 저장 성공시, 저장한 개수만큼 차감
                         {
-                            countItem.SetAmount(maxAmount);
-                            if (inventoryItems[index].Store(countItem))
-                            {
-                                amount -= maxAmount; // 슬롯에 아이템 저장 성공시, 저장한 개수만큼 차감
-                            }
-                            else
-                            {
-                                return amount; // 실패시 즉시 남은 개수 반환
-                            }
+                            amount -= storingAmount;
+                            UpdateCountableDict(amount);
+                            continue;
                         }
-                        else
-                        {
-                            countItem.SetAmount(amount);
-                            if (inventoryItems[index].Store(countItem))
-                            {
-                                return 0;
-                            }
-                            else
-                            {
-                                return amount;
-                            }
-                        }
+                        // 실패시 즉시 남은 개수 반환
+                        UpdateCountableDict(amount);
+                        return amount;
+                        
+                        // // Deprecated
+                        // if (countItem.GetAmount > maxAmount) // 
+                        // {
+                        //     countItem.SetAmount(maxAmount);
+                        //     if (inventoryItems[index].Store(countItem))
+                        //     {
+                        //         amount -= maxAmount; // 슬롯에 아이템 저장 성공시, 저장한 개수만큼 차감
+                        //     }
+                        //     else
+                        //     {
+                        //         UpdateCountableDict(amount);
+                        //         return amount; // 실패시 즉시 남은 개수 반환
+                        //     }
+                        // }
+                        // else
+                        // {
+                        //     countItem.SetAmount(amount);
+                        //     int remain = 0;
+                        //     if (inventoryItems[index].Store(countItem))
+                        //     {
+                        //         remain = amount;
+                        //     }
+                        //     UpdateCountableDict(remain);
+                        //     return remain;
+                        // }
                     }
                 }
             }
             else // 수량이 없는 아이템
             {
-                index = -1;
                 while (amount > 0)
                 {
                     index = FindEmptySlotIndex(index + 1);
@@ -421,6 +437,18 @@ namespace RPG.Item
             }
 
             return amount;
+
+            void UpdateCountableDict(int remain)
+            {
+                if (item.GetItemInfo is not { } itemInfo) return;
+                int stored = initialAmount - remain;
+                if (countableDict.TryGetValue(itemInfo, out var v))
+                {
+                    stored += v;
+                }
+
+                countableDict[itemInfo] = stored;
+            }
         }
         
         public bool RemoveItem(int index) // 해당 인덱스 위치 슬롯의 아이템 제거 (슬롯 비우기)
