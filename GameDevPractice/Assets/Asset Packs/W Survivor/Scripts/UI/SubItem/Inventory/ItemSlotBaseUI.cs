@@ -16,9 +16,9 @@ namespace RPG.UI
 
         #endregion
         // serializeField for Debug
-        [SerializeField] protected int _index;
-        [SerializeField] protected bool _isAccessibleSlot;
-        [SerializeField] protected bool _isAccessibleItem;
+        [SerializeField] protected int _index; // 슬롯UI 인덱스 (인벤토리 슬롯 데이터 배열과 동기화 필요)
+        [SerializeField] protected bool _isAccessibleSlot; // 해당 슬롯 접근 가능 여부 (클릭, 드래그 등 슬롯UI 상호작용 등)
+        [SerializeField] protected bool _isAccessibleItem; // 해당 슬롯 내부 아이템 접근 가능 여부
         protected static readonly Color InAccessibleSlotColor = new Color(0.2f, 0.2f, 0.2f, 0.5f);
         protected static readonly Color InAccessibleIconColor = new Color(0.5f, 0.5f, 0.5f, 0.5f);
         

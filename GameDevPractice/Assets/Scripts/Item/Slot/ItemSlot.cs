@@ -9,7 +9,7 @@ namespace RPG.Item
 
         protected bool Accessible; // 슬롯 및 슬롯 내부 아이템 접근 가능 여부
         protected bool Visible; // 슬롯 가시화 여부 (false일 경우 해당 슬롯UI가 비활성화)
-        protected Enums.ItemType[] ValidItemTypes;
+        protected Enums.ItemType[] ValidItemTypes; // 슬롯에 저장 가능한 아이템 타입 목록
         
         // 생성자 (Index는 따로 설정할 것)
         public ItemSlot(Item item, int index = -1, Enums.ItemType[] validTypes = null, bool accessible = true, bool visible = true)
@@ -25,6 +25,7 @@ namespace RPG.Item
         public ItemTypeSO GetItemInfo => Item?.GetItemInfo;
         public int GetAmount => Item?.GetAmount ?? 0;
         public bool IsAccessible => Accessible;
+        public bool IsVisible => Visible;
         public bool IsValid => Item != null && Index >= 0; // 아이템 데이터가 존재하고, Index 초기화가 된 경우
         public bool HasItem => this.Item is { GetAmount: > 0 };
         

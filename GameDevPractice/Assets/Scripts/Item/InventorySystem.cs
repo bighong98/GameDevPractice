@@ -12,9 +12,8 @@ namespace RPG.Item
         // Capacity (인벤토리 칸수)
         public int Capacity { get; private set; } // SetCapacity()로만 변경할 것
         public int MaxCapacity =>  maxCapacity;
-        private const int maxCapacity = 256;
+        private const int maxCapacity = 256; // 인벤토리 최대 칸수
         [SerializeField, Range(8, maxCapacity)] private int initialCapacity = 64; //실제론 inspector 값이 들어가니 주의 //todo: Constants에서 선언하고 사용할지 고민
-        public event Action<int> OnCapacityChanged; // 인벤토리의 칸 수가 변경된 경우
         
         // item data container (itemSlot)
         private ItemSlot[] inventoryItems; // 인벤토리에 보관된 아이템 목록
@@ -22,6 +21,7 @@ namespace RPG.Item
         private readonly Dictionary<ItemTypeSO, int> countableDict = new(); // CountableItem의 종류별 개수 (trim, sort 최적화 목적)
         
         // itemSlot Delegate
+        public event Action<int> OnCapacityChanged; // 인벤토리의 칸 수가 변경된 경우
         public event Action<int> OnInventorySlotChanged; // 1개의 인벤토리 슬롯 초기화가 필요한 경우 (인덱스 접근)
         public event Action<int> OnEquippedSlotChanged; // 1개의 장비 슬롯 초기화가 필요한 경우 (인덱스 접근)
         public event Action OnInventoryChanged; // 인벤토리 전체 초기화가 필요한 경우
@@ -248,12 +248,12 @@ namespace RPG.Item
         
         #endregion
 
-        #region Trim/Sort Inventory
+        #region Trim/Sort/Filter Inventory
 
         public void CompressInven()
         {
             int write = TrimInven(true);
-            SortInven(write);
+            // SortInven(write);
             
             OnInventoryChanged?.Invoke();
         }
@@ -300,7 +300,7 @@ namespace RPG.Item
 
             foreach ((var itemData, int amount) in countableDict)
             {
-                Util.Log($"[{nameof(InventorySystem)}.{nameof(CombineStackables)}()] ({itemData.nameString}, {amount})");
+                Util.Log($"[{nameof(InventorySystem)}.{nameof(CombineStackables)}()] ({itemData.nameString}, {amount})", Util.LoggingMode.Completed);
                 int remain = amount;
                 while (remain > 0)
                 {
@@ -322,6 +322,19 @@ namespace RPG.Item
             {
                 inventoryItems[i].Index = i;
             }
+        }
+
+        private void FilterInven(Enums.ItemType type)
+        {
+            for (int i = 0; i < Capacity; i++)
+            {
+                if (inventoryItems[i] is not { HasItem: true } itemSlot || itemSlot.GetItemInfo.itemType != type)
+                {
+                    inventoryItems[i].SetVisibility(false);
+                }
+            }
+
+            // OnInventoryChanged?.Invoke();
         }
 
         #endregion
@@ -519,7 +532,7 @@ namespace RPG.Item
             return true;
         }
 
-        private void UseItem(ItemSlot targetSlot)
+        private void UseItem(ItemSlot targetSlot) // 아이템 사용 (장착, 소비, 등)
         {
             if (targetSlot.GetItemInfo is not { isUsable: true }) return; // 사용 가능한(소비, 장착) 아이템이 아닌 경우
 
@@ -535,7 +548,7 @@ namespace RPG.Item
                     TransferItem(targetSlot, equipSlot);
                 }
             }
-            else
+            else // 소비 아이템인 경우 (Consume)
             {
                 if (this.Consume(targetSlot.GetItem))
                 {

@@ -31,6 +31,15 @@ namespace RPG.UI
             UI_ItemTooltip,
         }
 
+        enum Buttons
+        {
+            CompressInventoryButton,
+            
+            EquipmentFilterButton,
+            CountableFilterButton,
+            ConsumableFilterButton,
+        }
+
         #endregion
         
         private RPG.Item.InventorySystem inventorySystem; 
@@ -87,7 +96,7 @@ namespace RPG.UI
         {
             SubscribeInputEvents();
             OnInventoryCapacityChanged(inventorySystem.Capacity);
-            inventorySystem.OnInventoryChanged += this.UpdateAllSlotUI;
+            inventorySystem.OnInventoryChanged += this.UpdateAllItemSlotUIs;
             inventorySystem.OnCapacityChanged += this.OnInventoryCapacityChanged;
         }
 
@@ -95,8 +104,8 @@ namespace RPG.UI
         {
             DeSubscribeInputEvents();
             inventorySystem.OnCapacityChanged -= this.OnInventoryCapacityChanged;
-            inventorySystem.OnInventoryChanged -= this.UpdateAllSlotUI;
-            Refresh();
+            inventorySystem.OnInventoryChanged -= this.UpdateAllItemSlotUIs; 
+            Clear();
         }
 
         private void OnDestroy()
@@ -149,8 +158,15 @@ namespace RPG.UI
             {
                 itemSlotUIs[i].Init();
                 itemSlotUIs[i].SetSlotIndex(i);
-                itemSlotUIs[i].SetSlotAccessibleState(i < slotCap);
-                itemSlotUIs[i].SetItemAccessibleState(i < slotCap);
+
+                bool isActive = i < slotCap;
+                if (itemSlotUIs[i] is { } slotUI)
+                {
+                    slotUI.SetSlotAccessibleState(isActive);
+                    slotUI.SetItemAccessibleState(isActive);
+                    if (!isActive)
+                        DisableSlotUI(i);
+                }
             }
 
             // 아이템 툴팁 UI 로드
@@ -192,13 +208,7 @@ namespace RPG.UI
             inventorySystem.OnInventorySlotChanged -= UpdateSlotUI;
             inventorySystem.OnEquippedSlotChanged -= UpdateEquippedSlotUI;
         }
-
-        public InventoryUI InitImmediately()
-        {
-            Init();
-            return this;
-        }
-
+        
         #endregion
 
         #region Validation
@@ -222,10 +232,16 @@ namespace RPG.UI
         
         #region Update Slot UI
 
-        private void UpdateSlotUI(int index)
+        private void UpdateSlotUI(int index) // 인벤토리 슬롯 UI 갱신 (장비슬롯x)
         {
-            var itemSlot = inventorySystem.GetInventorySlot(index);
-            if (itemSlot is not { HasItem: true })
+            if (inventorySystem.GetInventorySlot(index) is not { } itemSlot) return; // 인벤토리 시스템으로부터 슬롯 정보 받아오기
+
+            if (!itemSlot.IsVisible) // 슬롯이 비가시처리된 경우 (인벤토리 필터 등)
+            {
+                DisableSlotUI(index);
+            }
+            
+            if (itemSlot is not { HasItem: true } ) // 슬롯에 아이템이 없는 경우 (빈 슬롯)
             {
                 CleanSlot(index);
                 return;
@@ -233,28 +249,25 @@ namespace RPG.UI
             
             SetInventorySlotIcon(index, itemSlot);
 
-            if (itemSlot.GetItem is RPG.Item.CountableItem cItem) // 1-1. 셀 수 있는 아이템 
+            if (itemSlot.GetItem is not RPG.Item.CountableItem cItem) // 1-1. 셀 수 없는 아이템
             {
-                Util.Log($"[UpdateSlotUI(index: {index})] item is countableItem", Util.LoggingMode.Completed);
-                if (cItem.IsEmpty)
-                {
-                    Util.Log($"[UpdateSlotUI(index: {index})] cItem is empty", Util.LoggingMode.Completed);
-                    CleanSlot(index);
-                }
-                else
-                {
-                    Util.Log($"[UpdateSlotUI(index: {index})] Trying to SetSlotAmountText amount: {cItem.GetAmount}", Util.LoggingMode.Completed);
-                    SetSlotAmountText(index, cItem.GetAmount);
-                    ShowSlotAmountText(index);
-                }
+                HideSlotAmountText(index); // 수량 텍스트 비활성화
+                return;
+            } 
+            
+            // 1-2. 셀 수 있는 아이템
+            if (cItem.IsEmpty) // 개수가 0인지 확인
+            {
+                CleanSlot(index);
             }
-            else // 1-2. 셀 수 없는 아이템: 수량 텍스트 제거 
+            else
             {
-                HideSlotAmountText(index);
+                SetSlotAmountText(index, cItem.GetAmount);
+                ShowSlotAmountText(index);
             }
         }
 
-        private void UpdateAllSlotUI()
+        private void UpdateAllItemSlotUIs()
         {
             for (int i = 0; i < itemSlotUIs.Count; i++)
             {
@@ -262,7 +275,7 @@ namespace RPG.UI
             }
         }
 
-        private void UpdateEquippedSlotUI(int index)
+        private void UpdateEquippedSlotUI(int index) // 장비 슬롯 UI 갱신
         {
             var equippedItem = inventorySystem.GetEquippedSlot(index);
             if (equippedItem is null or { HasItem: false } )
@@ -273,19 +286,27 @@ namespace RPG.UI
             
             SetEquipmentSlotIcon(index, equippedItem);
         }
+        
+        private void UpdateAllEquippedSlotUI()
+        {
+            for (int i = 0; i < equipmentSlotUIs.Length; i++)
+            {
+                UpdateEquippedSlotUI(i);
+            }
+        }
 
         private void OnInventoryCapacityChanged(int capa)
         {
-            int currCount = itemSlotUIs.Count; // case: 인벤토리 칸 감소
+            int currCount = itemSlotUIs.Count; 
             if (currCount == capa) return;
-            if (currCount > capa)
+            if (currCount > capa) // case: 인벤토리 칸 감소
             {
                 for (int i = capa - 1; i < currCount; i++)
                 {
                     DisableSlotUI(i);
                 } 
             }
-            else // case: itemSlotUIs.Count < capa = 인벤토리 칸 증가
+            else // case: itemSlotUIs.Count < capa : 인벤토리 칸 증가
             {
                 for (int i = currCount - 1; i < capa; i++)
                 {
@@ -428,7 +449,7 @@ namespace RPG.UI
         
         #endregion
 
-        #region Slot UI Interaction (Use, Swap, etc)
+        #region UI Interaction (Use Item, Swap Slots, Filter, etc)
 
         private void TryUseItem(Vector2 pos)
         {
@@ -443,6 +464,11 @@ namespace RPG.UI
             Util.Log($"trying to TrySwapItems({fromSlotUI}.{fromSlotUI.Index}, {toSlotUI}.{toSlotUI.Index})", Util.LoggingMode.Completed);
             
             inventorySystem.TrySwapItems(fromSlotUI, toSlotUI);
+        }
+
+        private void OnCompressButtonPressed()
+        {
+            inventorySystem.CompressInven();
         }
 
         #endregion
@@ -629,114 +655,20 @@ namespace RPG.UI
         
         private void Refresh()
         {
-            Clear();
-        
-            ItemSlotBaseUI slot = mouseOverSlot;
-            mouseOverSlot = null;
-            ShowSlotInfo(slot);
+            UpdateAllItemSlotUIs();
+            UpdateAllEquippedSlotUI();
         }
-
+        
         private void Clear()
         {
             CancelItemDrag();
             HideTooltip();
             HideHighlight();
+            
+            ItemSlotBaseUI slot = mouseOverSlot;
+            mouseOverSlot = null;
+            ShowSlotInfo(slot);
         }
-        
-        #region Deprecated
-        
-        // private void ConnectDataWithSlotUIs()
-        // {
-        //     // int invIdx = 0;
-        //     // foreach (var itemSlot in inventorySystem.ReadOnlyInventorySlots)
-        //     // {
-        //     //     slotDataUIPairs[itemSlot] = itemSlotUIs[invIdx];
-        //     //     invIdx++;
-        //     // }
-        //     //
-        //     // int equIdx = 0;
-        //     // foreach (var equipSlot in inventorySystem.ReadOnlyEquippedSlots)
-        //     // {
-        //     //     slotDataUIPairs[equipSlot] = equipmentSlotUIs[equIdx];
-        //     //     equIdx++;
-        //     // }
-        //
-        //     inventorySystem.OnInventorySlotChanged += UpdateSlotUI;
-        //     inventorySystem.OnEquippedSlotChanged += UpdateEquippedSlotUI;
-        //     // inventorySystem.OnItemSlotChanged += UpdateSlotUI;
-        //
-        //     for (int i = 0; i < itemSlotUIs.Count; i++)
-        //     {
-        //         UpdateSlotUI(i);
-        //     }
-        // }
-
-        // private Dictionary<ItemSlot, UI_ItemSlotBase> slotDataUIPairs = new();
-        // private void UpdateSlotUI(ItemSlot slot)
-        // {
-        //     if (!slotDataUIPairs.TryGetValue(slot, out var resultSlotUI)) return; // 연결된 슬롯UI가 없으면 중지
-        //     
-        //     if (resultSlotUI is UI_EquipmentSlot equipSlotUI && slot is EquipmentSlot equipSlot)
-        //     {
-        //         UpdateEquippedSlotUI(equipSlotUI.Index, equipSlot);
-        //     }
-        //     else
-        //     {
-        //         UpdateSlotUI(resultSlotUI.Index, slot);
-        //     }    
-        // }
-        
-        // private void UpdateSlotUI(int index, ItemSlot item)
-        // {
-        //     if (item is not { GetAmount: > 0 })
-        //     {
-        //         CleanSlot(index);
-        //         return;
-        //     }
-        //     
-        //     SetInventorySlotIcon(index, item);
-        //
-        //     if (item is CountableItemSlot cItem) // 1-1. 셀 수 있는 아이템 
-        //     {
-        //         if (cItem.IsEmpty)
-        //         {
-        //             CleanSlot(index);
-        //         }
-        //         else
-        //         {
-        //             SetSlotAmountText(index, cItem.GetAmount);
-        //             ShowSlotAmountText(index);
-        //         }
-        //     }
-        //     else // 1-2. 셀 수 없는 아이템: 수량 텍스트 제거 
-        //     {
-        //         HideSlotAmountText(index);
-        //     }
-        // }
-        //
-        // private void UpdateEquippedSlotUI(int index, EquipmentSlot equipSlot)
-        // {
-        //     if (equipSlot == null)
-        //     {
-        //         equipmentSlotUIs[index].RemoveIcon(); // todo: 함수로 래핑
-        //         return;
-        //     }
-        //     
-        //     SetEquipmentSlotIcon(index, equipSlot);
-        // }
-        
-        // private void SetSlotIcon(int index, ItemSlot itemSlot)
-        // {
-        //     if (!itemSlotUIs[index].IsAccessibleSlot)
-        //     {
-        //         Util.Log("InAccessible slot");
-        //         return;
-        //     }
-        //     itemSlotUIs[index].SetIcon(itemSlot.GetItemInfo.sprite);
-        // }
-
-        #endregion 
-        
     }
 }
 
