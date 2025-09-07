@@ -26,8 +26,11 @@ namespace RPG.Item
         public event Action<int> OnEquippedSlotChanged; // 1개의 장비 슬롯 초기화가 필요한 경우 (인덱스 접근)
         public event Action OnInventoryChanged; // 인벤토리 전체 초기화가 필요한 경우
         // public event Action OnEquippedChanged; // 장착 슬롯 전체 초기화가 필요한 경우
-
+        public event Action OnInventoryFilterChanged;
+        
         private InventorySlotComparer testComparer = new();
+
+        private InventoryFilterType currFilter = InventoryFilterType.All;
         
         private void Awake()
         {
@@ -324,17 +327,36 @@ namespace RPG.Item
             }
         }
 
-        private void FilterInven(Enums.ItemType type)
+        public enum InventoryFilterType
+        {
+            All,
+            Equipment,
+            Consumable,
+            Resource,
+        }
+
+        private void FilterInven(InventoryFilterType filter, bool synchronizeUIImmediately = true)
         {
             for (int i = 0; i < Capacity; i++)
             {
-                if (inventoryItems[i] is not { HasItem: true } itemSlot || itemSlot.GetItemInfo.itemType != type)
-                {
-                    inventoryItems[i].SetVisibility(false);
-                }
+                var slot = inventoryItems[i];
+                slot.SetVisibility(IsVisibleByFilter(slot, filter));
             }
 
-            // OnInventoryChanged?.Invoke();
+            if (synchronizeUIImmediately)
+                OnInventoryChanged?.Invoke();
+        }
+
+        private static bool IsVisibleByFilter(ItemSlot slot, InventoryFilterType filter)
+        {
+            return slot.HasItem && filter switch
+            {
+                InventoryFilterType.All => true,
+                InventoryFilterType.Equipment => slot is {GetItemInfo: {itemType: Enums.ItemType.Equipment } },
+                InventoryFilterType.Consumable => slot is { GetItemInfo: {itemType: Enums.ItemType.Countable, isUsable: true } }, 
+                InventoryFilterType.Resource => slot is { GetItemInfo: {itemType: Enums.ItemType.Countable, isUsable: false } }, 
+                _ => false
+            };
         }
 
         #endregion
@@ -636,6 +658,12 @@ namespace RPG.Item
         {
             var targetSlot = FindUITargetSlot(targetSlotUI);
             UseItem(targetSlot);
+        }
+
+        public void TryFilterInven(InventoryFilterType filter)
+        {
+            if (currFilter == filter) return;
+            FilterInven(filter, true);
         }
 
         #endregion

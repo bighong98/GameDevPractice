@@ -5,6 +5,7 @@ using RPG.Item;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Pool;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace RPG.UI
@@ -23,8 +24,9 @@ namespace RPG.UI
             HandSlot,
             FootSlot,
         
-            ItemArea,
+            InventoryArea,
             ItemSlots,
+            DragDropIconHolder,
             
             PopupPanel,
             UI_RemoveConfirmPopup,
@@ -33,11 +35,13 @@ namespace RPG.UI
 
         enum Buttons
         {
-            CompressInventoryButton,
+            ExitButton,
+            CompressButton,
             
+            AllFilterButton,
             EquipmentFilterButton,
-            CountableFilterButton,
             ConsumableFilterButton,
+            ResourceFilterButton,
         }
 
         #endregion
@@ -55,6 +59,7 @@ namespace RPG.UI
 
         [SerializeField] private List<ItemSlotUI> itemSlotUIs;
         [SerializeField] private UI_EquipmentSlot[] equipmentSlotUIs;
+        private Transform dragDropIconHolder; // 드래그 중인 아이템 아이콘 최상단 표시 목적 컨테이너
         
         // hover
         private ItemSlotBaseUI mouseOverSlot;
@@ -126,9 +131,31 @@ namespace RPG.UI
                 return false;
             
             BindObject(typeof(GameObjects));
+            BindButton(typeof(Buttons));
             
             graphicRaycaster = GetObject((int)GameObjects.Contents).GetOrAddComponent<GraphicRaycaster>();
-            scroll = GetObject((int)GameObjects.ItemArea).GetComponent<ScrollRect>();
+            scroll = GetObject((int)GameObjects.InventoryArea).GetComponent<ScrollRect>();
+
+            dragDropIconHolder = GetObject((int)GameObjects.DragDropIconHolder).transform;
+            
+            GetButton((int)Buttons.ExitButton).onClick.AddListener(OnExitButtonPressed);
+            GetButton((int)Buttons.AllFilterButton).onClick.AddListener(() =>
+            {
+                OnFilterButtonPressed(InventorySystem.InventoryFilterType.All);
+            });
+            GetButton((int)Buttons.EquipmentFilterButton).onClick.AddListener(() =>
+            {
+                OnFilterButtonPressed(InventorySystem.InventoryFilterType.Equipment);
+            });
+            GetButton((int)Buttons.ConsumableFilterButton).onClick.AddListener(() =>
+            {
+                OnFilterButtonPressed(InventorySystem.InventoryFilterType.Consumable);
+            });
+            GetButton((int)Buttons.ResourceFilterButton).onClick.AddListener(() =>
+            {
+                OnFilterButtonPressed(InventorySystem.InventoryFilterType.Resource);
+            });
+            
             
             InitializeSlotUIs();
             ConnectDataWithSlotUIs();
@@ -236,7 +263,11 @@ namespace RPG.UI
         {
             if (inventorySystem.GetInventorySlot(index) is not { } itemSlot) return; // 인벤토리 시스템으로부터 슬롯 정보 받아오기
 
-            if (!itemSlot.IsVisible) // 슬롯이 비가시처리된 경우 (인벤토리 필터 등)
+            if (itemSlot.IsVisible) 
+            {
+                EnableSlotUI(index);
+            }
+            else // 슬롯이 비가시처리된 경우 (인벤토리 필터 등)
             {
                 DisableSlotUI(index);
             }
@@ -301,14 +332,14 @@ namespace RPG.UI
             if (currCount == capa) return;
             if (currCount > capa) // case: 인벤토리 칸 감소
             {
-                for (int i = capa - 1; i < currCount; i++)
+                for (int i = capa; i < currCount; i++)
                 {
                     DisableSlotUI(i);
                 } 
             }
             else // case: itemSlotUIs.Count < capa : 인벤토리 칸 증가
             {
-                for (int i = currCount - 1; i < capa; i++)
+                for (int i = currCount; i < capa; i++)
                 {
                     EnableSlotUI(i);
                 } 
@@ -318,7 +349,7 @@ namespace RPG.UI
         private void DisableSlotUI(int index)
         {
             if (!IsValidInventoryIndex(index)) return;
-            if (itemSlotUIs[index] is not { isActiveAndEnabled: true } slotUI) return;
+            if (itemSlotUIs[index] is not { gameObject: { activeSelf: true } } slotUI) return;
             
             slotUI.SetSlotAccessibleState(false);
             slotUI.gameObject.SetActive(false);
@@ -326,7 +357,8 @@ namespace RPG.UI
 
         private void EnableSlotUI(int index)
         {
-            if (index < 0) return;
+            if (!IsValidInventoryIndex(index)) return;
+            if (itemSlotUIs[index].gameObject.activeSelf) return; // 이미 활성화되어 있다면 실행x
 
             // 리스트에 새 슬롯을 추가하거나 기존 슬롯 재활성화
             ItemSlotUI slotUI = itemSlotUIs.Count <= index ? AddItemSlotUI() : itemSlotUIs[index];
@@ -393,7 +425,8 @@ namespace RPG.UI
                 beginDragIconPoint = beginDragIconTransform.position;
                 beginDragCursorPoint = currCursorPoint; 
                 
-                beginDragIconTransform.SetParent(GetLastSlotTransform.transform, worldPositionStays: true); // 다른 슬롯 UI에 가려지지 않도록 
+                // beginDragIconTransform.SetParent(GetLastSlotTransform.transform, worldPositionStays: true); // 다른 슬롯 UI에 가려지지 않도록 
+                beginDragIconTransform.SetParent(dragDropIconHolder, worldPositionStays: true); // 다른 슬롯 UI에 가려지지 않도록 
                 isDragging = true;
                 HighlightSuitableEquipmentSlot();
             }
@@ -466,9 +499,21 @@ namespace RPG.UI
             inventorySystem.TrySwapItems(fromSlotUI, toSlotUI);
         }
 
+        private void OnExitButtonPressed()
+        {
+            UIManager.Instance.ClosePopupUI(this);
+        }
+
         private void OnCompressButtonPressed()
         {
+            if (inventorySystem == null) return;
             inventorySystem.CompressInven();
+        }
+
+        private void OnFilterButtonPressed(InventorySystem.InventoryFilterType filter)
+        {
+            if (inventorySystem == null) return;
+            inventorySystem.TryFilterInven(filter);
         }
 
         #endregion
