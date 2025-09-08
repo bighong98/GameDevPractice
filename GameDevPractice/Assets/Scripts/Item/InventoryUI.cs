@@ -36,6 +36,7 @@ namespace RPG.UI
         enum Buttons
         {
             ExitButton,
+            SortButton,
             CompressButton,
             
             AllFilterButton,
@@ -79,7 +80,7 @@ namespace RPG.UI
 
         public void TestMethod()
         {
-            inventorySystem.CompressInven();
+            
         }
         
         private void Awake()
@@ -103,6 +104,7 @@ namespace RPG.UI
             OnInventoryCapacityChanged(inventorySystem.Capacity);
             inventorySystem.OnInventoryChanged += this.UpdateAllItemSlotUIs;
             inventorySystem.OnCapacityChanged += this.OnInventoryCapacityChanged;
+            inventorySystem.OnInventoryFilterChanged += this.OnFilterChanged;
         }
 
         private void OnDisable()
@@ -135,10 +137,21 @@ namespace RPG.UI
             
             graphicRaycaster = GetObject((int)GameObjects.Contents).GetOrAddComponent<GraphicRaycaster>();
             scroll = GetObject((int)GameObjects.InventoryArea).GetComponent<ScrollRect>();
-
             dragDropIconHolder = GetObject((int)GameObjects.DragDropIconHolder).transform;
+
+            ConnectButtons();
+            InitializeSlotUIs();
+            ConnectDataWithSlotUIs();
             
+            return true;
+        }
+
+        private void ConnectButtons()
+        {
             GetButton((int)Buttons.ExitButton).onClick.AddListener(OnExitButtonPressed);
+            GetButton((int)Buttons.SortButton).onClick.AddListener(OnSortButtonPressed);
+            GetButton((int)Buttons.CompressButton).onClick.AddListener(OnCompressButtonPressed);
+            
             GetButton((int)Buttons.AllFilterButton).onClick.AddListener(() =>
             {
                 OnFilterButtonPressed(InventorySystem.InventoryFilterType.All);
@@ -155,12 +168,6 @@ namespace RPG.UI
             {
                 OnFilterButtonPressed(InventorySystem.InventoryFilterType.Resource);
             });
-            
-            
-            InitializeSlotUIs();
-            ConnectDataWithSlotUIs();
-            
-            return true;
         }
 
         private void InitializeSlotUIs()
@@ -398,7 +405,7 @@ namespace RPG.UI
 
         #endregion
         
-        #region Handle User Input
+        #region UI Interaction (User Input)
         
         private void OnPointerMove(Vector2 pos)
         {
@@ -443,6 +450,33 @@ namespace RPG.UI
             CancelItemDrag();
         }
         
+        private void OnExitButtonPressed()
+        {
+            UIManager.Instance.ClosePopupUI(this);
+        }
+
+        private void OnCompressButtonPressed()
+        {
+            if (inventorySystem == null) return;
+            inventorySystem.CompressInven(false);
+        }
+
+        private void OnSortButtonPressed()
+        {
+            if (inventorySystem == null) return;
+            inventorySystem.CompressInven(true);
+        }
+
+        private void OnFilterButtonPressed(InventorySystem.InventoryFilterType filter)
+        {
+            if (inventorySystem == null) return;
+            inventorySystem.TryFilterInven(filter);
+        }
+        
+        #endregion
+
+        #region Event Handle (UI Interaction Event, Inventory State Change)
+
         private void MoveIconImageForDragDrop() // 드래그 중
         {
             if (!isDragging || beginDragSlot == null) return;
@@ -480,10 +514,6 @@ namespace RPG.UI
             UnHighlightEquipmentSlot();
         }
         
-        #endregion
-
-        #region UI Interaction (Use Item, Swap Slots, Filter, etc)
-
         private void TryUseItem(Vector2 pos)
         {
             if (RaycastAndGetFirstComponent<ItemSlotBaseUI>() is { } slotUI)
@@ -499,25 +529,14 @@ namespace RPG.UI
             inventorySystem.TrySwapItems(fromSlotUI, toSlotUI);
         }
 
-        private void OnExitButtonPressed()
+        private void OnFilterChanged(InventorySystem.InventoryFilterType type)
         {
-            UIManager.Instance.ClosePopupUI(this);
-        }
-
-        private void OnCompressButtonPressed()
-        {
-            if (inventorySystem == null) return;
-            inventorySystem.CompressInven();
-        }
-
-        private void OnFilterButtonPressed(InventorySystem.InventoryFilterType filter)
-        {
-            if (inventorySystem == null) return;
-            inventorySystem.TryFilterInven(filter);
+            //todo: 선택된 필터 버튼 강조
+            UpdateAllItemSlotUIs();
         }
 
         #endregion
-
+        
         #region Add/Remove Slot UI (using Object Pool)
 
         private ItemSlotUI AddItemSlotUI() // 아이템 슬롯 UI 생성

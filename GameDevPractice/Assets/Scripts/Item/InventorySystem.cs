@@ -26,7 +26,7 @@ namespace RPG.Item
         public event Action<int> OnEquippedSlotChanged; // 1개의 장비 슬롯 초기화가 필요한 경우 (인덱스 접근)
         public event Action OnInventoryChanged; // 인벤토리 전체 초기화가 필요한 경우
         // public event Action OnEquippedChanged; // 장착 슬롯 전체 초기화가 필요한 경우
-        public event Action OnInventoryFilterChanged;
+        public event Action<InventorySystem.InventoryFilterType> OnInventoryFilterChanged;
         
         private InventorySlotComparer testComparer = new();
 
@@ -253,10 +253,10 @@ namespace RPG.Item
 
         #region Trim/Sort/Filter Inventory
 
-        public void CompressInven()
+        public void CompressInven(bool sort)
         {
-            int write = TrimInven(true);
-            // SortInven(write);
+            int write = TrimInven(sort);
+            if (sort) SortInven(write);
             
             OnInventoryChanged?.Invoke();
         }
@@ -335,26 +335,28 @@ namespace RPG.Item
             Resource,
         }
 
-        private void FilterInven(InventoryFilterType filter, bool synchronizeUIImmediately = true)
+        private void FilterInven(InventoryFilterType filter)
         {
+            if (currFilter == filter) return;
+            currFilter = filter;
+            
             for (int i = 0; i < Capacity; i++)
             {
                 var slot = inventoryItems[i];
                 slot.SetVisibility(IsVisibleByFilter(slot, filter));
             }
 
-            if (synchronizeUIImmediately)
-                OnInventoryChanged?.Invoke();
+            OnInventoryFilterChanged?.Invoke(filter);
         }
 
         private static bool IsVisibleByFilter(ItemSlot slot, InventoryFilterType filter)
         {
-            return slot.HasItem && filter switch
+            return filter switch
             {
                 InventoryFilterType.All => true,
-                InventoryFilterType.Equipment => slot is {GetItemInfo: {itemType: Enums.ItemType.Equipment } },
-                InventoryFilterType.Consumable => slot is { GetItemInfo: {itemType: Enums.ItemType.Countable, isUsable: true } }, 
-                InventoryFilterType.Resource => slot is { GetItemInfo: {itemType: Enums.ItemType.Countable, isUsable: false } }, 
+                InventoryFilterType.Equipment => slot is { GetItemInfo: { itemType: Enums.ItemType.Equipment } },
+                InventoryFilterType.Consumable => slot is { GetItemInfo: { itemType: Enums.ItemType.Countable, isUsable: true }, GetAmount: > 0 }, 
+                InventoryFilterType.Resource => slot is { GetItemInfo: { itemType: Enums.ItemType.Countable, isUsable: false }, GetAmount: > 0 }, 
                 _ => false
             };
         }
@@ -663,7 +665,7 @@ namespace RPG.Item
         public void TryFilterInven(InventoryFilterType filter)
         {
             if (currFilter == filter) return;
-            FilterInven(filter, true);
+            FilterInven(filter);
         }
 
         #endregion
