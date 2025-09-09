@@ -13,7 +13,7 @@ namespace RPG.Item
         public int Capacity { get; private set; } // SetCapacity()로만 변경할 것
         public int MaxCapacity =>  maxCapacity;
         private const int maxCapacity = 256; // 인벤토리 최대 칸수
-        [SerializeField, Range(8, maxCapacity)] private int initialCapacity = 64; //실제론 inspector 값이 들어가니 주의 //todo: Constants에서 선언하고 사용할지 고민
+        [SerializeField, Range(8, maxCapacity)] private int initialCapacity = 80; //실제론 inspector 값이 들어가니 주의 //todo: Constants에서 선언하고 사용할지 고민
         
         // item data container (itemSlot)
         private ItemSlot[] inventoryItems; // 인벤토리에 보관된 아이템 목록
@@ -29,8 +29,9 @@ namespace RPG.Item
         public event Action<InventorySystem.InventoryFilterType> OnInventoryFilterChanged;
         
         private InventorySlotComparer testComparer = new();
-
+        
         private InventoryFilterType currFilter = InventoryFilterType.All;
+        public InventoryFilterType CurrentFilter => currFilter; // 외부 접근용 프로퍼티
         
         private void Awake()
         {
@@ -464,7 +465,7 @@ namespace RPG.Item
                 }
 
                 countableDict[itemInfo] = stored;
-                Util.Log($"[{nameof(InventorySystem)}.{nameof(UpdateCountableDict)}()] ({itemInfo}, {stored})");
+                Util.Log($"[{nameof(InventorySystem)}.{nameof(UpdateCountableDict)}()] ({itemInfo}, {stored})", Util.LoggingMode.Completed);
             }
         }
         

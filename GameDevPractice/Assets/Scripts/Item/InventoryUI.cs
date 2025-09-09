@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using DG.Tweening;
 using GameDevTV.Utils;
 using RPG.Item;
 using UnityEngine;
@@ -56,11 +57,11 @@ namespace RPG.UI
         private ObjectPool<ItemSlotUI> slotUIPool;
         
         private UI_ItemTooltip itemTooltip;
-        private ScrollRect scroll;
+        private ScrollRect scroll; // 인벤토리 스크롤
+        private Transform dragDropIconHolder; // 드래그 중인 아이템 아이콘 최상단 표시 목적 컨테이너
 
         [SerializeField] private List<ItemSlotUI> itemSlotUIs;
         [SerializeField] private UI_EquipmentSlot[] equipmentSlotUIs;
-        private Transform dragDropIconHolder; // 드래그 중인 아이템 아이콘 최상단 표시 목적 컨테이너
         
         // hover
         private ItemSlotBaseUI mouseOverSlot;
@@ -77,11 +78,6 @@ namespace RPG.UI
         private Vector3 currCursorPoint;
         private Vector3 beginDragIconPoint;
         private Vector3 beginDragCursorPoint;
-
-        public void TestMethod()
-        {
-            
-        }
         
         private void Awake()
         {
@@ -102,6 +98,8 @@ namespace RPG.UI
         {
             SubscribeInputEvents();
             OnInventoryCapacityChanged(inventorySystem.Capacity);
+            OnFilterChanged(inventorySystem.CurrentFilter);
+            
             inventorySystem.OnInventoryChanged += this.UpdateAllItemSlotUIs;
             inventorySystem.OnCapacityChanged += this.OnInventoryCapacityChanged;
             inventorySystem.OnInventoryFilterChanged += this.OnFilterChanged;
@@ -110,8 +108,11 @@ namespace RPG.UI
         private void OnDisable()
         {
             DeSubscribeInputEvents();
+            
             inventorySystem.OnCapacityChanged -= this.OnInventoryCapacityChanged;
             inventorySystem.OnInventoryChanged -= this.UpdateAllItemSlotUIs; 
+            inventorySystem.OnInventoryFilterChanged -= this.OnFilterChanged;
+            
             Clear();
         }
 
@@ -142,6 +143,9 @@ namespace RPG.UI
             ConnectButtons();
             InitializeSlotUIs();
             ConnectDataWithSlotUIs();
+            FillButtonDict();
+            CacheOriginalFilterButtonScales();
+            
             
             return true;
         }
@@ -529,9 +533,9 @@ namespace RPG.UI
             inventorySystem.TrySwapItems(fromSlotUI, toSlotUI);
         }
 
-        private void OnFilterChanged(InventorySystem.InventoryFilterType type)
+        private void OnFilterChanged(InventorySystem.InventoryFilterType filter)
         {
-            //todo: 선택된 필터 버튼 강조
+            HighlightSelectedFilterButton(filter);
             UpdateAllItemSlotUIs();
         }
 
@@ -713,6 +717,88 @@ namespace RPG.UI
                 mouseOverSlot.HideHighlight();
             if (beginDragSlot != null)
                 beginDragSlot.HideHighlight();
+        }
+
+        #endregion
+
+        #region Inventory Filter Button
+
+        private readonly Dictionary<int, Transform> filterButtonDict = new ();
+        private readonly Dictionary<Transform, Vector3> buttonOriginScale = new ();
+        private const float HighlightScale = 1.2f;
+        private const float TweenDuration = 0.15f;
+        private void FillButtonDict()
+        {
+            filterButtonDict[(int)InventorySystem.InventoryFilterType.All] 
+                = GetButton((int)Buttons.AllFilterButton).transform;
+            filterButtonDict[(int)InventorySystem.InventoryFilterType.Equipment] 
+                = GetButton((int)Buttons.EquipmentFilterButton).transform;
+            filterButtonDict[(int)InventorySystem.InventoryFilterType.Consumable] 
+                = GetButton((int)Buttons.ConsumableFilterButton).transform;
+            filterButtonDict[(int)InventorySystem.InventoryFilterType.Resource] 
+                = GetButton((int)Buttons.ResourceFilterButton).transform;
+        }
+
+        private void CacheOriginalFilterButtonScales()
+        {
+            foreach (var button in filterButtonDict.Values)
+            {
+                CacheOriginalScale(button);
+            }
+        }
+
+        private Transform GetFilterButtonByType(InventorySystem.InventoryFilterType filterType)
+        {
+            if (filterButtonDict.TryGetValue((int)filterType, out var button))
+            {
+                return button;
+            }
+
+            return null;
+        }
+
+        private void HighlightSelectedFilterButton(InventorySystem.InventoryFilterType filterType)
+        {
+            if (GetFilterButtonByType(filterType) is not { } button) return;
+            
+            foreach (var kv in buttonOriginScale)
+            {
+                if (kv.Key is not { } other || other == button) continue;
+
+                UnHighlightFilterButton(other, kv.Value);
+            }
+            
+            HighlightFilterButton(button);
+        }
+
+        private static void UnHighlightFilterButton(Transform other, Vector3 scale)
+        {
+            other.DOKill();
+            other.DOScale(scale, TweenDuration)
+                .SetUpdate(UpdateType.Late, true)
+                .SetEase(Ease.OutQuad)
+                .SetLink(other.gameObject, LinkBehaviour.KillOnDestroy);
+        }
+
+        private void HighlightFilterButton(Transform trs)
+        {
+            trs.DOKill();
+            if (!buttonOriginScale.TryGetValue(trs, out var originalScale))
+            {
+                buttonOriginScale[trs] = originalScale = trs.localScale;
+            }
+            trs.DOScale(originalScale * HighlightScale, TweenDuration)
+                .SetUpdate(UpdateType.Late, true)
+                .SetEase(Ease.OutBack)
+                .SetLink(trs.gameObject, LinkBehaviour.KillOnDestroy);
+        }
+
+        private void CacheOriginalScale(Transform t)
+        {
+            if (t != null && !buttonOriginScale.ContainsKey(t))
+            {
+                buttonOriginScale[t] = t.localScale;
+            }
         }
 
         #endregion

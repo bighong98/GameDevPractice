@@ -45,7 +45,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ffe53114c59865241ad7c7e6596f1e6c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RPG.Item.InventorySystem
-  initialCapacity: 64
+  initialCapacity: 80
 --- !u!114 &4014563580495811804
 MonoBehaviour:
   m_ObjectHideFlags: 0
