@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
 using DG.Tweening;
-using GameDevTV.Utils;
 using RPG.Item;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Pool;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace RPG.UI
@@ -49,19 +47,20 @@ namespace RPG.UI
         #endregion
         
         private RPG.Item.InventorySystem inventorySystem; 
+        
         private GraphicRaycaster graphicRaycaster;
         private PointerEventData pointerEventData;
         private List<RaycastResult> raycastResults;
-
-        private GameObject itemSlotUIPrefab;
-        private ObjectPool<ItemSlotUI> slotUIPool;
+        private RectTransform inventoryUIRect; // 인벤토리UI 경계 기준 (현재 Contents.RectTransform)
         
-        private UI_ItemTooltip itemTooltip;
+        private UI_ItemTooltip itemTooltip; 
         private ScrollRect scroll; // 인벤토리 스크롤
-        private Transform dragDropIconHolder; // 드래그 중인 아이템 아이콘 최상단 표시 목적 컨테이너
-
+        
         [SerializeField] private List<ItemSlotUI> itemSlotUIs;
         [SerializeField] private UI_EquipmentSlot[] equipmentSlotUIs;
+        
+        private GameObject itemSlotUIPrefab;
+        private ObjectPool<ItemSlotUI> slotUIPool;
         
         // hover
         private ItemSlotBaseUI mouseOverSlot;
@@ -70,6 +69,7 @@ namespace RPG.UI
         private bool isDragging = false;
         private ItemSlotBaseUI beginDragSlot;
         private Transform beginDragIconTransform;
+        private Transform dragDropIconHolder; // 드래그 중인 아이템 아이콘 최상단 표시 목적 컨테이너
         
         //highlight
         private int highlightedEquipmentSlotIdx = - 1; // 장비 아이템 드래그앤드랍 시 타입에 맞는 슬롯 강조. -1 means not initialized or not used
@@ -87,7 +87,7 @@ namespace RPG.UI
             inventorySystem = FindFirstObjectByType<RPG.Item.InventorySystem>();
             if (inventorySystem == null)
             {
-                Util.Log($"[{typeof(InventoryUI)}]Failed to Get InventorySystem");
+                Util.LogError($"[{typeof(InventoryUI)}] Failed to Find InventorySystem instance");
                 return;
             }
             
@@ -135,8 +135,13 @@ namespace RPG.UI
             
             BindObject(typeof(GameObjects));
             BindButton(typeof(Buttons));
+
+            if (GetObject((int)GameObjects.Contents) is { } contentsArea)
+            {
+                graphicRaycaster = contentsArea.GetOrAddComponent<GraphicRaycaster>();
+                inventoryUIRect = contentsArea.GetComponent<RectTransform>();
+            }
             
-            graphicRaycaster = GetObject((int)GameObjects.Contents).GetOrAddComponent<GraphicRaycaster>();
             scroll = GetObject((int)GameObjects.InventoryArea).GetComponent<ScrollRect>();
             dragDropIconHolder = GetObject((int)GameObjects.DragDropIconHolder).transform;
 
@@ -249,7 +254,7 @@ namespace RPG.UI
         
         #endregion
 
-        #region Validation
+        #region Validate Slot UI
 
         private bool IsValidInventoryIndex(int index) // 유효한 인벤토리 슬롯인지 검사
         {
@@ -337,26 +342,6 @@ namespace RPG.UI
             }
         }
 
-        private void OnInventoryCapacityChanged(int capa)
-        {
-            int currCount = itemSlotUIs.Count; 
-            if (currCount == capa) return;
-            if (currCount > capa) // case: 인벤토리 칸 감소
-            {
-                for (int i = capa; i < currCount; i++)
-                {
-                    DisableSlotUI(i);
-                } 
-            }
-            else // case: itemSlotUIs.Count < capa : 인벤토리 칸 증가
-            {
-                for (int i = currCount; i < capa; i++)
-                {
-                    EnableSlotUI(i);
-                } 
-            }
-        }
-
         private void DisableSlotUI(int index)
         {
             if (!IsValidInventoryIndex(index)) return;
@@ -378,40 +363,10 @@ namespace RPG.UI
         }
 
         #endregion
-
-        #region Subscribe/DeSubscribe Input Event
-
-        private void SubscribeInputEvents()
-        {
-            DeSubscribeInputEvents(); // 중복 델리게이트 등록 방지
-            
-            InputManager.Instance.OnUIPointerMoved += OnPointerMove;
-
-            InputManager.Instance.OnDragStarted += OnDrag;
-            InputManager.Instance.OnDragEnded += OffDrag;
-
-            InputManager.Instance.OnDoubleClicked += TryUseItem;
-            InputManager.Instance.OnAltClicked += TryUseItem;
-        }
-
-        private void DeSubscribeInputEvents()
-        {
-            if (Util.IsQuitting) return; // 어플리케이션 종료 중이라면 취소
-            
-            InputManager.Instance.OnUIPointerMoved -= OnPointerMove;
-            
-            InputManager.Instance.OnDragStarted -= OnDrag;
-            InputManager.Instance.OnDragEnded -= OffDrag;
-            
-            InputManager.Instance.OnDoubleClicked -= TryUseItem;
-            InputManager.Instance.OnAltClicked -= TryUseItem;
-        }
-
-        #endregion
         
         #region UI Interaction (User Input)
         
-        private void OnPointerMove(Vector2 pos)
+        private void OnPointerMove(Vector2 pos) // 마우스/터치패드 포인터가 움직인 경우
         {
             pointerEventData.position = pos;
             currCursorPoint = pos;
@@ -424,7 +379,7 @@ namespace RPG.UI
             ShowSlotInfo(prevSlot);
         }
         
-        private void OnDrag(Vector2 pos)
+        private void OnDrag(Vector2 pos) // 드래그 시작 시
         {
             beginDragSlot = RaycastAndGetFirstComponent<ItemSlotBaseUI>();
         
@@ -436,7 +391,6 @@ namespace RPG.UI
                 beginDragIconPoint = beginDragIconTransform.position;
                 beginDragCursorPoint = currCursorPoint; 
                 
-                // beginDragIconTransform.SetParent(GetLastSlotTransform.transform, worldPositionStays: true); // 다른 슬롯 UI에 가려지지 않도록 
                 beginDragIconTransform.SetParent(dragDropIconHolder, worldPositionStays: true); // 다른 슬롯 UI에 가려지지 않도록 
                 isDragging = true;
                 HighlightSuitableEquipmentSlot();
@@ -445,13 +399,74 @@ namespace RPG.UI
                 beginDragSlot = null;
         }
 
-        private void OffDrag(Vector2 pos)
+        private void OffDrag(Vector2 pos) // 드래그 종료 시 (=드랍)
         {
-            if (beginDragSlot is { HasItem: true } ) // 드래그 종료 시점에서 드래그 시작 지점 슬롯 재검사
+            if (isDragging && beginDragSlot is { HasItem: true } ) // 드래그 종료 시점에서 드래그 시작 지점 슬롯 재검사
             {
                 DropItem();
             }
             CancelItemDrag();
+        }
+        
+                private void MoveIconImageForDragDrop() // 드래그 중
+        {
+            if (!isDragging || beginDragSlot == null) return;
+
+            beginDragIconTransform.position = 
+                beginDragIconPoint + (currCursorPoint - beginDragCursorPoint); // _currCursorPoint = Input.mousePosition;
+        }
+        
+        private void DropItem()
+        {
+            ItemSlotBaseUI endDragSlot = RaycastAndGetFirstComponent<ItemSlotBaseUI>(); // pointerEventData 기준으로 드래그 종료 시점 포인터 위치의 슬롯UI 반환
+
+            if (endDragSlot is { IsAccessibleSlot: true } && endDragSlot != beginDragSlot)
+            {
+                TrySwapItems(beginDragSlot, endDragSlot); // 아이템 위치 교환/합치기 시도
+            }
+            // 아이템 드래그&드랍 위치가 인벤토리 영역 밖인 경우
+            else if (!RectTransformUtility.RectangleContainsScreenPoint(inventoryUIRect, pointerEventData.position)) 
+            {
+                TryDiscardItem(beginDragSlot); // 아이템 버리기(삭제) 시도
+            }
+        }
+
+        private void CancelItemDrag()
+        {
+            if (!isDragging || beginDragSlot == null) return;
+
+            scroll.vertical = true; // 스크롤링 가능
+            beginDragSlot.IconImage.maskable = true;
+            beginDragIconTransform.position = beginDragIconPoint;
+            beginDragIconTransform.SetParent(beginDragSlot.transform, worldPositionStays: true); // 아이템 아이콘 원래 부모 슬롯에게로 원복
+            
+            beginDragIconTransform = null;
+            beginDragSlot = null;
+            isDragging = false;
+            UnHighlightEquipmentSlot();
+        }
+        
+        private void TryUseItem(Vector2 pos)
+        {
+            if (RaycastAndGetFirstComponent<ItemSlotBaseUI>() is { } slotUI && inventorySystem != null)
+            {
+                inventorySystem.TryUseItem(slotUI);
+            }
+        }
+        
+        private void TrySwapItems(ItemSlotBaseUI fromSlotUI, ItemSlotBaseUI toSlotUI)
+        {
+            if (inventorySystem == null) return;
+            
+            Util.Log($"trying to TrySwapItems({fromSlotUI}.{fromSlotUI.Index}, {toSlotUI}.{toSlotUI.Index})", Util.LoggingMode.Completed);
+            inventorySystem.TrySwapItems(fromSlotUI, toSlotUI);
+        }
+
+        private void TryDiscardItem(ItemSlotBaseUI slotUI)
+        {
+            if (inventorySystem == null) return;
+
+            inventorySystem.RemoveItem(slotUI);
         }
         
         private void OnExitButtonPressed()
@@ -479,64 +494,58 @@ namespace RPG.UI
         
         #endregion
 
-        #region Event Handle (UI Interaction Event, Inventory State Change)
-
-        private void MoveIconImageForDragDrop() // 드래그 중
-        {
-            if (!isDragging || beginDragSlot == null) return;
-
-            beginDragIconTransform.position = 
-                beginDragIconPoint + (currCursorPoint - beginDragCursorPoint); // _currCursorPoint = Input.mousePosition;
-        }
+        #region Handle Event (Subscribe, Listen)
         
-        private void DropItem()
+        private void SubscribeInputEvents()
         {
-            ItemSlotBaseUI endDragSlot = RaycastAndGetFirstComponent<ItemSlotBaseUI>();
-
-            if (endDragSlot is { IsAccessibleSlot: true } && endDragSlot != beginDragSlot)
-            {
-                TrySwapItems(beginDragSlot, endDragSlot);
-            }
-            else if (true)
-            {
-                //todo: 인벤토리 영역 밖이면 아이템 버리기
-            }
-        }
-
-        private void CancelItemDrag()
-        {
-            if (!isDragging || beginDragSlot == null) return;
-
-            scroll.vertical = true; // 스크롤링 가능
-            beginDragSlot.IconImage.maskable = true;
-            beginDragIconTransform.position = beginDragIconPoint;
-            beginDragIconTransform.SetParent(beginDragSlot.transform, worldPositionStays: true); // 아이템 아이콘 원래 부모 슬롯에게로 원복
+            DeSubscribeInputEvents(); // 중복 델리게이트 등록 방지
             
-            beginDragIconTransform = null;
-            beginDragSlot = null;
-            isDragging = false;
-            UnHighlightEquipmentSlot();
+            InputManager.Instance.OnUIPointerMoved += OnPointerMove;
+
+            InputManager.Instance.OnDragStarted += OnDrag;
+            InputManager.Instance.OnDragEnded += OffDrag;
+
+            InputManager.Instance.OnDoubleClicked += TryUseItem;
+            InputManager.Instance.OnAltClicked += TryUseItem;
         }
-        
-        private void TryUseItem(Vector2 pos)
+
+        private void DeSubscribeInputEvents()
         {
-            if (RaycastAndGetFirstComponent<ItemSlotBaseUI>() is { } slotUI)
-            {
-                inventorySystem.TryUseItem(slotUI);
-            }
-        }
-        
-        private void TrySwapItems(ItemSlotBaseUI fromSlotUI, ItemSlotBaseUI toSlotUI)
-        {
-            Util.Log($"trying to TrySwapItems({fromSlotUI}.{fromSlotUI.Index}, {toSlotUI}.{toSlotUI.Index})", Util.LoggingMode.Completed);
+            if (Util.IsQuitting) return; // 어플리케이션 종료 중이라면 취소
             
-            inventorySystem.TrySwapItems(fromSlotUI, toSlotUI);
+            InputManager.Instance.OnUIPointerMoved -= OnPointerMove;
+            
+            InputManager.Instance.OnDragStarted -= OnDrag;
+            InputManager.Instance.OnDragEnded -= OffDrag;
+            
+            InputManager.Instance.OnDoubleClicked -= TryUseItem;
+            InputManager.Instance.OnAltClicked -= TryUseItem;
         }
 
         private void OnFilterChanged(InventorySystem.InventoryFilterType filter)
         {
             HighlightSelectedFilterButton(filter);
             UpdateAllItemSlotUIs();
+        }
+        
+        private void OnInventoryCapacityChanged(int capa)
+        {
+            int currCount = itemSlotUIs.Count; 
+            if (currCount == capa) return;
+            if (currCount > capa) // case: 인벤토리 칸 감소
+            {
+                for (int i = capa; i < currCount; i++)
+                {
+                    DisableSlotUI(i);
+                } 
+            }
+            else // case: itemSlotUIs.Count < capa : 인벤토리 칸 증가
+            {
+                for (int i = currCount; i < capa; i++)
+                {
+                    EnableSlotUI(i);
+                } 
+            }
         }
 
         #endregion
@@ -614,13 +623,14 @@ namespace RPG.UI
         
             if (raycastResults.Count == 0)
                 return null;
-            // Util.Log(_raycastResults[0]);
+            
+            Util.Log(raycastResults[0], Util.LoggingMode.Completed);
             return raycastResults[0].gameObject.GetComponent<T>();
         }
 
         #endregion
 
-        #region Highlight
+        #region Highlight Slot UI
 
         void HighlightSuitableEquipmentSlot()
         {
@@ -721,7 +731,7 @@ namespace RPG.UI
 
         #endregion
 
-        #region Inventory Filter Button
+        #region Inventory Filter
 
         private readonly Dictionary<int, Transform> filterButtonDict = new ();
         private readonly Dictionary<Transform, Vector3> buttonOriginScale = new ();

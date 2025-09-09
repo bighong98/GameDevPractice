@@ -9,7 +9,7 @@ namespace RPG.Item
 {
     public class InventorySystem: MonoBehaviour, ISavable
     {
-        // Capacity (인벤토리 칸수)
+        // Capacity (인벤토리 슬롯 개수)
         public int Capacity { get; private set; } // SetCapacity()로만 변경할 것
         public int MaxCapacity =>  maxCapacity;
         private const int maxCapacity = 256; // 인벤토리 최대 칸수
@@ -28,7 +28,6 @@ namespace RPG.Item
         // public event Action OnEquippedChanged; // 장착 슬롯 전체 초기화가 필요한 경우
         public event Action<InventorySystem.InventoryFilterType> OnInventoryFilterChanged;
         
-        private InventorySlotComparer testComparer = new();
         
         private InventoryFilterType currFilter = InventoryFilterType.All;
         public InventoryFilterType CurrentFilter => currFilter; // 외부 접근용 프로퍼티
@@ -71,7 +70,7 @@ namespace RPG.Item
              
              foreach (var item in testData.items)
              {
-                Util.Log($"Trying to add {item.GetItemInfo.nameString}", Util.LoggingMode.InProgress);
+                Util.Log($"Trying to add {item.GetItemInfo.nameString}", Util.LoggingMode.Completed);
                 AddItem(item, checkInstanceType: true);
              }
             });
@@ -319,9 +318,10 @@ namespace RPG.Item
             return curr; // Trim -> Combine Countable Item Stack -> 아이템이 있는 인벤토리 칸 수 반환
         }
 
+        
         private void SortInven(int last)
         {
-            Array.Sort(inventoryItems, 0, last, testComparer);
+            Array.Sort(inventoryItems, 0, last, itemSortingComparer);
             for (int i = 0; i < last; i++)
             {
                 inventoryItems[i].Index = i;
@@ -364,7 +364,7 @@ namespace RPG.Item
 
         #endregion
         
-        #region Add/Remove/Transfer/Use(Consume+Equip) Item (Inventory)
+        #region Add/Remove/Transfer/Use(Consume+Equip) Item
         
         // 인벤토리에 아이템 추가
         // item: 인벤토리에 추가하려는 아이템(데이터 SO + 개수(CountableItem만 적용))
@@ -379,25 +379,25 @@ namespace RPG.Item
             }
             if ((!item?.IsValid) ?? true) return 0;
             
-            int index = -1;
-            int initialAmount = amount;
+            int index = -1; // 현재 탐색 중인 기준 인덱스
+            int initialAmount = amount; // 루프 전 최초 아이템 수량 (CountableItem 종류별 총 개수 파악 목적, countableDict)
             
             if (item is CountableItem countItem) // case: 아이템이 Countable 타입인 경우
             {
-                bool findNextCountable = true;
-                amount *= countItem.GetAmount;
+                bool findEquivalentCountable = true;
+                amount *= countItem.GetAmount; // CountableItem의 경우 Item 객체가 1 이상의 개수를 가질 수 있으므로 곱하여 실제 개수 반영
                 initialAmount = amount;
                 
                 while (amount > 0)
                 {
-                    if (findNextCountable)
+                    if (findEquivalentCountable)
                     {
-                        index = FindCountableItemSlotIndex(countItem, index + 1);
-                        if (index == -1)
+                        index = FindCountableItemSlotIndex(countItem, index + 1); // 동일한 아이템 조회
+                        if (index == -1) // -1은 조회 실패를 의미
                         {
-                            findNextCountable = false;
+                            findEquivalentCountable = false;
                         }
-                        else
+                        else // 인벤토리 내에서 동일한 CountableItem을 찾은 경우
                         {
                             // 개수 추가 및 슬롯 최대개수 초과량을 반환
                             amount = (inventoryItems[index].GetItem as CountableItem)?.AddAmount(amount) ?? 0;
@@ -446,16 +446,15 @@ namespace RPG.Item
                         UseItem(inventoryItems[index]);
                     }
                     NotifySlotUpdated(inventoryItems[index]); // 해당 슬롯 데이터 변동 알림
+                    continue;
                 }
-                else // 아이템 저장 실패 시
-                {
-                    return amount; // 남은 개수 즉시 반환
-                }
+                
+                return amount; // 아이템 저장 실패 시, 남은 개수 즉시 반환
             }
             
             return amount;
 
-            void UpdateCountableDict(int remain) // 추가된 CountableItem 개수 딕셔너리에 반영 
+            void UpdateCountableDict(int remain) // 인벤토리에 추가된 CountableItem 개수 딕셔너리에 반영 
             {
                 if (item.GetItemInfo is not { } itemInfo) return;
                 int stored = initialAmount - remain;
@@ -469,13 +468,27 @@ namespace RPG.Item
             }
         }
         
-        public bool RemoveItem(int index) // 해당 인덱스 위치 슬롯의 아이템 제거 (슬롯 비우기)
+        private void RemoveItem(int index, bool byForce = false) // 해당 인벤토리 인덱스 슬롯의 아이템 제거 (슬롯 비우기)
         {
-            if (!IsValidInventorySlot(index)) return false;
-            if (!inventoryItems[index].IsAccessible) return false;
-            if (inventoryItems[index].GetItemInfo.itemType == Enums.ItemType.Special) return false;
+            if (!IsValidInventorySlot(index)) return;
+            if (!byForce) // byForce: true -> IsAccessible, Special 타입 여부 무시하고 제거
+            {
+                if (!inventoryItems[index].IsAccessible) return;
+                if (inventoryItems[index].GetItemInfo.itemType == Enums.ItemType.Special) return;
+            }
 
-            return inventoryItems[index].Clear();
+            if (inventoryItems[index].Clear()) // 슬롯 아이템 삭제 성공 시
+            {
+                OnInventorySlotChanged?.Invoke(index); // 슬롯 상태 변경 알림
+            }
+        }
+
+        public void RemoveItem(ItemSlotBaseUI slotUI) // 슬롯UI에 해당하는 아이템 슬롯 비우기
+        {
+            if (FindUITargetSlot(slotUI) is not { } slot ) return; // 슬롯UI에 해당하는 아이템 슬롯 인스턴스를 찾지 못한 경우 실행 취소
+            if (slot is EquipmentSlot) return; // 장비 슬롯인 경우 취소
+            
+            RemoveItem(slot.Index, false);
         }
 
         public bool TransferItem(ItemSlot fromSlot, ItemSlot toSlot) // fromSlot에 있는 아이템을 toSlot으로 옮기기
@@ -799,7 +812,8 @@ namespace RPG.Item
         #endregion
 
         #region Sort Test
-
+        
+        private readonly InventorySlotComparer itemSortingComparer = new();
         private sealed class InventorySlotComparer : IComparer<ItemSlot>
         {
             public int Compare(ItemSlot x, ItemSlot y)
