@@ -189,7 +189,7 @@ namespace RPG.UI
         {
             if (!(trackingPositionCTS?.IsCancellationRequested ?? true))
             {
-                Util.ClearUniTaskCTS(trackingPositionCTS);
+                Util.ClearCTS(trackingPositionCTS);
             }
         }
 

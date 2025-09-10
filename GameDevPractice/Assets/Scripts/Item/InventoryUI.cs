@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using DG.Tweening;
 using RPG.Item;
 using UnityEngine;
@@ -27,9 +28,7 @@ namespace RPG.UI
             ItemSlots,
             DragDropIconHolder,
             
-            PopupPanel,
-            UI_RemoveConfirmPopup,
-            UI_ItemTooltip,
+            PopupArea,
         }
 
         enum Buttons
@@ -53,7 +52,8 @@ namespace RPG.UI
         private List<RaycastResult> raycastResults;
         private RectTransform inventoryUIRect; // 인벤토리UI 경계 기준 (현재 Contents.RectTransform)
         
-        private UI_ItemTooltip itemTooltip; 
+        private UI_ItemTooltip itemTooltip;
+        private QuestionPopupUI removeConfirmPopup;
         private ScrollRect scroll; // 인벤토리 스크롤
         
         [SerializeField] private List<ItemSlotUI> itemSlotUIs;
@@ -99,26 +99,23 @@ namespace RPG.UI
             SubscribeInputEvents();
             OnInventoryCapacityChanged(inventorySystem.Capacity);
             OnFilterChanged(inventorySystem.CurrentFilter);
-            
-            inventorySystem.OnInventoryChanged += this.UpdateAllItemSlotUIs;
-            inventorySystem.OnCapacityChanged += this.OnInventoryCapacityChanged;
-            inventorySystem.OnInventoryFilterChanged += this.OnFilterChanged;
+            ConnectDataWithSlotUIs();
         }
 
         private void OnDisable()
         {
             DeSubscribeInputEvents();
-            
-            inventorySystem.OnCapacityChanged -= this.OnInventoryCapacityChanged;
-            inventorySystem.OnInventoryChanged -= this.UpdateAllItemSlotUIs; 
-            inventorySystem.OnInventoryFilterChanged -= this.OnFilterChanged;
-            
+            DisConnectDataWithSlotUIs();
             Clear();
         }
 
         private void OnDestroy()
         {
+            if (Util.IsQuitting) return;
+            
+            DeSubscribeInputEvents();
             DisConnectDataWithSlotUIs();
+            Clear();
         }
 
         private void Update()
@@ -145,12 +142,32 @@ namespace RPG.UI
             scroll = GetObject((int)GameObjects.InventoryArea).GetComponent<ScrollRect>();
             dragDropIconHolder = GetObject((int)GameObjects.DragDropIconHolder).transform;
 
+            
+            // 아이템 툴팁 UI 로드
+            if (ResourceManager.Instance.Instantiate("UI_ItemTooltip.prefab", transform) is { } tooltipObj)
+            {
+                itemTooltip = tooltipObj.GetComponent<UI_ItemTooltip>();
+                itemTooltip.HideTooltip();
+            }
+
+            // 아이템 제거 확인 팝업 UI 로드
+            if (ResourceManager.Instance.Instantiate("QuestionPopupUI.prefab",
+                    GetObject((int)GameObjects.PopupArea).transform) is { } questionPopupObj)
+            {
+                removeConfirmPopup = questionPopupObj.GetComponent<QuestionPopupUI>();
+                removeConfirmPopup.Close();
+            }
+            
             ConnectButtons();
             InitializeSlotUIs();
-            ConnectDataWithSlotUIs();
             FillButtonDict();
             CacheOriginalFilterButtonScales();
             
+            // 인벤토리 슬롯UI 전체 초기화
+            for (int i = 0; i < itemSlotUIs.Count; i++)
+            {
+                UpdateSlotUI(i);
+            }
             
             return true;
         }
@@ -211,13 +228,6 @@ namespace RPG.UI
                         DisableSlotUI(i);
                 }
             }
-
-            // 아이템 툴팁 UI 로드
-            if (ResourceManager.Instance.Instantiate("UI_ItemTooltip.prefab", transform) is { } tooltipObj)
-            {
-                itemTooltip = tooltipObj.GetComponent<UI_ItemTooltip>();
-                itemTooltip.HideTooltip();
-            }
             
             // 장비 슬롯 UI 초기화
             for (int i = 0; i < (int)Enums.EquippedItemSlotType.Max; i++)
@@ -236,12 +246,13 @@ namespace RPG.UI
         private void ConnectDataWithSlotUIs()
         {
             inventorySystem.OnInventorySlotChanged += UpdateSlotUI;
+            inventorySystem.OnInventorySlotChanged += CheckSlotChangedBeforeConfirm;
             inventorySystem.OnEquippedSlotChanged += UpdateEquippedSlotUI;
 
-            for (int i = 0; i < itemSlotUIs.Count; i++)
-            {
-                UpdateSlotUI(i);
-            }
+            inventorySystem.OnInventoryChanged += this.UpdateAllItemSlotUIs;
+            inventorySystem.OnInventoryChanged += this.RenewAllPopupCTS;
+            inventorySystem.OnCapacityChanged += this.OnInventoryCapacityChanged;
+            inventorySystem.OnInventoryFilterChanged += this.OnFilterChanged;
         }
 
         private void DisConnectDataWithSlotUIs()
@@ -249,7 +260,13 @@ namespace RPG.UI
             // if (Util.IsQuitting) return;
             
             inventorySystem.OnInventorySlotChanged -= UpdateSlotUI;
+            inventorySystem.OnInventorySlotChanged -= CheckSlotChangedBeforeConfirm;
             inventorySystem.OnEquippedSlotChanged -= UpdateEquippedSlotUI;
+            
+            inventorySystem.OnInventoryChanged -= this.UpdateAllItemSlotUIs;
+            inventorySystem.OnInventoryChanged -= this.RenewAllPopupCTS;
+            inventorySystem.OnCapacityChanged -= this.OnInventoryCapacityChanged;
+            inventorySystem.OnInventoryFilterChanged -= this.OnFilterChanged;
         }
         
         #endregion
@@ -408,7 +425,7 @@ namespace RPG.UI
             CancelItemDrag();
         }
         
-                private void MoveIconImageForDragDrop() // 드래그 중
+        private void MoveIconImageForDragDrop() // 드래그 중
         {
             if (!isDragging || beginDragSlot == null) return;
 
@@ -427,7 +444,7 @@ namespace RPG.UI
             // 아이템 드래그&드랍 위치가 인벤토리 영역 밖인 경우
             else if (!RectTransformUtility.RectangleContainsScreenPoint(inventoryUIRect, pointerEventData.position)) 
             {
-                TryDiscardItem(beginDragSlot); // 아이템 버리기(삭제) 시도
+                TryDiscardItem(beginDragSlot, true); // 아이템 버리기(삭제) 시도
             }
         }
 
@@ -462,11 +479,18 @@ namespace RPG.UI
             inventorySystem.TrySwapItems(fromSlotUI, toSlotUI);
         }
 
-        private void TryDiscardItem(ItemSlotBaseUI slotUI)
+        private void TryDiscardItem(ItemSlotBaseUI slotUI, bool confirm)
         {
             if (inventorySystem == null) return;
 
-            inventorySystem.RemoveItem(slotUI);
+            if (confirm)
+            {
+                ShowRemoveConfirmPopup();
+            }
+            else
+            {
+                inventorySystem.RemoveItem(slotUI);
+            }
         }
         
         private void OnExitButtonPressed()
@@ -731,6 +755,57 @@ namespace RPG.UI
 
         #endregion
 
+        #region Popup CTS (CancellationTokenSource) handle 
+
+        private CancellationTokenSource RemoveConfirmPopupCTS = new();
+
+        private void RenewCTS(ref CancellationTokenSource cts)
+        {
+            Util.ClearCTS(cts);
+            cts = new CancellationTokenSource();
+        }
+        
+        private void RenewAllPopupCTS()
+        {
+            RenewCTS(ref RemoveConfirmPopupCTS);
+        }
+
+        private void CheckSlotChangedBeforeConfirm(int index)
+        {
+            if (tokenSlotPair == default) return;
+            if (index == tokenSlotPair.slotUI.Index)
+            {
+                RenewCTS(ref tokenSlotPair.cts);
+            }
+        }
+
+        private (CancellationTokenSource cts, ItemSlotBaseUI slotUI) tokenSlotPair;
+        
+        #endregion
+        
+        #region Confirm Popups
+        
+        private const string RemoveConfirmText = "아이템을 정말 파괴하시겠습니까?";
+        private void ShowRemoveConfirmPopup()
+        {
+            var targetSlot = beginDragSlot;
+            tokenSlotPair = (RemoveConfirmPopupCTS, targetSlot);
+            // RenewCTS(ref RemoveConfirmPopupCTS);
+            
+            removeConfirmPopup.Show();
+            removeConfirmPopup.SetQuestion(
+                RemoveConfirmPopupCTS.Token, 
+                RemoveConfirmText,
+                yesAction: () =>
+                {
+                    if (inventorySystem == null) return; // 중간에 인벤토리 인스턴스의 참조를 잃어버린 경우 (씬 이동 등) 오류 방지
+                    if (targetSlot == null || !targetSlot.gameObject.activeSelf) return; // 중간에 슬롯이 비활성화된 경우 오류 방지
+                    inventorySystem.RemoveItem(targetSlot);
+                });
+        }
+
+        #endregion
+        
         #region Inventory Filter
 
         private readonly Dictionary<int, Transform> filterButtonDict = new ();

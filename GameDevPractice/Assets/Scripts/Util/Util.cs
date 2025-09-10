@@ -254,10 +254,10 @@ public static class Util
 
     #region UniTask
 
-    public static void ClearUniTaskCTS(CancellationTokenSource tokenSource)
+    public static void ClearCTS(CancellationTokenSource tokenSource)
     {
         if (!tokenSource?.IsCancellationRequested ?? false)
-            tokenSource?.Cancel();
+            tokenSource.Cancel();
         tokenSource?.Dispose();
     }
 
