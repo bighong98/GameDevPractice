@@ -273,6 +273,15 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""Additive"",
+                    ""type"": ""Button"",
+                    ""id"": ""d42148a6-6427-4569-ab2f-d4ccd2d343b4"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -352,6 +361,39 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
                     ""action"": ""Alt"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""One Modifier"",
+                    ""id"": ""b6cb1959-6e43-41f7-a657-fa2e2b6354bf"",
+                    ""path"": ""OneModifier(modifiersOrder=1)"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Additive"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""modifier"",
+                    ""id"": ""45be8902-faf6-45b2-af6a-5e24c9145a00"",
+                    ""path"": ""<Keyboard>/shift"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Additive"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""binding"",
+                    ""id"": ""7e4d49af-3bdc-4012-8524-e810acc40e0b"",
+                    ""path"": ""<Mouse>/leftButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Additive"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
                 }
             ]
         },
@@ -436,6 +478,7 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
         m_UI_Alt = m_UI.FindAction("Alt", throwIfNotFound: true);
         m_UI_Drag = m_UI.FindAction("Drag", throwIfNotFound: true);
         m_UI_PointUI = m_UI.FindAction("PointUI", throwIfNotFound: true);
+        m_UI_Additive = m_UI.FindAction("Additive", throwIfNotFound: true);
         // Global
         m_Global = asset.FindActionMap("Global", throwIfNotFound: true);
         m_Global_Escape = m_Global.FindAction("Escape", throwIfNotFound: true);
@@ -634,6 +677,7 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
     private readonly InputAction m_UI_Alt;
     private readonly InputAction m_UI_Drag;
     private readonly InputAction m_UI_PointUI;
+    private readonly InputAction m_UI_Additive;
     /// <summary>
     /// Provides access to input actions defined in input action map "UI".
     /// </summary>
@@ -661,6 +705,10 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "UI/PointUI".
         /// </summary>
         public InputAction @PointUI => m_Wrapper.m_UI_PointUI;
+        /// <summary>
+        /// Provides access to the underlying input action "UI/Additive".
+        /// </summary>
+        public InputAction @Additive => m_Wrapper.m_UI_Additive;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -699,6 +747,9 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
             @PointUI.started += instance.OnPointUI;
             @PointUI.performed += instance.OnPointUI;
             @PointUI.canceled += instance.OnPointUI;
+            @Additive.started += instance.OnAdditive;
+            @Additive.performed += instance.OnAdditive;
+            @Additive.canceled += instance.OnAdditive;
         }
 
         /// <summary>
@@ -722,6 +773,9 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
             @PointUI.started -= instance.OnPointUI;
             @PointUI.performed -= instance.OnPointUI;
             @PointUI.canceled -= instance.OnPointUI;
+            @Additive.started -= instance.OnAdditive;
+            @Additive.performed -= instance.OnAdditive;
+            @Additive.canceled -= instance.OnAdditive;
         }
 
         /// <summary>
@@ -930,6 +984,13 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnPointUI(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Additive" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnAdditive(InputAction.CallbackContext context);
     }
     /// <summary>
     /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "Global" which allows adding and removing callbacks.

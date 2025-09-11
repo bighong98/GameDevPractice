@@ -34,6 +34,7 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
     // UI.Drag
     public event Action<Vector2> OnDragStarted; // 드래그 시작 시
     public event Action<Vector2> OnDragEnded; // 드래그 종료 시
+    public event Action<Vector2> OnAdditived;
 
     #endregion 
     
@@ -216,7 +217,12 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
     {
         OnUIPointerMoved?.Invoke(context.ReadValue<Vector2>());
     }
-    
+
+    public void OnAdditive(InputAction.CallbackContext context)
+    {
+        OnAdditived?.Invoke(PointerPos);
+    }
+
     public void OnAlt(InputAction.CallbackContext context) // 마우스 우클릭 등 보조 입력장치 처리
     {
         if (context.phase == InputActionPhase.Performed)

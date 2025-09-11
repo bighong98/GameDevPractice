@@ -350,7 +350,7 @@ namespace RPG.Item
             OnInventoryFilterChanged?.Invoke(filter);
         }
 
-        private static bool IsVisibleByFilter(ItemSlot slot, InventoryFilterType filter)
+        public static bool IsVisibleByFilter(ItemSlot slot, InventoryFilterType filter)
         {
             return filter switch
             {
@@ -592,6 +592,58 @@ namespace RPG.Item
                 {
                     NotifySlotUpdated(targetSlot);
                 }
+            }
+        }
+        
+        public void DivideItem(ItemSlot slot, int amount = -1) // 아이템 개수 분리, CountableItem만 지원, amount: -1 -> 절반으로 분리
+        {
+            if (slot?.GetAmount <= 1) return; // 대상 슬롯의 아이템 개수가 1 이하이면 취소
+            if (FindEmptySlotIndex() is not ({} foundIdx and >= 0)) return; // 빈 슬롯이 없으면 취소
+            if (inventoryItems[foundIdx] is not { } foundSlot || ReferenceEquals(slot, foundSlot)) return;
+            
+            switch (slot)
+            {
+                // 슬롯 내부의 아이템 인스턴스가 CountableItem인 경우
+                case { GetItem: CountableItem countableItem }:
+                {
+                    int split = amount < 0 ? (countableItem.GetAmount / 2) : amount;
+                    if (countableItem.SeparateAndClone<CountableItem>(split) is not { } divided) return;
+                    // 빈 슬롯에 개수 분리한 아이템 저장 시도
+                    if (foundSlot.Store(divided, false, currFilter))
+                    {
+                        // 저장 성공 시 슬롯 내부 데이터 변경을 알림
+                        NotifySlotUpdated(slot);
+                        NotifySlotUpdated(foundSlot);
+                    }
+                    else
+                    {
+                        countableItem.AddAmount(split); // 저장 실패 시 원복
+                    }
+                    break;
+                }
+                // 슬롯 내부의 아이템 인스턴스가 CountableItem이 아니지만 아이템 데이터가 Countable인 경우
+                case { GetItemInfo: { itemType: Enums.ItemType.Countable }, GetItem: not CountableItem }:
+                    if (ModifyItemInstanceByType(slot.GetItem) is CountableItem cItem) // 아이템 타입에 적합한 인스턴스로 재생성
+                    {
+                        int split = amount < 0 ? (cItem.GetAmount / 2) : amount;
+                        if (cItem.SeparateAndClone<CountableItem>(split) is not { } divided) return;
+                        // 빈 슬롯에 개수 분리한 아이템 저장 시도 + 재생성된 인스턴스로 슬롯에 새로 저장
+                        if (foundSlot.Store(divided, false, currFilter) &&
+                            slot.Store(cItem, true, currFilter))
+                        {
+                            // 저장 성공 시 슬롯 내부 데이터 변경을 알림
+                            NotifySlotUpdated(slot);
+                            NotifySlotUpdated(foundSlot); 
+                        }
+                        else
+                        {
+                            cItem.AddAmount(split); // 저장 실패 시 원복
+                        }
+                    }
+                    break;
+                default:
+                    Util.Log($"[{nameof(InventorySystem)}.{nameof(DivideItem)}()] not supported item Type. {slot?.GetItemInfo}");
+                    break;
             }
         }
         
@@ -853,5 +905,18 @@ namespace RPG.Item
 
         #endregion
     }
+
+    public static class InventorySystemExtensionMethods
+    {
+        public static bool Store(this ItemSlot slot, Item item, bool byForce, InventorySystem.InventoryFilterType filter)
+        {
+            if (!slot.Store(item, byForce)) return false;
+            
+            slot.SetVisibility(InventorySystem.IsVisibleByFilter(slot, filter));
+            return true;
+        }
+    }
 }
+
+
 

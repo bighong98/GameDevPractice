@@ -457,7 +457,8 @@ namespace RPG.UI
         
         private void TryUseItem(Vector2 pos)
         {
-            if (RaycastAndGetFirstComponent<ItemSlotBaseUI>() is { } slotUI && inventorySystem != null)
+            if (inventorySystem == null) return;
+            if (RaycastAndGetFirstComponent<ItemSlotBaseUI>() is { } slotUI)
             {
                 inventorySystem.TryUseItem(slotUI);
             }
@@ -482,6 +483,15 @@ namespace RPG.UI
             else
             {
                 inventorySystem.RemoveItem(slotUI);
+            }
+        }
+
+        private void TryDivideItem(Vector2 pos)
+        {
+            if (inventorySystem == null) return;
+            if (RaycastAndGetFirstComponent<ItemSlotUI>() is { } slotUI)
+            {
+                inventorySystem.TryUseItem(slotUI);
             }
         }
         
@@ -523,6 +533,7 @@ namespace RPG.UI
 
             InputManager.Instance.OnDoubleClicked += TryUseItem;
             InputManager.Instance.OnAltClicked += TryUseItem;
+            InputManager.Instance.OnAdditived += TryDivideItem;
         }
 
         private void DeSubscribeInputEvents()
