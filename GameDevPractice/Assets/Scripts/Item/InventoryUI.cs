@@ -149,14 +149,6 @@ namespace RPG.UI
                 itemTooltip = tooltipObj.GetComponent<UI_ItemTooltip>();
                 itemTooltip.HideTooltip();
             }
-
-            // 아이템 제거 확인 팝업 UI 로드
-            if (ResourceManager.Instance.Instantiate("QuestionPopupUI.prefab",
-                    GetObject((int)GameObjects.PopupArea).transform) is { } questionPopupObj)
-            {
-                removeConfirmPopup = questionPopupObj.GetComponent<QuestionPopupUI>();
-                removeConfirmPopup.Close();
-            }
             
             ConnectButtons();
             InitializeSlotUIs();
@@ -790,18 +782,20 @@ namespace RPG.UI
         {
             var targetSlot = beginDragSlot;
             tokenSlotPair = (RemoveConfirmPopupCTS, targetSlot);
-            // RenewCTS(ref RemoveConfirmPopupCTS);
-            
-            removeConfirmPopup.Show();
-            removeConfirmPopup.SetQuestion(
-                RemoveConfirmPopupCTS.Token, 
-                RemoveConfirmText,
-                yesAction: () =>
-                {
-                    if (inventorySystem == null) return; // 중간에 인벤토리 인스턴스의 참조를 잃어버린 경우 (씬 이동 등) 오류 방지
-                    if (targetSlot == null || !targetSlot.gameObject.activeSelf) return; // 중간에 슬롯이 비활성화된 경우 오류 방지
-                    inventorySystem.RemoveItem(targetSlot);
-                });
+            RenewCTS(ref RemoveConfirmPopupCTS);
+
+            if (UIManager.Instance.ShowPopupUI<QuestionPopupUI>() is { } popup)
+            {
+                popup.SetQuestion(
+                    RemoveConfirmPopupCTS.Token, 
+                    RemoveConfirmText,
+                    yesAction: () =>
+                    {
+                        if (inventorySystem == null) return; // 중간에 인벤토리 인스턴스의 참조를 잃어버린 경우 (씬 이동 등) 오류 방지
+                        if (targetSlot == null || !targetSlot.gameObject.activeSelf) return; // 중간에 슬롯이 비활성화된 경우 오류 방지
+                        inventorySystem.RemoveItem(targetSlot);
+                    });
+            }
         }
 
         #endregion

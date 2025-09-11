@@ -27,4 +27,9 @@ public static class Extension
     {
         Util.SafeInvoke(action, arg);
     }
+
+    public static T ShowPopupUI<T>(this T popup) where T : PopupUI
+    {
+        return popup.ShowPopupUI<T>();
+    }
 }

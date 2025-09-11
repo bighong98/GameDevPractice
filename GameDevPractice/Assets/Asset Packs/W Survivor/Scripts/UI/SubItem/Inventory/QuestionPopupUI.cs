@@ -26,7 +26,7 @@ namespace RPG.UI
         #endregion
         
         private CancellationTokenSource PopupCTS; // 본 팝업의 토큰 소스
-        private CancellationTokenRegistration ownerCTSReg;
+        private CancellationTokenRegistration ownerCTSRegistration;
 
         private bool decided = false;
 
@@ -43,14 +43,14 @@ namespace RPG.UI
 
         private void OnDisable()
         {
-            ownerCTSReg.Dispose();
+            ownerCTSRegistration.Dispose();
             ClearActions();
             CancelPopupCTS();
         }
 
         private void OnDestroy()
         {
-            ownerCTSReg.Dispose();
+            ownerCTSRegistration.Dispose();
             ClearActions();
             CancelPopupCTS();
         }
@@ -71,7 +71,7 @@ namespace RPG.UI
 
         public bool SetQuestion(CancellationToken ownerToken, string questionString = null, string yesString = null, string noString = null, Action yesAction = null, Action noAction = null)
         {
-            ownerCTSReg.Dispose();
+            ownerCTSRegistration.Dispose();
             // 팝업 호출 측에서 전달한 Token이 유효하지 않거나, 질문 string이 비어있으면 실행 취소
             if (!ownerToken.CanBeCanceled || ownerToken.IsCancellationRequested || string.IsNullOrEmpty(questionString))
             {
@@ -80,7 +80,7 @@ namespace RPG.UI
             }
             
             CancelAndRenewCTS();
-            ownerCTSReg = ownerToken.Register(CancelAndClose);
+            ownerCTSRegistration = ownerToken.Register(CancelAndClose);
             
             if (string.IsNullOrEmpty(yesString)) yesString = DefaultYesString;
             if (string.IsNullOrEmpty(noString)) noString = DefaultNoString;
@@ -122,7 +122,7 @@ namespace RPG.UI
         private void CancelAndClose()
         {
             CancelPopupCTS();
-            Close();
+            ClosePopupUI();
         }
 
         private void CancelAndRenewCTS()
@@ -141,7 +141,7 @@ namespace RPG.UI
         {
             if (decided || (PopupCTS?.IsCancellationRequested ?? true))
             {
-                Close();
+                ClosePopupUI();
                 return;
             }
 

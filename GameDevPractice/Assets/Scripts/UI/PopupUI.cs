@@ -16,10 +16,12 @@ namespace RPG.UI
         protected bool pauseRequired = false;
         [SerializeField] [Tooltip("UI 영역 바깥을 누르면 UI가 비활성화")]
         protected bool closeOnOuterBackgroundClick = false;
+        [SerializeField] protected RectTransform contentArea;
         [SerializeField] [Tooltip("UI 호출 시 포인터(마우스/터치) 위치를 기준으로 호출")]
         protected bool placePointerPosition = false;
         [SerializeField] [Tooltip("동일 타입 중복 팝업UI 호출시 처리 방식")] 
         protected DuplicatedPopupHandle duplicatedPopupHandle;
+        protected bool IsPooledObject = false; // 오브젝트 풀링 적용 여부
         
         [Header("Deprecated/Developing")]
         [SerializeField] [Tooltip("미개발 기능. 사용하지 말것")]
@@ -36,6 +38,7 @@ namespace RPG.UI
         public bool Escapable { get { return escapable; } }
         public bool PauseRequired { get { return pauseRequired; } }
         public bool CloseOnOuterBackgroundClick { get { return closeOnOuterBackgroundClick; } }
+        public RectTransform ContentArea { get { return contentArea != null ? contentArea : Rect; } }
         // public bool BlurBackground { get { return blurBackground; } }
         public bool PlacePointerPosition { get { return placePointerPosition; } }
         public Enums.UIRenderType UiRenderType { get { return uiRenderType; } }
@@ -63,9 +66,39 @@ namespace RPG.UI
             return true;
         }
 
+        public virtual T ShowPopupUI<T>() where T : PopupUI
+        {
+            if (IsPooledObject && UIManager.Instance.ShowPopupUI<T>() is { } popup)
+            {
+                return popup;
+            }
+            
+            if (gameObject.activeSelf) return null;
+            gameObject.SetActive(true);
+            OnGetFromPool();
+            return (T)this;
+        }
+
         public virtual void ClosePopupUI()
         {
-            UIManager.Instance.ClosePopupUI(this);
+            // 오브젝트 풀에서 관리하고, 풀 반환에 성공했다면 개별 비활성화 취소
+            if (IsPooledObject && UIManager.Instance.ClosePopupUI(this)) return; 
+            if (gameObject.activeSelf) return; // 이미 비활성화되었다면 취소
+            
+            if (playExitAnimation)
+            {
+                OnPopupClosedAsync().ContinueWith(() =>
+                {
+                    OnReleaseFromPool();
+                    gameObject.SetActive(false);
+                });
+            }
+            else
+            {
+                OnPopupClosed();
+                OnReleaseFromPool();
+                gameObject.SetActive(false);
+            }
         }
 
         public virtual void OnPopupClosed() // 팝업이 닫혔을 때에 실행되어야하는 작업 override해서 구현. UIManager에서 실행됨
@@ -128,6 +161,7 @@ namespace RPG.UI
         public GameObject Origin { get; set; }
         public void OnCreateFromPool()
         {
+            IsPooledObject = true;
             UIManager.Instance.SetCanvas(this);
             canvas = GetComponent<Canvas>();
             canvasGroup = GetComponent<CanvasGroup>();

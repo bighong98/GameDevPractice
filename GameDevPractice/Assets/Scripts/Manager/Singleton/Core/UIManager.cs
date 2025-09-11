@@ -70,10 +70,8 @@ namespace RPG.UI
             
             InputManager.Instance.OnEscaped += OnEscapeCalled;
             
-            // InputManager.Instance.OnClick -= OnPopupOutSideSelected; // 중복 구독 방지
-            // InputManager.Instance.OnClick += OnPopupOutSideSelected;
-
-            // InputManager.Instance.OnEscaped += OnEscapeCalled;
+            InputManager.Instance.OnSingleClicked -= OnPopupOutSideSelected; // 중복 구독 방지
+            InputManager.Instance.OnSingleClicked += OnPopupOutSideSelected;
         }
         
         protected override void InitAfterPreLoad(bool done)
@@ -255,37 +253,38 @@ namespace RPG.UI
             
             InputManager.Instance.EnableUIActionMap();
             
+            Util.Log($"[{nameof(UIManager)}.{nameof(ShowPopupUI)}()] new Popup. name: {popup.name} popupStack.Count: {popupStacks.Count}");
             return popup;
         }
 
-        public void ClosePopupUI(PopupUI popup, bool escapableCheck = false)
+        public bool ClosePopupUI(PopupUI popup, bool escapableCheck = false, bool waitForAnimation = true)
         {
             if (popupStacks.Count == 0 || (escapableCheck && !popupStacks.Peek().Escapable))
-                return;
+                return false;
             
-            if (popupStacks.Peek() != popup)
+            if (popupStacks.Peek() != popup) // 
             {
-                Util.Log($"{nameof(UIManager)}.ClosePopupUI: failed to close popup : {popup.name}");
-                return;
+                Util.Log($"[{nameof(UIManager)}.{nameof(ClosePopupUI)}()]: failed to close popup : {popup.name}", Util.LoggingMode.Completed);
+                return false;
             }
-            ClosePopupUI();
+            
+            return ClosePopupUI(loopEnabled: false, escapableCheck, waitForAnimation); // loop disabled 
         }
 
-        public void ClosePopupUI(bool escapableCheck = true, bool waitForAnimation = true)
+        public bool ClosePopupUI(bool loopEnabled = true, bool escapableCheck = true, bool waitForAnimation = true)
         {
             if (popupStacks.Count == 0 || (escapableCheck && !popupStacks.Peek().Escapable))
-                return;
+                return false;
 
             PopupUI popup = popupStacks.Pop();
             if (popup is OptionMenuUI)
             {
                 OnOptionMenuUIClose();
             }
-            if (popup == null)
+            if ((popup == null || !popup.gameObject.activeSelf) && loopEnabled)
             {
-                Util.Log($"{nameof(UIManager)}.{nameof(ClosePopupUI)}: popupStacks.Peek is empty. trying to close next popup");
-                ClosePopupUI(true); // 다음 순서 팝업 닫기
-                return;
+                Util.Log($"{nameof(UIManager)}.{nameof(ClosePopupUI)}: popupStacks.Peek is empty or already closed. trying to close next popup", Util.LoggingMode.Completed);
+                return ClosePopupUI(); // 다음 순서 팝업 닫기
             }
             
             if (popupPools.TryGetValue(popup.GetType(), out var popupPool))
@@ -317,11 +316,11 @@ namespace RPG.UI
                 InputManager.Instance.DisableUIActionMap();
             }
             
-            return; // separator for local method HandleTimePauseAndReleasePopup()
+            return false; // separator for local method HandleTimePauseAndReleasePopup()
             
             void HandleTimePauseAndReleasePopup()
             {
-                if (popupStacks.Count == 1 || !IsPausedRequired()) // 일시정지가 필요한 팝업이 없다면
+                if (!IsPausedRequired()) // 일시정지가 필요한 팝업이 없다면
                 {
                     // GameManager.Instance.ResumeGame(); // 게임 일시정지 해제
                     InputManager.Instance.ResumeGame(); // 게임 일시정지 해제
@@ -374,15 +373,21 @@ namespace RPG.UI
 
         private void OnPopupOutSideSelected(Vector2 selectedPos)
         {
+            Util.Log($"[{nameof(UIManager)}.{nameof(OnPopupOutSideSelected)}()] Trying to check popup closing needed");
             if (Time.unscaledTime - lastPopupOpenTime < popupOpenThreshold)
                 return;
-            
-            if (popupStacks.TryPeek(out var popup) && popup is { CloseOnOuterBackgroundClick: true })
+
+            while (popupStacks.TryPeek(out var peek) && (peek == null || !peek.gameObject.activeSelf))
             {
-                if (!RectTransformUtility.RectangleContainsScreenPoint(popup.Rect, selectedPos))
+                popupStacks.Pop();
+            }
+            
+            if (popupStacks.TryPeek(out var peekPopup) && peekPopup is { CloseOnOuterBackgroundClick: true })
+            {
+                if (!RectTransformUtility.RectangleContainsScreenPoint(peekPopup.ContentArea, selectedPos))
                 {
-                    // Util.Log("Outer background touched. close popup");
-                    ClosePopupUI(popup);
+                    Util.Log("Outer background touched. close popup");
+                    ClosePopupUI(peekPopup);
                 }
             }
         }
