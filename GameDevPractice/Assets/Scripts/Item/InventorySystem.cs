@@ -594,12 +594,28 @@ namespace RPG.Item
                 }
             }
         }
+
+        public void DivideItem(ItemSlotUI slotUI)
+        {
+            DivideItem(FindUITargetSlot(slotUI));
+        }
         
         public void DivideItem(ItemSlot slot, int amount = -1) // 아이템 개수 분리, CountableItem만 지원, amount: -1 -> 절반으로 분리
         {
-            if (slot?.GetAmount <= 1) return; // 대상 슬롯의 아이템 개수가 1 이하이면 취소
-            if (FindEmptySlotIndex() is not ({} foundIdx and >= 0)) return; // 빈 슬롯이 없으면 취소
-            if (inventoryItems[foundIdx] is not { } foundSlot || ReferenceEquals(slot, foundSlot)) return;
+            if (slot?.GetAmount <= 1) {
+                Util.Log($"[{nameof(InventorySystem)}.{nameof(DivideItem)}()] not enough amount");
+                return; // 대상 슬롯의 아이템 개수가 1 이하이면 취소
+            }
+            if (FindEmptySlotIndex() is not ({} foundIdx and >= 0)) {
+                Util.Log($"[{nameof(InventorySystem)}.{nameof(DivideItem)}()] no empty slot");
+                return; // 빈 슬롯이 없으면 취소
+            }
+
+            if (inventoryItems[foundIdx] is not { } foundSlot || ReferenceEquals(slot, foundSlot))
+            {
+                Util.Log($"[{nameof(InventorySystem)}.{nameof(DivideItem)}()] found slot is same with origin slot");
+                return;
+            }
             
             switch (slot)
             {

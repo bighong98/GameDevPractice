@@ -491,7 +491,7 @@ namespace RPG.UI
             if (inventorySystem == null) return;
             if (RaycastAndGetFirstComponent<ItemSlotUI>() is { } slotUI)
             {
-                inventorySystem.TryUseItem(slotUI);
+                inventorySystem.DivideItem(slotUI);
             }
         }
         
@@ -553,6 +553,7 @@ namespace RPG.UI
         {
             HighlightSelectedFilterButton(filter);
             UpdateAllItemSlotUIs();
+            GetButton((int)Buttons.SortButton).interactable = (filter == InventorySystem.InventoryFilterType.All);
         }
         
         private void OnInventoryCapacityChanged(int capa)

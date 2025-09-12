@@ -129,7 +129,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 485934382282723969, guid: d65c897b8507b1d499688c554148fe1e, type: 3}
       propertyPath: m_Name
-      value: Dropeed Bow
+      value: Dropped Bow
       objectReference: {fileID: 0}
     - target: {fileID: 8951071724262958505, guid: d65c897b8507b1d499688c554148fe1e, type: 3}
       propertyPath: m_LocalPosition.x

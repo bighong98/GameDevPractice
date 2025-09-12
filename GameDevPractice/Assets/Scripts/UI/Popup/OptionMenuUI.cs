@@ -109,18 +109,18 @@ namespace RPG.UI
         public override void OnGetFromPool()
         {
             base.OnGetFromPool();
-            UIManager.Instance.OnOptionMenuUIOpen();
+            // UIManager.Instance.OnOptionMenuUIOpen();
         }
 
         public override void OnPopupClosed()
         {
             PlayerPrefs.Save(); // 창 닫을 때 변동사항 저장
-            UIManager.Instance.OnOptionMenuUIClose();
+            // UIManager.Instance.OnOptionMenuUIClose();
         }
         public override void ClosePopupUI()
         {
             base.ClosePopupUI(); // 반드시 호출
-            UIManager.Instance.OnOptionMenuUIClose(); //
+            // UIManager.Instance.OnOptionMenuUIClose(); //
         }
     }
 }

@@ -33,8 +33,6 @@ namespace RPG.UI
         #region Frequently Used UI
         
         public TooltipUI Tooltip; 
-
-        private bool isOptionMenuActive = false;
         
         #endregion
         
@@ -92,15 +90,11 @@ namespace RPG.UI
 
         private void OnEscapeCalled()
         {
-            Util.Log($"[UIManager]OnEscapeCalled. popupStack.Count: {popupStacks?.Count}");
+            Util.Log($"[UIManager]OnEscapeCalled. popupStack.Count: {popupStacks?.Count}", Util.LoggingMode.Completed);
             if (popupStacks?.Count != 0)
             {
                 ClosePopupUI();
             }
-            // else
-            // {
-            //     ToggleOptionMenu();
-            // }
         }
 
         #region Overlay UI Method (Not Popup)
@@ -277,10 +271,6 @@ namespace RPG.UI
                 return false;
 
             PopupUI popup = popupStacks.Pop();
-            if (popup is OptionMenuUI)
-            {
-                OnOptionMenuUIClose();
-            }
             if ((popup == null || !popup.gameObject.activeSelf) && loopEnabled)
             {
                 Util.Log($"{nameof(UIManager)}.{nameof(ClosePopupUI)}: popupStacks.Peek is empty or already closed. trying to close next popup", Util.LoggingMode.Completed);
@@ -373,7 +363,6 @@ namespace RPG.UI
 
         private void OnPopupOutSideSelected(Vector2 selectedPos)
         {
-            Util.Log($"[{nameof(UIManager)}.{nameof(OnPopupOutSideSelected)}()] Trying to check popup closing needed");
             if (Time.unscaledTime - lastPopupOpenTime < popupOpenThreshold)
                 return;
 
@@ -414,41 +403,6 @@ namespace RPG.UI
             Tooltip.Hide();
         }
 
-        private void ToggleOptionMenu()
-        {
-            if (isOptionMenuActive)
-            {
-                ClosePopupUI();
-            }
-            else
-            {
-                ShowOptionMenu();
-            }
-        }
-
-        public void ShowOptionMenu()
-        {
-            Util.Log($"OptionMenu UI is not ready yet");
-            return;
-            // if (isOptionMenuActive)
-            // {
-            //     Util.Log("isOptionMenuActive is true");
-            //     return;
-            // }
-            //
-            // ShowPopupUI<OptionMenuUI>("OptionMenuUI.prefab");
-        }
-
-        public void OnOptionMenuUIOpen() // OptionMenuUI.OnGetFromPool()에서 실행
-        {
-            isOptionMenuActive = true;
-        }
-            
-        public void OnOptionMenuUIClose() // OptionMenuUI.OnPopupClosed()에서 실행
-        {
-            isOptionMenuActive = false;
-        }
-
         private bool IsAlreadyDuplicatePopup<T>()
         {
             if (popupStacks.Count == 0) return false;
@@ -468,12 +422,12 @@ namespace RPG.UI
             if (popupStacks.Count != 0 && popupStacks.Peek() is T duplicatePopup)
             {
                 ClosePopupUI(duplicatePopup as PopupUI);
-                // Util.Log($"duplicate popup closed: {duplicatePopup}");
+                Util.Log($"duplicate popup closed: {duplicatePopup}", Util.LoggingMode.Completed);
                 return true;
             }
             else
             {
-                // Util.Log("There is no duplicate popup");
+                Util.Log("There is no duplicate popup", Util.LoggingMode.Completed);
                 return false;
             }
         }
@@ -499,112 +453,7 @@ namespace RPG.UI
         private void ClearValue()
         {
             _order = 10; // 10 is magic number
-            isOptionMenuActive = false;
         }
-
-        #region Deprecated
-
-        // private void Init()
-        // {
-        //     Util.SetMainCameraForUtilClass();
-        //     GameObject rootGo = new GameObject("UI_Root");
-        //     SetCanvas(rootGo, isInteractable: true);
-        //     sceneUIGraphicRaycaster = rootGo.GetOrAddComponent<GraphicRaycaster>();
-        //
-        //     root = rootGo.transform;
-        //     
-        //     // if (root == null)
-        //     // {
-        //     //     GameObject go = GameObject.FindWithTag("UI_Root");
-        //     //     if (go == null)
-        //     //     {
-        //     //         go = GameObject.FindFirstObjectByType<Canvas>().gameObject; // UI_Root 오브젝트가 없으면 씬에 존재하는 아무 Canvas 컴포넌트가 부착된 게임 오브젝트를 임시 UI_Root로 사용
-        //     //     }
-        //     //     root = go.transform;
-        //     // }
-        //     //
-        //     // overlayRoot = root.Find("Canvas Overlay"); // 현재 씬 UI 탐색 todo: 씬 UI 네이밍 규칙 추가 고려
-        //     // if (overlayRoot == null)
-        //     // {
-        //     //     GameObject overlayGo = new GameObject("Canvas Overlay");
-        //     //     overlayGo.transform.SetParent(root);
-        //     //     overlayRoot = overlayGo.transform;
-        //     // }
-        //     // SetCanvas(overlayRoot.gameObject, isInteractable: true);
-        //     // sceneUIGraphicRaycaster = overlayRoot.gameObject.GetOrAddComponent<GraphicRaycaster>();
-        //     
-        //     ResourceManager.Instance.SubscribePreLoad(InitAfterLoad);
-        //     GameSceneManager.Instance.RegisterCleanupTask(async () =>
-        //     {
-        //         await Clear();
-        //     });
-        // }
-        
-        // private void Update()
-        // {
-        //     if (Keyboard.current.escapeKey.wasPressedThisFrame )
-        //     {
-        //         ShowOptionMenu();
-        //     }
-        //
-        //     if (Mouse.current.leftButton.wasPressedThisFrame)
-        //     {
-        //         if (Time.unscaledTime - lastPopupOpenTime < popupOpenThreshold)
-        //             return;
-        //
-        //         if (popupStacks.TryPeek(out var popup) && popup is { CloseOnOuterBackgroundClick: true })
-        //         {
-        //             if (!RectTransformUtility.RectangleContainsScreenPoint(popup.Rect, Mouse.current.position.ReadValue()))
-        //             {
-        //                 // Util.Log("Outer background touched. close popup");
-        //                 ClosePopupUI(popup);
-        //             }
-        //         }
-        //     }
-        // }
-        
-        // protected override void Init()
-        // {
-        //     Util.SetMainCameraForUtilClass();
-        //     
-        //     // ResourceManager.Instance.SubscribePreLoad(InitAfterPreLoad);
-        //     // GameSceneManager.Instance.RegisterCleanupTask(async () =>
-        //     // {
-        //     //     await Clear();
-        //     // });
-        //
-        //     if (root != null && root.gameObject is {} rootGameObject)
-        //     {
-        //         Destroy(rootGameObject);
-        //     }
-        //     
-        //     GameObject rootGo = new GameObject("UI_Root");
-        //     // SetCanvas(rootGo, isInteractable: true);
-        //     // sceneUIGraphicRaycaster = rootGo.GetOrAddComponent<GraphicRaycaster>();
-        //
-        //     root = rootGo.transform;
-        //     
-        //     canvases = new();
-        //     
-        //     var t = typeof(UICanvas);
-        //     foreach (var canvasType in Enum.GetValues(t))
-        //     {
-        //         var go = new GameObject(Enum.GetName(t, canvasType));
-        //         go.transform.SetParent(root);
-        //         // todo: 타입별 캔버스 세팅 설정 로직 추가 (Canvas 데이터 관리용 Scriptable Object 사용 고려) 
-        //         SetCanvas(go);
-        //         canvases.Add(go);
-        //     }
-        //     
-        //     InputManager.Instance.OnEscaped += OnEscapeCalled;
-        //     
-        //     // InputManager.Instance.OnClick -= OnPopupOutSideSelected; // 중복 구독 방지
-        //     // InputManager.Instance.OnClick += OnPopupOutSideSelected;
-        //
-        //     // InputManager.Instance.OnEscaped += OnEscapeCalled;
-        // }
-        
-        #endregion
     }
 }
 

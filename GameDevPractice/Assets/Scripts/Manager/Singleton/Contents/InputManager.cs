@@ -157,20 +157,39 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
     
     public void OnRelease(InputAction.CallbackContext context) // 터치/클릭이 해제되었을 때 (더블클릭 등 처리 목적)
     {
-        if (context.phase != InputActionPhase.Canceled) return;
-
-        if (isDragging)
+        switch (context.phase)
         {
-            isDragging = false;
-            OnDragEnded?.Invoke(currentPointerPos);
+            case InputActionPhase.Performed:
+                OnSingleClicked?.Invoke(currentPointerPos);
+                break;
+            case InputActionPhase.Canceled when isDragging:
+                isDragging = false;
+                OnDragEnded?.Invoke(currentPointerPos);
             
-            wasDraggingOneFrameAgo = true;
-            UniTask.Void(async () =>
-            {
-                await UniTask.NextFrame();
-                wasDraggingOneFrameAgo = false;
-            });
+                wasDraggingOneFrameAgo = true;
+                UniTask.Void(async () =>
+                {
+                    await UniTask.NextFrame();
+                    wasDraggingOneFrameAgo = false;
+                });
+                break;
+            default:
+                break;
         }
+        // if (context.phase != InputActionPhase.Canceled) return;
+        //
+        // if (isDragging)
+        // {
+        //     isDragging = false;
+        //     OnDragEnded?.Invoke(currentPointerPos);
+        //     
+        //     wasDraggingOneFrameAgo = true;
+        //     UniTask.Void(async () =>
+        //     {
+        //         await UniTask.NextFrame();
+        //         wasDraggingOneFrameAgo = false;
+        //     });
+        // }
     }
 
     #endregion
@@ -181,15 +200,11 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
     {
         if (isDragging || wasDraggingOneFrameAgo) return;
 
-        if (context is { interaction: UnityEngine.InputSystem.Interactions.MultiTapInteraction, phase: InputActionPhase.Performed })
+        if (context is { interaction: UnityEngine.InputSystem.Interactions.MultiTapInteraction, phase: InputActionPhase.Performed }
+            && IsWithoutModifiers())
         {
             Util.Log("Double Click Occured", Util.LoggingMode.Completed);
             OnDoubleClicked?.Invoke(currentPointerPos);
-        }
-        else if (context is { interaction: UnityEngine.InputSystem.Interactions.TapInteraction, phase: InputActionPhase.Performed })
-        {
-            Util.Log("Single Click Occured", Util.LoggingMode.Completed);
-            OnSingleClicked?.Invoke(currentPointerPos);
         }
     }
     
@@ -220,19 +235,24 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
 
     public void OnAdditive(InputAction.CallbackContext context)
     {
-        OnAdditived?.Invoke(PointerPos);
+        if (context.phase == InputActionPhase.Performed)
+        {
+            OnAdditived?.Invoke(PointerPos);
+        }
     }
 
     public void OnAlt(InputAction.CallbackContext context) // 마우스 우클릭 등 보조 입력장치 처리
     {
-        if (context.phase == InputActionPhase.Performed)
+        if (context.phase == InputActionPhase.Performed && IsWithoutModifiers())
         {
+            Util.Log("Alternative Click Occured", Util.LoggingMode.Completed);
             OnAltClicked?.Invoke(PointerPos);
         }
     }
 
     #endregion
-    
+
+    #region Action Map Handle
 
     private void SwitchActionMap(InputActionMap actionMap, bool exclusive)
     {
@@ -265,7 +285,10 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
             UIActions.Disable();
     }
 
-    // 임시기능 (별도의 매니저로 기능 이관 예정)
+    #endregion
+
+    #region Pause/Resume Game // 임시기능 (별도의 매니저로 기능 이관 예정)
+
     private bool isPaused;
     public void PauseGame()
     {
@@ -288,4 +311,20 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
         if (!PlayerActions.enabled)
             PlayerActions.Enable();
     }
+
+    #endregion
+
+    #region Helper Function
+
+    private static bool IsWithoutModifiers()
+    {
+        if (Keyboard.current is { } mod)
+        {
+            return !(mod.shiftKey.isPressed || mod.ctrlKey.isPressed || mod.altKey.isPressed);
+        }
+
+        return true;
+    }
+
+    #endregion
 }
