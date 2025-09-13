@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using DG.Tweening;
 using RPG.Item;
@@ -123,7 +124,7 @@ namespace RPG.UI
             MoveIconImageForDragDrop();
         }
 
-        #region Initialization
+        #region Initialization (input event subscribe, etc)
 
         public override bool Init()
         {
@@ -234,15 +235,40 @@ namespace RPG.UI
                 }
             }
         }
+        
+        private void SubscribeInputEvents()
+        {
+            DeSubscribeInputEvents(); // 중복 델리게이트 등록 방지
+            
+            InputManager.Instance.OnUIPointerMoved += OnPointerMove;
+
+            InputManager.Instance.OnDragStarted += OnDrag;
+            InputManager.Instance.OnDragEnded += OffDrag;
+
+            InputManager.Instance.OnDoubleClicked += TryUseItem;
+            InputManager.Instance.OnAltClicked += TryUseItem;
+            InputManager.Instance.OnAdditived += TryDivideItem;
+        }
+
+        private void DeSubscribeInputEvents()
+        {
+            if (Util.IsQuitting) return; // 어플리케이션 종료 중이라면 취소
+            
+            InputManager.Instance.OnUIPointerMoved -= OnPointerMove;
+            
+            InputManager.Instance.OnDragStarted -= OnDrag;
+            InputManager.Instance.OnDragEnded -= OffDrag;
+            
+            InputManager.Instance.OnDoubleClicked -= TryUseItem;
+            InputManager.Instance.OnAltClicked -= TryUseItem;
+        }
 
         private void ConnectDataWithSlotUIs()
         {
-            inventorySystem.OnInventorySlotChanged += UpdateSlotUI;
-            inventorySystem.OnInventorySlotChanged += CheckSlotChangedBeforeConfirm;
-            inventorySystem.OnEquippedSlotChanged += UpdateEquippedSlotUI;
+            inventorySystem.OnInventorySlotChanged += OnInventorySlotUpdated;
+            inventorySystem.OnEquippedSlotChanged += OnEquipmentSlotUpdated;
 
-            inventorySystem.OnInventoryChanged += this.UpdateAllItemSlotUIs;
-            inventorySystem.OnInventoryChanged += this.RenewAllPopupCTS;
+            inventorySystem.OnInventoryChanged += this.OnInventoryUpdated;
             inventorySystem.OnCapacityChanged += this.OnInventoryCapacityChanged;
             inventorySystem.OnInventoryFilterChanged += this.OnFilterChanged;
         }
@@ -251,12 +277,10 @@ namespace RPG.UI
         {
             // if (Util.IsQuitting) return;
             
-            inventorySystem.OnInventorySlotChanged -= UpdateSlotUI;
-            inventorySystem.OnInventorySlotChanged -= CheckSlotChangedBeforeConfirm;
-            inventorySystem.OnEquippedSlotChanged -= UpdateEquippedSlotUI;
+            inventorySystem.OnInventorySlotChanged -= OnInventorySlotUpdated;
+            inventorySystem.OnEquippedSlotChanged -= OnEquipmentSlotUpdated;
             
-            inventorySystem.OnInventoryChanged -= this.UpdateAllItemSlotUIs;
-            inventorySystem.OnInventoryChanged -= this.RenewAllPopupCTS;
+            inventorySystem.OnInventoryChanged -= this.OnInventoryUpdated;
             inventorySystem.OnCapacityChanged -= this.OnInventoryCapacityChanged;
             inventorySystem.OnInventoryFilterChanged -= this.OnFilterChanged;
         }
@@ -520,35 +544,8 @@ namespace RPG.UI
         
         #endregion
 
-        #region Handle Event (Subscribe, Listen)
+        #region Handle Event
         
-        private void SubscribeInputEvents()
-        {
-            DeSubscribeInputEvents(); // 중복 델리게이트 등록 방지
-            
-            InputManager.Instance.OnUIPointerMoved += OnPointerMove;
-
-            InputManager.Instance.OnDragStarted += OnDrag;
-            InputManager.Instance.OnDragEnded += OffDrag;
-
-            InputManager.Instance.OnDoubleClicked += TryUseItem;
-            InputManager.Instance.OnAltClicked += TryUseItem;
-            InputManager.Instance.OnAdditived += TryDivideItem;
-        }
-
-        private void DeSubscribeInputEvents()
-        {
-            if (Util.IsQuitting) return; // 어플리케이션 종료 중이라면 취소
-            
-            InputManager.Instance.OnUIPointerMoved -= OnPointerMove;
-            
-            InputManager.Instance.OnDragStarted -= OnDrag;
-            InputManager.Instance.OnDragEnded -= OffDrag;
-            
-            InputManager.Instance.OnDoubleClicked -= TryUseItem;
-            InputManager.Instance.OnAltClicked -= TryUseItem;
-        }
-
         private void OnFilterChanged(InventorySystem.InventoryFilterType filter)
         {
             HighlightSelectedFilterButton(filter);
@@ -574,6 +571,30 @@ namespace RPG.UI
                     EnableSlotUI(i);
                 } 
             }
+        }
+
+        private void OnInventorySlotUpdated(int index)
+        {
+            UpdateSlotUI(index);
+            if (IsValidInventoryIndex(index))
+            {
+                CancelItemModifyingProgressForChangedSlot(itemSlotUIs[index]);
+            }
+        }
+
+        private void OnEquipmentSlotUpdated(int index)
+        {
+            UpdateEquippedSlotUI(index);
+            if (IsValidEquipIndex(index))
+            {
+                CancelItemModifyingProgressForChangedSlot(equipmentSlotUIs[index]);
+            }
+        }
+
+        private void OnInventoryUpdated()
+        {
+            UpdateAllItemSlotUIs();
+            CancelAllItemModifyingProgress();
         }
 
         #endregion
@@ -696,7 +717,7 @@ namespace RPG.UI
         
         #region Tooltip
         
-        private void ShowSlotInfo(ItemSlotBaseUI prevSlot)
+        private void ShowSlotInfo(ItemSlotBaseUI prevSlot) // 간략한 아이템 툴팁 (PC 전용)
         {
             switch (mouseOverSlot)
             {
@@ -760,46 +781,50 @@ namespace RPG.UI
         #endregion
 
         #region Popup CTS (CancellationTokenSource) handle 
-
-        private CancellationTokenSource RemoveConfirmPopupCTS = new();
-
-        private void RenewCTS(ref CancellationTokenSource cts)
-        {
-            Util.ClearCTS(cts);
-            cts = new CancellationTokenSource();
-        }
         
-        private void RenewAllPopupCTS()
+        // 현재 유저가 상호작용 중인 (상세 팝업 호출, 아이템 버리기 팝업 호출 등) 작업 목록 (슬롯UI, CTS) 
+        private readonly Dictionary<ItemSlotBaseUI, CancellationTokenSource> progressingSlotAndCTSDictionary = new ();
+        
+        private void CancelItemModifyingProgressForChangedSlot(ItemSlotBaseUI slotUI)
         {
-            RenewCTS(ref RemoveConfirmPopupCTS);
+            if (!progressingSlotAndCTSDictionary.Remove(slotUI, out var cts)) return;
+
+            Util.ClearCTS(cts); // .Cancel and .Dispose
         }
 
-        private void CheckSlotChangedBeforeConfirm(int index)
+        private void CancelAllItemModifyingProgress()
         {
-            if (tokenSlotPair == default) return;
-            if (index == tokenSlotPair.slotUI.Index)
+            if (progressingSlotAndCTSDictionary.Count == 0) return;
+            var ctsList = progressingSlotAndCTSDictionary.Values.ToArray();
+            foreach (var cts in ctsList)
             {
-                RenewCTS(ref tokenSlotPair.cts);
+                Util.ClearCTS(cts); // .Cancel and .Dispose
             }
         }
 
-        private (CancellationTokenSource cts, ItemSlotBaseUI slotUI) tokenSlotPair;
+        private CancellationTokenSource AddNewItemModifyingProgressCTS(ItemSlotBaseUI slotUI)
+        {
+            var newCTS = new CancellationTokenSource(); // CTS 인스턴스 생성
+            CancelItemModifyingProgressForChangedSlot(slotUI); // 해당 슬롯을 대상으로 하던 작업이 존재한다면 캔슬 및 딕셔너리에서 제거
+            progressingSlotAndCTSDictionary[slotUI] = newCTS; // 신규 (슬롯UI, CTS) 작업 중인 아이템 슬롯 딕셔너리 목록에 추가
+
+            return newCTS;
+        }
         
         #endregion
         
-        #region Confirm Popups
+        #region Sub Popups
         
         private const string RemoveConfirmText = "아이템을 정말 파괴하시겠습니까?";
         private void ShowRemoveConfirmPopup()
         {
             var targetSlot = beginDragSlot;
-            tokenSlotPair = (RemoveConfirmPopupCTS, targetSlot);
-            RenewCTS(ref RemoveConfirmPopupCTS);
-
+            var newCTS = AddNewItemModifyingProgressCTS(targetSlot);
+            
             if (UIManager.Instance.ShowPopupUI<QuestionPopupUI>() is { } popup)
             {
+                popup.ChainPopupCTS(newCTS.Token);
                 popup.SetQuestion(
-                    RemoveConfirmPopupCTS.Token, 
                     RemoveConfirmText,
                     yesAction: () =>
                     {
@@ -808,6 +833,14 @@ namespace RPG.UI
                         inventorySystem.RemoveItem(targetSlot);
                     });
             }
+        }
+
+        private void ShowDetailedTooltip(ItemSlotBaseUI slotUI)
+        {
+            if (inventorySystem == null) return;
+            if (inventorySystem.FindUITargetSlot(slotUI) is not { GetAmount: > 0, GetItemInfo: {} itemInfo } slot) return;
+            
+            
         }
 
         #endregion

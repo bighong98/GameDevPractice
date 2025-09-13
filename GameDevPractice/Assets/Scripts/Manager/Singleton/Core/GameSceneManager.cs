@@ -100,7 +100,7 @@ public class GameSceneManager : Singleton<GameSceneManager>
     {
         if (currentSceneLoaded)
         {
-            Util.Log($"[{nameof(GameSceneManager)}] RegisterInitializationTask: trying to run task");
+            Util.Log($"[{nameof(GameSceneManager)}] RegisterInitializationTask: trying to run task", Util.LoggingMode.Completed);
             task?.Invoke(true);
         }
         else initializationTasks += task;

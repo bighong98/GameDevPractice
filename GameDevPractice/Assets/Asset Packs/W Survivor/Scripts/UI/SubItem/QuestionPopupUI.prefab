@@ -548,7 +548,7 @@ MonoBehaviour:
   uiRenderType: 0
   escapable: 1
   pauseRequired: 1
-  closeOnOuterBackgroundClick: 1
+  closeOnOuterBackgroundClick: 0
   contentArea: {fileID: 2427810281985035747}
   placePointerPosition: 0
   duplicatedPopupHandle: 0

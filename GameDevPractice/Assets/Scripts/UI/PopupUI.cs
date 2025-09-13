@@ -51,6 +51,10 @@ namespace RPG.UI
         private Vector3 cachedPosition;
         private CancellationTokenSource trackingPositionCTS;
 
+        protected CancellationTokenSource PopupCTS; // 해당 팝업의 토큰 소스 (다른 팝업에 종속되어있을 때)
+        protected CancellationTokenRegistration OwnerCTSRegistration; // 종속된 팝업과의 연결
+        protected bool isTokenChained = false; // 현재 다른 팝업에 종속되어있는지 여부
+        
         public enum DuplicatedPopupHandle
         {
             Allow, // 복수의 동일 타입 팝업UI 호출 가능 (Show only)
@@ -101,9 +105,11 @@ namespace RPG.UI
             }
         }
 
-        public virtual void OnPopupClosed() // 팝업이 닫혔을 때에 실행되어야하는 작업 override해서 구현. UIManager에서 실행됨
+        // 팝업이 닫혔을 때에 실행되어야하는 작업 override해서 구현. UIManager에서 실행됨
+        public virtual void OnPopupClosed() 
         {
-            
+            OwnerCTSRegistration.Dispose();
+            CancelPopupCTS();
         }
 
         public virtual async UniTask OnPopupClosedAsync()
@@ -114,6 +120,48 @@ namespace RPG.UI
             }
         }
 
+        #region Chained Popup CTS (CancellationTokenSource)
+
+        // 외부 객체(다른 팝업UI 등)에 현재 PopupUI 객체를 종속
+        // ownerToken의 CTS가 .Cancel()이 호출되면 현재 팝업의 CTS도 연쇄적으로 .Cancel이 호출, 팝업이 닫힘
+        public void ChainPopupCTS(CancellationToken ownerToken)  
+        {
+            OwnerCTSRegistration.Dispose(); // 기존 토큰 연결 해제
+            if (!ownerToken.CanBeCanceled || ownerToken.IsCancellationRequested)
+            {
+                CancelPopupCTS();
+                Util.LogError($"[{nameof(GetType)}.{nameof(PopupUI)}.{nameof(ChainPopupCTS)}] InValid ownerToken");
+                return;
+            }
+            
+            CancelAndRenewPopupCTS();
+            OwnerCTSRegistration = ownerToken.Register(ClosePopupUI);
+        }
+        
+        protected void CancelPopupCTS()
+        {
+            if (PopupCTS == null) return;
+            
+            if (!PopupCTS.IsCancellationRequested)
+                PopupCTS.Cancel();
+            PopupCTS.Dispose();
+            PopupCTS = null;
+        }
+
+        protected void CancelAndRenewPopupCTS()
+        {
+            CancelPopupCTS();
+            PopupCTS = new CancellationTokenSource();
+        }
+
+        protected void CancelAndClose()
+        {
+            CancelPopupCTS();
+            ClosePopupUI();
+        }
+
+        #endregion
+        
         #region Deprecated 미사용/개발중
 
         private async UniTaskVoid TrackPopupPosition()
@@ -156,8 +204,9 @@ namespace RPG.UI
         }
 
         #endregion
-        
-        
+
+        #region Object Pool
+
         public GameObject Origin { get; set; }
         public void OnCreateFromPool()
         {
@@ -231,6 +280,9 @@ namespace RPG.UI
         {
             UIManager.Instance.ClosePopupUIImmediately(this);
         }
+
+        #endregion
+        
     }
 }
 

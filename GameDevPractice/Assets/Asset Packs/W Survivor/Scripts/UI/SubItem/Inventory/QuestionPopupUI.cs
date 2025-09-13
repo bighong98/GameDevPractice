@@ -24,9 +24,6 @@ namespace RPG.UI
         }
 
         #endregion
-        
-        private CancellationTokenSource PopupCTS; // 본 팝업의 토큰 소스
-        private CancellationTokenRegistration ownerCTSRegistration;
 
         private bool decided = false;
 
@@ -41,18 +38,10 @@ namespace RPG.UI
             Init();
         }
 
-        private void OnDisable()
+        public override void OnPopupClosed()
         {
-            ownerCTSRegistration.Dispose();
+            base.OnPopupClosed();
             ClearActions();
-            CancelPopupCTS();
-        }
-
-        private void OnDestroy()
-        {
-            ownerCTSRegistration.Dispose();
-            ClearActions();
-            CancelPopupCTS();
         }
 
         public override bool Init()
@@ -69,19 +58,9 @@ namespace RPG.UI
             return true;
         }
 
-        public bool SetQuestion(CancellationToken ownerToken, string questionString = null, string yesString = null, string noString = null, Action yesAction = null, Action noAction = null)
+        public bool SetQuestion(string questionString = null, string yesString = null, string noString = null, Action yesAction = null, Action noAction = null)
         {
-            ownerCTSRegistration.Dispose();
-            // 팝업 호출 측에서 전달한 Token이 유효하지 않거나, 질문 string이 비어있으면 실행 취소
-            if (!ownerToken.CanBeCanceled || ownerToken.IsCancellationRequested || string.IsNullOrEmpty(questionString))
-            {
-                CancelAndClose();
-                return false;
-            }
-            
-            CancelAndRenewCTS();
-            ownerCTSRegistration = ownerToken.Register(CancelAndClose);
-            
+            if (string.IsNullOrEmpty(questionString)) return false; // 질문 텍스트는 비어놓을 수 없음
             if (string.IsNullOrEmpty(yesString)) yesString = DefaultYesString;
             if (string.IsNullOrEmpty(noString)) noString = DefaultNoString;
             
@@ -109,28 +88,6 @@ namespace RPG.UI
             DecideAndClose(noAction);
         }
 
-        private void CancelPopupCTS()
-        {
-            if (PopupCTS == null) return;
-            
-            if (!PopupCTS.IsCancellationRequested)
-                PopupCTS.Cancel();
-            PopupCTS.Dispose();
-            PopupCTS = null;
-        }
-
-        private void CancelAndClose()
-        {
-            CancelPopupCTS();
-            ClosePopupUI();
-        }
-
-        private void CancelAndRenewCTS()
-        {
-            CancelPopupCTS();
-            PopupCTS = new CancellationTokenSource();
-        }
-
         private void ClearActions()
         {
             noAction = null;
@@ -152,19 +109,6 @@ namespace RPG.UI
             }
             catch (Exception e) { Debug.LogError($"[{nameof(QuestionPopupUI)}.{nameof(DecideAndClose)}()] {e.Message}"); }
             finally { CancelAndClose(); }
-        }
-
-        public void Show()
-        {
-            if (gameObject.activeSelf) return;
-            gameObject.SetActive(true);
-        }
-
-        // 필요에 따라 ClosePopupUI 대신 단순 비활성화 (오브젝트 풀링x)
-        public void Close()
-        {
-            if (!gameObject.activeSelf) return;
-            gameObject.SetActive(false);
         }
     }
 }

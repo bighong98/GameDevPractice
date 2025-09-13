@@ -6,7 +6,8 @@ using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using UnityEngine.ResourceManagement.AsyncOperations; // [InputSystem]
+using UnityEngine.ResourceManagement.AsyncOperations;
+using Debug = UnityEngine.Debug; // [InputSystem]
 using Random = UnityEngine.Random;
 
 public static class Util

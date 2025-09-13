@@ -196,7 +196,7 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
 
     #region UI Input Handle // UI 상호작용 입력
 
-    public void OnClick(InputAction.CallbackContext context) // 마우스 좌클릭, 스크린 터치
+    public void OnClick(InputAction.CallbackContext context) // 더블클릭 전용
     {
         if (isDragging || wasDraggingOneFrameAgo) return;
 

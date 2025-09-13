@@ -247,7 +247,7 @@ namespace RPG.UI
             
             InputManager.Instance.EnableUIActionMap();
             
-            Util.Log($"[{nameof(UIManager)}.{nameof(ShowPopupUI)}()] new Popup. name: {popup.name} popupStack.Count: {popupStacks.Count}");
+            Util.Log($"[{nameof(UIManager)}.{nameof(ShowPopupUI)}()] new Popup. name: {popup.name} popupStack.Count: {popupStacks.Count}", Util.LoggingMode.Completed);
             return popup;
         }
 
