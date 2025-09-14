@@ -227,23 +227,14 @@ public static class Util
     #region Raycast
 
     private static readonly List<RaycastResult> _raycastResults = new List<RaycastResult>();
-    public static T RaycastAndGetFirstUIComponent<T>(GraphicRaycaster raycaster, PointerEventData pointerEventData = null, int targetOrder = 0) where T : Component
+    public static T RaycastAndGetFirstUIComponent<T>(PointerEventData pointerEventData, List<RaycastResult> raycastResults) where T : Component
     {
-        _raycastResults.Clear();
-        raycaster.Raycast(pointerEventData, _raycastResults);
-        if (_raycastResults.Count == 0)
-        {
-            // Util.Log("Raycast result is null");
-            return null;
-        }
+        raycastResults.Clear();
+        EventSystem.current.RaycastAll(pointerEventData, raycastResults);
 
-        if (_raycastResults.Count <= targetOrder)
-        {
-            targetOrder = 0;
-        }
-        
-        // Util.Log($"target order: {targetOrder}, Raycast result is {_raycastResults[targetOrder].gameObject.name}");
-        return _raycastResults[targetOrder].gameObject.GetComponent<T>();
+        if (raycastResults.Count == 0) return null;
+        Util.Log($"{nameof(RaycastAndGetFirstUIComponent)}: {raycastResults[0]}", LoggingMode.Completed);
+        return raycastResults[0].gameObject.GetComponent<T>();
     }
 
     public static T RaycastAndGetFirstPhysicsComponent<T>(Vector2 pos, int layerMask) where T : Component

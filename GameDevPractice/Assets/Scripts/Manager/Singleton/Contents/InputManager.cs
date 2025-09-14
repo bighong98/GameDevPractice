@@ -159,7 +159,7 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
     {
         switch (context.phase)
         {
-            case InputActionPhase.Performed:
+            case InputActionPhase.Canceled when !isDragging:
                 OnSingleClicked?.Invoke(currentPointerPos);
                 break;
             case InputActionPhase.Canceled when isDragging:

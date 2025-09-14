@@ -58,7 +58,7 @@ namespace RPG.UI
         private ScrollRect scroll; // 인벤토리 스크롤
         
         [SerializeField] private List<ItemSlotUI> itemSlotUIs;
-        [SerializeField] private UI_EquipmentSlot[] equipmentSlotUIs;
+        [SerializeField] private EquipmentSlotUI[] equipmentSlotUIs;
         
         private GameObject itemSlotUIPrefab;
         private ObjectPool<ItemSlotUI> slotUIPool;
@@ -124,7 +124,7 @@ namespace RPG.UI
             MoveIconImageForDragDrop();
         }
 
-        #region Initialization (input event subscribe, etc)
+        #region Initialization, Input Action Subscribe/Desubscribe
 
         public override bool Init()
         {
@@ -226,7 +226,7 @@ namespace RPG.UI
             for (int i = 0; i < (int)Enums.EquippedItemSlotType.Max; i++)
             {
                 int idx = i + (int)GameObjects.WeaponSlot;
-                if (GetObject(idx).GetOrAddComponent<UI_EquipmentSlot>() is { } equipmentSlotUI)
+                if (GetObject(idx).GetOrAddComponent<EquipmentSlotUI>() is { } equipmentSlotUI)
                 {
                     equipmentSlotUI.Init();
                     equipmentSlotUI.SetSlotIndex(i);
@@ -245,7 +245,7 @@ namespace RPG.UI
             InputManager.Instance.OnDragStarted += OnDrag;
             InputManager.Instance.OnDragEnded += OffDrag;
 
-            InputManager.Instance.OnDoubleClicked += TryUseItem;
+            InputManager.Instance.OnSingleClicked += TryShowDetailedItemTooltip;
             InputManager.Instance.OnAltClicked += TryUseItem;
             InputManager.Instance.OnAdditived += TryDivideItem;
         }
@@ -258,9 +258,10 @@ namespace RPG.UI
             
             InputManager.Instance.OnDragStarted -= OnDrag;
             InputManager.Instance.OnDragEnded -= OffDrag;
-            
-            InputManager.Instance.OnDoubleClicked -= TryUseItem;
+
+            InputManager.Instance.OnSingleClicked -= TryShowDetailedItemTooltip;
             InputManager.Instance.OnAltClicked -= TryUseItem;
+            InputManager.Instance.OnAdditived -= TryDivideItem;
         }
 
         private void ConnectDataWithSlotUIs()
@@ -481,10 +482,24 @@ namespace RPG.UI
         
         private void TryUseItem(Vector2 pos)
         {
+            if (RaycastAndGetFirstComponent<ItemSlotBaseUI>() is { } slotUI)
+            {
+                TryUseItem(slotUI);
+            }
+        }
+
+        private void TryUseItem(ItemSlotBaseUI slotUI)
+        {
+            if (inventorySystem == null) return;
+            inventorySystem.TryUseItem(slotUI);
+        }
+
+        private void TryShowDetailedItemTooltip(Vector2 pos)
+        {
             if (inventorySystem == null) return;
             if (RaycastAndGetFirstComponent<ItemSlotBaseUI>() is { } slotUI)
             {
-                inventorySystem.TryUseItem(slotUI);
+                ShowDetailedTooltip(slotUI);
             }
         }
         
@@ -502,7 +517,7 @@ namespace RPG.UI
 
             if (confirm)
             {
-                ShowRemoveConfirmPopup();
+                ShowRemoveConfirmPopup(slotUI);
             }
             else
             {
@@ -667,14 +682,16 @@ namespace RPG.UI
         
         private T RaycastAndGetFirstComponent<T>() where T : Component
         {
-            raycastResults.Clear();
-            graphicRaycaster.Raycast(pointerEventData, raycastResults);
-        
-            if (raycastResults.Count == 0)
-                return null;
-            
-            Util.Log(raycastResults[0], Util.LoggingMode.Completed);
-            return raycastResults[0].gameObject.GetComponent<T>();
+            return Util.RaycastAndGetFirstUIComponent<T>(pointerEventData, raycastResults);
+            // raycastResults.Clear();
+            // // graphicRaycaster.Raycast(pointerEventData, raycastResults);
+            // EventSystem.current.RaycastAll(pointerEventData, raycastResults);
+            //
+            // if (raycastResults.Count == 0)
+            //     return null;
+            //
+            // Util.Log(raycastResults[0], Util.LoggingMode.Completed);
+            // return raycastResults[0].gameObject.GetComponent<T>();
         }
 
         #endregion
@@ -721,7 +738,7 @@ namespace RPG.UI
         {
             switch (mouseOverSlot)
             {
-                case UI_EquipmentSlot equipmentSlot when isDragging && !inventorySystem.CanStore(beginDragSlot, mouseOverSlot) :
+                case EquipmentSlotUI equipmentSlot when isDragging && !inventorySystem.CanStore(beginDragSlot, mouseOverSlot) :
                     UnHighlightPrevSlot();
                     WarningCurrSlot();
                     if (equipmentSlot.HasItem)
@@ -747,7 +764,7 @@ namespace RPG.UI
             }
             
             void HighlightCurrSlot() => mouseOverSlot.ShowHighlight();
-            void WarningCurrSlot() => (mouseOverSlot as UI_EquipmentSlot)?.ShowWarningHighlight();
+            void WarningCurrSlot() => (mouseOverSlot as EquipmentSlotUI)?.ShowWarningHighlight();
             void UnHighlightPrevSlot()
             {
                 if (prevSlot == null) return;
@@ -762,7 +779,7 @@ namespace RPG.UI
                     mouseOverSlot switch
                     {
                         ItemSlotUI inventorySlot => inventorySystem.GetInventorySlot(inventorySlot.Index),
-                        UI_EquipmentSlot equipmentSlot => inventorySystem.GetEquippedSlot(equipmentSlot.Index),
+                        EquipmentSlotUI equipmentSlot => inventorySystem.GetEquippedSlot(equipmentSlot.Index),
                         _ => null
                     }
                 );
@@ -787,9 +804,12 @@ namespace RPG.UI
         
         private void CancelItemModifyingProgressForChangedSlot(ItemSlotBaseUI slotUI)
         {
-            if (!progressingSlotAndCTSDictionary.Remove(slotUI, out var cts)) return;
-
-            Util.ClearCTS(cts); // .Cancel and .Dispose
+            if (slotUI == null) return;
+            if (progressingSlotAndCTSDictionary.TryGetValue(slotUI, out var cts))
+            {
+                Util.ClearCTS(cts); // .Cancel and .Dispose
+                progressingSlotAndCTSDictionary.Remove(slotUI);
+            }
         }
 
         private void CancelAllItemModifyingProgress()
@@ -804,10 +824,15 @@ namespace RPG.UI
 
         private CancellationTokenSource AddNewItemModifyingProgressCTS(ItemSlotBaseUI slotUI)
         {
+            Util.Log($"{nameof(AddNewItemModifyingProgressCTS)}: {slotUI}");
+            if (progressingSlotAndCTSDictionary.TryGetValue(slotUI, out var cts)
+                && !(cts?.IsCancellationRequested ?? true))
+            {
+                return cts;
+            } 
             var newCTS = new CancellationTokenSource(); // CTS 인스턴스 생성
-            CancelItemModifyingProgressForChangedSlot(slotUI); // 해당 슬롯을 대상으로 하던 작업이 존재한다면 캔슬 및 딕셔너리에서 제거
             progressingSlotAndCTSDictionary[slotUI] = newCTS; // 신규 (슬롯UI, CTS) 작업 중인 아이템 슬롯 딕셔너리 목록에 추가
-
+            
             return newCTS;
         }
         
@@ -815,10 +840,11 @@ namespace RPG.UI
         
         #region Sub Popups
         
-        private const string RemoveConfirmText = "아이템을 정말 파괴하시겠습니까?";
-        private void ShowRemoveConfirmPopup()
+        private const string RemoveConfirmText = "정말 파괴하시겠습니까?";
+        
+        private void ShowRemoveConfirmPopup(ItemSlotBaseUI slotUI)
         {
-            var targetSlot = beginDragSlot;
+            var targetSlot = slotUI;
             var newCTS = AddNewItemModifyingProgressCTS(targetSlot);
             
             if (UIManager.Instance.ShowPopupUI<QuestionPopupUI>() is { } popup)
@@ -826,11 +852,16 @@ namespace RPG.UI
                 popup.ChainPopupCTS(newCTS.Token);
                 popup.SetQuestion(
                     RemoveConfirmText,
-                    yesAction: () =>
+                    YesAction: () =>
                     {
                         if (inventorySystem == null) return; // 중간에 인벤토리 인스턴스의 참조를 잃어버린 경우 (씬 이동 등) 오류 방지
                         if (targetSlot == null || !targetSlot.gameObject.activeSelf) return; // 중간에 슬롯이 비활성화된 경우 오류 방지
                         inventorySystem.RemoveItem(targetSlot);
+                        if (popup is {} validPopup) validPopup.ClosePopupUI();
+                    },
+                    NoAction: () =>
+                    {
+                        if (popup is {} validPopup) validPopup.ClosePopupUI();
                     });
             }
         }
@@ -838,9 +869,25 @@ namespace RPG.UI
         private void ShowDetailedTooltip(ItemSlotBaseUI slotUI)
         {
             if (inventorySystem == null) return;
-            if (inventorySystem.FindUITargetSlot(slotUI) is not { GetAmount: > 0, GetItemInfo: {} itemInfo } slot) return;
-            
-            
+            if (inventorySystem.FindUITargetSlot(slotUI) is not { GetAmount: > 0, GetItem: {} item, GetItemInfo: {} itemInfo } slot) return;
+            Util.Log($"{nameof(ShowDetailedTooltip)}: {slotUI}");
+            var currSlotUI = slotUI;
+            var newCTS = AddNewItemModifyingProgressCTS(currSlotUI);
+            if (UIManager.Instance.ShowPopupUI<DetailedItemTooltipUI>() is { } popup)
+            {
+                popup.ChainPopupCTS(newCTS.Token);
+                popup.SetTooltip(item, 
+                    itemInfo.itemType == Enums.ItemType.Special ? 
+                        null : () =>
+                        {
+                            TryDiscardItem(currSlotUI, true);
+                        }, 
+                    itemInfo.isUsable ? () =>
+                    {
+                        TryUseItem(currSlotUI);
+                        if (popup is {} validPopup) validPopup.ClosePopupUI();
+                    } : null);
+            }
         }
 
         #endregion

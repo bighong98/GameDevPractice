@@ -173,6 +173,7 @@ namespace RPG.UI
             if (autoSort)
             {
                 canvas.sortingOrder = _order;
+                canvas.overrideSorting = true;
                 _order++;
             }
             else
@@ -251,7 +252,7 @@ namespace RPG.UI
             return popup;
         }
 
-        public bool ClosePopupUI(PopupUI popup, bool escapableCheck = false, bool waitForAnimation = true)
+        public bool ClosePopupUI(PopupUI popup, bool escapableCheck = true, bool ignoreOpenThreshold = true, bool waitForAnimation = true)
         {
             if (popupStacks.Count == 0 || (escapableCheck && !popupStacks.Peek().Escapable))
                 return false;
@@ -262,12 +263,15 @@ namespace RPG.UI
                 return false;
             }
             
-            return ClosePopupUI(loopEnabled: false, escapableCheck, waitForAnimation); // loop disabled 
+            return ClosePopupUI(loopEnabled: false, escapableCheck, ignoreOpenThreshold, waitForAnimation); // loop disabled 
         }
 
-        public bool ClosePopupUI(bool loopEnabled = true, bool escapableCheck = true, bool waitForAnimation = true)
+        public bool ClosePopupUI(bool loopEnabled = true, bool escapableCheck = true, bool ignoreOpenThreshold = true, bool waitForAnimation = true)
         {
             if (popupStacks.Count == 0 || (escapableCheck && !popupStacks.Peek().Escapable))
+                return false;
+
+            if (!ignoreOpenThreshold && IsBeforePopupThreshold()) 
                 return false;
 
             PopupUI popup = popupStacks.Pop();
@@ -363,8 +367,7 @@ namespace RPG.UI
 
         private void OnPopupOutSideSelected(Vector2 selectedPos)
         {
-            if (Time.unscaledTime - lastPopupOpenTime < popupOpenThreshold)
-                return;
+            if (IsBeforePopupThreshold()) return;
 
             while (popupStacks.TryPeek(out var peek) && (peek == null || !peek.gameObject.activeSelf))
             {
@@ -375,10 +378,22 @@ namespace RPG.UI
             {
                 if (!RectTransformUtility.RectangleContainsScreenPoint(peekPopup.ContentArea, selectedPos))
                 {
-                    Util.Log("Outer background touched. close popup");
-                    ClosePopupUI(peekPopup);
+                    Util.Log("Outer background touched. close popup", Util.LoggingMode.Completed);
+                    ClosePopupUI(peekPopup, escapableCheck: true, ignoreOpenThreshold: false, waitForAnimation: true);
                 }
             }
+        }
+
+        private bool IsBeforePopupThreshold()
+        {
+            bool rValue = Time.unscaledTime - lastPopupOpenTime < popupOpenThreshold;
+            if (rValue)
+            {
+                Util.Log($"{nameof(IsBeforePopupThreshold)}: ClosePopupUI Guarded");
+                return rValue;
+            }
+
+            return false;
         }
         
         #endregion

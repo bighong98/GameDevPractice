@@ -40,8 +40,8 @@ namespace RPG.UI
 
         public override void OnPopupClosed()
         {
-            base.OnPopupClosed();
             ClearActions();
+            base.OnPopupClosed();
         }
 
         public override bool Init()
@@ -58,7 +58,7 @@ namespace RPG.UI
             return true;
         }
 
-        public bool SetQuestion(string questionString = null, string yesString = null, string noString = null, Action yesAction = null, Action noAction = null)
+        public bool SetQuestion(string questionString = null, string yesString = null, string noString = null, Action YesAction = null, Action NoAction = null)
         {
             if (string.IsNullOrEmpty(questionString)) return false; // 질문 텍스트는 비어놓을 수 없음
             if (string.IsNullOrEmpty(yesString)) yesString = DefaultYesString;
@@ -69,10 +69,8 @@ namespace RPG.UI
             GetTMPText((int)TMPTexts.NoText).SetText(noString);
 
             ClearActions();
-
-            this.yesAction = yesAction;
-            this.noAction = noAction;
-
+            this.yesAction = YesAction;
+            this.noAction = NoAction;
             decided = false;
 
             return true;
@@ -101,14 +99,10 @@ namespace RPG.UI
                 ClosePopupUI();
                 return;
             }
-
-            try
-            {
-                decided = true;
-                action?.Invoke();
-            }
-            catch (Exception e) { Debug.LogError($"[{nameof(QuestionPopupUI)}.{nameof(DecideAndClose)}()] {e.Message}"); }
-            finally { CancelAndClose(); }
+            
+            decided = true;
+            action?.Invoke();
+            CancelPopupCTS();
         }
     }
 }

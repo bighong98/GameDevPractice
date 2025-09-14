@@ -215,7 +215,7 @@ namespace RPG.Item
         
         public ItemSlot FindUITargetSlot(ItemSlotBaseUI slotUI)
         {
-            if (slotUI is UI_EquipmentSlot)
+            if (slotUI is EquipmentSlotUI)
             {
                 Util.Log($"[FindUITargetSlot] UI_EquipmentSlot index:{slotUI.Index}", Util.LoggingMode.Completed);
                 if (!IsValidEquippedSlot(slotUI.Index)) return null;

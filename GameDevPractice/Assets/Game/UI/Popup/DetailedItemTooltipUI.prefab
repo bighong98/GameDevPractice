@@ -538,7 +538,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 0
+  m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -594,14 +594,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DetailedItemTooltipUI
   uiRenderType: 0
   escapable: 1
-  pauseRequired: 0
-  closeOnOuterBackgroundClick: 0
-  contentArea: {fileID: 0}
+  pauseRequired: 1
+  closeOnOuterBackgroundClick: 1
+  contentArea: {fileID: 2724805746144903388}
   placePointerPosition: 0
-  duplicatedPopupHandle: 0
+  duplicatedPopupHandle: 2
   blurBackground: 0
   anchorWorldObject: 0
-  playEnterAnimation: 0
+  playEnterAnimation: 1
   enterAnimation: 0
   playExitAnimation: 0
   exitAnimation: 0
@@ -697,12 +697,12 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 34.25
+  m_fontSize: 30
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
-  m_fontSizeMin: 18
-  m_fontSizeMax: 72
+  m_fontSizeMin: 15
+  m_fontSizeMax: 30
   m_fontStyle: 0
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 256

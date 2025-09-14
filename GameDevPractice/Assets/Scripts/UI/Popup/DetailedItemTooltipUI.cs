@@ -29,6 +29,8 @@ public class DetailedItemTooltipUI : PopupUI
 
     private const string DefaultConsumeText = "사용";
     private const string DefaultEquipText = "장착";
+    private const string DefaultUnEquipText = "장착해제";
+    private const string DefaultDivideText = "개수 분리";
 
     private void Awake()
     {
@@ -47,7 +49,7 @@ public class DetailedItemTooltipUI : PopupUI
         return true;
     }
 
-    public bool SetTooltip(Item item)
+    public bool SetTooltip(Item item, Action removeAction = null, Action useAction = null)
     {
         if (item is not { GetAmount: > 0, GetItemInfo: { } itemInfo } ) return false;
 
@@ -60,25 +62,33 @@ public class DetailedItemTooltipUI : PopupUI
 
         if (GetButton((int)Buttons.TooltipRemoveButton) is { } removeButton)
         {
-            bool isRemovable = itemInfo.itemType == Enums.ItemType.Special;
-            removeButton.gameObject.SetActive(isRemovable);
-            if (isRemovable)
+            bool removeButtonEnabled = removeAction != null;
+            removeButton.gameObject.SetActive(removeButtonEnabled);
+            if (removeButtonEnabled)
             {
-                //todo: onClick Action 추가
+                removeButton.onClick.AddListener(() =>
+                {
+                    if (PopupCTS?.Token.IsCancellationRequested ?? true) return;
+                    removeAction?.Invoke();
+                });
             }
         }
 
         if (GetButton((int)Buttons.TooltipUseButton) is { } useButton)
         {
-            bool isUsable = itemInfo.isUsable;
-            useButton.gameObject.SetActive(isUsable);
-            if (isUsable)
+            bool useButtonEnabled = useAction != null;
+            useButton.gameObject.SetActive(useButtonEnabled);
+            if (useButtonEnabled)
             {
                 if (Util.FindChild<TextMeshProUGUI>(useButton.gameObject, "text") is { } useButtonText)
                 {
                     useButtonText.SetText(GetUseButtonText(itemInfo.itemType));
                 }
-                //todo: onClick Action 추가
+                useButton.onClick.AddListener(() =>
+                {
+                    if (PopupCTS?.Token.IsCancellationRequested ?? true) return;
+                    useAction?.Invoke();
+                });
             }
         }
         
@@ -92,5 +102,23 @@ public class DetailedItemTooltipUI : PopupUI
             Enums.ItemType.Equipment => DefaultEquipText,
             _ => DefaultConsumeText
         };
+    }
+
+    public override void OnPopupClosed()
+    {
+        ClearButtonListeners();
+        base.OnPopupClosed();
+    }
+
+    private void ClearButtonListeners()
+    {
+        if (GetButton((int)Buttons.TooltipRemoveButton) is { } removeButton)
+        {
+            removeButton.onClick.RemoveAllListeners();
+        }
+        if (GetButton((int)Buttons.TooltipUseButton) is { } useButton)
+        {
+            useButton.onClick.RemoveAllListeners();
+        }
     }
 }

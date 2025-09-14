@@ -135,7 +135,7 @@ namespace RPG.UI
             }
             
             CancelAndRenewPopupCTS();
-            OwnerCTSRegistration = ownerToken.Register(ClosePopupUI);
+            OwnerCTSRegistration = ownerToken.Register(CancelAndClose);
         }
         
         protected void CancelPopupCTS()
