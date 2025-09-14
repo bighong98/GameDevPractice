@@ -824,7 +824,7 @@ namespace RPG.UI
 
         private CancellationTokenSource AddNewItemModifyingProgressCTS(ItemSlotBaseUI slotUI)
         {
-            Util.Log($"{nameof(AddNewItemModifyingProgressCTS)}: {slotUI}");
+            Util.Log($"{nameof(AddNewItemModifyingProgressCTS)}: {slotUI}", Util.LoggingMode.InProgress);
             if (progressingSlotAndCTSDictionary.TryGetValue(slotUI, out var cts)
                 && !(cts?.IsCancellationRequested ?? true))
             {
@@ -840,7 +840,7 @@ namespace RPG.UI
         
         #region Sub Popups
         
-        private const string RemoveConfirmText = "정말 파괴하시겠습니까?";
+        private const string RemoveConfirmText = "아이템을 정말 파괴하시겠습니까?";
         
         private void ShowRemoveConfirmPopup(ItemSlotBaseUI slotUI)
         {
@@ -876,13 +876,13 @@ namespace RPG.UI
             if (UIManager.Instance.ShowPopupUI<DetailedItemTooltipUI>() is { } popup)
             {
                 popup.ChainPopupCTS(newCTS.Token);
-                popup.SetTooltip(item, 
-                    itemInfo.itemType == Enums.ItemType.Special ? 
+                popup.SetTooltip(item, slotUI,
+                    removeAction: itemInfo.itemType == Enums.ItemType.Special ? 
                         null : () =>
                         {
                             TryDiscardItem(currSlotUI, true);
                         }, 
-                    itemInfo.isUsable ? () =>
+                    useAction: itemInfo.isUsable ? () =>
                     {
                         TryUseItem(currSlotUI);
                         if (popup is {} validPopup) validPopup.ClosePopupUI();
