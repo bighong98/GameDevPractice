@@ -135,7 +135,6 @@ public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
     {
         if (_instance is not Singleton<T> singleton) return;
         if (singleton is Singleton<GameSceneManager>) return;
-        // if (_instance is not (Singleton<T> singleton and not Singleton<GameSceneManager>)) return; // 올바른 싱글톤 인스턴스가 아니거나, 자기자신이 Singleton<GameSceneManager> 타입인 경우 실행x
         
         if (singleton.IsInvalidInstance())
         {
