@@ -18,17 +18,31 @@ public class TypeHolder<T> : MonoBehaviour, ITypeHolder, IPoolObject where T : B
     public event Action OnRelease;
     public event Action OnDestroy;
 
+    private bool isPooled;
+
+    private void Awake()
+    {
+        if (isPooled) return;
+
+        ResourceManager.Instance.ReserveOperation(() =>
+        {
+            OnCreateFromPool();
+            OnGetFromPool();
+        });
+    }
+
     private async UniTaskVoid GetTypeFromRef()
     {
         if (_type != null || !typeRef.RuntimeKeyIsValid()) return;
-        _type = await Util.ExtractAssetRefAsync(typeRef);
+        type = _type = await Util.ExtractAssetRefAsync(typeRef);
+        Util.Log($"[{gameObject.name}.{nameof(GetTypeFromRef)}] type: {_type}", Util.LoggingMode.InProgress);
         SetMinimapSprite();
     }
 
     public async UniTask SetTypeRef(AssetReferenceT<T> typeReference)
     {
         typeRef = typeReference;
-        _type = await Util.ExtractAssetRefAsync(typeReference);
+        type = _type = await Util.ExtractAssetRefAsync(typeReference);
         SetMinimapSprite();
     }
 
@@ -80,7 +94,7 @@ public class TypeHolder<T> : MonoBehaviour, ITypeHolder, IPoolObject where T : B
     
     private void SetMinimapSprite()
     {
-        if (type.showInMinimap)
+        if (_type.showInMinimap)
         {
             const string minimapName = "minimapSprite";
     
