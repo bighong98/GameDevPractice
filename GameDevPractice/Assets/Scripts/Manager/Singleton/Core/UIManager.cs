@@ -21,8 +21,9 @@ namespace RPG.UI
         private readonly Dictionary<Type, ObjectPool<PopupUI>> popupPools = new Dictionary<Type, ObjectPool<PopupUI>>();
         
         [SerializeField] private Transform root;
-        [SerializeField] private List<GameObject> canvases = new();
-        
+        [SerializeField] private List<GameObject> canvases;
+
+        private BaseUI sceneUI;
         private GraphicRaycaster sceneUIGraphicRaycaster;
         public GraphicRaycaster SceneUIGraphicRaycaster { get { return sceneUIGraphicRaycaster; } }
         // public event Action<int> OnTimeScaleChanged; // 현재 미사용
@@ -75,17 +76,9 @@ namespace RPG.UI
         protected override void InitAfterPreLoad(bool done)
         {
             if (!done) return;
-            // if (Util.IsQuitting) return; // 어플리케이션 종료 중이라면 취소
             
-            
-            Tooltip = ResourceManager.Instance.Instantiate("TooltipUI.prefab", root)?.GetComponent<TooltipUI>();
-            if (Tooltip == null)
-            {   
-                Util.Log($"Tooltip is null");
-                return;
-            }
-            
-            //todo: 리소스 매니저에서 필요한 리소스 레퍼런스 받아와서 사용
+            SetSceneUI();
+            SetTooltip();
         }
 
         private void OnEscapeCalled()
@@ -96,6 +89,24 @@ namespace RPG.UI
                 ClosePopupUI();
             }
         }
+
+        #region Scene UI Method
+
+        private void SetSceneUI()
+        {
+            //todo: 현재 활성화된 씬 타입 받아서 씬에 적합한 씬UI 호출
+            ResourceManager.Instance.ReserveOperation(() =>
+            {
+                if (ResourceManager.Instance.Instantiate("GameSceneUI.prefab", GetUIParent(UICanvas.Scene)) is { } loadedPrefab
+                    && loadedPrefab.GetComponent<GameSceneUI>() is { } loadedSceneUI)
+                {
+                    SetCanvas(loadedPrefab, isInteractable: true);
+                    sceneUI = loadedSceneUI;
+                }
+            });
+        }
+
+        #endregion
 
         #region Overlay UI Method (Not Popup)
 
@@ -182,6 +193,13 @@ namespace RPG.UI
             }
         }
 
+        private Transform GetUIParent(UICanvas type)
+        {
+            if (canvases[(int)type] is { } canvasGo) 
+                return canvasGo.transform;
+            return null;
+        }
+
         #endregion
 
         #region Popup UI Method
@@ -201,16 +219,15 @@ namespace RPG.UI
             }
             else
             {
-                string key = uiName ?? $"{type.Name}.prefab"; 
-                var loadedUI = (ResourceManager.Instance.Load<UnityEngine.Object>(key) as GameObject);
-                if (loadedUI == null) return null;
+                string key = uiName ?? $"{type.Name}.prefab"; // 어드레서블 key를 임의로 지정하지 않으면 "팝업UI 클래스명}.prefab" 자동 사용
+                if (ResourceManager.Instance.Load<UnityEngine.Object>(key) is not GameObject loadedUI)
+                    return null;
                 
                 // var uiPool = PoolingManager.Instance.GetPool<PopupUI>(
                 //         loadedUI, GetUIContainer(loadedUI.GetComponent<PopupUI>().UiRenderType), capacity: 2, maxSize: 10, registerPool: false); // 2, 10 is magic number
                 var uiPool = PoolingManager.Instance.GetPool<PopupUI>(
                     loadedUI,
-                    // parent: root, 
-                    parent: canvases[(int)UICanvas.Popup].transform,
+                    parent: GetUIParent(UICanvas.Popup),
                     capacity: 2, maxSize: 10, registerPool: false
                     ); // 2, 10 is magic number
                 
@@ -399,6 +416,21 @@ namespace RPG.UI
         #endregion
 
         #region Frequently Used UI Call
+
+        private void SetTooltip()
+        {
+            ResourceManager.Instance.ReserveOperation(() => {
+                if (ResourceManager.Instance.Instantiate("TooltipUI.prefab", root) is { } loadedPrefab
+                    && loadedPrefab.GetComponent<TooltipUI>() is { } loadedTooltip)
+                {
+                    Tooltip = loadedTooltip;
+                }
+                else
+                {
+                    Util.Log($"Tooltip is null");
+                }
+            });
+        }
 
         public void ShowTooltip(int errorType, bool hideAfterDelay = false, float delayDuration = 2.0f) // 3.0f is magic number
         {

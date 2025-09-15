@@ -1,4 +1,7 @@
 using System;
+using RPG.Attribute;
+using RPG.Control;
+using RPG.Stats;
 using RPG.UI;
 using UnityEngine;
 using UnityEngine.UI;
@@ -35,22 +38,23 @@ public class GameSceneUI : BaseUI
 
     #endregion
 
-    private Slider[] sliders = new Slider[(int)Sliders.max];
+    private readonly Slider[] sliders = new Slider[(int)Sliders.max];
+
+    private CharacterStats playerStats;
+    private float prevLevelUpXp;
+    private float nextLevelUpXp;
+    
     private void Awake()
     {
         Init();
     }
 
-    public override bool Init()
+    public override bool Init() // call by UIManager
     {
         if (base.Init() == false) return false;
-
-        UIManager.Instance.ReserveOperation(() =>
-        {
-            UIManager.Instance.SetCanvas(gameObject, isInteractable: true);
-            canvas = GetComponent<Canvas>();
-            canvasGroup = gameObject.GetOrAddComponent<CanvasGroup>();
-        });
+        
+        canvas = GetComponent<Canvas>();
+        canvasGroup = gameObject.GetOrAddComponent<CanvasGroup>();
         
         BindObject(typeof(GameObjects));
         BindTMPText(typeof(TMPTexts));
@@ -60,11 +64,75 @@ public class GameSceneUI : BaseUI
         sliders[(int)Sliders.MP] = GetSlider(GetObject((int)GameObjects.MPBar));
         sliders[(int)Sliders.EXP] = GetSlider(GetObject((int)GameObjects.PlayerExpBar));
         
+        ConnectComponents();
+        
         return true;
     }
 
     private Slider GetSlider(GameObject go)
     {
         return Util.FindChild<Slider>(go, "bar");
+    }
+
+    private void ConnectComponents()
+    {
+        var player = FindFirstObjectByType<PlayerController>();
+        
+        if (player.GetComponent<Health>() is {} pHealth)
+            pHealth.OnHealthRatioChanged += SetHPBar;
+        if (player.GetComponent<Experience>() is {} pExp)
+            pExp.OnExperienceChanged += OnExpChanged;
+        if (player.GetComponent<CharacterStats>() is { } pCharacterStats)
+        {
+            playerStats = pCharacterStats;
+            pCharacterStats.OnLevelUp += OnLevelUP;
+        }
+    }
+    
+    private void SetHPBar(float ratio)
+    {
+        sliders[(int)Sliders.HP].value = ratio;
+    }
+
+    private void SetEXPBar(float ratio)
+    {
+        sliders[(int)Sliders.EXP].value = ratio;
+    }
+
+    private void SetLevelText(int level)
+    {
+        GetTMPText((int)TMPTexts.levelText).SetText($"{level}");
+    }
+
+    private void OnExpChanged(float xp)
+    {
+        var denominator = nextLevelUpXp - prevLevelUpXp;
+        if (denominator < float.Epsilon) return;
+        var numerator = xp - prevLevelUpXp;
+        
+        SetEXPBar(numerator / denominator);
+    }
+
+    private void OnLevelUP(int level)
+    {
+        SetLevelText(level);
+
+        if (playerStats == null && FindFirstObjectByType<PlayerController>() is {} foundPlayer
+            && foundPlayer.GetComponent<CharacterStats>() is {} pStats)
+        {
+            playerStats = pStats;
+        }
+        
+        if (level > 0 && playerStats.GetStat(GameStat.ExperienceToLevelUp, level - 1) is { } pResult)
+        {
+            prevLevelUpXp = (int)pResult;
+        }
+
+        if (playerStats.GetStat(GameStat.ExperienceToLevelUp, level) is { } nResult)
+        {
+            nextLevelUpXp = (int)nResult;
+        }
+        
+        SetEXPBar(0);
     }
 }

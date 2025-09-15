@@ -31,7 +31,7 @@ public class ResourceManager : Singleton<ResourceManager>
     }
 
     #region Initialization
-
+    
     protected override void InitOnce()
     {
         atlasSuffixLength = SpriteAtlasSuffix.Length;
@@ -123,17 +123,16 @@ public class ResourceManager : Singleton<ResourceManager>
 
     public GameObject Instantiate(string key, Transform parent = null)
     { // 원하는 리소스를 곧바로 씬에 올리고 싶은 경우 사용 (오브젝트 풀링 미적용)
-        var origin = Load<GameObject>(key);
-        if (origin == null)
+        if (Load<GameObject>(key) is { } origin)
         {
-            Util.Log($"{nameof(ResourceManager)}.Instantiate: Failed to load prefab: {key}");
-            return null;
-        }
-
-        GameObject clone = Object.Instantiate(origin, parent); // 원본의 사본 생성
-        clone.name = origin.name; // 사본이 원본과 동일한 이름을 가지도록
+            GameObject clone = Object.Instantiate(origin, parent); // 원본의 사본 생성
+            clone.name = origin.name; // 사본이 원본과 동일한 이름을 가지도록
         
-        return clone;
+            return clone;
+        }
+        
+        Util.Log($"{nameof(ResourceManager)}.Instantiate: Failed to load prefab: {key}");
+        return null;
     }
 
     public void Destroy(GameObject go)

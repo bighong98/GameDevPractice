@@ -58,6 +58,7 @@ namespace RPG.Stats
         private void Start()
         {
             currentLevel.ForceInit();
+            OnLevelUp?.Invoke(currentLevel.value);
             
             LevelUpTestMethod().Forget(); // 테스트용 매서드
         }
@@ -65,26 +66,28 @@ namespace RPG.Stats
         private void OnEnable()
         {
             if (experience == null) return;
-            experience.OnExperienceGained += UpdateLevel;
+            experience.OnExperienceChanged += UpdateLevel;
         }
 
         private void OnDisable()
         {
             if (experience == null) return;
-            experience.OnExperienceGained -= UpdateLevel;
+            experience.OnExperienceChanged -= UpdateLevel;
         }
 
         private readonly TimeSpan oneSecond = TimeSpan.FromSeconds(1);
         private async UniTaskVoid LevelUpTestMethod()
         {
             if (!gameObject.CompareTag("Player")) return;
-            
-            while (true)
+
+            int count = 0;
+            while (count < 5)
             {
                 await UniTask.Delay(oneSecond, DelayType.DeltaTime);
                 if (this == null || gameObject == null) break;
                 if (hasExperience)
                 {
+                    count++;
                     experience.GainExperience(10);
                     Util.Log("Experience Gained", Util.LoggingMode.Completed);
                 }
@@ -114,7 +117,7 @@ namespace RPG.Stats
             if (newLevel > currentLevel.value)
             {
                 currentLevel.value = newLevel;
-                Util.Log($"level up: {gameObject.name}.{currentLevel.value}");
+                Util.Log($"level up: {gameObject.name}.{currentLevel.value}", Util.LoggingMode.Completed);
                 OnLevelUp?.Invoke(currentLevel.value);
                 if (hasLevelUpEffect)
                 {
