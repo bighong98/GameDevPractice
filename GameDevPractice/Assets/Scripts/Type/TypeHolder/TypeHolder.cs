@@ -7,7 +7,7 @@ using UnityEngine.AddressableAssets;
 // 가능한 오브젝트 풀링해서 사용할 것 (PoolingManager.cs 참조)
 public class TypeHolder<T> : MonoBehaviour, ITypeHolder, IPoolObject where T : BaseTypeSO
 {
-    private T _type;
+    [SerializeField] private T _type;
     public T type;
     public AssetReferenceT<T> typeRef;
     public GameObject Origin { get; set; } // 오브젝트 풀링 적용시 원본 프리팹 참조 저장 목적. setter가 있지만 PoolingManager 이외
@@ -18,14 +18,15 @@ public class TypeHolder<T> : MonoBehaviour, ITypeHolder, IPoolObject where T : B
     public event Action OnRelease;
     public event Action OnDestroy;
 
-    private bool isPooled;
+    private bool isInit;
 
     private void Awake()
     {
-        if (isPooled) return;
+        if (isInit) return;
 
         ResourceManager.Instance.ReserveOperation(() =>
         {
+            isInit = true;
             OnCreateFromPool();
             OnGetFromPool();
         });
@@ -64,6 +65,8 @@ public class TypeHolder<T> : MonoBehaviour, ITypeHolder, IPoolObject where T : B
 
     public virtual void OnCreateFromPool()
     {
+        if (isInit) return;
+        isInit = true;
         GetTypeFromRef().Forget();
         OnCreate?.Invoke();
     }

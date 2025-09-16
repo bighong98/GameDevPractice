@@ -8,12 +8,16 @@ namespace RPG.Item
     public class DropItem : MonoBehaviour
     {
         [SerializeField] private ItemTypeHolder itemTypeHolder;
-        [SerializeField] private InventorySystem inventory; // serialize for debug
         [SerializeField] private bool useImmediately;
-
-        private void Start()
+        private InventorySystem inventory;
+        
+        private void Awake()
         {
             itemTypeHolder = GetComponent<ItemTypeHolder>();
+        }
+
+        private void OnEnable()
+        {
             if (inventory == null)
             {
                 inventory = FindFirstObjectByType<InventorySystem>();

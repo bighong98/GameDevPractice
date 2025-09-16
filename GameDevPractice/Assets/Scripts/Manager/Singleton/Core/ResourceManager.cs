@@ -74,7 +74,7 @@ public class ResourceManager : Singleton<ResourceManager>
         LoadAllAsync<UnityEngine.Object>(PreLoadLabel, 
             (key, count, totalCount) =>
             {
-                Util.Log($"{key} {count} / {totalCount}", Util.LoggingMode.Completed); // 디버깅용 로그
+                Util.Log($"[{PreLoadLabel} - {key}] {count} / {totalCount}", Util.LoggingMode.Completed); // 디버깅용 로그
                 if (count == totalCount)
                 {
                     NotifyPreLoad?.SafeInvoke(true); // 리소스 로딩 대기중인 클래스들에게 로딩 완료 이벤트 전달
@@ -89,7 +89,7 @@ public class ResourceManager : Singleton<ResourceManager>
         {
             await LoadAllAsyncAwaitable<UnityEngine.Object>(label, (key, count, totalCount) =>
             {
-                // Util.Log($"{key} {count} / {totalCount}"); // 디버깅용 로그
+                Util.Log($"[{label} - {key}] {count} / {totalCount}", Util.LoggingMode.Completed); // 디버깅용 로그
             });
         }
         PreLoad();
