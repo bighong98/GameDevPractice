@@ -18,19 +18,6 @@ public class ItemTypeHolder : TypeHolder<ItemTypeSO>
         if (toDropItem)
             MakeDropItem();
     }
-    
-    public override void ReleaseSelf()
-    {
-        if (gameObject.activeSelf && Origin != null)
-        {
-            // PoolingManager.Instance.ReleaseFromPool(this);
-            PoolManager.Instance.ReleaseFromPool(this);
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
-    }
 
     public DropItem MakeDropItem(int itemAmount = 0)
     {

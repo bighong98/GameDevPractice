@@ -29,18 +29,21 @@ public class TypeHolder<T> : MonoBehaviour, ITypeHolder, IPoolObject where T : B
 
         ResourceManager.Instance.ReserveOperation(() =>
         { // ResourceManager에게 초기화 작업 예약
-            if (addToPool)
-                AddToPool(); // 필요시 수동으로 오브젝트 풀에 등록
-            OnCreateFromPool();
-            OnGetFromPool();
+            GetTypeFromRef().ContinueWith(() =>
+            {
+                if (addToPool)
+                    AddToPool(); // 필요시 수동으로 오브젝트 풀에 등록
+                OnCreateFromPool();
+                OnGetFromPool();
+            });
         });
     }
 
-    private async UniTaskVoid GetTypeFromRef()
+    private async UniTask GetTypeFromRef()
     {
         if (_type != null || !typeRef.RuntimeKeyIsValid()) return;
         type = _type = await Util.ExtractAssetRefAsync(typeRef);
-        Util.Log($"[{gameObject.name}.{nameof(GetTypeFromRef)}] type: {_type}", Util.LoggingMode.InProgress);
+        Util.Log($"[{gameObject.name}.{nameof(GetTypeFromRef)}] type: {_type}", Util.LoggingMode.Completed);
         SetMinimapSprite();
     }
 
@@ -67,15 +70,14 @@ public class TypeHolder<T> : MonoBehaviour, ITypeHolder, IPoolObject where T : B
 
     private void AddToPool()
     {
-        return;
-        PoolManager.Instance.ReserveOperation(() =>
-        {
-            if (gameObject is not {activeSelf: true}) return; // NRE 방어
-            if (_type is not { prefab: {} prefabData }) return; // typeSO에 프리팹 데이터가 존재하는지 확인
-            if (Origin == null) Origin = prefabData;
-            Util.Log($"[{typeof(TypeHolder<T>).Name}.{nameof(AddToPool)}()] Origin == prefabData: {Origin == prefabData}");
-            PoolManager.Instance.GetPool(prefab: prefabData); // 오브젝트 풀 생성 시도
-        });
+        if (gameObject is not {activeSelf: true} ) 
+            return; // NRE 방어
+        if (_type is not { prefab: {} prefabData } ) 
+            return; // typeSO에 프리팹 데이터가 존재하는지 확인
+        
+        if (Origin == null) Origin = prefabData;
+        Util.Log($"[{typeof(TypeHolder<T>).Name}.{nameof(AddToPool)}()] Origin == prefabData: {Origin == prefabData}");
+        PoolManager.Instance.GetPool(prefab: prefabData); // 오브젝트 풀 생성 시도
         // PoolingManager.Instance.ReserveOperation(() =>
         // {
         //     if (gameObject is not {activeSelf: true}) return; // NRE 방어
@@ -93,7 +95,6 @@ public class TypeHolder<T> : MonoBehaviour, ITypeHolder, IPoolObject where T : B
         if (isInit) return;
         isInit = true;
         
-        GetTypeFromRef().Forget();
         OnCreate?.Invoke();
     }
 
