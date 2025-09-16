@@ -112,7 +112,7 @@ public class AttackProjectile : MonoBehaviour, IPoolObject
     }
 
     public GameObject Origin { get; set; }
-    public PoolKey PoolKey { get; set; }
+    // public PoolKey PoolKey { get; set; }
 
     public void OnCreateFromPool()
     {

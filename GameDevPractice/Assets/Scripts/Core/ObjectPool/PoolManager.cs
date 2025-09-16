@@ -91,7 +91,7 @@ namespace TH.Core.Pool
                     }
                     
                     poolObj.Origin = prefab;
-                    poolObj.PoolKey = new PoolKey(prefab, poolObj.GetType()); // todo: GetType() 반복호출 최적화
+                    // poolObj.PoolKey = new PoolKey(prefab, poolObj.GetType()); // todo: GetType() 반복호출 최적화
                     
                     createAction?.Invoke(poolObj);
                     poolObj.OnCreateFromPool();

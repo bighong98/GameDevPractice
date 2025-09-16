@@ -12,7 +12,7 @@ public class TypeHolder<T> : MonoBehaviour, ITypeHolder, IPoolObject where T : B
     [Tooltip("임시 사용, 추후 프로퍼티로 변경 예정")]public T type;
     public AssetReferenceT<T> typeRef;
     public GameObject Origin { get; set; } // 오브젝트 풀링 적용시 원본 프리팹 참조 저장 목적. setter가 있지만 PoolingManager 이외
-    public PoolKey PoolKey { get; set; }
+    // public PoolKey PoolKey { get; set; }
     public BaseTypeSO BaseType => type;
 
     public event Action OnCreate;

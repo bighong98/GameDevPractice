@@ -184,7 +184,7 @@ namespace RPG.UI
         }
         
         public GameObject Origin { get; set; }
-        public PoolKey PoolKey { get; set; }
+        // public PoolKey PoolKey { get; set; }
 
         public void OnCreateFromPool()
         {
