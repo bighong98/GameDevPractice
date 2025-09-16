@@ -23,7 +23,8 @@ public class ItemTypeHolder : TypeHolder<ItemTypeSO>
     {
         if (gameObject.activeSelf && Origin != null)
         {
-            PoolingManager.Instance.ReleaseFromPool(this);
+            // PoolingManager.Instance.ReleaseFromPool(this);
+            PoolManager.Instance.ReleaseFromPool(this);
         }
         else
         {

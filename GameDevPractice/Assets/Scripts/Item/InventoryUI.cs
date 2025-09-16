@@ -62,7 +62,8 @@ namespace RPG.UI
         [SerializeField] private EquipmentSlotUI[] equipmentSlotUIs;
         
         private GameObject itemSlotUIPrefab;
-        private ObjectPool<ItemSlotUI> slotUIPool;
+        // private ObjectPool<ItemSlotUI> slotUIPool;
+        private ObjectPool<IPoolObject> slotUIPool;
         
         // hover
         private ItemSlotBaseUI mouseOverSlot;
@@ -199,12 +200,18 @@ namespace RPG.UI
             if (ResourceManager.Instance.Load<GameObject>("ItemSlotUI.prefab") is { } loadedSlotUI)
             {
                 itemSlotUIPrefab = loadedSlotUI;
-                slotUIPool = PoolingManager.Instance.GetPool<ItemSlotUI>(
+                slotUIPool = PoolManager.Instance.GetPool(
                     itemSlotUIPrefab,
                     GetObject((int)GameObjects.ItemSlots).transform,
                     capacity: inventorySystem.Capacity,
                     maxSize: inventorySystem.MaxCapacity,
                     registerPool: false);
+                // slotUIPool = PoolingManager.Instance.GetPool<ItemSlotUI>(
+                //     itemSlotUIPrefab,
+                //     GetObject((int)GameObjects.ItemSlots).transform,
+                //     capacity: inventorySystem.Capacity,
+                //     maxSize: inventorySystem.MaxCapacity,
+                //     registerPool: false);
             }
             
             // 인벤토리 슬롯 UI 초기화
@@ -619,7 +626,7 @@ namespace RPG.UI
 
         private ItemSlotUI AddItemSlotUI() // 아이템 슬롯 UI 생성
         {
-            if (slotUIPool.Get() is not { } newSlotUI) return null;
+            if (slotUIPool.Get() is not ItemSlotUI newSlotUI) return null;
 
             newSlotUI.SetSlotIndex(itemSlotUIs.Count);
             newSlotUI.SetItemAccessibleState(true);

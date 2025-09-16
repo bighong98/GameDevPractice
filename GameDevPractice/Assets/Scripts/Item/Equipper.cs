@@ -19,7 +19,8 @@ namespace RPG.Item
 
         private bool isInit = false;
         private WeaponTypeHolder currentWeapon;
-        private readonly Dictionary<WeaponTypeSO, ObjectPool<WeaponTypeHolder>> weaponPools = new();
+        // private readonly Dictionary<WeaponTypeSO, ObjectPool<WeaponTypeHolder>> weaponPools = new();
+        private readonly Dictionary<WeaponTypeSO, ObjectPool<IPoolObject>> weaponPools = new();
         
         private void Awake()
         {
@@ -106,14 +107,19 @@ namespace RPG.Item
             
             if (!weaponPools.TryGetValue(weaponType, out var weaponPool))
             {
-                weaponPool = PoolingManager.Instance.GetPool<WeaponTypeHolder>(
+                // weaponPool = PoolingManager.Instance.GetPool<WeaponTypeHolder>(
+                //     weaponType.EquippedPrefab, 
+                //     GetHandGrip(weaponType), 
+                //     registerPool: false);
+                weaponPool = PoolManager.Instance.GetPool(
                     weaponType.EquippedPrefab, 
                     GetHandGrip(weaponType), 
                     registerPool: false);
                 weaponPools[weaponType] = weaponPool; // 풀 딕셔너리에 신규 풀 등록
             }
 
-            if (weaponPool is { } pool && pool.Get() is { } result)
+            // if (weaponPool is { } pool && pool.Get() is { } result)
+            if (weaponPool is { } pool && pool.Get() is WeaponTypeHolder result)
             {
                 result.owner = fighter;
                 currentWeapon = result;

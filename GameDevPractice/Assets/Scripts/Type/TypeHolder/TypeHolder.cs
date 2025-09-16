@@ -68,14 +68,22 @@ public class TypeHolder<T> : MonoBehaviour, ITypeHolder, IPoolObject where T : B
     private void AddToPool()
     {
         return;
-        PoolingManager.Instance.ReserveOperation(() =>
+        PoolManager.Instance.ReserveOperation(() =>
         {
             if (gameObject is not {activeSelf: true}) return; // NRE 방어
             if (_type is not { prefab: {} prefabData }) return; // typeSO에 프리팹 데이터가 존재하는지 확인
             if (Origin == null) Origin = prefabData;
             Util.Log($"[{typeof(TypeHolder<T>).Name}.{nameof(AddToPool)}()] Origin == prefabData: {Origin == prefabData}");
-            PoolingManager.Instance.GetPool<TypeHolder<T>>(prefab: prefabData); // 오브젝트 풀 생성 시도
+            PoolManager.Instance.GetPool(prefab: prefabData); // 오브젝트 풀 생성 시도
         });
+        // PoolingManager.Instance.ReserveOperation(() =>
+        // {
+        //     if (gameObject is not {activeSelf: true}) return; // NRE 방어
+        //     if (_type is not { prefab: {} prefabData }) return; // typeSO에 프리팹 데이터가 존재하는지 확인
+        //     if (Origin == null) Origin = prefabData;
+        //     Util.Log($"[{typeof(TypeHolder<T>).Name}.{nameof(AddToPool)}()] Origin == prefabData: {Origin == prefabData}");
+        //     PoolingManager.Instance.GetPool<TypeHolder<T>>(prefab: prefabData); // 오브젝트 풀 생성 시도
+        // });
     }
 
     #region Pool Method (IPoolObject)
@@ -110,7 +118,7 @@ public class TypeHolder<T> : MonoBehaviour, ITypeHolder, IPoolObject where T : B
         // if (gameObject.activeSelf && Origin != null)
         //     PoolingManager.Instance.ReleaseFromPool(this);
         if (gameObject.activeSelf && Origin != null)
-            PoolingManager.Instance.ReleaseFromPool(this);
+            PoolManager.Instance.ReleaseFromPool(this);
     }
 
     #endregion

@@ -185,13 +185,13 @@ namespace TH.Core.Pool
         {
             if (obj == null)
             {
-                Util.Log($"[{nameof(PoolingManager)}.{nameof(ReleaseFromPool)}()] is null");
+                Util.Log($"[{nameof(PoolManager)}.{nameof(ReleaseFromPool)}()] is null");
                 return;
             }
 
             if (obj is not Component {} compo || obj.Origin == null)
             {
-                Util.Log($"[{nameof(PoolingManager)}.{nameof(ReleaseFromPool)}()] {obj}: component or Origin is null");
+                Util.Log($"[{nameof(PoolManager)}.{nameof(ReleaseFromPool)}()] {obj}: component or Origin is null");
                 return;
             }
 

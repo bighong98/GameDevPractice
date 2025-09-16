@@ -8,11 +8,15 @@ public class Spawner<T> : MonoBehaviour where T : UnityEngine.Component, IPoolOb
 {
     private bool isInit = false;
     public GameObject prefab;
-    public ObjectPool<T> pool;
+    // public ObjectPool<T> pool;
+    public ObjectPool<IPoolObject> pool;
 
-    public Action<T> onCreate;
-    public Action<T> onGet;
-    public Action<T> onRelease;
+    // public Action<T> onCreate;
+    // public Action<T> onGet;
+    // public Action<T> onRelease;
+    public Action<IPoolObject> onCreate;
+    public Action<IPoolObject> onGet;
+    public Action<IPoolObject> onRelease;
     
     protected virtual void Start()
     {
@@ -21,7 +25,7 @@ public class Spawner<T> : MonoBehaviour where T : UnityEngine.Component, IPoolOb
         SetPool(prefab, onCreate, onGet, onRelease);
     }
     
-    public virtual void SetPool(GameObject prefab, Action<T> createAction = null, Action<T> getAction = null, Action<T> releaseAction = null, int capacity = 0, int max = 0)
+    public virtual void SetPool(GameObject prefab, Action<IPoolObject> createAction = null, Action<IPoolObject> getAction = null, Action<IPoolObject> releaseAction = null, int capacity = 0, int max = 0)
     {
         this.prefab = prefab;
         
@@ -31,10 +35,23 @@ public class Spawner<T> : MonoBehaviour where T : UnityEngine.Component, IPoolOb
         
         SetPool(capacity, max);
     }
+    
+    // public virtual void SetPool(GameObject prefab, Action<T> createAction = null, Action<T> getAction = null, Action<T> releaseAction = null, int capacity = 0, int max = 0)
+    // {
+    //     this.prefab = prefab;
+    //     
+    //     onCreate += createAction;
+    //     onGet += getAction;
+    //     onRelease += releaseAction;
+    //     
+    //     SetPool(capacity, max);
+    // }
     protected virtual void SetPool(int capacity, int max)
     {
-        if (PoolingManager.Instance.GetPool<T>(prefab, null, onCreate, onGet, onRelease, capacity, max)
-            is { } newPool)
+        // if (PoolingManager.Instance.GetPool<T>(prefab, null, onCreate, onGet, onRelease, capacity, max)
+        //     is { } newPool)
+        if (PoolManager.Instance.GetPool(prefab, null, onCreate, onGet, onRelease, capacity, max)
+                is { } newPool)
         {
             pool = newPool;
             isInit = true;
@@ -49,7 +66,7 @@ public class Spawner<T> : MonoBehaviour where T : UnityEngine.Component, IPoolOb
             return null;
         }
 
-        return pool.Get();
+        return (T)pool.Get();
     }
 
     public T Spawn(Vector3 pos)

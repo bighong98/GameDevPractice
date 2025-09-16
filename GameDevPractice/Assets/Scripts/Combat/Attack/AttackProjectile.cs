@@ -142,7 +142,9 @@ public class AttackProjectile : MonoBehaviour, IPoolObject
 
     public void ReleaseSelf()
     {
+        // if (gameObject.activeSelf && Origin != null)
+        //     PoolingManager.Instance.ReleaseFromPool(this);
         if (gameObject.activeSelf && Origin != null)
-            PoolingManager.Instance.ReleaseFromPool(this);
+            PoolManager.Instance.ReleaseFromPool(this);
     }
 }

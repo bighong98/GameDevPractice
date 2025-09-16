@@ -154,7 +154,8 @@ namespace RPG.Stats
 
         private void ShowLevelUpEffect()
         {
-            PoolingManager.Instance.GetFromPool<SimplePooledParticlePlayer>(levelUpEffectPrefab, null, transform.position);
+            // PoolingManager.Instance.GetFromPool<SimplePooledParticlePlayer>(levelUpEffectPrefab, null, transform.position);
+            PoolManager.Instance.GetFromPool<SimplePooledParticlePlayer>(levelUpEffectPrefab, null, transform.position);
         }
     }
 }

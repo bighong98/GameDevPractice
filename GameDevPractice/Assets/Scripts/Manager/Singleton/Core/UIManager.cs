@@ -19,7 +19,9 @@ namespace RPG.UI
         private int _order = 10; // 10 is magic number
         private readonly Stack<PopupUI> popupStacks = new Stack<PopupUI>();
         private readonly Dictionary<string, Type> keyTypeDictionary = new Dictionary<string, Type>();
-        private readonly Dictionary<Type, ObjectPool<PopupUI>> popupPools = new Dictionary<Type, ObjectPool<PopupUI>>();
+        // private readonly Dictionary<Type, ObjectPool<PopupUI>> popupPools = new Dictionary<Type, ObjectPool<PopupUI>>();
+        private readonly Dictionary<Type, ObjectPool<IPoolObject>> popupPools = new Dictionary<Type, ObjectPool<IPoolObject>>();
+
         
         [SerializeField] private Transform root;
         [SerializeField] private List<GameObject> canvases;
@@ -113,7 +115,8 @@ namespace RPG.UI
 
         public T GetUIFromPool<T>(GameObject prefab, UICanvas canvasType) where T : BaseUI, IPoolObject
         {
-            return PoolingManager.Instance.GetFromPool<T>(prefab, canvases[(int)canvasType]?.transform);
+            // return PoolingManager.Instance.GetFromPool<T>(prefab, canvases[(int)canvasType]?.transform);
+            return PoolManager.Instance.GetFromPool<T>(prefab, canvases[(int)canvasType]?.transform);
         }
 
         #endregion
@@ -226,11 +229,16 @@ namespace RPG.UI
                 
                 // var uiPool = PoolingManager.Instance.GetPool<PopupUI>(
                 //         loadedUI, GetUIContainer(loadedUI.GetComponent<PopupUI>().UiRenderType), capacity: 2, maxSize: 10, registerPool: false); // 2, 10 is magic number
-                var uiPool = PoolingManager.Instance.GetPool<PopupUI>(
+                // var uiPool = PoolingManager.Instance.GetPool<PopupUI>(
+                //     loadedUI,
+                //     parent: GetUIParent(UICanvas.Popup),
+                //     capacity: 2, maxSize: 10, registerPool: false
+                //     ); // 2, 10 is magic number
+                var uiPool = PoolManager.Instance.GetPool(
                     loadedUI,
                     parent: GetUIParent(UICanvas.Popup),
                     capacity: 2, maxSize: 10, registerPool: false
-                    ); // 2, 10 is magic number
+                ); // 2, 10 is magic number
                 
                 popupPools[type] = uiPool;
                 popup = popupPools[type].Get() as T;

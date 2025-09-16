@@ -32,7 +32,11 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
 
             onCreate = obj =>
             {
-                obj.OnHit += PlayOnHitEffect; // todo: 현 구조는 Spawner가 사라지면 PlayOnHitEffect 실행이 불가능함. 오류 발생 가능성이 존재한다면 수정 필요
+                // obj.OnHit += PlayOnHitEffect; // todo: 현 구조는 Spawner가 사라지면 PlayOnHitEffect 실행이 불가능함. 오류 발생 가능성이 존재한다면 수정 필요
+                if (obj is AttackProjectile projectile)
+                {
+                    projectile.OnHit += PlayOnHitEffect; // todo: 현 구조는 Spawner가 사라지면 PlayOnHitEffect 실행이 불가능함. 오류 발생 가능성이 존재한다면 수정 필요
+                }
             };
         }
     }
@@ -51,6 +55,7 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
 
     private void PlayOnHitEffect(Vector3 pos)
     {
-        PoolingManager.Instance.GetFromPool<SimplePooledParticlePlayer>(onHitParticlePrefab, null, pos);
+        PoolManager.Instance.GetFromPool<SimplePooledParticlePlayer>(onHitParticlePrefab, null, pos);
+        // PoolingManager.Instance.GetFromPool<SimplePooledParticlePlayer>(onHitParticlePrefab, null, pos);
     }
 }

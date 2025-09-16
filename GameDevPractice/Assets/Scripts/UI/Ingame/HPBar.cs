@@ -215,7 +215,8 @@ namespace RPG.UI
         {
             if (gameObject.activeSelf)
             {
-                PoolingManager.Instance.ReleaseFromPool(this);
+                // PoolingManager.Instance.ReleaseFromPool(this);
+                PoolManager.Instance.ReleaseFromPool(this);
             }
         }
     }
