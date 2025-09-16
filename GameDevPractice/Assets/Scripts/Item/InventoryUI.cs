@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Pool;
 using UnityEngine.UI;
+using TH.Core.Pool;
 
 namespace RPG.UI
 {

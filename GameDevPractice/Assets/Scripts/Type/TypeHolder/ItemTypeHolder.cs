@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using RPG.Item;
+using TH.Core.Pool;
 
 // 아이템의 데이터 SO와 개수를 포함하는 MonoBehaviour 클래스
 // 필드 드랍 아이템 등에 사용

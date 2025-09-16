@@ -3,6 +3,7 @@ using Cysharp.Threading.Tasks;
 using GameDevTV.Utils;
 using RPG.Attribute;
 using UnityEngine;
+using TH.Core.Pool;
 
 namespace RPG.Stats
 {

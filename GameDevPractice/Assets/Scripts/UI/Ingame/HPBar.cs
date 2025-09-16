@@ -4,6 +4,7 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 using RPG.Attribute;
+using TH.Core.Pool;
 
 // HP Bar Controller using UI Component Image, Slider
 namespace RPG.UI
@@ -183,6 +184,8 @@ namespace RPG.UI
         }
         
         public GameObject Origin { get; set; }
+        public PoolKey PoolKey { get; set; }
+
         public void OnCreateFromPool()
         {
             

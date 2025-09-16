@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.Pool;
 using System;
 using Cysharp.Threading.Tasks;
+using TH.Core.Pool;
 
 public class Spawner<T> : MonoBehaviour where T : UnityEngine.Component, IPoolObject
 {

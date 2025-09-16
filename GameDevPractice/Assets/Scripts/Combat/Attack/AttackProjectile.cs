@@ -3,6 +3,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using RPG.Attribute;
 using UnityEngine;
+using TH.Core.Pool;
 
 using Vector3 = UnityEngine.Vector3;
 
@@ -111,6 +112,8 @@ public class AttackProjectile : MonoBehaviour, IPoolObject
     }
 
     public GameObject Origin { get; set; }
+    public PoolKey PoolKey { get; set; }
+
     public void OnCreateFromPool()
     {
         SetTimeSpan();

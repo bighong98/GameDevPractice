@@ -5,6 +5,7 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Pool;
 using RPG.UI;
+using TH.Core.Pool;
 
 public abstract class PoolDictWrapperBase { // 제네릭 사용 목적 래퍼의 래퍼
     public abstract void Clear();
@@ -305,6 +306,30 @@ public class PoolContainer
     public void Init(Transform parent)
     {
         TopParent = parent;
+    }
+
+    public Transform GetPoolContainer(GameObject prefab, Type type)
+    {
+        if (PoolContainerDictionary.TryGetValue(prefab, out var existingPoolContainer))
+        {
+            return existingPoolContainer;
+        }
+        
+        GameObject newPoolContainer = new GameObject($"{prefab.name}");
+        newPoolContainer.transform.SetParent(GetTypePoolContainer(type));
+        return PoolContainerDictionary[prefab] = newPoolContainer.transform;
+    }
+    
+    private Transform GetTypePoolContainer(Type type)
+    {
+        if (TypeContainerDictionary.TryGetValue(type, out var existingTypeContainer))
+        {
+            return existingTypeContainer;
+        }
+        
+        GameObject newTypeContainer = new GameObject($"{type.Name}s");
+        newTypeContainer.transform.SetParent(TopParent);
+        return TypeContainerDictionary[type] = newTypeContainer.transform;
     }
     
     public Transform GetPoolContainer<T>(GameObject prefab) where T : Component, IPoolObject

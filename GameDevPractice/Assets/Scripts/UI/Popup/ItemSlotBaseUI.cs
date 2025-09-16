@@ -1,4 +1,5 @@
 using UnityEngine;
+using TH.Core.Pool;
 
 namespace RPG.UI
 {
@@ -139,6 +140,8 @@ namespace RPG.UI
         #region Object Pooling Method
 
         public GameObject Origin { get; set; }
+        public PoolKey PoolKey { get; set; }
+
         public void OnCreateFromPool()
         {
             

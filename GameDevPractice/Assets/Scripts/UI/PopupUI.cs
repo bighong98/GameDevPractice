@@ -1,6 +1,7 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using TH.Core.Pool;
 
 namespace RPG.UI
 {
@@ -183,7 +184,6 @@ namespace RPG.UI
         private const float lerpSpeed = 10f;    // 부드럽게 따라오는 속도 (Lerp 계수)
         private void UpdatePopupPosition()
         {
-            
             Vector3 screenPosition = Util.GetWorldScreenPosition(cachedPosition, false);
             Util.GetMouseScreenPosition(parentRect, screenPosition, out var anchoredPos);
             
@@ -208,6 +208,8 @@ namespace RPG.UI
         #region Object Pool
 
         public GameObject Origin { get; set; }
+        public PoolKey PoolKey { get; set; }
+
         public void OnCreateFromPool()
         {
             IsPooledObject = true;

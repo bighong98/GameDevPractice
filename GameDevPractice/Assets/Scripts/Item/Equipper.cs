@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using RPG.Combat;
 using UnityEngine;
 using UnityEngine.Pool;
+using TH.Core.Pool;
 
 // 무기 장착/장착해제 시 무기 오브젝트 생성/생성해제(오브젝트 풀 기반)
 // 풀링된 장착무기 오브젝트의 참조를 추적
