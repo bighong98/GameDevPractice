@@ -95,8 +95,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cfd76096c255aa545aa4b3846781c7f9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RPG.Item.DropItem
-  itemTypeHolder: {fileID: 1829299814520869813}
-  inventory: {fileID: 0}
   useImmediately: 1
 --- !u!114 &1829299814520869813
 MonoBehaviour:
@@ -110,6 +108,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 54ea4a17db4d11d468bfb144d1dae8f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ItemTypeHolder
+  _type: {fileID: 0}
   type: {fileID: 0}
   typeRef:
     m_AssetGUID: 
@@ -117,4 +116,6 @@ MonoBehaviour:
     m_SubObjectType: 
     m_SubObjectGUID: 
     m_EditorAssetChanged: 0
+  addToPool: 1
   amount: 1
+  toDropItem: 1

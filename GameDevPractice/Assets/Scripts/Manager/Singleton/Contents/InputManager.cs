@@ -176,20 +176,6 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
             default:
                 break;
         }
-        // if (context.phase != InputActionPhase.Canceled) return;
-        //
-        // if (isDragging)
-        // {
-        //     isDragging = false;
-        //     OnDragEnded?.Invoke(currentPointerPos);
-        //     
-        //     wasDraggingOneFrameAgo = true;
-        //     UniTask.Void(async () =>
-        //     {
-        //         await UniTask.NextFrame();
-        //         wasDraggingOneFrameAgo = false;
-        //     });
-        // }
     }
 
     #endregion

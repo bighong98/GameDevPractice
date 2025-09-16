@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 361e7764f46e225498b2d9903851f06d, type: 3}
   m_Name: Bow
   m_EditorClassIdentifier: Assembly-CSharp::WeaponTypeSO
-  prefab: {fileID: 4417232197914387483, guid: 347289ade72adaf4e91172386d9fab9a, type: 3}
+  prefab: {fileID: 485934382282723969, guid: d65c897b8507b1d499688c554148fe1e, type: 3}
   nameString: Bow Test1
   sprite: {fileID: 21300000, guid: bbf8638a8a75d9c42b93639213c92c9b, type: 3}
   showInMinimap: 0

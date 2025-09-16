@@ -8,7 +8,7 @@ using UnityEngine.AddressableAssets;
 public class TypeHolder<T> : MonoBehaviour, ITypeHolder, IPoolObject where T : BaseTypeSO
 {
     [SerializeField] private T _type;
-    public T type;
+    [Tooltip("임시 사용, 추후 프로퍼티로 변경 예정")]public T type;
     public AssetReferenceT<T> typeRef;
     public GameObject Origin { get; set; } // 오브젝트 풀링 적용시 원본 프리팹 참조 저장 목적. setter가 있지만 PoolingManager 이외
     public BaseTypeSO BaseType => type;
@@ -18,15 +18,17 @@ public class TypeHolder<T> : MonoBehaviour, ITypeHolder, IPoolObject where T : B
     public event Action OnRelease;
     public event Action OnDestroy;
 
-    private bool isInit;
+    private bool isInit; // 최초 1회 초기화 여부 (OnCreateFromPool()에서 갱신)
+    [SerializeField] [Tooltip("씬에 배치되어 생성된 경우, 자동으로 오브젝트 풀에 등록할지 여부 (원본 프리팹과 동일한 경우에만 사용)")] private bool addToPool;
 
     private void Awake()
     {
-        if (isInit) return;
+        if (isInit) return; // 이미 OnCreateFromPool()이 실행된 경우 실행x
 
         ResourceManager.Instance.ReserveOperation(() =>
-        {
-            isInit = true;
+        { // ResourceManager에게 초기화 작업 예약
+            if (addToPool)
+                AddToPool(); // 필요시 수동으로 오브젝트 풀에 등록
             OnCreateFromPool();
             OnGetFromPool();
         });
@@ -61,12 +63,26 @@ public class TypeHolder<T> : MonoBehaviour, ITypeHolder, IPoolObject where T : B
         return _type;
     }
 
+    private void AddToPool()
+    {
+        return;
+        PoolingManager.Instance.ReserveOperation(() =>
+        {
+            if (gameObject is not {activeSelf: true}) return; // NRE 방어
+            if (_type is not { prefab: {} prefabData }) return; // typeSO에 프리팹 데이터가 존재하는지 확인
+            if (Origin == null) Origin = prefabData;
+            Util.Log($"[{typeof(TypeHolder<T>).Name}.{nameof(AddToPool)}()] Origin == prefabData: {Origin == prefabData}");
+            PoolingManager.Instance.GetPool<TypeHolder<T>>(prefab: prefabData); // 오브젝트 풀 생성 시도
+        });
+    }
+
     #region Pool Method (IPoolObject)
 
     public virtual void OnCreateFromPool()
     {
         if (isInit) return;
         isInit = true;
+        
         GetTypeFromRef().Forget();
         OnCreate?.Invoke();
     }

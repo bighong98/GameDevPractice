@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 361e7764f46e225498b2d9903851f06d, type: 3}
   m_Name: Unarmed
   m_EditorClassIdentifier: Assembly-CSharp::WeaponTypeSO
-  prefab: {fileID: 3279668845527451153, guid: 85f54ae1cb4911b49b5770895d6d70a9, type: 3}
+  prefab: {fileID: 6979306519834674752, guid: 85f54ae1cb4911b49b5770895d6d70a9, type: 3}
   nameString: Unarmed Test1
   sprite: {fileID: 10917, guid: 0000000000000000f000000000000000, type: 0}
   showInMinimap: 0
@@ -30,3 +30,7 @@ MonoBehaviour:
   damage: 5
   range: 2
   hand: 0
+  hasProjectile: 0
+  projectilePrefab: {fileID: 0}
+  hasImpactEffect: 0
+  impactParticlePrefab: {fileID: 0}

@@ -131,14 +131,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Dropped Bow
       objectReference: {fileID: 0}
-    - target: {fileID: 6697496959767505842, guid: d65c897b8507b1d499688c554148fe1e, type: 3}
-      propertyPath: type
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 6697496959767505842, guid: d65c897b8507b1d499688c554148fe1e, type: 3}
-      propertyPath: typeRef.m_AssetGUID
-      value: 2fb8efb1b192ee345b6e53c7761aa529
-      objectReference: {fileID: 0}
     - target: {fileID: 8951071724262958505, guid: d65c897b8507b1d499688c554148fe1e, type: 3}
       propertyPath: m_LocalPosition.x
       value: 10.3
@@ -614,14 +606,6 @@ PrefabInstance:
     - target: {fileID: 1181656062549879669, guid: 272caf2c346b5e04ea0b11b49067dc0a, type: 3}
       propertyPath: m_Name
       value: Dropped Fireball
-      objectReference: {fileID: 0}
-    - target: {fileID: 5344151332873294406, guid: 272caf2c346b5e04ea0b11b49067dc0a, type: 3}
-      propertyPath: type
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 5344151332873294406, guid: 272caf2c346b5e04ea0b11b49067dc0a, type: 3}
-      propertyPath: typeRef.m_AssetGUID
-      value: 6b7af030474e11c47a6955ef88e5837e
       objectReference: {fileID: 0}
     - target: {fileID: 7701418268176161885, guid: 272caf2c346b5e04ea0b11b49067dc0a, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1836,14 +1820,6 @@ PrefabInstance:
     - target: {fileID: 1977624457956530644, guid: d4c092d9dca59304fba951cae1d05868, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4304100636348143567, guid: d4c092d9dca59304fba951cae1d05868, type: 3}
-      propertyPath: type
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 4304100636348143567, guid: d4c092d9dca59304fba951cae1d05868, type: 3}
-      propertyPath: typeRef.m_AssetGUID
-      value: 24a647810f57bb345a370aa349b7758c
       objectReference: {fileID: 0}
     - target: {fileID: 7059132959080541948, guid: d4c092d9dca59304fba951cae1d05868, type: 3}
       propertyPath: m_Name

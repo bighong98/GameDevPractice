@@ -5,15 +5,19 @@ namespace RPG.Item
 {
     [RequireComponent(typeof(Rigidbody))]
     [RequireComponent(typeof(Collider))]
+    [RequireComponent(typeof(ItemTypeHolder))]
     public class DropItem : MonoBehaviour
     {
-        [SerializeField] private ItemTypeHolder itemTypeHolder;
         [SerializeField] private bool useImmediately;
+        private ItemTypeHolder itemTypeHolder;
         private InventorySystem inventory;
         
         private void Awake()
         {
-            itemTypeHolder = GetComponent<ItemTypeHolder>();
+            if (itemTypeHolder == null)
+            {
+                itemTypeHolder = GetComponent<ItemTypeHolder>();
+            }
         }
 
         private void OnEnable()
@@ -35,7 +39,10 @@ namespace RPG.Item
             {
                 //todo: 아이템 습득 애니메이션 추가
                 if (itemTypeHolder == null || inventory == null) return;
-                if (inventory.AddItem(new Item(itemTypeHolder.type), itemTypeHolder.GetAmount, true, useImmediately) <= 0) // 플레이어 인벤토리 아이템 추가에 성공했다면 
+                if (inventory.AddItem(new Item(itemTypeHolder.type), 
+                        itemTypeHolder.GetAmount, 
+                        checkInstanceType: true, 
+                        useImmediately) <= 0) // AddItem()은 인벤토리 아이템 추가 시도 후 잔량을 반환, 잔량이 0이라면
                 {
                     itemTypeHolder.ReleaseSelf(); // 현재 드랍 아이템 객체 풀에 반환
                 }

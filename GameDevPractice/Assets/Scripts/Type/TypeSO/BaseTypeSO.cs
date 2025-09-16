@@ -5,7 +5,7 @@ using UnityEngine;
 public abstract class BaseTypeSO : ScriptableObject
 {
     [Header("Prefab Reference")] [Tooltip("TypeSO and TypeHolder must be pair")]
-    public Transform prefab;
+    public GameObject prefab;
     
     [Header("Basic")]
     public string nameString;

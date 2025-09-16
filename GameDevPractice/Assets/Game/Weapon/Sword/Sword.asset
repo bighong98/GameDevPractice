@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 361e7764f46e225498b2d9903851f06d, type: 3}
   m_Name: Sword
   m_EditorClassIdentifier: Assembly-CSharp::WeaponTypeSO
-  prefab: {fileID: 4046124720144945870, guid: f88d5b41db4f06b4e8240c80f2f734db, type: 3}
+  prefab: {fileID: 7059132959080541948, guid: d4c092d9dca59304fba951cae1d05868, type: 3}
   nameString: Sword Test1
   sprite: {fileID: 21300000, guid: 2ddf0348701148a4d8a7c6a0f7f146b3, type: 3}
   showInMinimap: 0
