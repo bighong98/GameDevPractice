@@ -6,6 +6,7 @@ using RPG.Saving;
 using RPG.Stats;
 using GameDevTV.Utils;
 using RPG.UI;
+using TH.Combat;
 
 namespace RPG.Attribute
 {
@@ -14,7 +15,7 @@ namespace RPG.Attribute
     {
         public float hp;
     }
-    public class Health : MonoBehaviour, ISavable
+    public class Health : MonoBehaviour, IDamageable, ISavable
     {
         private LazyValue<float> maxHp;
         private LazyValue<float> hp;
@@ -152,6 +153,11 @@ namespace RPG.Attribute
             RefreshAliveState();
 
             return true;
+        }
+
+        public void TakeDamage(in HitResult hitResult)
+        {
+            
         }
     }
 }
