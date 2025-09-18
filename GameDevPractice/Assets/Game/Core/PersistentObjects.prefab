@@ -184,6 +184,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1836295099901191787}
+  - component: {fileID: 6175512854558758970}
   m_Layer: 0
   m_Name: CombatSystem
   m_TagString: Untagged
@@ -206,6 +207,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 7051912391648671693}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6175512854558758970
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4156437532433617874}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6c350a407026fc84ba11b540810f777f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CombatSystem
+  damageRule: {fileID: 11400000, guid: 32f5e9ec55ccdb04b83ed9329574eaf4, type: 2}
 --- !u!1 &5930427936987428941
 GameObject:
   m_ObjectHideFlags: 0

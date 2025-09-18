@@ -13,7 +13,7 @@ namespace TH.Core.Service
         {
             if (TryGet(out T service))
             {
-                Util.Log($"[{nameof(ServiceProvider)}] Service '{typeof(T)} is provided'", Util.LoggingMode.InProgress);
+                Util.Log($"[{nameof(ServiceProvider)}.{nameof(Get)}] Service '{typeof(T)} is provided'", Util.LoggingMode.InProgress);
                 return service;
             }
             
@@ -27,6 +27,7 @@ namespace TH.Core.Service
             {
                 if (_services.TryGetValue(typeof(T), out var obj) && obj is T t)
                 {
+                    Util.Log($"[{nameof(ServiceProvider)}.{nameof(TryGet)}] Service '{typeof(T)} is provided'", Util.LoggingMode.InProgress);
                     service = t;
                     return true;
                 }
@@ -58,6 +59,7 @@ namespace TH.Core.Service
             if (instance == null) throw new ArgumentNullException(nameof(instance));
             lock (_gate)
             {
+                Util.Log($"[{nameof(ServiceLocator)}.{nameof(Replace)}] new service registered: {instance.GetType().Name}", Util.LoggingMode.InProgress);
                 _services[typeof(T)] = instance;
             }
         }

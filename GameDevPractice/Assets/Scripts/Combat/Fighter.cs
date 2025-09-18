@@ -7,18 +7,21 @@ using RPG.Movement;
 using RPG.Core;
 using RPG.Saving;
 using RPG.Attribute;
+using TH.Combat;
+using TH.Core.Service;
 using UnityEngine.Serialization;
 
 namespace RPG.Combat
 {
-    public class Fighter : MonoBehaviour, IAction, ISavable
+    public class Fighter : MonoBehaviour, IAction, ISavable, IAttackable
     {
         [SerializeField] private float timeBetweenAttacks = 1f; // todo: move to equipped weapon
         private float timeSinceLastAttack = 0;
         
         private LazyValue<WeaponTypeSO> currentWeapon; // 현재 장착 중인 무기
         [SerializeField] private WeaponTypeSO defaultWeapon; // 장비 장착해제시 적용되어야할 무기종(ex-Unarmed)
-        
+
+        private ICombatSystem combatSystem; 
         [SerializeField] private Health target;
         
         private Mover mover;
@@ -48,6 +51,10 @@ namespace RPG.Combat
         {
             currentWeapon.ForceInit();
             EquipWeapon(currentWeapon.value);
+            if (ServiceLocator.TryGet(out ICombatSystem combat))
+            {
+                combatSystem = combat;
+            }
         }
 
         private void Update()
@@ -84,13 +91,28 @@ namespace RPG.Combat
             target = null;
         }
 
+        #region CombatSystem Base (임시)
+
+        private AttackSource currAttackSource;
+
+        private void ChangeAttackSource()
+        {
+            if (currentWeapon is { value: {} weaponData } )
+            {
+                currAttackSource = new AttackSource(this, weaponData.GetDamage);
+            }
+        }
+
+        #endregion
+
         #region Animation Event Method
 
         void Hit() // Animation Event Method
         {
             if (target == null) return;
             OnAttack?.Invoke();
-            target.TakeDamage(currentWeapon.value.GetDamage);
+            combatSystem.ApplyHit(currAttackSource.ToRequest(target));
+            // target.TakeDamage(currentWeapon.value.GetDamage);
         }
 
         void Shoot()
@@ -170,6 +192,7 @@ namespace RPG.Combat
         public void EquipWeapon(WeaponTypeSO weaponTypeSO)
         {
             this.currentWeapon.value = weaponTypeSO;
+            ChangeAttackSource();
             OnEquipWeapon?.Invoke(weaponTypeSO, animator);
         }
 

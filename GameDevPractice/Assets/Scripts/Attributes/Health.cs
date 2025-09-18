@@ -95,12 +95,17 @@ namespace RPG.Attribute
             OnMaxHealthChanged?.Invoke(maxHp.value);
         }
         
-        public void TakeDamage(float damage)
+        private void TakeDamage(float damage)
         {
             SetCurrentHealth(hp.value - damage); 
             RefreshAliveState(); // SetCurrentHealth()로 옮길지 고려
             
             Util.Log($"health: {hp.value}");
+        }
+        
+        public void TakeDamage(in HitResult hitResult)
+        {
+            TakeDamage(hitResult.Damage);
         }
 
         private void RefreshAliveState()
@@ -153,11 +158,6 @@ namespace RPG.Attribute
             RefreshAliveState();
 
             return true;
-        }
-
-        public void TakeDamage(in HitResult hitResult)
-        {
-            
         }
     }
 }

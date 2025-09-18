@@ -3,7 +3,7 @@ using TH.Combat;
 using TH.Core.Service;
 using UnityEngine;
 
-public sealed class CombatSystem : MonoBehaviour
+public sealed class CombatSystem : MonoBehaviour, ICombatSystem
 {
     [SerializeField] private DamageRuleSO damageRule;
     private IDamageCalculator damageCalc;
@@ -15,6 +15,8 @@ public sealed class CombatSystem : MonoBehaviour
             damageCalc = calc;
         }
         
+        ServiceLocator.Replace<ICombatSystem>(this);
+        
         if (damageRule == null)
         {
             ResourceManager.Instance.ReserveOperation(() =>
@@ -23,12 +25,18 @@ public sealed class CombatSystem : MonoBehaviour
             });
         }
     }
+    
+    private void OnDestroy()
+    {
+        ServiceLocator.UnRegister<ICombatSystem>(); 
+    }
 
     public void ApplyHit(in HitRequest hitRequest)
     {
         var result = damageCalc.Resolve(hitRequest, damageRule);
         if (hitRequest.Target is Component { gameObject: { activeSelf: true } })
         {
+            Util.Log($"[{nameof(CombatSystem)}.{nameof(ApplyHit)}]");
             hitRequest.Target.TakeDamage(result);
         }
     }
