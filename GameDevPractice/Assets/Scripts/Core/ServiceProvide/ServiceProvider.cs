@@ -11,9 +11,13 @@ namespace TH.Core.Service
         
         public T Get<T>() where T : class
         {
-            if (TryGet(out T service)) return service;
+            if (TryGet(out T service))
+            {
+                Util.Log($"[{nameof(ServiceProvider)}] Service '{typeof(T)} is provided'", Util.LoggingMode.InProgress);
+                return service;
+            }
             
-            Util.LogError($"[{nameof(IServiceProvider)}] Service '{typeof(T)}' not found");
+            Util.LogError($"[{nameof(ServiceProvider)}] Service '{typeof(T)}' not found");
             return null;
         }
 
@@ -43,7 +47,8 @@ namespace TH.Core.Service
                     Util.LogError($"Service {key.Name} duplicated register");
                     return;
                 }
-
+                
+                Util.Log($"[{nameof(ServiceLocator)}.{nameof(Register)}] new service registered: {instance.GetType().Name}", Util.LoggingMode.InProgress);
                 _services[key] = instance;
             }
         }
