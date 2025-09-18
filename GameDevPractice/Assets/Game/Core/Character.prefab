@@ -20,6 +20,7 @@ GameObject:
   - component: {fileID: 1599618502693370758}
   - component: {fileID: -193848170717944432}
   - component: {fileID: 4623480271148808600}
+  - component: {fileID: -2450599115419663989}
   m_Layer: 0
   m_Name: Character
   m_TagString: Untagged
@@ -255,3 +256,23 @@ MonoBehaviour:
   characterClass: 0
   progression: {fileID: 11400000, guid: 62995c9fc2d3e694c88ffa854f08dcc4, type: 2}
   levelUpEffectPrefab: {fileID: 0}
+--- !u!114 &-2450599115419663989
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6061633697407881761}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e582ae7b05286543bd2df5a1f816f77, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterTypeHolder
+  _type: {fileID: 0}
+  typeRef:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
+  addToPool: 0

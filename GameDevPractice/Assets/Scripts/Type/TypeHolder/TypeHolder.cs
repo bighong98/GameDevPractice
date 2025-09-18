@@ -9,7 +9,7 @@ using TH.Core.Pool;
 public class TypeHolder<T> : MonoBehaviour, ITypeHolder, IPoolObject where T : BaseTypeSO
 {
     [SerializeField] private T _type;
-    [Tooltip("임시 사용, 추후 프로퍼티로 변경 예정")]public T type;
+    public T type => _type;
     public AssetReferenceT<T> typeRef;
     public GameObject Origin { get; set; } // 오브젝트 풀링 적용시 원본 프리팹 참조 저장 목적. setter가 있지만 PoolingManager 이외
     public BaseTypeSO BaseType => type;
@@ -41,7 +41,7 @@ public class TypeHolder<T> : MonoBehaviour, ITypeHolder, IPoolObject where T : B
     private async UniTask GetTypeFromRef()
     {
         if (_type != null || !typeRef.RuntimeKeyIsValid()) return;
-        type = _type = await Util.ExtractAssetRefAsync(typeRef);
+        _type = await Util.ExtractAssetRefAsync(typeRef);
         Util.Log($"[{gameObject.name}.{nameof(GetTypeFromRef)}] type: {_type}", Util.LoggingMode.Completed);
         SetMinimapSprite();
     }
@@ -49,11 +49,11 @@ public class TypeHolder<T> : MonoBehaviour, ITypeHolder, IPoolObject where T : B
     public async UniTask SetTypeRef(AssetReferenceT<T> typeReference)
     {
         typeRef = typeReference;
-        type = _type = await Util.ExtractAssetRefAsync(typeReference);
+        _type = await Util.ExtractAssetRefAsync(typeReference);
         SetMinimapSprite();
     }
 
-    public async UniTask<T> GetSafeType()
+    public async UniTask<T> GetTypeAsync()
     {
         if (typeRef == null)
         {

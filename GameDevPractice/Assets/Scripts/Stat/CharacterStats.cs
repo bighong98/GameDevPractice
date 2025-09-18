@@ -26,6 +26,7 @@ namespace RPG.Stats
         ExperienceToLevelUp, // 레벨업에 필요한 경험치 필요량 (반드시 배열 길이가 (최대레벨-1)이어야함)
     }
     
+    [RequireComponent(typeof(CharacterTypeHolder))]
     public class CharacterStats : MonoBehaviour
     {
         [Range(1, 99)] 
@@ -58,10 +59,12 @@ namespace RPG.Stats
 
         private void Start()
         {
-            currentLevel.ForceInit();
-            OnLevelUp?.Invoke(currentLevel.value);
-            
-            LevelUpTestMethod().Forget(); // 테스트용 매서드
+            Init().ContinueWith(() =>
+            {
+                currentLevel.ForceInit();
+                OnLevelUp?.Invoke(currentLevel.value);
+                LevelUpTestMethod().Forget();
+            });
         }
 
         private void OnEnable()
@@ -74,6 +77,15 @@ namespace RPG.Stats
         {
             if (experience == null) return;
             experience.OnExperienceChanged -= UpdateLevel;
+        }
+
+        private async UniTask Init()
+        {
+            if (GetComponent<CharacterTypeHolder>() is not { } typeHolder) return;
+            
+            var charInfo = await typeHolder.GetTypeAsync();
+            characterClass = charInfo.characterClass;
+            startingLevel = charInfo.startingLevel;
         }
 
         private readonly TimeSpan oneSecond = TimeSpan.FromSeconds(1);
@@ -120,10 +132,10 @@ namespace RPG.Stats
                 currentLevel.value = newLevel;
                 Util.Log($"level up: {gameObject.name}.{currentLevel.value}", Util.LoggingMode.Completed);
                 OnLevelUp?.Invoke(currentLevel.value);
-                if (hasLevelUpEffect)
-                {
-                    ShowLevelUpEffect();
-                }
+                // if (hasLevelUpEffect)
+                // {
+                //     ShowLevelUpEffect();
+                // }
             }
         }
 

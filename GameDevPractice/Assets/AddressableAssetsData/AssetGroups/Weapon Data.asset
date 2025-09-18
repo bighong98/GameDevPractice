@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Weapon Data
+  m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
+  m_GroupName: Weapon Data
+  m_GUID: 597dbe6ac39c4a14184875887bf009e8
+  m_SerializeEntries:
+  - m_GUID: 0a600904131b2d64994bee447b8efe39
+    m_Address: Unarmed.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 24a647810f57bb345a370aa349b7758c
+    m_Address: Sword.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2fb8efb1b192ee345b6e53c7761aa529
+    m_Address: Bow.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6b7af030474e11c47a6955ef88e5837e
+    m_Address: Fireball.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: ba2aeaf5da86ad943b7448d84aa19f98, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 75326a5601c1f274098facaaa5d64d8e, type: 2}
+    - {fileID: 11400000, guid: 18a5d49c609c14348a7154c378b1d3b0, type: 2}

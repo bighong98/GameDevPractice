@@ -1123,6 +1123,14 @@ PrefabInstance:
       propertyPath: m_DynamicPixelsPerUnit
       value: 1000
       objectReference: {fileID: 0}
+    - target: {fileID: 4332151186145710061, guid: 979fea7d1693c584cb00a39a9d762e0d, type: 3}
+      propertyPath: _type
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 4332151186145710061, guid: 979fea7d1693c584cb00a39a9d762e0d, type: 3}
+      propertyPath: typeRef.m_AssetGUID
+      value: f99a9c8d0583cc04d9cb6f82405b6c9e
+      objectReference: {fileID: 0}
     - target: {fileID: 7403052176598494208, guid: 979fea7d1693c584cb00a39a9d762e0d, type: 3}
       propertyPath: Target.LookAtTarget
       value: 
