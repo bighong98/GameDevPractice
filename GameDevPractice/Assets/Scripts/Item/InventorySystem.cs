@@ -4,10 +4,12 @@ using UnityEngine;
 using RPG.Combat;
 using RPG.Saving;
 using RPG.UI;
+using TH.Core.Service;
+using TH.Item;
 
 namespace RPG.Item
 {
-    public class InventorySystem: MonoBehaviour, ISavable
+    public class InventorySystem: MonoBehaviour, ISavable, IInventorySystem
     {
         // Capacity (인벤토리 슬롯 개수)
         public int Capacity { get; private set; } // SetCapacity()로만 변경할 것
@@ -34,6 +36,8 @@ namespace RPG.Item
         
         private void Awake()
         {
+            ServiceLocator.Register<IInventorySystem>(this);
+            
             Capacity = initialCapacity;
             inventoryItems = new ItemSlot[maxCapacity];
             equippedItems = new EquipmentSlot[(int)Enums.EquippedItemSlotType.Max];

@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using RPG.Attribute;
+using TH.Combat;
 using UnityEngine;
 using TH.Core.Pool;
 
@@ -17,6 +18,9 @@ public class AttackProjectile : MonoBehaviour, IPoolObject
     private TimeSpan lifeTimeSpan;
     private bool isLaunched;
 
+    private AttackSource attackSource;
+    private ICombatSystem combatSystem;
+
     public event Action<Vector3> OnHit;
     
     private void Update()
@@ -26,7 +30,18 @@ public class AttackProjectile : MonoBehaviour, IPoolObject
         transform.Translate(Vector3.forward * (speed * Time.deltaTime));
     }
 
-    public void SetTarget(Health newTarget, bool homing)
+    public void SetProjectile(ICombatSystem combatSys, AttackSource atkSource)
+    {
+        combatSystem = combatSys;
+        attackSource = atkSource;
+    }
+
+    public void SetProjectile(AttackSource atkSource)
+    {
+        attackSource = atkSource;
+    }
+
+    public void SetTargetAndShoot(Health newTarget, bool homing)
     {
         if (newTarget == null) return;
         
@@ -107,6 +122,10 @@ public class AttackProjectile : MonoBehaviour, IPoolObject
         //todo: Target이 아닐 때 처리
         //todo: 대상이 사망 상태일 때 처리
         //todo: 논타겟팅/타겟팅 스킬의 투사체일 때 처리
+        if (other.GetComponent<IDamageable>() is { } victim)
+        {
+            combatSystem.ApplyHit(attackSource.ToRequest(victim));
+        }
         OnHit?.Invoke(transform.position);
         KillSelf();
     }

@@ -36,7 +36,7 @@ public sealed class CombatSystem : MonoBehaviour, ICombatSystem
         var result = damageCalc.Resolve(hitRequest, damageRule);
         if (hitRequest.Target is Component { gameObject: { activeSelf: true } })
         {
-            Util.Log($"[{nameof(CombatSystem)}.{nameof(ApplyHit)}]");
+            Util.Log($"[{nameof(CombatSystem)}.{nameof(ApplyHit)}]", Util.LoggingMode.Completed);
             hitRequest.Target.TakeDamage(result);
         }
     }

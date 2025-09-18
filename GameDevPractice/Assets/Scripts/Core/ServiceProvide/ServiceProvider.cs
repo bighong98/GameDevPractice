@@ -49,7 +49,7 @@ namespace TH.Core.Service
                     return;
                 }
                 
-                Util.Log($"[{nameof(ServiceLocator)}.{nameof(Register)}] new service registered: {instance.GetType().Name}", Util.LoggingMode.InProgress);
+                Util.Log($"[{nameof(ServiceLocator)}.{nameof(Register)}] new service registered: {instance.GetType().Name}", Util.LoggingMode.Completed);
                 _services[key] = instance;
             }
         }
@@ -59,7 +59,7 @@ namespace TH.Core.Service
             if (instance == null) throw new ArgumentNullException(nameof(instance));
             lock (_gate)
             {
-                Util.Log($"[{nameof(ServiceLocator)}.{nameof(Replace)}] new service registered: {instance.GetType().Name}", Util.LoggingMode.InProgress);
+                Util.Log($"[{nameof(ServiceLocator)}.{nameof(Replace)}] new service registered: {instance.GetType().Name}", Util.LoggingMode.Completed);
                 _services[typeof(T)] = instance;
             }
         }
