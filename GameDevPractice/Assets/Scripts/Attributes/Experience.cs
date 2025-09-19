@@ -1,8 +1,6 @@
 using RPG.Saving;
-using RPG.Stats;
 using UnityEngine;
 using System;
-using UnityEngine.Serialization;
 
 namespace RPG.Attribute
 {
@@ -11,7 +9,12 @@ namespace RPG.Attribute
         [SerializeField] private float XP = 0;
 
         public Action<float> OnExperienceChanged;
-        
+
+        private void Awake()
+        {
+            
+        }
+
         public void GainExperience(float xp)
         {
             XP += xp;

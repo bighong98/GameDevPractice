@@ -8,7 +8,7 @@ namespace RPG.Item
     {
         private void Start()
         {
-            if (GetComponent<WeaponTypeHolder>() is not { type: { } weaponType, owner: {} weaponOwner }) return;
+            if (GetComponent<WeaponTypeHolder>() is not { Type: { } weaponType, owner: {} weaponOwner }) return;
             
             if (weaponType.HasProjectile && weaponType.GetProjectilePrefab is { } projectilePrefab)
             {

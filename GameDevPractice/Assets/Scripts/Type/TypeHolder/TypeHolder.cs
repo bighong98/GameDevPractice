@@ -6,13 +6,13 @@ using TH.Core.Pool;
 
 // 타입 데이터(TypeSO), 원본 프리팹 객체(Origin)을 포함하는 MonoBehaviour 기반 컴포넌트
 // 가능한 오브젝트 풀링해서 사용할 것 (PoolingManager.cs 참조)
-public class TypeHolder<T> : MonoBehaviour, ITypeHolder, IPoolObject where T : BaseTypeSO
+public class TypeHolder<T> : MonoBehaviour, ITypeHolder<T>, IPoolObject where T : BaseTypeSO
 {
-    [SerializeField] private T _type;
-    public T type => _type;
+    [SerializeField] private T type;
+    public T Type => type;
     public AssetReferenceT<T> typeRef;
     public GameObject Origin { get; set; } // 오브젝트 풀링 적용시 원본 프리팹 참조 저장 목적. setter가 있지만 PoolingManager 이외
-    public BaseTypeSO BaseType => type;
+    public BaseTypeSO BaseType => Type;
 
     public event Action OnCreate;
     public event Action OnGet;
@@ -35,42 +35,53 @@ public class TypeHolder<T> : MonoBehaviour, ITypeHolder, IPoolObject where T : B
                 OnCreateFromPool();
                 OnGetFromPool();
             });
+
+            DeliverTypeData();
         });
     }
 
     private async UniTask GetTypeFromRef()
     {
-        if (_type != null || !typeRef.RuntimeKeyIsValid()) return;
-        _type = await Util.ExtractAssetRefAsync(typeRef);
-        Util.Log($"[{gameObject.name}.{nameof(GetTypeFromRef)}] type: {_type}", Util.LoggingMode.Completed);
+        if (type != null || !typeRef.RuntimeKeyIsValid()) return;
+        type = await Util.ExtractAssetRefAsync(typeRef);
+        Util.Log($"[{gameObject.name}.{nameof(GetTypeFromRef)}] type: {type}", Util.LoggingMode.Completed);
         SetMinimapSprite();
     }
 
     public async UniTask SetTypeRef(AssetReferenceT<T> typeReference)
     {
         typeRef = typeReference;
-        _type = await Util.ExtractAssetRefAsync(typeReference);
+        type = await Util.ExtractAssetRefAsync(typeReference);
         SetMinimapSprite();
     }
 
     public async UniTask<T> GetTypeAsync()
     {
-        if (typeRef == null)
+        if (typeRef == null) return null;
+        
+        if (type == null)
         {
-            return null;
-        }
-        if (_type == null)
-        {
-            _type = await Util.ExtractAssetRefAsync(typeRef);
+            type = await Util.ExtractAssetRefAsync(typeRef);
         }
         
-        return _type;
+        return type;
+    }
+
+    private void DeliverTypeData()
+    {
+        GetTypeAsync().ContinueWith((data) =>
+        {
+            foreach (var dependent in GetComponents<ITypeDependent>())
+            {
+                dependent.ReceiveType(data);
+            }
+        });
     }
 
     private void AddToPool()
     {
         if (gameObject is not {activeSelf: true} ) return; // NRE 방어
-        if (_type is not { prefab: {} prefabData } ) return; // typeSO에 프리팹 데이터가 존재하는지 확인
+        if (type is not { prefab: {} prefabData } ) return; // typeSO에 프리팹 데이터가 존재하는지 확인
         
         if (Origin == null) Origin = prefabData;
         Util.Log($"[{GetType().Name}.{nameof(AddToPool)}()] Origin == prefabData: {Origin == prefabData}");
@@ -112,7 +123,7 @@ public class TypeHolder<T> : MonoBehaviour, ITypeHolder, IPoolObject where T : B
     
     private void SetMinimapSprite()
     {
-        if (_type.showInMinimap)
+        if (type.showInMinimap)
         {
             const string minimapName = "minimapSprite";
     
@@ -128,7 +139,7 @@ public class TypeHolder<T> : MonoBehaviour, ITypeHolder, IPoolObject where T : B
             go.layer = LayerMask.NameToLayer("Minimap");
 
             var minimapSpriteRenderer = go.GetOrAddComponent<SpriteRenderer>();
-            minimapSpriteRenderer.sprite = type.minimapSprite;
+            minimapSpriteRenderer.sprite = Type.minimapSprite;
         }
     }
 }

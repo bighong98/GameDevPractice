@@ -9,7 +9,7 @@ public class CharacterTypeHolder : TypeHolder<CharacterTypeSO>
     public override void OnCreateFromPool()
     {
         base.OnCreateFromPool();
-        if (type is PlayerTypeSO { levelUpEffect: {} effect } 
+        if (Type is PlayerTypeSO { levelUpEffect: {} effect } 
             && GetComponent<CharacterStats>() is {} charStats)
         {
             LevelUpEffectAction = () =>

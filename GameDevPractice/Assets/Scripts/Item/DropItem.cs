@@ -36,7 +36,7 @@ namespace RPG.Item
             {
                 //todo: 아이템 습득 애니메이션 추가
                 if (itemTypeHolder == null || inventory == null) return;
-                if (inventory.value.AddItem(new Item(itemTypeHolder.type), 
+                if (inventory.value.AddItem(new Item(itemTypeHolder.Type), 
                         itemTypeHolder.GetAmount, 
                         checkInstanceType: true, 
                         useImmediately) <= 0) // AddItem()은 인벤토리 아이템 추가 시도 후 잔량을 반환, 잔량이 0이라면

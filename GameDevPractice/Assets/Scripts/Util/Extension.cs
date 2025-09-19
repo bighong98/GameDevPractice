@@ -32,4 +32,9 @@ public static class Extension
     {
         return popup.ShowPopupUI<T>();
     }
+
+    public static bool IsEqualFloat(this float a, float b)
+    {
+        return Util.IsEqualFloat(a, b);
+    }
 }

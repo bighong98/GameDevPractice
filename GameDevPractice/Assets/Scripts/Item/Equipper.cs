@@ -70,7 +70,7 @@ namespace RPG.Item
             if (!isInit) return;
             if (animator == null) return;
 
-            if (currentWeapon is { type: { } currWeaponType }) // 기존에 사용 중인 무기가 있었다면
+            if (currentWeapon is { Type: { } currWeaponType }) // 기존에 사용 중인 무기가 있었다면
             {
                 if (currWeaponType == weaponType) return; // 현재 장착중인 무기와 동일한 무기라면 즉시 실행 중지 (중복 무기 생성 방지)
                 
@@ -95,7 +95,7 @@ namespace RPG.Item
 
         private void DeSpawnWeapon()
         {
-            if (currentWeapon != null && weaponPools.TryGetValue(currentWeapon.type, out var pool))
+            if (currentWeapon != null && weaponPools.TryGetValue(currentWeapon.Type, out var pool))
             {
                 pool.Release(currentWeapon);
             }

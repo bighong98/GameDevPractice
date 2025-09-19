@@ -99,6 +99,18 @@ public static class Util
         return component;
     }
 
+    #region Compare (numerical type)
+
+    public static bool IsEqualFloat(float a, float b)
+    {
+        float diff = Mathf.Abs(a - b);
+        float tolerance = Mathf.Abs(a * .0001f);
+
+        return diff <= tolerance;
+    }
+
+    #endregion
+
     #region Hierarchy
 
     public static GameObject FindChild(GameObject go, string name = null, bool recursive = false)

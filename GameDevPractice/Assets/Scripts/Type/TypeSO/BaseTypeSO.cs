@@ -2,7 +2,7 @@ using UnityEngine;
 
 // 게임오브젝트 타입별 데이터 스크립터블 오브젝트의 상위 클래스
 // 모든 타입 데이터 SO의 공통 로직을 포함함
-public abstract class BaseTypeSO : ScriptableObject
+public abstract class BaseTypeSO : ScriptableObject, ITypeSO
 {
     [Header("Prefab Reference")] [Tooltip("TypeSO and TypeHolder must be pair")]
     public GameObject prefab;
