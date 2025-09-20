@@ -85,7 +85,7 @@ public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
             InitOnce();
             
             if (_instance is not Singleton<ResourceManager>) // 본인이 ResourceManager면 실행x
-                ResourceManager.Instance.SubscribePreLoadOnlyOnce((t) =>
+                ResourceManager.Instance.WaitForPreLoadOnlyOnce((t) =>
                 {
                     Util.Log($"[{typeof(T).Name}] InitOnceAfterPreLoad()", Util.LoggingMode.Completed);
                     InitOnceAfterPreLoad(t);
@@ -100,7 +100,7 @@ public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
             Init();
             
             if (_instance is not Singleton<ResourceManager>) // 본인이 ResourceManager면 실행x
-                ResourceManager.Instance.SubscribePreLoad(InitAfterPreLoad);
+                ResourceManager.Instance.WaitForPreLoad(InitAfterPreLoad);
 
             if (_instance is not Singleton<GameSceneManager>) // 본인이 GameSceneManager면 실행x
                 GameSceneManager.Instance.RegisterCleanupTask(Clear);

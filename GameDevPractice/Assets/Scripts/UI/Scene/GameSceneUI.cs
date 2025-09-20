@@ -5,6 +5,7 @@ using RPG.Stats;
 using RPG.UI;
 using UnityEngine;
 using UnityEngine.UI;
+using TH.Attribute;
 
 public class GameSceneUI : BaseUI
 {
@@ -80,12 +81,14 @@ public class GameSceneUI : BaseUI
         
         if (player.GetComponent<Health>() is {} pHealth)
             pHealth.OnHealthRatioChanged += SetHPBar;
-        if (player.GetComponent<Experience>() is {} pExp)
-            pExp.OnExperienceChanged += OnExpChanged;
+        if (player.GetComponent<IExperience>() is {} pExp)
+            pExp.OnXpChanged += OnExpChanged;
+        if (player.TryGetComponent(out ILevel pLevel))
+            pLevel.OnLevelChanged += OnLevelUp;
         if (player.GetComponent<CharacterStats>() is { } pCharacterStats)
         {
             playerStats = pCharacterStats;
-            pCharacterStats.OnLevelUp += OnLevelUP;
+            // pCharacterStats.OnLevelUp += OnLevelUp;
         }
     }
     
@@ -113,7 +116,7 @@ public class GameSceneUI : BaseUI
         SetEXPBar(numerator / denominator);
     }
 
-    private void OnLevelUP(int level)
+    private void OnLevelUp(int level)
     {
         SetLevelText(level);
 
@@ -123,7 +126,7 @@ public class GameSceneUI : BaseUI
             playerStats = pStats;
         }
         
-        if (level > 0 && playerStats.GetStat(GameStat.ExperienceToLevelUp, level - 1) is { } pResult)
+        if (level > 0 && playerStats.GetStat(GameStat.ExperienceToLevelUp, level) is { } pResult)
         {
             prevLevelUpXp = (int)pResult;
         }

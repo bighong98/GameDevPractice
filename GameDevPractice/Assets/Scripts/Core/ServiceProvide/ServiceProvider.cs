@@ -27,7 +27,7 @@ namespace TH.Core.Service
             {
                 if (_services.TryGetValue(typeof(T), out var obj) && obj is T t)
                 {
-                    Util.Log($"[{nameof(ServiceProvider)}.{nameof(TryGet)}] Service '{typeof(T)} is provided'", Util.LoggingMode.InProgress);
+                    Util.Log($"[{nameof(ServiceProvider)}.{nameof(TryGet)}] Service '{typeof(T)} is provided'", Util.LoggingMode.Completed);
                     service = t;
                     return true;
                 }

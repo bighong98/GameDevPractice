@@ -10,7 +10,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1266046088326726757, guid: 04e85b49e0c68284faa1df1e9de339f1, type: 3}
       propertyPath: m_Name
-      value: Equipped Weapon
+      value: Equipped Unarmed
+      objectReference: {fileID: 0}
+    - target: {fileID: 4469328161244187137, guid: 04e85b49e0c68284faa1df1e9de339f1, type: 3}
+      propertyPath: addToPool
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4469328161244187137, guid: 04e85b49e0c68284faa1df1e9de339f1, type: 3}
+      propertyPath: typeRef.m_AssetGUID
+      value: 0a600904131b2d64994bee447b8efe39
       objectReference: {fileID: 0}
     - target: {fileID: 6685915840786252852, guid: 04e85b49e0c68284faa1df1e9de339f1, type: 3}
       propertyPath: m_LocalPosition.x

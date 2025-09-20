@@ -2,6 +2,7 @@ using System;
 using Cysharp.Threading.Tasks;
 using GameDevTV.Utils;
 using RPG.Attribute;
+using TH.Attribute;
 using UnityEngine;
 using TH.Core.Pool;
 
@@ -45,12 +46,19 @@ namespace RPG.Stats
         private Experience experience;
         private bool hasExperience;
 
+        private PlayerExperience playerExp;
+
         private void Awake()
         {
             if (GetComponent<Experience>() is { } result)
             {
                 experience = result;
                 hasExperience = true;
+            }
+
+            if (TryGetComponent(out PlayerExperience pExp))
+            {
+                playerExp = pExp;
             }
 
             hasLevelUpEffect = levelUpEffectPrefab != null;
@@ -63,20 +71,28 @@ namespace RPG.Stats
             {
                 currentLevel.ForceInit();
                 OnLevelUp?.Invoke(currentLevel.value);
-                LevelUpTestMethod().Forget();
+                // LevelUpTestMethod().Forget();
             });
         }
 
         private void OnEnable()
         {
-            if (experience == null) return;
-            experience.OnExperienceChanged += UpdateLevel;
+            // if (experience == null) return;
+            // experience.OnExperienceChanged += UpdateLevel;
+            if (playerExp != null)
+            {
+                playerExp.OnLevelChanged += UpdateLevel;
+            }
         }
 
         private void OnDisable()
         {
-            if (experience == null) return;
-            experience.OnExperienceChanged -= UpdateLevel;
+            // if (experience == null) return;
+            // experience.OnExperienceChanged -= UpdateLevel;
+            if (playerExp != null)
+            {
+                playerExp.OnLevelChanged -= UpdateLevel;
+            }
         }
 
         private async UniTask Init()
@@ -88,24 +104,7 @@ namespace RPG.Stats
             startingLevel = charInfo.startingLevel;
         }
 
-        private readonly TimeSpan oneSecond = TimeSpan.FromSeconds(1);
-        private async UniTaskVoid LevelUpTestMethod()
-        {
-            if (!gameObject.CompareTag("Player")) return;
-
-            int count = 0;
-            while (count < 5)
-            {
-                await UniTask.Delay(oneSecond, DelayType.DeltaTime);
-                if (this == null || gameObject == null) break;
-                if (hasExperience)
-                {
-                    count++;
-                    experience.GainExperience(10);
-                    Util.Log("Experience Gained", Util.LoggingMode.Completed);
-                }
-            }
-        } 
+        
 
         public float GetStat(GameStat statType)
         {
@@ -136,6 +135,16 @@ namespace RPG.Stats
                 // {
                 //     ShowLevelUpEffect();
                 // }
+            }
+        }
+
+        private void UpdateLevel(int level)
+        {
+            if (level > currentLevel.value)
+            {
+                currentLevel.value = level;
+                Util.Log($"level up: {gameObject.name}.{currentLevel.value}", Util.LoggingMode.InProgress);
+                //todo: 레벨에 영향을 받는 스탯 변경
             }
         }
 

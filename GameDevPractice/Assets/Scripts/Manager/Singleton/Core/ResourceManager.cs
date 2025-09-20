@@ -37,6 +37,7 @@ public class ResourceManager : Singleton<ResourceManager>
         atlasSuffixLength = SpriteAtlasSuffix.Length;
         // PreLoad();
         PreLoadAsync().Forget();
+        NotifyPreLoad += RunReserved;
     }
 
     protected override void InitOnceAfterPreLoad(bool isLoadCompleted) { }
@@ -95,16 +96,25 @@ public class ResourceManager : Singleton<ResourceManager>
         PreLoad();
     }
 
-    public void SubscribePreLoad(Action<bool> callback)
+    public void WaitForPreLoad(Action<bool> callback)
     {
         if (preLoadState) callback?.Invoke(true);
         else NotifyPreLoad += callback;
     }
 
-    public void SubscribePreLoadOnlyOnce(Action<bool> callback)
+    public void WaitForPreLoadOnlyOnce(Action<bool> callback)
     {
         if (preLoadState) callback?.Invoke(true);
         else reservedPreLoadTasks.Enqueue(callback);
+    }
+
+    private void RunReserved(bool dum)
+    {
+        if (reservedPreLoadTasks.Count == 0) return;
+        while (reservedPreLoadTasks.TryDequeue(out var task))
+        {
+            task?.Invoke(true);
+        }
     }
 
     #endregion

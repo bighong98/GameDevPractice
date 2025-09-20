@@ -8,9 +8,10 @@ public interface ITypeHolder
     BaseTypeSO BaseType { get; }
     GameObject Origin { get; set; }
     UniTask<BaseTypeSO> GetTypeAsync();
+    void DeliverTypeData();
 }
 
 public interface ITypeHolder<T> where T : BaseTypeSO
 {
-    new UniTask<T> GetTypeAsync();
+    UniTask<T> GetTypeAsync();
 }

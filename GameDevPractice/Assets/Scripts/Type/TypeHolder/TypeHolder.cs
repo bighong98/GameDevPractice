@@ -26,8 +26,9 @@ public class TypeHolder<T> : MonoBehaviour, ITypeHolder<T>, IPoolObject where T 
     {
         if (isInit) return; // 이미 OnCreateFromPool()이 실행된 경우 실행x
 
-        ResourceManager.Instance.ReserveOperation(() =>
+        ResourceManager.Instance.WaitForPreLoadOnlyOnce((loaded) =>
         { // ResourceManager에게 초기화 작업 예약
+            if (!loaded) return;
             GetTypeFromRef().ContinueWith(() =>
             {
                 if (addToPool)
@@ -71,6 +72,11 @@ public class TypeHolder<T> : MonoBehaviour, ITypeHolder<T>, IPoolObject where T 
     {
         GetTypeAsync().ContinueWith((data) =>
         {
+            if (data == null)
+            {
+                Util.LogError($"[{name}.{nameof(GetType)}.{nameof(DeliverTypeData)}] failed to load from assetRefT '{typeRef}'");
+            }
+            
             foreach (var dependent in GetComponents<ITypeDependent>())
             {
                 dependent.ReceiveType(data);

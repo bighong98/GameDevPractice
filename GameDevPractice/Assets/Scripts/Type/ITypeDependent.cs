@@ -7,5 +7,5 @@ public interface ITypeDependent
 
 public interface ITypeDependent<in T> : ITypeDependent where T : BaseTypeSO
 {
-    new void ReceiveType(T typeInfo);
+    void ReceiveType(T typeInfo);
 }

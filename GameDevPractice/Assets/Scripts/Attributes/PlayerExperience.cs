@@ -4,6 +4,7 @@ using RPG.Saving;
 using RPG.Stats;
 using TH.Core.Pool;
 using UnityEngine;
+using Cysharp.Threading.Tasks;
 
 namespace TH.Attribute
 {
@@ -17,40 +18,47 @@ namespace TH.Attribute
 
         private LazyValue<int> currentLevel;
         private float currentXp;
-
+        
+        private int startingLevel;
+        
         private ProgressionSO progression;
         private Action LevelUpEffectAction;
         
         private void Awake()
         {
             InitBeforeLoad();
-            ResourceManager.Instance.ReserveOperation(InitAfterLoad);
+            ResourceManager.Instance.WaitForPreLoadOnlyOnce((dum) => { InitAfterLoad(); });
         }
 
-        private void OnEnable()
-        {
-            
-        }
-
-        private async void InitBeforeLoad()
+        private void InitBeforeLoad()
         {
             currentLevel = new LazyValue<int>(CalculateLevel);
             GetCurrLevel = currentLevel.value;
             GetCurrXp = currentXp;
-        
-            // if (GetComponent<ITypeHolder>() is not { } dataHolder) return;
-            // if (dataHolder.BaseType is not CharacterTypeSO charInfo)
-            // {
-            //     var extract = await dataHolder.GetTypeAsync();
-            //     if (extract is not CharacterTypeSO extractInfo) return;
-            //     charInfo = extractInfo;
-            // }
         }
         
         private void InitAfterLoad()
         {
             progression = ResourceManager.Instance.Load<ProgressionSO>("ProgressionSO.asset");
+            Util.Log($"[{nameof(PlayerExperience)}.{nameof(InitAfterLoad)}()] progression: {progression} ");
+            currentLevel.ForceInit();
+            LevelUpTestMethod().Forget();
         }
+        
+        private readonly TimeSpan oneSecond = TimeSpan.FromSeconds(1);
+        private async UniTaskVoid LevelUpTestMethod()
+        {
+            Util.Log($"[{nameof(PlayerExperience)}] '{nameof(LevelUpTestMethod)}' started");
+            int count = 0;
+            while (count < 10)
+            {
+                await UniTask.Delay(oneSecond, DelayType.DeltaTime);
+                if (this == null || gameObject == null) break;
+                
+                count++;
+                GainXp(50);
+            }
+        } 
         
         public void ReceiveType(ScriptableObject typeInfo)
         {
@@ -72,25 +80,35 @@ namespace TH.Attribute
             OnXpChanged?.Invoke(currentXp);
 
             if (updateLevel)
-            {
-                currentLevel.value = CalculateLevel(xp);
-                OnLevelChanged?.Invoke(currentLevel.value);
-            }
+                SetLevel(CalculateLevel(xp));
         }
 
         public void GainXp(float xp) // 경험치 획득
         {
             if (xp < 0) return; // 음수는 실행x
+            Util.Log($"Experience Gained ({xp})", Util.LoggingMode.InProgress);
             SetXp(currentXp + xp, true);
         }
         
-        public void SetLevel(int level) // 레벨 설정
+        // 레벨 설정
+        // byForce: 강제 지정 여부 (강제 지정 시 해당 레벨의 경험치 0 상태로 변경)
+        // notifyCallbacks: 콜백 실행 여부 (OnLevelChanged)
+        public void SetLevel(int level, bool byForce = false, bool notifyCallbacks = true) 
         {
-            if (currentLevel is { value: { } result } && result == level) return;
+            if (currentLevel is not { value: { } currLv } || currLv == level) return; // 현재 레벨과 동일하면 실행x
             
             currentLevel.value = level;
-            CalculateXpFromLevel(level, out float xp);
-            SetXp(xp, false);
+            if (byForce)
+            {
+                CalculateXpFromLevel(level, out float xp);
+                SetXp(xp, false);
+            }
+            else if (currLv < level)
+            {
+                LevelUpEffectAction?.Invoke();
+                Util.Log($"Level up! ({level})");
+            }
+            OnLevelChanged?.Invoke(currentLevel.value);
         }
 
         private int CalculateLevel() // 현재 경험치에 해당하는 레벨 계산 (= 현재 레벨 계산)
@@ -107,10 +125,8 @@ namespace TH.Attribute
 
         private int CalculateLevel(float xp)
         {
-            if (progression == null) // ProgressionSO 참조가 없는 경우
-            { // 기존 설정값(ex: startingLevel)이 존재하면 해당 값 사용, 없으면 0 반환
-                return currentLevel is { value: { } existingLevel } ? existingLevel : 0;
-            }
+            if (progression == null) // ProgressionSO 참조가 없는 경우 startingLevel 반환
+                return startingLevel;
             
             int penultimateLevel = progression.GetMaxLevel(GameStat.ExperienceToLevelUp, CharacterClass.Player);
             

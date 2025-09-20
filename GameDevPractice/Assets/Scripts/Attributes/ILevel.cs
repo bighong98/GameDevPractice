@@ -7,7 +7,7 @@ namespace TH.Attribute
     {
         event Action<int> OnLevelChanged;
         int GetCurrLevel { get; }
-        void SetLevel(int level);
+        void SetLevel(int level, bool byForce, bool notifyCallbacks);
     }
 }
 
