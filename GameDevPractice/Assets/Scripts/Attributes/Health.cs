@@ -30,6 +30,9 @@ namespace RPG.Attribute
         
         private static readonly int DieAnimHash = Animator.StringToHash("die");
         public bool IsDead { get; private set; }
+        public event Action OnDead;
+        // public event Action OnRevived;
+        
         public float GetCurrentHealth => hp.Value;
         public float GetMaxHealth => maxHp.Value;
         public float GetCurrentHealthRatio => (hp.Value / maxHp.Value);
@@ -37,14 +40,15 @@ namespace RPG.Attribute
         public Action<float> OnHealthRatioChanged; // 현재 체력에 변동이 생긴 경우 (피격, 회복 등)
         public Action<float> OnMaxHealthChanged; // 최대 체력에 변동이 생긴 경우 (레벨 업, 장비 변경 등)
 
-        [SerializeField] private GameObject HPBarPrefab; // testing
+        [SerializeField] private GameObject HPBarPrefab; // serialize for debug
+
+        private IAttackable lastAttacker; // 가장 최근 자신에게 피해를 입힌 대상
+        private LazyValue<float> rewardXp;
         
         private void Awake()
         {
             animator = GetComponent<Animator>();
-            // stats = GetComponent<CharacterStats>();
             statHolder = GetComponent<IStatHolder>();
-            // levelHolder = GetComponent<ILevel>();
             if (TryGetComponent(out ILevel iLevel))
             {
                 levelHolder = iLevel;
@@ -53,6 +57,15 @@ namespace RPG.Attribute
 
             maxHp = new LazyValue<float>(GetInitialHealth);
             hp = new LazyValue<float>(GetInitialHealth);
+            rewardXp = new LazyValue<float>(() =>
+            {
+                if (statHolder != null && statHolder.GetStat(GameStat.ExperienceReward) is {} result)
+                {
+                    return result;
+                }
+                Util.Log($"[{gameObject.name}.{nameof(Health)}] failed to initialize rewardXp field");
+                return 0;
+            });
         }
 
         private void Start()
@@ -67,11 +80,6 @@ namespace RPG.Attribute
                     UIManager.Instance.GetUIFromPool<HPBar>(HPBarPrefab, UICanvas.AnchoredOverlay).SetOwner(this);
                 }
             });
-            // await UniTask.Delay(TimeSpan.FromSeconds(3), cancellationToken: this.GetCancellationTokenOnDestroy()).SuppressCancellationThrow();
-            // if (this != null)
-            // {
-            //     UIManager.Instance.GetUIFromPool<HPBar>(HPBarPrefab, UICanvas.Overlay).SetOwner(this);
-            // }
         }
 
         private void OnEnable()
@@ -123,6 +131,7 @@ namespace RPG.Attribute
         public void TakeDamage(in HitResult hitResult)
         {
             TakeDamage(hitResult.Damage);
+            lastAttacker = hitResult.Attacker;
         }
 
         private void RefreshAliveState()
@@ -137,17 +146,22 @@ namespace RPG.Attribute
         {
             if (IsDead) return;
             IsDead = true;
+            OnDead?.Invoke();
             animator.SetTrigger(DieAnimHash);
             GetComponent<ActoinScheduler>().CancelCurrentAction();
+
+            if (lastAttacker is Component c && c.TryGetComponent(out IExperience xp))
+            {
+                xp.GainXp(rewardXp.Value);
+            }
         }
 
         private const int LevelUpRegenerationPercentage = 50;
         private void OnLevelUp(int level)
         {
             SetMaxHealth(statHolder.GetStat(GameStat.Health, level));
-            // SetMaxHealth(stats.GetStat(GameStat.Health, level));
             SetCurrentHealth(hp.Value + maxHp.Value * ((float)LevelUpRegenerationPercentage / 100));
-            // Util.Log($"OnLevelUp: hp: {hp.value}");
+            Util.Log($"OnLevelUp: hp: {hp.Value}", Util.LoggingMode.Completed);
         }
 
         public object CaptureState()

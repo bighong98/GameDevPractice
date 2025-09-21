@@ -153,6 +153,7 @@ namespace RPG.UI
         {
             owner.OnHealthRatioChanged += this.OnHealthRatioChanged;
             owner.OnMaxHealthChanged += this.OnMaxHealthChanged;
+            owner.OnDead += this.OnOwnerDied;
             target = owner.transform;
         }
 
@@ -165,6 +166,12 @@ namespace RPG.UI
         private void OnMaxHealthChanged(float amount)
         {
             Util.Log($"{target.gameObject.name}: max health is changed. {amount}");
+        }
+
+        private void OnOwnerDied()
+        {
+            if (gameObject is not { activeSelf: true }) return;
+            HideAfterSecond(DelayHideByDeath).Forget();
         }
 
         private void Show()
@@ -184,7 +191,6 @@ namespace RPG.UI
         }
         
         public GameObject Origin { get; set; }
-        // public PoolKey PoolKey { get; set; }
 
         public void OnCreateFromPool()
         {

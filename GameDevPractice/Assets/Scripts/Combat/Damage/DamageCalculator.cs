@@ -6,7 +6,7 @@ namespace TH.Combat
     {
         public HitResult Resolve(in HitRequest hitRequest, in DamageRuleSO damageRule)
         {
-            HitResult hitResult;
+            HitResult hitResult = new HitResult(hitRequest.Attacker);
             
             //todo: 대미지 계산 로직 추가
             float damage = hitRequest.BaseDamage;
