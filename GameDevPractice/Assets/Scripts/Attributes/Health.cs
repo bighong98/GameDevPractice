@@ -4,8 +4,10 @@ using UnityEngine;
 using RPG.Core;
 using RPG.Saving;
 using RPG.Stats;
-using GameDevTV.Utils;
+using TH.Utils;
 using RPG.UI;
+using TH.Attribute;
+using TH.Attribute.Stat;
 using TH.Combat;
 
 namespace RPG.Attribute
@@ -21,13 +23,16 @@ namespace RPG.Attribute
         private LazyValue<float> hp;
         
         private Animator animator;
-        private CharacterStats stats;
+        // private CharacterStats stats;
+        private IStatHolder statHolder;
+        private ILevel levelHolder;
+        private bool hasMutableLevel;
         
         private static readonly int DieAnimHash = Animator.StringToHash("die");
         public bool IsDead { get; private set; }
-        public float GetCurrentHealth => hp.value;
-        public float GetMaxHealth => maxHp.value;
-        public float GetCurrentHealthRatio => (hp.value / maxHp.value);
+        public float GetCurrentHealth => hp.Value;
+        public float GetMaxHealth => maxHp.Value;
+        public float GetCurrentHealthRatio => (hp.Value / maxHp.Value);
 
         public Action<float> OnHealthRatioChanged; // 현재 체력에 변동이 생긴 경우 (피격, 회복 등)
         public Action<float> OnMaxHealthChanged; // 최대 체력에 변동이 생긴 경우 (레벨 업, 장비 변경 등)
@@ -37,7 +42,14 @@ namespace RPG.Attribute
         private void Awake()
         {
             animator = GetComponent<Animator>();
-            stats = GetComponent<CharacterStats>();
+            // stats = GetComponent<CharacterStats>();
+            statHolder = GetComponent<IStatHolder>();
+            // levelHolder = GetComponent<ILevel>();
+            if (TryGetComponent(out ILevel iLevel))
+            {
+                levelHolder = iLevel;
+                hasMutableLevel = true;
+            }
 
             maxHp = new LazyValue<float>(GetInitialHealth);
             hp = new LazyValue<float>(GetInitialHealth);
@@ -45,8 +57,8 @@ namespace RPG.Attribute
 
         private void Start()
         {
-            maxHp.ForceInit();
-            hp.ForceInit();
+            // maxHp.ForceInit();
+            // hp.ForceInit();
             
             UIManager.Instance.ReserveOperation(() =>
             {
@@ -64,43 +76,48 @@ namespace RPG.Attribute
 
         private void OnEnable()
         {
-            stats.OnLevelUp += this.OnLevelUp;
+            // stats.OnLevelUp += this.OnLevelUp;
+            if (!hasMutableLevel || levelHolder == null) return;
+            levelHolder.OnLevelChanged += this.OnLevelUp;
         }
 
         private void OnDisable()
         {
-            stats.OnLevelUp -= this.OnLevelUp;
+            // stats.OnLevelUp -= this.OnLevelUp;
+            if (!hasMutableLevel || levelHolder == null) return;
+            levelHolder.OnLevelChanged -= this.OnLevelUp;
         }
 
         private float GetInitialHealth()
         {
-            return GetComponent<CharacterStats>().GetStat(GameStat.Health);
+            // return GetComponent<CharacterStats>().GetStat(GameStat.Health);
+            return statHolder?.GetStat(GameStat.Health) ?? 0; 
         }
 
         private void SetCurrentHealth(float amount)
         {
-            if (maxHp.value is not ({ } max and > 0))
+            if (maxHp.Value is not ({ } max and > 0))
             {
                 Util.Log("Max Hp is less or equal to 0. failed to set HP");
                 return;
             }
             
-            var curr = hp.value = Mathf.Clamp(amount, 0, max);
+            var curr = hp.Value = Mathf.Clamp(amount, 0, max);
             OnHealthRatioChanged?.Invoke(curr / max);
         }
 
         private void SetMaxHealth(float amount)
         {
-            maxHp.value = amount;
-            OnMaxHealthChanged?.Invoke(maxHp.value);
+            maxHp.Value = amount;
+            OnMaxHealthChanged?.Invoke(maxHp.Value);
         }
         
         private void TakeDamage(float damage)
         {
-            SetCurrentHealth(hp.value - damage); 
+            SetCurrentHealth(hp.Value - damage); 
             RefreshAliveState(); // SetCurrentHealth()로 옮길지 고려
             
-            Util.Log($"health: {hp.value}");
+            Util.Log($"health: {hp.Value}");
         }
         
         public void TakeDamage(in HitResult hitResult)
@@ -110,7 +127,7 @@ namespace RPG.Attribute
 
         private void RefreshAliveState()
         {
-            if (hp.value <= 0)
+            if (hp.Value <= 0)
             {
                 Die();
             }
@@ -127,8 +144,9 @@ namespace RPG.Attribute
         private const int LevelUpRegenerationPercentage = 50;
         private void OnLevelUp(int level)
         {
-            SetMaxHealth(stats.GetStat(GameStat.Health, level));
-            SetCurrentHealth(hp.value + maxHp.value * ((float)LevelUpRegenerationPercentage / 100));
+            SetMaxHealth(statHolder.GetStat(GameStat.Health, level));
+            // SetMaxHealth(stats.GetStat(GameStat.Health, level));
+            SetCurrentHealth(hp.Value + maxHp.Value * ((float)LevelUpRegenerationPercentage / 100));
             // Util.Log($"OnLevelUp: hp: {hp.value}");
         }
 
@@ -144,7 +162,7 @@ namespace RPG.Attribute
             
             return new HealthSaveData
             {
-                hp = hp.value
+                hp = hp.Value
             };
         }
 

@@ -1,11 +1,11 @@
 using System;
 using RPG.Stats;
 using UnityEngine;
+using TH.Utils;
 
 namespace TH.Attribute.Stat
 {
-    [RequireComponent(typeof(ITypeHolder))]
-    public class StatHolder : MonoBehaviour, ITypeDependent
+    public class StatHolder : MonoBehaviour, IStatHolder, ITypeDependent
     {
         [SerializeField] private CharacterClass characterClass;
         [SerializeField] private ProgressionSO progression;
@@ -13,7 +13,8 @@ namespace TH.Attribute.Stat
         [SerializeField] private int level;
 
         private ILevel levelHolder;
-
+        private bool hasMutableLevel;
+        
         private void Awake()
         {
             InitBeforeLoad();
@@ -22,12 +23,16 @@ namespace TH.Attribute.Stat
 
         private void OnEnable()
         {
+            if (!hasMutableLevel || levelHolder == null) return;
+            
             levelHolder.OnLevelChanged += UpdateStatsByLevel;
             UpdateStatsByLevel(levelHolder.GetCurrLevel);
         }
         
         private void OnDisable()
         {
+            if (!hasMutableLevel || levelHolder == null) return;
+            
             levelHolder.OnLevelChanged -= UpdateStatsByLevel;
         }
 
@@ -41,7 +46,12 @@ namespace TH.Attribute.Stat
 
         private void InitBeforeLoad()
         {
-            levelHolder = GetComponent<ILevel>();
+            // levelHolder = GetComponent<ILevel>();
+            if (TryGetComponent(out ILevel iLevel))
+            {
+                levelHolder = iLevel;
+                hasMutableLevel = true;
+            }
         }
 
         private void InitAfterLoad()

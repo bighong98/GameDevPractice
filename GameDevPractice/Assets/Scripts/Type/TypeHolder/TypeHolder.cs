@@ -90,7 +90,7 @@ public class TypeHolder<T> : MonoBehaviour, ITypeHolder<T>, IPoolObject where T 
         if (type is not { prefab: {} prefabData } ) return; // typeSO에 프리팹 데이터가 존재하는지 확인
         
         if (Origin == null) Origin = prefabData;
-        Util.Log($"[{GetType().Name}.{nameof(AddToPool)}()] Origin == prefabData: {Origin == prefabData}");
+        Util.Log($"[{GetType().Name}.{nameof(AddToPool)}()] Origin == prefabData: {Origin == prefabData}", Util.LoggingMode.Completed);
         PoolManager.Instance.GetPool(prefab: prefabData); // 오브젝트 풀 생성 시도
     }
 

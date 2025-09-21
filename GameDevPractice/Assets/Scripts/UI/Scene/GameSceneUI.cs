@@ -6,6 +6,7 @@ using RPG.UI;
 using UnityEngine;
 using UnityEngine.UI;
 using TH.Attribute;
+using TH.Attribute.Stat;
 
 public class GameSceneUI : BaseUI
 {
@@ -41,7 +42,8 @@ public class GameSceneUI : BaseUI
 
     private readonly Slider[] sliders = new Slider[(int)Sliders.max];
 
-    private CharacterStats playerStats;
+    // private CharacterStats playerStats;
+    private IStatHolder statHolder;
     private float prevLevelUpXp;
     private float nextLevelUpXp;
     
@@ -85,10 +87,14 @@ public class GameSceneUI : BaseUI
             pExp.OnXpChanged += OnExpChanged;
         if (player.TryGetComponent(out ILevel pLevel))
             pLevel.OnLevelChanged += OnLevelUp;
-        if (player.GetComponent<CharacterStats>() is { } pCharacterStats)
+        // if (player.GetComponent<CharacterStats>() is { } pCharacterStats)
+        // {
+        //     playerStats = pCharacterStats;
+        //     // pCharacterStats.OnLevelUp += OnLevelUp;
+        // }
+        if (player.GetComponent<IStatHolder>() is { } pStatHolder)
         {
-            playerStats = pCharacterStats;
-            // pCharacterStats.OnLevelUp += OnLevelUp;
+            statHolder = pStatHolder;
         }
     }
     
@@ -120,18 +126,38 @@ public class GameSceneUI : BaseUI
     {
         SetLevelText(level);
 
-        if (playerStats == null && FindFirstObjectByType<PlayerController>() is {} foundPlayer
-            && foundPlayer.GetComponent<CharacterStats>() is {} pStats)
+        // if (playerStats == null && FindFirstObjectByType<PlayerController>() is {} foundPlayer
+        //     && foundPlayer.GetComponent<CharacterStats>() is {} pStats)
+        // {
+        //     playerStats = pStats;
+        // }
+        
+        // if (level > 0 && playerStats.GetStat(GameStat.ExperienceToLevelUp, level) is { } pResult)
+        // {
+        //     prevLevelUpXp = (int)pResult;
+        // }
+        //
+        // if (playerStats.GetStat(GameStat.ExperienceToLevelUp, level) is { } nResult)
+        // {
+        //     nextLevelUpXp = (int)nResult;
+        // }
+
+        if (statHolder == null)
         {
-            playerStats = pStats;
+            if (FindFirstObjectByType<PlayerController>() is { } foundPlayer
+                && foundPlayer.GetComponent<IStatHolder>() is { } pStatHolder)
+            {
+                statHolder = pStatHolder;
+            }
+            else return;
         }
         
-        if (level > 0 && playerStats.GetStat(GameStat.ExperienceToLevelUp, level) is { } pResult)
+        if (level > 0 && statHolder.GetStat(GameStat.ExperienceToLevelUp, level) is { } pResult)
         {
             prevLevelUpXp = (int)pResult;
         }
 
-        if (playerStats.GetStat(GameStat.ExperienceToLevelUp, level) is { } nResult)
+        if (statHolder.GetStat(GameStat.ExperienceToLevelUp, level) is { } nResult)
         {
             nextLevelUpXp = (int)nResult;
         }
