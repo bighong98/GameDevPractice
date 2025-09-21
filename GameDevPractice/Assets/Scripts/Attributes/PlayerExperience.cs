@@ -40,7 +40,7 @@ namespace TH.Attribute
         private void InitAfterLoad()
         {
             progression = ResourceManager.Instance.Load<ProgressionSO>("ProgressionSO.asset");
-            Util.Log($"[{nameof(PlayerExperience)}.{nameof(InitAfterLoad)}()] progression: {progression} ");
+            Util.Log($"[{nameof(PlayerExperience)}.{nameof(InitAfterLoad)}()] progression: {progression}", Util.LoggingMode.Completed);
             currentLevel.ForceInit();
             LevelUpTestMethod().Forget();
         }
@@ -48,7 +48,7 @@ namespace TH.Attribute
         private readonly TimeSpan oneSecond = TimeSpan.FromSeconds(1);
         private async UniTaskVoid LevelUpTestMethod()
         {
-            Util.Log($"[{nameof(PlayerExperience)}] '{nameof(LevelUpTestMethod)}' started");
+            Util.Log($"[{nameof(PlayerExperience)}] '{nameof(LevelUpTestMethod)}' started", Util.LoggingMode.Completed);
             int count = 0;
             while (count < 10)
             {
@@ -106,7 +106,7 @@ namespace TH.Attribute
             else if (currLv < level)
             {
                 LevelUpEffectAction?.Invoke();
-                Util.Log($"Level up! ({level})");
+                Util.Log($"Level up! ({level})", Util.LoggingMode.Completed);
             }
             OnLevelChanged?.Invoke(currentLevel.value);
         }
