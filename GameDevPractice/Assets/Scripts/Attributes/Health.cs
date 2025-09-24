@@ -106,7 +106,7 @@ namespace RPG.Attribute
         {
             if (maxHp.Value is not ({ } max and > 0))
             {
-                Util.Log("Max Hp is less or equal to 0. failed to set HP");
+                Util.Log($"[{gameObject.name}.{nameof(Health)}]Max Hp is less or equal to 0. failed to set HP");
                 return;
             }
             

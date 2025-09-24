@@ -158,10 +158,10 @@ namespace TH.Attribute
 
         #region Save/Load (ISavable)
 
-        public readonly struct PlayerLevelXpData
+        public struct PlayerLevelXpData
         {
-            public readonly int level;
-            public readonly float xp;
+            public int level;
+            public float xp;
 
             public PlayerLevelXpData(int level, float xp)
             {
