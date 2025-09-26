@@ -2,6 +2,7 @@ using System;
 using RPG.Stats;
 using UnityEngine;
 using TH.Utils;
+using TH.Resource;
 
 namespace TH.Attribute.Stat
 {

@@ -2,6 +2,7 @@ using System;
 using TH.Combat;
 using TH.Core.Service;
 using UnityEngine;
+using TH.Resource;
 
 public sealed class CombatSystem : MonoBehaviour, ICombatSystem
 {

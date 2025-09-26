@@ -2,6 +2,7 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using TH.Resource;
 
 public class SoundManager : Singleton<SoundManager>
 {

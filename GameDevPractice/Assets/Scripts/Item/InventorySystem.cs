@@ -6,6 +6,7 @@ using RPG.Saving;
 using RPG.UI;
 using TH.Core.Service;
 using TH.Item;
+using TH.Resource;
 
 namespace RPG.Item
 {

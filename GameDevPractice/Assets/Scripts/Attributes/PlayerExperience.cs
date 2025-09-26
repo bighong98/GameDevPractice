@@ -5,6 +5,7 @@ using RPG.Stats;
 using TH.Core.Pool;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
+using TH.Resource;
 
 namespace TH.Attribute
 {

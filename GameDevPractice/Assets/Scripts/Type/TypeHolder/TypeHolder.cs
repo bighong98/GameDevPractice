@@ -3,6 +3,7 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using TH.Core.Pool;
+using TH.Resource;
 
 // 타입 데이터(TypeSO), 원본 프리팹 객체(Origin)을 포함하는 MonoBehaviour 기반 컴포넌트
 // 가능한 오브젝트 풀링해서 사용할 것 (PoolingManager.cs 참조)

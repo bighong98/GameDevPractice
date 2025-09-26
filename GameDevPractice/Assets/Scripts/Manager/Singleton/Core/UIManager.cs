@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.Pool;
 using UnityEngine.UI;
 using TH.Core.Pool;
+using TH.Resource;
 
 namespace RPG.UI
 {

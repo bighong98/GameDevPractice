@@ -1,6 +1,7 @@
 using RPG.Item;
 using TH.Combat;
 using TH.Item;
+using TH.Resource;
 using UnityEngine;
 
 namespace TH.Core.Service
@@ -13,7 +14,13 @@ namespace TH.Core.Service
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Init()
         {
+            RegisterServices();
+        }
+
+        private static void RegisterServices()
+        {
             ServiceLocator.Register<IDamageCalculator>(new DamageCalculator());
+            ServiceLocator.Register<IResourceLoader>(new ResourceLoader());
         }
     }
 }

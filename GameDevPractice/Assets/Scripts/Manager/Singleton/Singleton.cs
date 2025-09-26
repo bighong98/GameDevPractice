@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using TH.Resource;
 
 public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
 {
