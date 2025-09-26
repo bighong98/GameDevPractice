@@ -31,7 +31,7 @@ namespace RPG.Attribute
         private static readonly int DieAnimHash = Animator.StringToHash("die");
         public bool IsDead { get; private set; }
         public event Action OnDead;
-        // public event Action OnRevived;
+        public event Action OnRevived;
         
         public float GetCurrentHealth => hp.Value;
         public float GetMaxHealth => maxHp.Value;
@@ -102,30 +102,44 @@ namespace RPG.Attribute
             return statHolder?.GetStat(GameStat.Health) ?? 0; 
         }
 
-        private void SetCurrentHealth(float amount)
+        // 최대 체력 + 현재 체력 조정
+        // 강제로 현재 체력을 조정하기 때문에 사망한 캐릭터에 사용 시 부활하므로 주의
+        private void SetHp(float amount)
         {
+            SetMaxHp(amount, byForce: true);
+            SetCurrentHp(amount, byForce: true);
+        }
+ 
+        // 현재 체력 조정
+        // byForce: true => 사망 상태 무시하고 체력 변경 및 사망 상태 갱신
+        private void SetCurrentHp(float amount, bool byForce = false) 
+        {
+            if (IsDead && !byForce) return; // 사망 상태인 경우 체력 조정x
+            
             if (maxHp.Value is not ({ } max and > 0))
             {
-                Util.Log($"[{gameObject.name}.{nameof(Health)}]Max Hp is less or equal to 0. failed to set HP");
+                Util.Log($"[{gameObject.name}.{nameof(SetCurrentHp)}]Max Hp is less or equal to 0. failed to set HP", Util.LoggingMode.Focussed);
+                Die(); // 최대 체력이 세팅되어있지 않다면 사망 처리
                 return;
             }
             
             var curr = hp.Value = Mathf.Clamp(amount, 0, max);
             OnHealthRatioChanged?.Invoke(curr / max);
+            RefreshAliveState();
         }
 
-        private void SetMaxHealth(float amount)
+        private void SetMaxHp(float amount, bool byForce = false)
         {
+            if (!byForce && (amount < 0 || amount.IsEqualFloat(0f))) return; // 최대체력 0 이하로 설정 불가능
             maxHp.Value = amount;
             OnMaxHealthChanged?.Invoke(maxHp.Value);
         }
         
         private void TakeDamage(float damage)
         {
-            SetCurrentHealth(hp.Value - damage); 
-            RefreshAliveState(); // SetCurrentHealth()로 옮길지 고려
+            SetCurrentHp(hp.Value - damage); 
             
-            Util.Log($"health: {hp.Value}");
+            Util.Log($"[{gameObject.name}.{nameof(TakeDamage)}]: hp: {hp.Value}", Util.LoggingMode.InProgress);
         }
         
         public void TakeDamage(in HitResult hitResult)
@@ -136,7 +150,7 @@ namespace RPG.Attribute
 
         private void RefreshAliveState()
         {
-            if (hp.Value <= 0)
+            if (hp.Value.IsEqualFloat(0f))
             {
                 Die();
             }
@@ -145,6 +159,7 @@ namespace RPG.Attribute
         private void Die()
         {
             if (IsDead) return;
+            
             IsDead = true;
             OnDead?.Invoke();
             animator.SetTrigger(DieAnimHash);
@@ -159,8 +174,8 @@ namespace RPG.Attribute
         private const int LevelUpRegenerationPercentage = 50;
         private void OnLevelUp(int level)
         {
-            SetMaxHealth(statHolder.GetStat(GameStat.Health, level));
-            SetCurrentHealth(hp.Value + maxHp.Value * ((float)LevelUpRegenerationPercentage / 100));
+            SetMaxHp(statHolder.GetStat(GameStat.Health, level));
+            SetCurrentHp(hp.Value + maxHp.Value * ((float)LevelUpRegenerationPercentage / 100));
             Util.Log($"OnLevelUp: hp: {hp.Value}", Util.LoggingMode.Completed);
         }
 
@@ -184,10 +199,10 @@ namespace RPG.Attribute
         {
             if (state is not HealthSaveData data) return false;
             
-            // Debug.Log($"RestoreState for Health: hp to {data.hp}"); 
+            Util.Log($"[{gameObject.name}]RestoreState for Health: hp to {data.hp}" ,Util.LoggingMode.InProgress); 
             
-            SetCurrentHealth(data.hp);
-            RefreshAliveState();
+            SetHp(data.hp);
+            // RefreshAliveState();
 
             return true;
         }

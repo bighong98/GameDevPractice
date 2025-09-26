@@ -7,12 +7,15 @@ namespace TH.Utils
     public class LazyValue<T>
     {
         private T _value;
-        public bool Initialized { get; private set; }
         private Func<T> _initializer;
 
-        public LazyValue(Func<T> initializer)
+        public bool Initialized { get; private set; }
+        private T Default = default;
+        
+        public LazyValue(Func<T> initializer, T defaultValue = default)
         {
             _initializer = initializer ?? throw new ArgumentNullException(nameof(initializer));
+            Default = defaultValue;
         }
         
         public T Value
@@ -39,7 +42,7 @@ namespace TH.Utils
                 return true;
             }
 
-            value = default;
+            value = Default;
             return false;
         }
     }

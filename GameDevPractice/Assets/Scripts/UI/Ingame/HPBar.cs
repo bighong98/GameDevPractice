@@ -11,7 +11,7 @@ namespace RPG.UI
 {
     public class HPBar : BaseUI, IPoolObject
     {
-        private Transform target; // HPBar가 추적하는 대상
+        [SerializeField]private Transform target; // HPBar가 추적하는 대상 // serialize for debug
         private RectTransform rect; // 자기 자신의 RectTransform
         
         private Slider main; // 실제 체력바
@@ -51,8 +51,7 @@ namespace RPG.UI
 
         private void LateUpdate()
         {
-            if (target == null) return;
-            if (Util.IsInsideScreen(target.position, out var result))
+            if (!isHiding && target != null && Util.IsInsideScreen(target.position, out var result))
             {
                 rect.position = result;
                 Show();
@@ -134,14 +133,14 @@ namespace RPG.UI
         }
 
         private readonly TimeSpan deathDelaySpan = TimeSpan.FromSeconds(DelayHideByDeath);
-        private async UniTaskVoid HideAfterSecond(float duration)
+        private async UniTaskVoid HideAfterSecond(float duration, bool keepHiding)
         {
             try
             {
                 await UniTask
                     .Delay(deathDelaySpan, DelayType.Realtime, PlayerLoopTiming.PreLateUpdate,
                         this.destroyCancellationToken).SuppressCancellationThrow();
-                Hide();
+                Hide(keepHiding);
             }
             catch (Exception e)
             {
@@ -154,7 +153,20 @@ namespace RPG.UI
             owner.OnHealthRatioChanged += this.OnHealthRatioChanged;
             owner.OnMaxHealthChanged += this.OnMaxHealthChanged;
             owner.OnDead += this.OnOwnerDied;
+            owner.OnRevived += this.OnOwnerRevived;
             target = owner.transform;
+        }
+
+        private void ResetOwner()
+        {
+            if (target != null && target.GetComponent<Health>() is { } owner)
+            {
+                owner.OnHealthRatioChanged += this.OnHealthRatioChanged;
+                owner.OnMaxHealthChanged += this.OnMaxHealthChanged;
+                owner.OnDead += this.OnOwnerDied;
+                owner.OnRevived += this.OnOwnerRevived;
+                target = owner.transform;
+            }
         }
 
         private void OnHealthRatioChanged(float ratio)
@@ -165,13 +177,20 @@ namespace RPG.UI
 
         private void OnMaxHealthChanged(float amount)
         {
-            Util.Log($"{target.gameObject.name}: max health is changed. {amount}");
+            Util.Log($"{target.gameObject.name}: max health is changed. {amount}", Util.LoggingMode.InProgress);
         }
 
         private void OnOwnerDied()
         {
             if (gameObject is not { activeSelf: true }) return;
-            HideAfterSecond(DelayHideByDeath).Forget();
+            Util.Log($"[{target?.name}.{nameof(HPBar)}] {nameof(OnOwnerDied)}() invoked", Util.LoggingMode.Completed);
+            HideAfterSecond(DelayHideByDeath, true).Forget();
+        }
+
+        private void OnOwnerRevived()
+        {
+            if (!isHiding) return;
+            isHiding = false;
         }
 
         private void Show()
@@ -182,12 +201,12 @@ namespace RPG.UI
             displayer.SetActive(true);
         }
 
-        private void Hide()
+        private void Hide(bool keepHiding = false)
         {
             if (GetObject((int)GameObjects.Displayer) is not { activeSelf: true } displayer) 
                 return;
-            
             displayer.SetActive(false);
+            if (keepHiding) isHiding = true;
         }
         
         public GameObject Origin { get; set; }

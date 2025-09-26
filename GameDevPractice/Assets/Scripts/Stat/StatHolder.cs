@@ -42,7 +42,11 @@ namespace TH.Attribute.Stat
             if (typeInfo is not CharacterTypeSO charInfo) return;
 
             characterClass = charInfo.characterClass;
-            startingLevel = level = charInfo.startingLevel;
+            startingLevel = charInfo.startingLevel;
+
+            // if (hasMutableLevel || levelHolder != null) return; 
+            level = startingLevel;
+            UpdateStatsByLevel(level);
         }
 
         private void InitBeforeLoad()

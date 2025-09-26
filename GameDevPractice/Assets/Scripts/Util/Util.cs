@@ -316,7 +316,7 @@ public static class Util
         OnlyInProgress,
         All,
     }
-    private static readonly LogLevel CurrLogLevel = LogLevel.OnlyInProgress;
+    private static readonly LogLevel CurrLogLevel = LogLevel.OnlyFocussing;
 
     [System.Diagnostics.Conditional("UNITY_EDITOR")]
     public static void Log(object msg, LoggingMode mode)

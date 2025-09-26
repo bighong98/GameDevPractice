@@ -39,7 +39,7 @@ namespace TH.Resource
                 LoadAllAsync<UnityEngine.Object>(PreLoadLabel, 
                     (key, count, totalCount) =>
                     {
-                        Util.Log($"[{PreLoadLabel} - {key}] {count} / {totalCount}", Util.LoggingMode.InProgress); // 디버깅용 로그
+                        Util.Log($"[{PreLoadLabel} - {key}] {count} / {totalCount}", Util.LoggingMode.Completed); // 디버깅용 로그
                         if (count == totalCount)
                         {
                             NotifyResourceLoad?.Invoke(PreLoadLabel);// 리소스 로딩 대기중인 클래스들에게 로딩 완료 이벤트 전달
