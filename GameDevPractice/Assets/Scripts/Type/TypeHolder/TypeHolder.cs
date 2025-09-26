@@ -45,7 +45,8 @@ public class TypeHolder<T> : MonoBehaviour, ITypeHolder<T>, IPoolObject where T 
     private async UniTask GetTypeFromRef()
     {
         if (type != null || !typeRef.RuntimeKeyIsValid()) return;
-        type = await Util.ExtractAssetRefAsync(typeRef);
+        // type = await Util.ExtractAssetRefAsync<T>(typeRef);
+        type = await ResourceManager.Instance.ExtractAssetRefAsync<T>(typeRef);
         Util.Log($"[{gameObject.name}.{nameof(GetTypeFromRef)}] type: {type}", Util.LoggingMode.Completed);
         SetMinimapSprite();
     }
@@ -53,7 +54,8 @@ public class TypeHolder<T> : MonoBehaviour, ITypeHolder<T>, IPoolObject where T 
     public async UniTask SetTypeRef(AssetReferenceT<T> typeReference)
     {
         typeRef = typeReference;
-        type = await Util.ExtractAssetRefAsync(typeReference);
+        // type = await Util.ExtractAssetRefAsync(typeReference);
+        type = await ResourceManager.Instance.ExtractAssetRefAsync<T>(typeReference);
         SetMinimapSprite();
     }
 
@@ -63,7 +65,7 @@ public class TypeHolder<T> : MonoBehaviour, ITypeHolder<T>, IPoolObject where T 
         
         if (type == null)
         {
-            type = await Util.ExtractAssetRefAsync(typeRef);
+            type = await ResourceManager.Instance.ExtractAssetRefAsync<T>(typeRef);
         }
         
         return type;
@@ -76,6 +78,7 @@ public class TypeHolder<T> : MonoBehaviour, ITypeHolder<T>, IPoolObject where T 
             if (data == null)
             {
                 Util.LogError($"[{name}.{nameof(GetType)}.{nameof(DeliverTypeData)}] failed to load from assetRefT '{typeRef}'");
+                return;
             }
             
             foreach (var dependent in GetComponents<ITypeDependent>())

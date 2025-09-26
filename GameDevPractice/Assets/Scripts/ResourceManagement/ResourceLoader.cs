@@ -251,29 +251,41 @@ namespace TH.Resource
             // };
         }
 
-        public async UniTask<T> ExtractAssetRefAsync<T>(AssetReferenceT<T> reference) where T : UnityEngine.Object
+        public async UniTask<T> LoadAsync<T>(AssetReference assetRef) where T : UnityEngine.Object
         {
-            if (reference == null)
+            // if (!(assetRef?.RuntimeKeyIsValid() ?? false))
+            // {
+            //     Debug.LogError($"[{nameof(LoadAsync)}] AssetReference is null or runtime key is invalid {assetRef?.SubObjectName}");
+            //     return null;
+            // }
+            //
+            // if (!resourceAssetRefs.TryGetValue(assetRef, out var result) ||
+            //     !result.IsValid())
+            // {
+            //     resourceAssetRefs[assetRef] = assetRef.LoadAssetAsync<T>();
+            // }
+            
+            if (assetRef == null)
             {
-                Debug.LogError($"[ExtractAssetReference] reference is null.");
+                Debug.LogError($"[{nameof(LoadAsync)}] reference is null.");
                 return null;
             }
 
-            if (!reference.RuntimeKeyIsValid())
+            if (!assetRef.RuntimeKeyIsValid())
             {
-                Debug.LogError($"[ExtractAssetReference] Invalid RuntimeKey for AssetReference<{typeof(T).Name}>. Asset: {reference.Asset?.name}");
+                Debug.LogError($"[{nameof(LoadAsync)}] Invalid RuntimeKey for AssetReference<{typeof(T).Name}>. Asset: {assetRef.Asset?.name}");
                 return null;
             }
 
-            var handle = reference.OperationHandle.IsValid()
-                ? reference.OperationHandle
-                : reference.LoadAssetAsync();
+            var handle = assetRef.OperationHandle.IsValid()
+                ? assetRef.OperationHandle
+                : assetRef.LoadAssetAsync<T>();
 
             await handle.Task;
 
             if (handle.Status != AsyncOperationStatus.Succeeded)
             {
-                Debug.LogError($"[ExtractAssetReference] Load failed for AssetReference<{typeof(T).Name}> with key: {reference.RuntimeKey}");
+                Debug.LogError($"[{nameof(LoadAsync)}] Load failed for AssetReference<{typeof(T).Name}> with key: {assetRef.RuntimeKey}");
                 return null;
             }
 

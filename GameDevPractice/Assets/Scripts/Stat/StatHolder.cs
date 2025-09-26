@@ -12,7 +12,7 @@ namespace TH.Attribute.Stat
         [SerializeField] private ProgressionSO progression;
         private int startingLevel; 
         [SerializeField] private int level;
-
+        
         private ILevel levelHolder;
         private bool hasMutableLevel;
         

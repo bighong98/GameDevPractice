@@ -124,6 +124,18 @@ namespace TH.Resource
             Util.LogError($"{nameof(ResourceManager)}.Instantiate: Failed to load prefab: {key}");
             return null;
         }
+
+        public async UniTask<T> ExtractAssetRefAsync<T>(AssetReference assetRef) where T : UnityEngine.Object
+        {
+            if (resourceLoader.TryLoad<T>(assetRef, out var result))
+            {
+                return result;
+            }
+
+            return await resourceLoader.LoadAsync<T>(assetRef);
+        }
+        
+        #endregion
         
         public void Destroy(GameObject go)
         {
@@ -131,8 +143,6 @@ namespace TH.Resource
         
             Object.Destroy(go);
         }
-
-        #endregion
     }
 }
 
