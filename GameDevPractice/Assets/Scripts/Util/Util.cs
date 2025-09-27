@@ -5,11 +5,9 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using Debug = UnityEngine.Debug; // [InputSystem]
 using Random = UnityEngine.Random;
-using TH.Resource;
 
 public static class Util
 {

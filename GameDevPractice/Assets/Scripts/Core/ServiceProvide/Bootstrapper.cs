@@ -2,6 +2,7 @@ using RPG.Item;
 using TH.Combat;
 using TH.Item;
 using TH.Resource;
+using TH.SceneManagement;
 using UnityEngine;
 
 namespace TH.Core.Service
@@ -21,6 +22,7 @@ namespace TH.Core.Service
         {
             ServiceLocator.Register<IDamageCalculator>(new DamageCalculator());
             ServiceLocator.Register<IResourceLoader>(new ResourceLoader());
+            ServiceLocator.Register<ISceneLoader>(new SceneLoader());
         }
     }
 }

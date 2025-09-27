@@ -150,9 +150,13 @@ namespace RPG.Attribute
 
         private void RefreshAliveState()
         {
-            if (hp.Value.IsEqualFloat(0f))
+            if (!IsDead && hp.Value.IsEqualFloat(0f))
             {
                 Die();
+            }
+            else if (IsDead && hp.Value > 0f)
+            {
+                Revive();
             }
         }
 
@@ -169,6 +173,14 @@ namespace RPG.Attribute
             {
                 xp.GainXp(rewardXp.Value);
             }
+        }
+
+        private void Revive()
+        {
+            if (!IsDead) return;
+            IsDead = false;
+            
+            OnRevived?.Invoke();
         }
 
         private const int LevelUpRegenerationPercentage = 50;
