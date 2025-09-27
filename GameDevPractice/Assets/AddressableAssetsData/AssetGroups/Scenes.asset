@@ -15,8 +15,8 @@ MonoBehaviour:
   m_GroupName: Scenes
   m_GUID: 93ae4e584742be946b73848e39229314
   m_SerializeEntries:
-  - m_GUID: 54218070a51d2204db65c46d61c98839
-    m_Address: LoadingScene
+  - m_GUID: cbcc82c65a311f84994a9d24cf0b2546
+    m_Address: Sandbox
     m_ReadOnly: 0
     m_SerializedLabels:
     - PreLoad1

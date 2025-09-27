@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
@@ -22,10 +23,12 @@ public class TypeHolder<T> : MonoBehaviour, ITypeHolder<T>, IPoolObject where T 
 
     private bool isInit; // 최초 1회 초기화 여부 (OnCreateFromPool()에서 갱신)
     [SerializeField] [Tooltip("씬에 배치되어 생성된 경우, 자동으로 오브젝트 풀에 등록할지 여부 (원본 프리팹과 동일한 경우에만 사용)")] private bool addToPool;
-
+    private CancellationToken token;
+    
     private void Awake()
     {
         if (isInit) return; // 이미 OnCreateFromPool()이 실행된 경우 실행x
+        token = destroyCancellationToken;
 
         ResourceManager.Instance.WaitForPreLoadOnlyOnce((loaded) =>
         { // ResourceManager에게 초기화 작업 예약
@@ -46,7 +49,7 @@ public class TypeHolder<T> : MonoBehaviour, ITypeHolder<T>, IPoolObject where T 
     {
         if (type != null || !typeRef.RuntimeKeyIsValid()) return;
         // type = await Util.ExtractAssetRefAsync<T>(typeRef);
-        type = await ResourceManager.Instance.ExtractAssetRefAsync<T>(typeRef);
+        type = await ResourceManager.Instance.ExtractAssetRefAsync<T>(typeRef, token);
         Util.Log($"[{gameObject.name}.{nameof(GetTypeFromRef)}] type: {type}", Util.LoggingMode.Completed);
         SetMinimapSprite();
     }
@@ -55,7 +58,7 @@ public class TypeHolder<T> : MonoBehaviour, ITypeHolder<T>, IPoolObject where T 
     {
         typeRef = typeReference;
         // type = await Util.ExtractAssetRefAsync(typeReference);
-        type = await ResourceManager.Instance.ExtractAssetRefAsync<T>(typeReference);
+        type = await ResourceManager.Instance.ExtractAssetRefAsync<T>(typeReference, token);
         SetMinimapSprite();
     }
 
@@ -65,7 +68,7 @@ public class TypeHolder<T> : MonoBehaviour, ITypeHolder<T>, IPoolObject where T 
         
         if (type == null)
         {
-            type = await ResourceManager.Instance.ExtractAssetRefAsync<T>(typeRef);
+            type = await ResourceManager.Instance.ExtractAssetRefAsync<T>(typeRef, token);
         }
         
         return type;

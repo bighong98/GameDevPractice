@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -251,7 +252,7 @@ namespace TH.Resource
             // };
         }
 
-        public async UniTask<T> LoadAsync<T>(AssetReference assetRef) where T : UnityEngine.Object
+        public async UniTask<T> LoadAsync<T>(AssetReference assetRef, CancellationToken token = default) where T : UnityEngine.Object
         {
             // if (!(assetRef?.RuntimeKeyIsValid() ?? false))
             // {
@@ -281,7 +282,7 @@ namespace TH.Resource
                 ? assetRef.OperationHandle
                 : assetRef.LoadAssetAsync<T>();
 
-            await handle.Task;
+            await handle.ToUniTask(cancellationToken: token);
 
             if (handle.Status != AsyncOperationStatus.Succeeded)
             {

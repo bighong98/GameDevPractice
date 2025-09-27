@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using TH.Core.Service;
 using UnityEngine.AddressableAssets;
@@ -125,14 +126,14 @@ namespace TH.Resource
             return null;
         }
 
-        public async UniTask<T> ExtractAssetRefAsync<T>(AssetReference assetRef) where T : UnityEngine.Object
+        public async UniTask<T> ExtractAssetRefAsync<T>(AssetReference assetRef, CancellationToken token = default) where T : UnityEngine.Object
         {
             if (resourceLoader.TryLoad<T>(assetRef, out var result))
             {
                 return result;
             }
 
-            return await resourceLoader.LoadAsync<T>(assetRef);
+            return await resourceLoader.LoadAsync<T>(assetRef, token);
         }
         
         #endregion
