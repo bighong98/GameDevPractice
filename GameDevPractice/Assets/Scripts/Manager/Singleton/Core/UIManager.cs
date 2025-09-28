@@ -6,6 +6,7 @@ using UnityEngine.Pool;
 using UnityEngine.UI;
 using TH.Core.Pool;
 using TH.Resource;
+using UnityEngine.SceneManagement;
 
 namespace RPG.UI
 {
@@ -22,7 +23,6 @@ namespace RPG.UI
         private readonly Dictionary<string, Type> keyTypeDictionary = new Dictionary<string, Type>();
         // private readonly Dictionary<Type, ObjectPool<PopupUI>> popupPools = new Dictionary<Type, ObjectPool<PopupUI>>();
         private readonly Dictionary<Type, ObjectPool<IPoolObject>> popupPools = new Dictionary<Type, ObjectPool<IPoolObject>>();
-
         
         [SerializeField] private Transform root;
         [SerializeField] private List<GameObject> canvases;
@@ -58,6 +58,8 @@ namespace RPG.UI
         {
             // Util.SetMainCameraForUtilClass();
             
+            Util.Log($"[UIManager] Init() in scene '{SceneManager.GetActiveScene().name}'", Util.LoggingMode.InProgress);
+            
             root = new GameObject("UI_Root").transform;
             canvases = new();
             
@@ -70,6 +72,9 @@ namespace RPG.UI
                 SetCanvas(go);
                 canvases.Add(go);
             }
+            
+            // SetSceneUI();
+            // SetTooltip();
             
             InputManager.Instance.OnEscaped += OnEscapeCalled;
             

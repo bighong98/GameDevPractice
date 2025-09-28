@@ -19,7 +19,7 @@ namespace TH.SceneManagement
         {
             base.Awake();
             if (IsInvalidInstance()) return;
-
+            
             SceneManager.sceneLoaded += ((scene, mode) =>
             {
                 Util.SetMainCameraForUtilClass();

@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
+using TH.Core.Service;
+using TH.Resource;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -21,6 +24,7 @@ namespace TH.SceneManagement
         private AsyncOperationHandle<SceneInstance> prevSceneHandle;
         
         private bool inFlight;
+        private CancellationTokenSource cts = new CancellationTokenSource();
         
         public IProgress<float> Progress { get; private set; }
         
@@ -32,13 +36,44 @@ namespace TH.SceneManagement
 
         private async void Init()
         {
-            await LoadLoadingSceneAsync();
             await LoadSceneAsync("Sandbox");
+        }
+
+        private async UniTask WaitForPreLoad()
+        {
+            try
+            {
+                if (ServiceLocator.TryGet(out IResourceLoader resourceLoader))
+                {
+                    if (!resourceLoader.IsPreLoadDone())
+                    {
+                        Util.Log($"[SceneLoader] WaitForPreLoad");
+                        resourceLoader.NotifyResourceLoad += OnPreloadDone;
+                        while (!(cts?.IsCancellationRequested ?? true))
+                        {
+                            await UniTask.NextFrame();
+                        }
+                    }
+                }
+            }
+            catch (Exception e) {Util.LogError($"{e}");}
+            finally{ Util.Log($"WaitForPreLoad is done");}
+        }
+
+        private void OnPreloadDone(string label)
+        {
+            if (label != "PreLoad") return; // todo: fix hard code 
+            
+            if (!(cts?.IsCancellationRequested ?? true))
+            {
+                cts.Cancel();
+            }
+            cts?.Dispose();
         }
 
         #region Load/Unload Scene
 
-        private static async UniTask LoadLoadingSceneAsync(Action<float> onProgress = null, CancellationToken token = default)
+        private async UniTask LoadLoadingSceneAsync(Action<float> onProgress = null, CancellationToken token = default)
         {
             var loadScene = SceneManager.GetSceneByName(LoadingSceneName);
             if (loadScene.IsValid() && loadScene.isLoaded)
@@ -46,6 +81,7 @@ namespace TH.SceneManagement
             
             var op = SceneManager.LoadSceneAsync(LoadingSceneName, LoadSceneMode.Single);
             await op.ToUniTask(cancellationToken: token);
+            await WaitForPreLoad();
         }
 
         private static async UniTask UnloadLoadingSceneAsync(CancellationToken token = default)
@@ -72,7 +108,7 @@ namespace TH.SceneManagement
 
             try
             {
-                await LoadLoadingSceneAsync(token: token);
+                LoadLoadingSceneAsync().Forget();
 
                 if (preTasks != null) // 씬 로드 전 사전 작업 실행
                 {
@@ -86,12 +122,13 @@ namespace TH.SceneManagement
                     }
                     ReportProgress(SceneLoadStartPoint);
                 }
-
+                
                 await LoadSceneWithAddressablesAsync(key, onProgress, token); // 타겟 씬 로드
                 await UnloadPreviousSceneAsync(token); // 이전 씬 언로드
                 await UnloadLoadingSceneAsync(token); // 로딩 씬 언로드
                 ReportProgress(1f); // 진행도 100%
             }
+            catch (Exception e) {Util.Log($"exception occured while loadingScene '{key}', {e}");}
             finally { inFlight = false; }
         }
         
@@ -119,8 +156,6 @@ namespace TH.SceneManagement
                 var sceneOp = sceneInstance.ActivateAsync();
                 var progress = new Progress<float>(x => { ReportProgress(Mathf.Lerp(SceneActivateStartPoint, 1.0f, x)); });
                 await sceneOp.ToUniTask(progress: progress, cancellationToken: token);
-
-                SceneManager.SetActiveScene(sceneInstance.Scene);
                 
                 // 이전 씬, 현재 씬 갱신
                 if (currentSceneHandle.IsValid())
@@ -131,6 +166,7 @@ namespace TH.SceneManagement
             }
             catch
             {
+                Util.Log($"[SceneLoader] exception occured while load scene with addressables '{handle.DebugName}'");
                 if (handle.IsValid())
                 {
                     try
@@ -160,6 +196,7 @@ namespace TH.SceneManagement
                     var prev = prevSceneHandle.Result;
                     await Addressables.UnloadSceneAsync(prev, autoReleaseHandle: true)
                         .ToUniTask(cancellationToken: token);
+                    Util.Log($"[SceneLoader] scene '{prev.Scene.name}' is unloaded");
                 }
                 catch (Exception e) { Util.LogError($"[{nameof(SceneLoader)}] {nameof(UnloadPreviousSceneAsync)}: exception occured while unload scene '{prevSceneHandle.DebugName}' - {e}"); }
                 finally { prevSceneHandle = default; }

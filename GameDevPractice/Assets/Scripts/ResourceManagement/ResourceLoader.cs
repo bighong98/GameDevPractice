@@ -13,9 +13,11 @@ namespace TH.Resource
     {
         private readonly Dictionary<string, AsyncOperationHandle> resourceKeys = new Dictionary<string, AsyncOperationHandle>();
         private readonly Dictionary<AssetReference, AsyncOperationHandle> resourceAssetRefs = new Dictionary<AssetReference, AsyncOperationHandle>();
-        private readonly Dictionary<string, bool> loadStatus = new Dictionary<string, bool>();
+        private readonly Dictionary<string, LoadStatus> loadStatus = new Dictionary<string, LoadStatus>();
         
         public event Action<string> NotifyResourceLoad;
+
+        #region Enums
 
         enum PreLoadLabels
         {
@@ -24,13 +26,35 @@ namespace TH.Resource
             PreLoad3,
         }
 
+        enum LoadStatus
+        {
+            NotInitialized,
+            InProgress,
+            Done,
+            Fail,
+        }
+
+        #endregion
+
+        
+        
+
         private const string PreLoadLabel = "PreLoad";
         private const string SpriteAtlasSuffix = "(Clone)"; // 스프라이트 아틀라스 내부 리소스 접근용 문자열
         private int atlasSuffixLength; // 캐싱된 "(Clone)" 문자열 길이
 
         public ResourceLoader()
         {
+            Init();
             PreLoad();
+        }
+
+        private void Init()
+        {
+            foreach (var label in Enum.GetNames(typeof(PreLoadLabels)))
+            {
+                loadStatus[label] = LoadStatus.NotInitialized;
+            }
         }
         
         private void PreLoad()
@@ -40,7 +64,7 @@ namespace TH.Resource
                 LoadAllAsync<UnityEngine.Object>(PreLoadLabel, 
                     (key, count, totalCount) =>
                     {
-                        Util.Log($"[{PreLoadLabel} - {key}] {count} / {totalCount}", Util.LoggingMode.Completed); // 디버깅용 로그
+                        Util.Log($"[{PreLoadLabel} - {key}] {count} / {totalCount}", Util.LoggingMode.InProgress); // 디버깅용 로그
                         if (count == totalCount)
                         {
                             NotifyResourceLoad?.Invoke(PreLoadLabel);// 리소스 로딩 대기중인 클래스들에게 로딩 완료 이벤트 전달
@@ -53,12 +77,15 @@ namespace TH.Resource
         {
             foreach (var label in Enum.GetNames(typeof(PreLoadLabels)))
             {
+                Util.Log($"[ResourceLoader] start to load label '{label}' assets");
                 await LoadAllAsyncAwaitable<UnityEngine.Object>(label, (key, count, totalCount) =>
                 {
+                    Util.Log($"[{label} - {key}] {count} / {totalCount}", Util.LoggingMode.InProgress); // 디버깅용 로그
+
                     if (count == totalCount)
                     {
                         NotifyResourceLoad?.Invoke(label);// 리소스 로딩 대기중인 클래스들에게 로딩 완료 이벤트 전달
-                        loadStatus[label] = true;
+                        loadStatus[label] = LoadStatus.Done;
                     }
                 });
             }
@@ -132,10 +159,11 @@ namespace TH.Resource
                         });
                     }
                 }
+                loadStatus[label] = LoadStatus.Done;
             };
         }
         
-        private async UniTask LoadAllAsyncAwaitable<T>(string label, Action<string, int, int> callback = null)
+        private async UniTask LoadAllAsyncAwaitable<T>(string label, Action<string, int, int> callback = null, CancellationToken token = default)
             where T : UnityEngine.Object
         {
             var handle = Addressables.LoadResourceLocationsAsync(label, typeof(T));
@@ -147,6 +175,8 @@ namespace TH.Resource
 
             foreach (var result in results)
             {
+                token.ThrowIfCancellationRequested();
+                
                 var tcs = new UniTaskCompletionSource();
                 string key = result.PrimaryKey;
 
@@ -190,6 +220,7 @@ namespace TH.Resource
                 await tcs.Task;
             }
             Addressables.Release(handle);
+            loadStatus[label] = LoadStatus.Done;
         }
 
         private void LoadMultipleSpriteAsync(string key, Action<Sprite[]> callback = null)
@@ -320,8 +351,12 @@ namespace TH.Resource
 
         public bool IsLoadedAll(string label)
         {
-            return loadStatus.TryGetValue(label, out var status) && status;
+            return loadStatus.TryGetValue(label, out var status) && (int)status == (int)LoadStatus.Done;
         }
+
+        public bool IsPreLoadDone() => IsLoadedAll(PreLoadLabel);
+
+
     }
 }
 
