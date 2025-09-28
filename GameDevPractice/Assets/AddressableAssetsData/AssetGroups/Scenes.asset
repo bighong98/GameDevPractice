@@ -19,7 +19,6 @@ MonoBehaviour:
     m_Address: Sandbox
     m_ReadOnly: 0
     m_SerializedLabels:
-    - PreLoad1
     - Scene
     FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0

@@ -19,30 +19,43 @@ namespace TH.SceneManagement
 
         private AsyncOperationHandle<SceneInstance> currentSceneHandle;
         private AsyncOperationHandle<SceneInstance> prevSceneHandle;
-
+        
         private bool inFlight;
+        
+        public IProgress<float> Progress { get; private set; }
+        
         public SceneLoader()
         {
+            BindProgress(reporter: null); // 빈 객체로 초기화
             Init();
         }
 
-        private void Init()
+        private async void Init()
         {
-            LoadLoadingSceneAsync().Forget();
+            await LoadLoadingSceneAsync();
+            await LoadSceneAsync("Sandbox");
         }
+
+        #region Load/Unload Scene
 
         private static async UniTask LoadLoadingSceneAsync(Action<float> onProgress = null, CancellationToken token = default)
         {
+            var loadScene = SceneManager.GetSceneByName(LoadingSceneName);
+            if (loadScene.IsValid() && loadScene.isLoaded)
+                return;
+            
             var op = SceneManager.LoadSceneAsync(LoadingSceneName, LoadSceneMode.Single);
-            while (!op.isDone)
-            {
-                token.ThrowIfCancellationRequested();
-                onProgress?.Invoke(Mathf.Lerp(0f, 0.05f, op.progress));
-                await UniTask.Yield(token);
-            }
-            onProgress?.Invoke(0.05f);
+            await op.ToUniTask(cancellationToken: token);
+        }
+
+        private static async UniTask UnloadLoadingSceneAsync(CancellationToken token = default)
+        {
+            var loadScene = SceneManager.GetSceneByName(LoadingSceneName);
+            if (loadScene.IsValid() && loadScene.isLoaded)
+                await SceneManager.UnloadSceneAsync(loadScene).ToUniTask(cancellationToken: token);
         }
         
+
         public UniTask LoadSceneAsync(AssetReferenceScene sceneRef, IEnumerable<Func<CancellationToken, UniTask>> preTasks = null, Action<float> onProgress = null, CancellationToken token = default)
         {
             throw new System.NotImplementedException();
@@ -69,14 +82,15 @@ namespace TH.SceneManagement
                         token.ThrowIfCancellationRequested();
                         await (task?.Invoke(token) ?? UniTask.CompletedTask);
                         float ratio = Mathf.Lerp(0f, SceneLoadStartPoint, Mathf.Clamp01(++c * TempStepSize));
-                        onProgress?.Invoke(ratio);
+                        ReportProgress(ratio);
                     }
-                    onProgress?.Invoke(SceneLoadStartPoint);
+                    ReportProgress(SceneLoadStartPoint);
                 }
 
                 await LoadSceneWithAddressablesAsync(key, onProgress, token); // 타겟 씬 로드
                 await UnloadPreviousSceneAsync(token); // 이전 씬 언로드
-                onProgress?.Invoke(1f); // 진행도 100%
+                await UnloadLoadingSceneAsync(token); // 로딩 씬 언로드
+                ReportProgress(1f); // 진행도 100%
             }
             finally { inFlight = false; }
         }
@@ -93,7 +107,7 @@ namespace TH.SceneManagement
                 {
                     token.ThrowIfCancellationRequested();
                     float ratio = Mathf.Lerp(SceneLoadStartPoint, SceneActivateStartPoint, handle.PercentComplete);
-                    onProgress?.Invoke(ratio);
+                    ReportProgress(ratio);
                     await UniTask.Yield(token);
                 }
 
@@ -103,7 +117,7 @@ namespace TH.SceneManagement
 
                 var sceneInstance = handle.Result;
                 var sceneOp = sceneInstance.ActivateAsync();
-                var progress = new Progress<float>(x => { onProgress?.Invoke(Mathf.Lerp(SceneActivateStartPoint, 1.0f, x)); });
+                var progress = new Progress<float>(x => { ReportProgress(Mathf.Lerp(SceneActivateStartPoint, 1.0f, x)); });
                 await sceneOp.ToUniTask(progress: progress, cancellationToken: token);
 
                 SceneManager.SetActiveScene(sceneInstance.Scene);
@@ -114,8 +128,6 @@ namespace TH.SceneManagement
                 currentSceneHandle = handle;
                 
                 await UniTask.NextFrame(token); // 1 프레임 대기
-
-                onProgress?.Invoke(SceneActivateStartPoint); // 진행도 90%로 전달 
             }
             catch
             {
@@ -153,6 +165,29 @@ namespace TH.SceneManagement
                 finally { prevSceneHandle = default; }
             }
         }
+
+        #endregion
+
+        #region Progress handle
+
+        public void BindProgress(IProgress<float> reporter)
+        {
+            Progress = reporter ?? new Progress<float>(_ => { });
+        }
+
+        public void BindProgress(Action<float> onProgress)
+        {
+            Progress = new Progress<float>(onProgress ?? (_ => { }));
+        }
+        
+        private void ReportProgress(float p, Action<float> additive = null)
+        {
+            Progress.Report(p);
+            additive?.Invoke(p);
+        }
+
+        #endregion
+
     }
 }
 

@@ -71,6 +71,18 @@ namespace TH.SceneManagement
         }
 
         #endregion
+
+        // 씬 로딩(필수 리소스 + 씬 리소스 + 씬 로드 + 씬 활성화) 진행도 전달받기
+        // 현재 기존에 바인딩 된 IProgress 객체가 있다면 덮어쓰므로 주의
+        public void GetSceneLoadProgress(IProgress<float> progress)
+        {
+            sceneLoader.BindProgress(progress);
+        }
+
+        public void GetSceneLoadProgress(Action<float> onProgress)
+        {
+            sceneLoader.BindProgress(onProgress);
+        }
         
         private async UniTask TaskBeforeLoadScene()
         {
