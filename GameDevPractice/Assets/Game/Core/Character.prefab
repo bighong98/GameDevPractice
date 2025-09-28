@@ -273,5 +273,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TH.Attribute.Stat.StatHolder
   characterClass: 0
-  progression: {fileID: 11400000, guid: 62995c9fc2d3e694c88ffa854f08dcc4, type: 2}
+  progression: {fileID: 0}
   level: 0
