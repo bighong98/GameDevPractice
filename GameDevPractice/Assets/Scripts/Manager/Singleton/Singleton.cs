@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using TH.Resource;
+using TH.SceneManagement;
+using GameSceneManager = TH.SceneManagement.GameSceneManager;
 
 public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
 {
@@ -54,9 +56,9 @@ public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
     {
         if (IsInvalidInstance()) return; // 중복 인스턴스일 경우 실행x
         if (Util.IsQuitting) return;
-        if (_instance is Singleton<GameSceneManager>) return; // 자기 자신이 GameSceneManager일 경우 실행x
+        if (_instance is Singleton<TH.SceneManagement.GameSceneManager>) return; // 자기 자신이 GameSceneManager일 경우 실행x
         
-        GameSceneManager.Instance.RegisterInitializationTask(AfterSceneLoaded);
+        TH.SceneManagement.GameSceneManager.Instance.RegisterInitializationTask(AfterSceneLoaded);
     }
     
     // protected abstract void OnSceneLoaded(); // -> Init()으로 대체
@@ -103,8 +105,8 @@ public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
             if (_instance is not Singleton<ResourceManager>) // 본인이 ResourceManager면 실행x
                 ResourceManager.Instance.WaitForPreLoad(InitAfterPreLoad);
 
-            if (_instance is not Singleton<GameSceneManager>) // 본인이 GameSceneManager면 실행x
-                GameSceneManager.Instance.RegisterCleanupTask(Clear);
+            if (_instance is not Singleton<TH.SceneManagement.GameSceneManager>) // 본인이 GameSceneManager면 실행x
+                TH.SceneManagement.GameSceneManager.Instance.RegisterCleanupTask(Clear);
             
             RunReservedOperations();
             isInitialized = true;
@@ -135,7 +137,7 @@ public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
     public void ReserveOperation(Action action)
     {
         if (_instance is not Singleton<T> singleton) return;
-        if (singleton is Singleton<GameSceneManager>) return;
+        if (singleton is Singleton<TH.SceneManagement.GameSceneManager>) return;
         
         if (singleton.IsInvalidInstance())
         {
@@ -158,9 +160,9 @@ public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
     {
         // Util.Log($"[{typeof(T).Name}] OnDestroy Stack: {Environment.StackTrace}");
         if (Util.IsQuitting) return;
-        if (_instance == this && _instance is not Singleton<GameSceneManager>)
+        if (_instance == this && _instance is not Singleton<TH.SceneManagement.GameSceneManager>)
         {
-            GameSceneManager.Instance.UnRegisterInitializationTask(AfterSceneLoaded);
+            TH.SceneManagement.GameSceneManager.Instance.UnRegisterInitializationTask(AfterSceneLoaded);
         }
     }
 }
