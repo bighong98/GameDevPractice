@@ -82,8 +82,6 @@ namespace TH.SceneManagement
                 return;
             
             var op = SceneManager.LoadSceneAsync(LoadingSceneName, LoadSceneMode.Single);
-            // await op.ToUniTask(cancellationToken: token);
-            // await WaitForPreLoad();
             
             await UniTask.WhenAll(
                 op.ToUniTask(cancellationToken: token), 
@@ -116,15 +114,13 @@ namespace TH.SceneManagement
 
             try
             {
-                // await LoadLoadingSceneAsync(token: token); // 로딩 씬 로드
-                // await RunPreTasks(preTasks, token); // 사전 작업 처리
-                // var result = await LoadSceneWithAddressablesAsync(key, onProgress, token); // 타겟 씬 로드
-                // await UnloadPreviousSceneAsync(token); // 이전 씬 언로드
-                // await UnloadLoadingSceneAsync(token); // 로딩 씬 언로드
-                
-                await UniTask.WhenAll(LoadLoadingSceneAsync(token: token), RunPreTasks(preTasks, token));
+                await UniTask.WhenAll(LoadLoadingSceneAsync(token: token), RunPreTasks(preTasks, token)); // 로딩 씬 로드, 타겟 씬 로드 전 사전 작업
+                ReportProgress(SceneLoadStartPoint);
+                await UniTask.Delay(TimeSpan.FromSeconds(3), cancellationToken: token);
                 var result = await LoadSceneWithAddressablesAsync(key, onProgress, token); // 타겟 씬 로드
-                await UniTask.WhenAll(UnloadPreviousSceneAsync(token), UnloadLoadingSceneAsync(token));
+                ReportProgress(SceneActivateStartPoint);
+                await UniTask.Delay(TimeSpan.FromSeconds(3), cancellationToken: token);
+                await UniTask.WhenAll(UnloadPreviousSceneAsync(token), UnloadLoadingSceneAsync(token)); // 로딩 씬 언로드, 기존 씬 언로드
                 
                 ReportProgress(1); // 진행도 60%
                 OnSceneChanged?.Invoke(result.Scene);
@@ -153,19 +149,26 @@ namespace TH.SceneManagement
             {
                 handle = Addressables.LoadSceneAsync(key, LoadSceneMode.Additive, activateOnLoad: false);
 
-                while (!handle.IsDone) // SceneLoadStartPoint: 0.9f, 진행도의 시각적 표현을 위한 임의의 기준점
-                {
-                    token.ThrowIfCancellationRequested();
-                    await UniTask.Yield(token);
-                }
-
+                // while (!handle.IsDone)
+                // {
+                //     token.ThrowIfCancellationRequested();
+                //     await UniTask.Yield(token);
+                // }
+                
+                // if (handle.Status == AsyncOperationStatus.Failed)
+                //     throw handle.OperationException ??
+                //           new Exception($"[{nameof(SceneLoader)}] load scene failed: {key}");
+                //
+                // var sceneInstance = handle.Result;
+                // var sceneOp = sceneInstance.ActivateAsync();
+                // await sceneOp.ToUniTask(cancellationToken: token);
+                
+                var result = await handle;
                 if (handle.Status == AsyncOperationStatus.Failed)
                     throw handle.OperationException ??
                           new Exception($"[{nameof(SceneLoader)}] load scene failed: {key}");
 
-                var sceneInstance = handle.Result;
-                var sceneOp = sceneInstance.ActivateAsync();
-                await sceneOp.ToUniTask(cancellationToken: token);
+                await result.ActivateAsync().ToUniTask(cancellationToken: token);
                 
                 // 이전 씬, 현재 씬 갱신
                 if (currentSceneHandle.IsValid())
