@@ -41,8 +41,7 @@ public class GameSceneUI : BaseUI
     #endregion
 
     private readonly Slider[] sliders = new Slider[(int)Sliders.max];
-
-    // private CharacterStats playerStats;
+    
     private IStatHolder statHolder;
     private float floorXp;
     private float ceilXp;
@@ -90,22 +89,6 @@ public class GameSceneUI : BaseUI
     {
         var player = FindFirstObjectByType<PlayerController>();
         
-        // if (player.GetComponent<Health>() is {} pHealth)
-        //     pHealth.OnHealthRatioChanged += SetHPBar;
-        // if (player.GetComponent<IExperience>() is {} pExp)
-        //     pExp.OnXpChanged += OnExpChanged;
-        // if (player.TryGetComponent(out ILevel pLevel))
-        //     pLevel.OnLevelChanged += OnLevelUp;
-        // if (player.GetComponent<CharacterStats>() is { } pCharacterStats)
-        // {
-        //     playerStats = pCharacterStats;
-        //     // pCharacterStats.OnLevelUp += OnLevelUp;
-        // }
-        // if (player.GetComponent<IStatHolder>() is { } pStatHolder)
-        // {
-        //     statHolder = pStatHolder;
-        // }
-
         if (TryConnectComponent(player, out Health pHealth))
             pHealth.OnHealthRatioChanged += SetHPBar;
         if (TryConnectComponent(player, out IExperience pExp))

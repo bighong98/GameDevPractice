@@ -75,7 +75,7 @@ namespace TH.Core
         // 오버라이드해서 사용 및 base.Clear() 호출 필요
         protected virtual UniTask Clear() 
         {
-            Util.Log($"[{GetType().Name}] Clear() invoked");
+            Util.Log($"[{GetType().Name}] Clear() invoked", Util.LoggingMode.Completed);
             isInitialized = false; // 플래그 초기화
             return UniTask.CompletedTask;
         }
@@ -88,7 +88,7 @@ namespace TH.Core
             
             if (!hasInitializedOnce) // 인스턴스 생성 후 최초 1회만 초기화가 필요한 작업 처리
             {
-                Util.Log($"[{typeof(T).Name}] InitOnce()", Util.LoggingMode.Completed);
+                Util.Log($"[{typeof(T).Name}] InitOnce invoked in scene '{scene.name}'", Util.LoggingMode.Completed);
                 InitOnce();
                 
                 if (_instance is not Singleton<ResourceManager>) // 본인이 ResourceManager면 실행x
@@ -103,7 +103,7 @@ namespace TH.Core
 
             if (!isInitialized)
             {
-                Util.Log($"[{GetType().Name}] Init()", Util.LoggingMode.Focussed);
+                Util.Log($"[{GetType().Name}] Init() in scene '{scene.name}'", Util.LoggingMode.Completed);
                 Init();
 
                 if (_instance is not Singleton<ResourceManager>) // 본인이 ResourceManager면 실행x
@@ -123,12 +123,8 @@ namespace TH.Core
         {
             while (reservedOperations.Count > 0)
             {
-                try
-                {
-                    reservedOperations.Dequeue()?.Invoke();
-                }
-                catch (Exception e)
-                {
+                try { reservedOperations.Dequeue()?.Invoke(); }
+                catch (Exception e) {
                     Util.LogError($"[{typeof(T).Name}] failure occured while running reserved operations. {e}");
                 }
             }
@@ -137,7 +133,7 @@ namespace TH.Core
         public void ReserveOperation(Action action)
         {
             if (_instance is not Singleton<T> singleton) return;
-            if (singleton is Singleton<TH.SceneManagement.GameSceneManager>) return;
+            // if (singleton is Singleton<TH.SceneManagement.GameSceneManager>) return;
             
             if (singleton.IsInvalidInstance())
             {
