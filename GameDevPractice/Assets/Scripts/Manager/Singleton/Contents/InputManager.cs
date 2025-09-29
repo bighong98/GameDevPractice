@@ -75,7 +75,7 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
         userInput.UI.SetCallbacks(this);
     }
 
-    protected override void InitOnceAfterPreLoad(bool isLoadCompleted)
+    protected override void InitOnceAfterPreLoad()
     {
         
     }
@@ -87,7 +87,7 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
         userInput.Player.Enable(); 
     }
 
-    protected override void InitAfterPreLoad(bool isLoadCompleted)
+    protected override void InitAfterPreLoad()
     {
         
     }

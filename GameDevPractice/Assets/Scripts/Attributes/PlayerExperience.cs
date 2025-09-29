@@ -28,7 +28,7 @@ namespace TH.Attribute
         private void Awake()
         {
             InitBeforeLoad();
-            ResourceManager.Instance.WaitForPreLoadOnlyOnce((dum) => { InitAfterLoad(); });
+            ResourceManager.Instance.WaitForPreLoadOnlyOnce(InitAfterLoad);
         }
 
         private void InitBeforeLoad()

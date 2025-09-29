@@ -62,7 +62,7 @@ public class SoundManager : Singleton<SoundManager>
         // });
     }
 
-    protected override void InitOnceAfterPreLoad(bool isLoadCompleted)
+    protected override void InitOnceAfterPreLoad()
     {
         
     }
@@ -105,7 +105,7 @@ public class SoundManager : Singleton<SoundManager>
         // // });
     }
 
-    protected override void InitAfterPreLoad(bool isDone)
+    protected override void InitAfterPreLoad()
     {
         //todo: 필요한 리소스 가져오기, 초기화
         TestBGM();

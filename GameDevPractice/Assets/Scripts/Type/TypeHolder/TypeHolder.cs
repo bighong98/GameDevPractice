@@ -30,9 +30,8 @@ public class TypeHolder<T> : MonoBehaviour, ITypeHolder<T>, IPoolObject where T 
         if (isInit) return; // 이미 OnCreateFromPool()이 실행된 경우 실행x
         token = destroyCancellationToken;
 
-        ResourceManager.Instance.WaitForPreLoadOnlyOnce((loaded) =>
+        ResourceManager.Instance.WaitForPreLoadOnlyOnce(() =>
         { // ResourceManager에게 초기화 작업 예약
-            if (!loaded) return;
             GetTypeFromRef().ContinueWith(() =>
             {
                 if (addToPool)

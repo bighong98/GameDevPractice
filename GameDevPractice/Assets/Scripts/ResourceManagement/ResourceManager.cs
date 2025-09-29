@@ -14,8 +14,8 @@ namespace TH.Resource
     {
         private IResourceLoader resourceLoader;
         
-        public event Action<bool> NotifyPreLoad;
-        private readonly Queue<Action<bool>> reservedPreLoadTasks = new();
+        public event Action NotifyPreLoad;
+        private readonly Queue<Action> reservedPreLoadTasks = new();
         
         private bool preLoadState = false;
         public bool PreLoadState => preLoadState;
@@ -30,7 +30,7 @@ namespace TH.Resource
             NotifyPreLoad += RunReserved;
             if (resourceLoader.IsLoadedAll(PreLoadLabel))
             {
-                NotifyPreLoad?.Invoke(true);
+                NotifyPreLoad?.Invoke();
             }
             else
             {
@@ -38,15 +38,15 @@ namespace TH.Resource
                 {
                     if (string.Equals(label, PreLoadLabel))
                     {
-                        NotifyPreLoad?.Invoke(true);
+                        NotifyPreLoad?.Invoke();
                     }
                 };
             }
         }
 
-        protected override void InitOnceAfterPreLoad(bool isLoadCompleted) { }
+        protected override void InitOnceAfterPreLoad() { }
         protected override void Init() { }
-        protected override void InitAfterPreLoad(bool isLoadCompleted) { }
+        protected override void InitAfterPreLoad() { }
 
         #endregion
         
@@ -54,24 +54,24 @@ namespace TH.Resource
 
         #region PreLoad
 
-        public void WaitForPreLoad(Action<bool> callback)
+        public void WaitForPreLoad(Action callback)
         {
-            if (preLoadState) callback?.Invoke(true);
+            if (preLoadState) callback?.Invoke();
             else NotifyPreLoad += callback;
         }
 
-        public void WaitForPreLoadOnlyOnce(Action<bool> callback)
+        public void WaitForPreLoadOnlyOnce(Action callback)
         {
-            if (preLoadState) callback?.Invoke(true);
+            if (preLoadState) callback?.Invoke();
             else reservedPreLoadTasks.Enqueue(callback);
         }
 
-        private void RunReserved(bool dum)
+        private void RunReserved()
         {
             if (reservedPreLoadTasks.Count == 0) return;
             while (reservedPreLoadTasks.TryDequeue(out var task))
             {
-                task?.Invoke(true);
+                task?.Invoke();
             }
         }
 

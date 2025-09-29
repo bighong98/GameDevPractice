@@ -47,9 +47,9 @@ namespace TH.SceneManagement
             sceneLoader = ServiceLocator.Require<ISceneLoader>();
         }
 
-        protected override void InitOnceAfterPreLoad(bool isLoadCompleted) {}
+        protected override void InitOnceAfterPreLoad() {}
         protected override void Init() {}
-        protected override void InitAfterPreLoad(bool isLoadCompleted) {}
+        protected override void InitAfterPreLoad() {}
 
         #endregion
 

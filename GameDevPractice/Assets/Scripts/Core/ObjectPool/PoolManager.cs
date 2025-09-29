@@ -25,7 +25,7 @@ namespace TH.Core.Pool
             poolContainer?.Init(transform);
         }
 
-        protected override void InitOnceAfterPreLoad(bool isLoadCompleted)
+        protected override void InitOnceAfterPreLoad()
         {
         
         }
@@ -39,7 +39,7 @@ namespace TH.Core.Pool
             // });
         }
 
-        protected override void InitAfterPreLoad(bool isLoadCompleted)
+        protected override void InitAfterPreLoad()
         {
         
         }

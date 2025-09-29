@@ -62,7 +62,7 @@ namespace RPG.Item
                 equippedItems[i].OnEquipmentChanged += this.OnEquipmentChanged;
             }
             
-            ResourceManager.Instance.WaitForPreLoad((_) =>
+            ResourceManager.Instance.WaitForPreLoad(() =>
             {
              InventoryTestData testData =
                  ResourceManager.Instance.Load<GameObject>("InventoryTestData.prefab").GetComponent<InventoryTestData>();

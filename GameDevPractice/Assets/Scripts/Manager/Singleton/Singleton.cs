@@ -67,9 +67,9 @@ namespace TH.Core
         }
         
         protected abstract void InitOnce(); // 인스턴스 생성 후 최초 1회만 실행, OnSceneChanged에서 실행
-        protected abstract void InitOnceAfterPreLoad(bool isLoadCompleted); // 인스턴스 생성 후, 초기 리소스 준비 여부 확인하고 최초 1회만 실행, OnSceneChanged에서 실행
+        protected abstract void InitOnceAfterPreLoad(); // 인스턴스 생성 후, 초기 리소스 준비 여부 확인하고 최초 1회만 실행, OnSceneChanged에서 실행
         protected abstract void Init(); // 인스턴스 생성 및 씬 로드 직후마다 실행
-        protected abstract void InitAfterPreLoad(bool isLoadCompleted); // 인스턴스 생성 및 씬 로드 직후마다, 초기 리소스 준비 여부 확인하고 실행
+        protected abstract void InitAfterPreLoad(); // 인스턴스 생성 및 씬 로드 직후마다, 초기 리소스 준비 여부 확인하고 실행
 
         // 씬 이동마다 필요한 정리 작업
         // 오버라이드해서 사용 및 base.Clear() 호출 필요
@@ -92,10 +92,10 @@ namespace TH.Core
                 InitOnce();
                 
                 if (_instance is not Singleton<ResourceManager>) // 본인이 ResourceManager면 실행x
-                    ResourceManager.Instance.WaitForPreLoadOnlyOnce((t) =>
+                    ResourceManager.Instance.WaitForPreLoadOnlyOnce(() =>
                     {
                         Util.Log($"[{typeof(T).Name}] InitOnceAfterPreLoad()", Util.LoggingMode.Completed);
-                        InitOnceAfterPreLoad(t);
+                        InitOnceAfterPreLoad();
                     });
 
                 hasInitializedOnce = true;

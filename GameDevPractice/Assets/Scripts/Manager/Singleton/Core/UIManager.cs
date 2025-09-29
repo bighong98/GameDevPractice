@@ -50,7 +50,7 @@ namespace RPG.UI
             // });
         }
 
-        protected override void InitOnceAfterPreLoad(bool done)
+        protected override void InitOnceAfterPreLoad()
         {
             
         }
@@ -83,10 +83,8 @@ namespace RPG.UI
             InputManager.Instance.OnSingleClicked += OnPopupOutSideSelected;
         }
         
-        protected override void InitAfterPreLoad(bool done)
+        protected override void InitAfterPreLoad()
         {
-            if (!done) return;
-            
             SetSceneUI();
             SetTooltip();
         }
