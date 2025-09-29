@@ -16,8 +16,8 @@ namespace TH.SceneManagement
     public class SceneLoader : ISceneLoader
     {
         private const string LoadingSceneName = "LoadingScene";
-        private const float SceneLoadStartPoint = 0.6f;
-        private const float SceneActivateStartPoint = 0.9f;
+        private const float SceneLoadStartPoint = 0.3f;
+        private const float SceneActivateStartPoint = 0.6f;
 
         private AsyncOperationHandle<SceneInstance> currentSceneHandle;
         private AsyncOperationHandle<SceneInstance> prevSceneHandle;
@@ -123,12 +123,10 @@ namespace TH.SceneManagement
                 // await UnloadLoadingSceneAsync(token); // 로딩 씬 언로드
                 
                 await UniTask.WhenAll(LoadLoadingSceneAsync(token: token), RunPreTasks(preTasks, token));
-                ReportProgress(SceneLoadStartPoint); // 진행도 60%
                 var result = await LoadSceneWithAddressablesAsync(key, onProgress, token); // 타겟 씬 로드
-                ReportProgress(SceneActivateStartPoint); // 진행도 90%
                 await UniTask.WhenAll(UnloadPreviousSceneAsync(token), UnloadLoadingSceneAsync(token));
-                ReportProgress(1f); // 진행도 100%
                 
+                ReportProgress(1); // 진행도 60%
                 OnSceneChanged?.Invoke(result.Scene);
             }
             catch (Exception e) {Util.Log($"exception occured while loadingScene '{key}', {e}");}
@@ -144,7 +142,6 @@ namespace TH.SceneManagement
                     token.ThrowIfCancellationRequested();
                     await (task?.Invoke(token) ?? UniTask.CompletedTask);
                 }
-                ReportProgress(SceneLoadStartPoint);
             }
         }
 

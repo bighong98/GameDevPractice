@@ -1,6 +1,7 @@
 using System;
 using Cysharp.Threading.Tasks;
 using RPG.UI;
+using TH.Core.Service;
 using TH.SceneManagement;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,24 +12,28 @@ public class SimpleLoadingUI : BaseUI, ILoadingUI
 
     enum GameObjects
     {
-        progress,
+        progressBar,
     }
 
     #endregion
 
     [SerializeField] private Slider slider;
-    
-    private void Awake()
+    private float targetRatio;
+
+    private void OnEnable()
     {
-        BindObject(typeof(GameObjects));
-        if (GetObject((int)GameObjects.progress) is { } holder
-            && slider.TryGetComponent(out Slider s))
+        if (ServiceLocator.TryGet(out ISceneLoader sceneLoader))
         {
-            slider = s;
+            sceneLoader.BindProgress(SetProgress);
         }
     }
 
     public void SetProgress(float ratio)
+    {
+        SetBar(ratio);
+    }
+
+    private void SetBar(float ratio)
     {
         slider.value = Mathf.Clamp01(ratio);
     }
