@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
-using Cysharp.Threading.Tasks;
-using TH.Core.Service;
 using UnityEngine;
-using TH.Resource;
+using TH.Core.Service;
 using TH.SceneManagement;
+using TH.Resource;
+using Cysharp.Threading.Tasks;
 using UnityEngine.SceneManagement;
 
-namespace TH.Core
+namespace TH.Deprecated
 {
     public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
     {
@@ -23,7 +23,7 @@ namespace TH.Core
                 {
                     Util.LogError($"[{typeof(T).Name}] 파괴 이후에 Instance에 접근 시도 발생. {Environment.StackTrace}");
                 }
-                
+            
                 _instance = FindFirstObjectByType<T>();
                 if (_instance == null)
                 {
@@ -38,7 +38,7 @@ namespace TH.Core
         
         private bool hasInitializedOnce; // 최초 인스턴스 생성 직후에만 초기화 필요한 작업 관리 플래그
         private bool isInitialized; // 씬마다 초기화 필요한 작업 관리 플래그
-        
+
         private readonly Queue<Action> reservedOperations = new(); // 초기화 전 외부에서 예약된 작업 목록
 
         protected virtual void Awake()
@@ -47,9 +47,6 @@ namespace TH.Core
             {
                 _instance = this as T;
                 DontDestroyOnLoad(gameObject);
-                
-                if (ServiceLocator.TryGet(out ISceneLoader sceneLoader))
-                    sceneLoader.OnSceneChanged += this.OnSceneChanged;
             }
             else if (_instance != this)
             {
@@ -57,16 +54,21 @@ namespace TH.Core
                 Destroy(gameObject);
             }
         }
-
+        
         protected virtual void Start()
         {
-            // if (IsInvalidInstance()) return; // 중복 인스턴스일 경우 실행x
-            // if (Util.IsQuitting) return;
+            if (IsInvalidInstance()) return; // 중복 인스턴스일 경우 실행x
+            if (Util.IsQuitting) return;
             // if (_instance is Singleton<TH.SceneManagement.GameSceneManager>) return; // 자기 자신이 GameSceneManager일 경우 실행x
+            //
             // TH.SceneManagement.GameSceneManager.Instance.RegisterInitializationTask(AfterSceneLoaded);
+
+            if (ServiceLocator.TryGet(out ISceneLoader sceneLoader))
+            {
+                sceneLoader.OnSceneChanged += this.OnSceneChanged;
+            }
         }
         
-        // protected abstract void OnSceneLoaded(); // -> Init()으로 대체
         protected abstract void InitOnce(); // 인스턴스 생성 후 최초 1회만 실행
         protected abstract void InitOnceAfterPreLoad(bool isLoadCompleted); // 인스턴스 생성 후, 초기 리소스 준비 여부 확인하고 최초 1회만 실행
         protected abstract void Init(); // 인스턴스 생성 및 씬 로드 직후마다 실행
@@ -84,14 +86,14 @@ namespace TH.Core
         // 씬 로드가 완료된 후 싱글톤 초기화가 진행됨
         private void AfterSceneLoaded(bool isSceneLoadCompleted)
         {
-            Util.Log($"[{typeof(T).Name}] AfterSceneLoaded() in scene ''", Util.LoggingMode.Completed);
+            Util.Log($"[{typeof(T).Name}] AfterSceneLoaded()", Util.LoggingMode.Completed);
             if (!isSceneLoadCompleted) return;
 
             if (!hasInitializedOnce) // 인스턴스 생성 후 최초 1회만 초기화가 필요한 작업 처리
             {
                 Util.Log($"[{typeof(T).Name}] InitOnce()", Util.LoggingMode.Completed);
                 InitOnce();
-                
+            
                 if (_instance is not Singleton<ResourceManager>) // 본인이 ResourceManager면 실행x
                     ResourceManager.Instance.WaitForPreLoadOnlyOnce((t) =>
                     {
@@ -106,51 +108,29 @@ namespace TH.Core
             {
                 Util.Log($"[{GetType().Name}] Init()", Util.LoggingMode.InProgress);
                 Init();
-                
+            
                 if (_instance is not Singleton<ResourceManager>) // 본인이 ResourceManager면 실행x
                     ResourceManager.Instance.WaitForPreLoad(InitAfterPreLoad);
 
-                if (_instance is not Singleton<TH.SceneManagement.GameSceneManager>) // 본인이 GameSceneManager면 실행x
-                    TH.SceneManagement.GameSceneManager.Instance.RegisterCleanupTask(Clear);
-                
+                if (_instance is not Singleton<GameSceneManager>) // 본인이 GameSceneManager면 실행x
+                    GameSceneManager.Instance.RegisterCleanupTask(Clear);
+            
                 RunReservedOperations();
                 isInitialized = true;
             }
         }
-
+        
         protected virtual void OnSceneChanged(Scene scene)
         {
-            Util.Log($"[{GetType().Name}] OnSceneChanged invoked in scene '{scene.name}'");
-            
-            if (!hasInitializedOnce) // 인스턴스 생성 후 최초 1회만 초기화가 필요한 작업 처리
-            {
-                Util.Log($"[{typeof(T).Name}] InitOnce()", Util.LoggingMode.Completed);
-                InitOnce();
-                
-                if (_instance is not Singleton<ResourceManager>) // 본인이 ResourceManager면 실행x
-                    ResourceManager.Instance.WaitForPreLoadOnlyOnce((t) =>
-                    {
-                        Util.Log($"[{typeof(T).Name}] InitOnceAfterPreLoad()", Util.LoggingMode.Completed);
-                        InitOnceAfterPreLoad(t);
-                    });
-
-                hasInitializedOnce = true;
-            }
-            
-            Util.Log($"[{GetType().Name}] Init()", Util.LoggingMode.InProgress);
-            Init();
-            
-            if (_instance is not Singleton<ResourceManager>) // 본인이 ResourceManager면 실행x
-                ResourceManager.Instance.WaitForPreLoad(InitAfterPreLoad);
-            
-            RunReservedOperations();
+            Util.Log($"[{GetType().Name}] OnSceneChanged invoked");
+            Clear();
         }
         
         protected bool IsInvalidInstance()
         {
             return _instance != this;
         }
-
+        
         private void RunReservedOperations()
         {
             isInitialized = true;
@@ -166,12 +146,12 @@ namespace TH.Core
                 }
             }
         }
-
+        
         public void ReserveOperation(Action action)
         {
             if (_instance is not Singleton<T> singleton) return;
-            if (singleton is Singleton<TH.SceneManagement.GameSceneManager>) return;
-            
+            if (singleton is Singleton<GameSceneManager>) return;
+        
             if (singleton.IsInvalidInstance())
             {
                 Util.Log($"[{typeof(T).Name}] fail occured while {{nameof(ReserveOperation)}}. Instance is not valid", Util.LoggingMode.Completed);
@@ -193,11 +173,13 @@ namespace TH.Core
         {
             // Util.Log($"[{typeof(T).Name}] OnDestroy Stack: {Environment.StackTrace}");
             if (Util.IsQuitting) return;
-            if (_instance == this && _instance is not Singleton<TH.SceneManagement.GameSceneManager>)
+            if (_instance == this && _instance is not Singleton<GameSceneManager>)
             {
-                TH.SceneManagement.GameSceneManager.Instance.UnRegisterInitializationTask(AfterSceneLoaded);
+                GameSceneManager.Instance.UnRegisterInitializationTask(AfterSceneLoaded);
             }
         }
     }
 }
+
+
 

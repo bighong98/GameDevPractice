@@ -27,6 +27,7 @@ namespace TH.SceneManagement
         private CancellationTokenSource cts = new CancellationTokenSource();
         
         public IProgress<float> Progress { get; private set; }
+        public event Action<Scene> OnSceneChanged;
         
         public SceneLoader()
         {
@@ -108,7 +109,7 @@ namespace TH.SceneManagement
 
             try
             {
-                LoadLoadingSceneAsync().Forget();
+                LoadLoadingSceneAsync(token: token).Forget();
 
                 if (preTasks != null) // 씬 로드 전 사전 작업 실행
                 {
@@ -123,16 +124,17 @@ namespace TH.SceneManagement
                     ReportProgress(SceneLoadStartPoint);
                 }
                 
-                await LoadSceneWithAddressablesAsync(key, onProgress, token); // 타겟 씬 로드
+                var result = await LoadSceneWithAddressablesAsync(key, onProgress, token); // 타겟 씬 로드
                 await UnloadPreviousSceneAsync(token); // 이전 씬 언로드
                 await UnloadLoadingSceneAsync(token); // 로딩 씬 언로드
                 ReportProgress(1f); // 진행도 100%
+                OnSceneChanged?.Invoke(result.Scene); // todo: 실제 로드된 씬 입력
             }
             catch (Exception e) {Util.Log($"exception occured while loadingScene '{key}', {e}");}
             finally { inFlight = false; }
         }
         
-        private async UniTask LoadSceneWithAddressablesAsync(string key, Action<float> onProgress = null,
+        private async UniTask<SceneInstance> LoadSceneWithAddressablesAsync(string key, Action<float> onProgress = null,
             CancellationToken token = default)
         {
             AsyncOperationHandle<SceneInstance> handle = default;
@@ -161,8 +163,6 @@ namespace TH.SceneManagement
                 if (currentSceneHandle.IsValid())
                     prevSceneHandle = currentSceneHandle;
                 currentSceneHandle = handle;
-                
-                await UniTask.NextFrame(token); // 1 프레임 대기
             }
             catch
             {
@@ -185,6 +185,9 @@ namespace TH.SceneManagement
                 Util.LogError($"[{nameof(SceneLoader)}] load scene failed: {key}");
                 throw;
             }
+            
+            await UniTask.NextFrame(token); // 1 프레임 대기
+            return handle.Result;
         }
 
         private async UniTask UnloadPreviousSceneAsync(CancellationToken token)

@@ -4,6 +4,7 @@ using Cysharp.Threading.Tasks;
 using TH.Core.Service;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using TH.Core;
 
 namespace TH.SceneManagement
 {

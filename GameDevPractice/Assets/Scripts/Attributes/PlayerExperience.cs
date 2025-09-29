@@ -87,7 +87,7 @@ namespace TH.Attribute
         public void GainXp(float xp) // 경험치 획득
         {
             if (xp < 0) return; // 음수는 실행x
-            Util.Log($"Experience Gained ({xp})", Util.LoggingMode.InProgress);
+            Util.Log($"Experience Gained ({xp})", Util.LoggingMode.Completed);
             SetXp(currentXp + xp, true);
         }
         

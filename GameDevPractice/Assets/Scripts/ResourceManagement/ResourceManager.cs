@@ -6,6 +6,7 @@ using Cysharp.Threading.Tasks;
 using TH.Core.Service;
 using UnityEngine.AddressableAssets;
 using Object = UnityEngine.Object;
+using TH.Core;
 
 namespace TH.Resource
 {

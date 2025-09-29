@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.Pool;
 using RPG.UI;
 using TH.Core.Pool;
+using TH.Deprecated;
 
 public abstract class PoolDictWrapperBase { // 제네릭 사용 목적 래퍼의 래퍼
     public abstract void Clear();

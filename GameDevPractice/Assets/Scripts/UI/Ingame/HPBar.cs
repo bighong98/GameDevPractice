@@ -35,6 +35,8 @@ namespace RPG.UI
 
         #endregion
 
+        private CancellationToken token;
+        
         private void Awake()
         {
             rect = GetComponent<RectTransform>();
@@ -47,6 +49,8 @@ namespace RPG.UI
                 Util.Log($"[{nameof(HPBar)}] failed to initialize", Util.LoggingMode.Completed);
                 ReleaseSelf();
             }
+
+            token = destroyCancellationToken;
         }
 
         private void LateUpdate()
@@ -139,13 +143,13 @@ namespace RPG.UI
             {
                 await UniTask
                     .Delay(deathDelaySpan, DelayType.Realtime, PlayerLoopTiming.PreLateUpdate,
-                        this.destroyCancellationToken).SuppressCancellationThrow();
-                Hide(keepHiding);
+                        token).SuppressCancellationThrow();
             }
             catch (Exception e)
             {
                 Util.LogError($"[{nameof(HPBar)}] unexpected error occurred while {nameof(HideAfterSecond)}. {e}");
             }
+            Hide(keepHiding);
         }
         
         public void SetOwner(Health owner)
@@ -203,10 +207,11 @@ namespace RPG.UI
 
         private void Hide(bool keepHiding = false)
         {
-            if (GetObject((int)GameObjects.Displayer) is not { activeSelf: true } displayer) 
-                return;
+            if (GetObject((int)GameObjects.Displayer) is not { } displayer || !displayer || !displayer.activeSelf) return;
+            
             displayer.SetActive(false);
-            if (keepHiding) isHiding = true;
+            if (keepHiding) 
+                isHiding = true;
         }
         
         public GameObject Origin { get; set; }

@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using Cysharp.Threading.Tasks;
 using RPG.UI;
-
+using TH.Core;
 
 public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, UserInput.IGlobalActions, UserInput.IUIActions
 {

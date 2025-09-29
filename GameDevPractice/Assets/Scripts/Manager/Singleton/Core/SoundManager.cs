@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using TH.Resource;
+using TH.Core;
 
 public class SoundManager : Singleton<SoundManager>
 {
