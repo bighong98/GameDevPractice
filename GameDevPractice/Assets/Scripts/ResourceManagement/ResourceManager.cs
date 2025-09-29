@@ -21,36 +21,38 @@ namespace TH.Resource
         public bool PreLoadState => preLoadState;
         
         private const string PreLoadLabel = "PreLoad";
-
+        
         #region Initialization
 
         protected override void InitOnce()
         {
             resourceLoader = ServiceLocator.Require<IResourceLoader>();
-            NotifyPreLoad += RunReserved;
-            if (resourceLoader.IsLoadedAll(PreLoadLabel))
-            {
-                NotifyPreLoad?.Invoke();
-            }
-            else
-            {
-                resourceLoader.NotifyResourceLoad += (label) =>
-                {
-                    if (string.Equals(label, PreLoadLabel))
-                    {
-                        NotifyPreLoad?.Invoke();
-                    }
-                };
-            }
         }
 
         protected override void InitOnceAfterPreLoad() { }
-        protected override void Init() { }
+
+        protected override void Init()
+        {
+            if (resourceLoader.IsLoadedAll(PreLoadLabel))
+            {
+                OnPreLoadDone();
+            }
+            else
+            {
+                resourceLoader.NotifyResourceLoad -= OnPreLoadDone; // 중복 델리게이트 누적 방지
+                resourceLoader.NotifyResourceLoad += OnPreLoadDone;
+            }
+        }
         protected override void InitAfterPreLoad() { }
 
         #endregion
-        
-        protected override UniTask Clear() { return base.Clear(); }
+
+        protected override UniTask Clear()
+        {
+            if (resourceLoader != null)
+                resourceLoader.NotifyResourceLoad -= OnPreLoadDone;
+            return base.Clear();
+        }
 
         #region PreLoad
 
@@ -73,6 +75,20 @@ namespace TH.Resource
             {
                 task?.Invoke();
             }
+        }
+
+        private void OnPreLoadDone(string label)
+        {
+            if (string.Equals(label, PreLoadLabel))
+            {
+                OnPreLoadDone();
+            }
+        }
+
+        private void OnPreLoadDone()
+        {
+            NotifyPreLoad?.Invoke();
+            RunReserved();
         }
 
         #endregion
