@@ -123,6 +123,7 @@ public class GameSceneUI : BaseUI
     {
         if (Util.IsQuitting) return;
         var player = FindFirstObjectByType<PlayerController>();
+        if (player == null) return;
         
         if (TryConnectComponent(player, out Health pHealth))
             pHealth.OnHealthRatioChanged -= SetHPBar;

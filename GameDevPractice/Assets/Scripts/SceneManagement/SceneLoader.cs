@@ -27,11 +27,13 @@ namespace TH.SceneManagement
         private CancellationTokenSource cts = new CancellationTokenSource();
         
         public IProgress<float> Progress { get; private set; }
+        public event Func<UniTask> OnBeforeSceneChanged;
         public event Action<Scene> OnSceneChanged;
         
         public SceneLoader()
         {
             BindProgress(reporter: null); // 빈 객체로 초기화
+            OnBeforeSceneChanged = () => UniTask.CompletedTask; // 빈 객체로 초기화 (NRE 방지)
             Init();
         }
 
@@ -81,8 +83,16 @@ namespace TH.SceneManagement
                 return;
             
             var op = SceneManager.LoadSceneAsync(LoadingSceneName, LoadSceneMode.Single);
-            await op.ToUniTask(cancellationToken: token);
-            await WaitForPreLoad();
+            // await op.ToUniTask(cancellationToken: token);
+            // await WaitForPreLoad();
+            if (OnBeforeSceneChanged != null)
+            {
+                await UniTask.WhenAll(
+                    op.ToUniTask(cancellationToken: token), 
+                    WaitForPreLoad(), 
+                    OnBeforeSceneChanged()
+                    );
+            }
         }
 
         private static async UniTask UnloadLoadingSceneAsync(CancellationToken token = default)
@@ -196,6 +206,7 @@ namespace TH.SceneManagement
             {
                 try
                 {
+                    OnBeforeSceneChanged?.Invoke(); // 기존 씬 언로드 전에 정리작업 실행
                     var prev = prevSceneHandle.Result;
                     await Addressables.UnloadSceneAsync(prev, autoReleaseHandle: true)
                         .ToUniTask(cancellationToken: token);
