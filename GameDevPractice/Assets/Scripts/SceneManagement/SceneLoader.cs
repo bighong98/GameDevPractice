@@ -115,11 +115,7 @@ namespace TH.SceneManagement
             try
             {
                 await UniTask.WhenAll(LoadLoadingSceneAsync(token: token), RunPreTasks(preTasks, token)); // 로딩 씬 로드, 타겟 씬 로드 전 사전 작업
-                ReportProgress(SceneLoadStartPoint);
-                await UniTask.Delay(TimeSpan.FromSeconds(3), cancellationToken: token);
                 var result = await LoadSceneWithAddressablesAsync(key, onProgress, token); // 타겟 씬 로드
-                ReportProgress(SceneActivateStartPoint);
-                await UniTask.Delay(TimeSpan.FromSeconds(3), cancellationToken: token);
                 await UniTask.WhenAll(UnloadPreviousSceneAsync(token), UnloadLoadingSceneAsync(token)); // 로딩 씬 언로드, 기존 씬 언로드
                 
                 ReportProgress(1); // 진행도 60%
@@ -148,20 +144,6 @@ namespace TH.SceneManagement
             try
             {
                 handle = Addressables.LoadSceneAsync(key, LoadSceneMode.Additive, activateOnLoad: false);
-
-                // while (!handle.IsDone)
-                // {
-                //     token.ThrowIfCancellationRequested();
-                //     await UniTask.Yield(token);
-                // }
-                
-                // if (handle.Status == AsyncOperationStatus.Failed)
-                //     throw handle.OperationException ??
-                //           new Exception($"[{nameof(SceneLoader)}] load scene failed: {key}");
-                //
-                // var sceneInstance = handle.Result;
-                // var sceneOp = sceneInstance.ActivateAsync();
-                // await sceneOp.ToUniTask(cancellationToken: token);
                 
                 var result = await handle;
                 if (handle.Status == AsyncOperationStatus.Failed)

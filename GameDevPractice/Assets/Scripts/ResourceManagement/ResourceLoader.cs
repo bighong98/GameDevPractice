@@ -108,8 +108,7 @@ namespace TH.Resource
                     callback?.Invoke(op.Result); // 콜백만 실행하고 저장x
                     return;
                 }
-
-                // resourceKeys.Add(key, op.Result); // 신규 리소스 딕셔너리에 저장
+                
                 resourceKeys.Add(key, op); // 신규 리소스 딕셔너리에 저장
                 callback?.Invoke(op.Result); // 콜백 실행
             };
@@ -167,9 +166,9 @@ namespace TH.Resource
             where T : UnityEngine.Object
         {
             var handle = Addressables.LoadResourceLocationsAsync(label, typeof(T));
-            await handle.Task;
+            var results = await handle.ToUniTask(cancellationToken: token);
 
-            var results = handle.Result;
+            // var results = handle.Result;
             int totalCount = results.Count;
             int loadCount = 0;
 
@@ -285,18 +284,6 @@ namespace TH.Resource
 
         public async UniTask<T> LoadAsync<T>(AssetReference assetRef, CancellationToken token = default) where T : UnityEngine.Object
         {
-            // if (!(assetRef?.RuntimeKeyIsValid() ?? false))
-            // {
-            //     Debug.LogError($"[{nameof(LoadAsync)}] AssetReference is null or runtime key is invalid {assetRef?.SubObjectName}");
-            //     return null;
-            // }
-            //
-            // if (!resourceAssetRefs.TryGetValue(assetRef, out var result) ||
-            //     !result.IsValid())
-            // {
-            //     resourceAssetRefs[assetRef] = assetRef.LoadAssetAsync<T>();
-            // }
-            
             if (assetRef == null)
             {
                 Debug.LogError($"[{nameof(LoadAsync)}] reference is null.");
@@ -308,19 +295,27 @@ namespace TH.Resource
                 Debug.LogError($"[{nameof(LoadAsync)}] Invalid RuntimeKey for AssetReference<{typeof(T).Name}>. Asset: {assetRef.Asset?.name}");
                 return null;
             }
+            
+            // case: AssetReference에 대응하는 핸들이 딕셔너리에 존재하고, 유효한 핸들인 경우
+            if (resourceAssetRefs.TryGetValue(assetRef, out var cachedHandle) && cachedHandle.IsValid())
+            { 
+                return cachedHandle.Result as T; // 즉시 핸들과 연결된 리소스를 반환
+            }
 
-            var handle = assetRef.OperationHandle.IsValid()
+            // case: 캐싱된 핸들이 없는 경우
+            var handle = assetRef.OperationHandle.IsValid() // 핸들을 추가로 생성 및 유효성 검사 (todo: 추가 유효성 검사 필요한지 확인 필요)
                 ? assetRef.OperationHandle
                 : assetRef.LoadAssetAsync<T>();
 
-            await handle.ToUniTask(cancellationToken: token);
-
+            await handle.ToUniTask(cancellationToken: token); // 핸들로부터 리소스 로드
+            // 리소스 로드에 실패했다면 null 반환
             if (handle.Status != AsyncOperationStatus.Succeeded)
             {
                 Debug.LogError($"[{nameof(LoadAsync)}] Load failed for AssetReference<{typeof(T).Name}> with key: {assetRef.RuntimeKey}");
                 return null;
             }
-
+            // AssetReference로부터 리소스 로드에 성공했다면 핸들을 캐싱 및 리소스 반환
+            resourceAssetRefs[assetRef] = handle;
             return handle.Result as T;
         }
 
