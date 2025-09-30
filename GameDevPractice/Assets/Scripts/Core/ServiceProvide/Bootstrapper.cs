@@ -20,9 +20,10 @@ namespace TH.Core.Service
 
         private static void RegisterServices()
         {
-            ServiceLocator.Register<IDamageCalculator>(new DamageCalculator());
             ServiceLocator.Register<IResourceLoader>(new ResourceLoader());
             ServiceLocator.Register<ISceneLoader>(new SceneLoader());
+            ServiceLocator.Register<IDamageCalculator>(new DamageCalculator());
+            ServiceLocator.Register<ICombatSystem>(new CombatSystem());
         }
     }
 }

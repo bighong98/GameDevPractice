@@ -15,6 +15,13 @@ MonoBehaviour:
   m_GroupName: General Data
   m_GUID: 23253a76be3db4f4ea9a8ecdeda81285
   m_SerializeEntries:
+  - m_GUID: 32f5e9ec55ccdb04b83ed9329574eaf4
+    m_Address: DamageRuleSO
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 62995c9fc2d3e694c88ffa854f08dcc4
     m_Address: ProgressionSO.asset
     m_ReadOnly: 0
