@@ -37,14 +37,8 @@ namespace TH.SaveLoad
         public async UniTask SaveAsync(string saveFile)
         {
             await UniTask.SwitchToMainThread();
-            try
-            {
-                Save(saveFile);
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"[SaveSystem] SaveAsync() failed: {e.Message}");
-            }
+            try { Save(saveFile); }
+            catch (Exception e) { Debug.LogError($"[SaveSystem] SaveAsync() failed: {e.Message}"); }
             await UniTask.Yield();
         }
 
@@ -57,14 +51,8 @@ namespace TH.SaveLoad
         public async UniTask LoadAsync(string saveFile)
         {
             await UniTask.SwitchToMainThread();
-            try
-            {
-                Load(saveFile);
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"[SaveSystem] LoadAsync() failed: {e.Message}");
-            }
+            try { Load(saveFile); }
+            catch (Exception e) { Debug.LogError($"[SaveSystem] LoadAsync() failed: {e.Message}"); }
             await UniTask.Yield();
         }
         
