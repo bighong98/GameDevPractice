@@ -49,7 +49,7 @@ namespace TH.SceneManagement
                 {
                     if (!resourceLoader.IsPreLoadDone())
                     {
-                        Util.Log($"[SceneLoader] WaitForPreLoad");
+                        Util.Log($"[SceneLoader] WaitForPreLoad", Util.LoggingMode.Completed);
                         resourceLoader.NotifyResourceLoad += OnPreloadDone;
                         while (!(cts?.IsCancellationRequested ?? true))
                         {
@@ -59,7 +59,7 @@ namespace TH.SceneManagement
                 }
             }
             catch (Exception e) {Util.LogError($"{e}");}
-            finally{ Util.Log($"[SceneLoader] WaitForPreLoad is done");}
+            finally{ Util.Log($"[SceneLoader] WaitForPreLoad is done", Util.LoggingMode.Completed);}
         }
 
         private void OnPreloadDone(string label)

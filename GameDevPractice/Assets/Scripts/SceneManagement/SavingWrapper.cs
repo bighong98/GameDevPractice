@@ -3,21 +3,22 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
-using RPG.Saving;
+using RPG.SceneManagement;
+using TH.Core.Service;
 using UnityEngine;
 
-namespace RPG.SceneManagement
+namespace TH.SaveLoad
 {
-    [RequireComponent(typeof(RPG.Saving.SaveSystem))]
     public class SavingWrapper : MonoBehaviour
     {
         private const string defaultSaveFile = "save";
-        private SaveSystem saveSystem;
+        private ISaveSystem saveSystem;
 
         [SerializeField] private float fadeInTime = 0.2f;
         private void Awake()
         {
-            saveSystem = GetComponent<SaveSystem>();
+            // saveSystem = GetComponent<SaveSystem>();
+            saveSystem = ServiceLocator.Get<ISaveSystem>();
             LoadLastScene().Forget();
         }
         

@@ -7,13 +7,19 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Unity.Serialization.Json;
 using TH.SceneManagement;
+using RPG.Saving;
 
-namespace RPG.Saving
+namespace TH.SaveLoad
 {
-    public class SaveSystem : MonoBehaviour
+    public class SaveSystem : ISaveSystem
     {
         private static readonly Dictionary<Type, MethodInfo> CachedMethodInfos = new Dictionary<Type, MethodInfo>();
         private static readonly Dictionary<string, Type> CachedTypes = new Dictionary<string, Type>();
+
+        public SaveSystem()
+        {
+            
+        }
         
         public async UniTask LoadLastScene(string saveFile)
         {
@@ -97,7 +103,7 @@ namespace RPG.Saving
         // 씬에 존재하는 모든 SavableEntity의 상태 수집, 저장데이터에 반영
         private void CaptureState(List<SavableEntry> sceneEntries, List<SavableEntry> globalEntries)
         {
-            foreach (var entity in FindObjectsByType<SavableEntity>(UnityEngine.FindObjectsSortMode.None))
+            foreach (var entity in UnityEngine.Object.FindObjectsByType<SavableEntity>(UnityEngine.FindObjectsSortMode.None))
             {
                 var targetEntryList = entity.IsGlobal ? globalEntries : sceneEntries;
                 var stateDict = entity.CaptureState();
@@ -195,7 +201,7 @@ namespace RPG.Saving
                 dict[entry.typeName] = state;
             }
 
-            foreach (var entity in FindObjectsByType<SavableEntity>(UnityEngine.FindObjectsSortMode.None))
+            foreach (var entity in UnityEngine.Object.FindObjectsByType<SavableEntity>(UnityEngine.FindObjectsSortMode.None))
             {
                 string id = entity.GetUniqueIdentifier();
                 if (grouped.TryGetValue(id, out var stateDict))
