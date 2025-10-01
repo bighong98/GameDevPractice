@@ -29,6 +29,13 @@ MonoBehaviour:
     - PreLoad
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d2ba8464bee1e95408984d72020c209f
+    m_Address: SceneCatalogSO
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: ba2aeaf5da86ad943b7448d84aa19f98, type: 2}
   m_SchemaSet:

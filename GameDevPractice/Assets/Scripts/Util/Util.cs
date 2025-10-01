@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using UnityEditor.AddressableAssets;
+using UnityEditor.AddressableAssets.Settings;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.EventSystems;
@@ -297,6 +299,17 @@ public static class Util
         return handle.Result as T;
     }
 
+#if UNITY_EDITOR
+    public static string GetAddressKeyInEditor(AssetReference assetRef)
+    {
+        var settings = AddressableAssetSettingsDefaultObject.Settings;
+        if (settings == null || string.IsNullOrEmpty(assetRef.AssetGUID)) return null;
+
+        var entry = settings.FindAssetEntry(assetRef.AssetGUID);
+        return entry?.address;
+    }
+#endif
+
     #endregion
     
     #region Debug
@@ -314,7 +327,7 @@ public static class Util
         OnlyInProgress,
         All,
     }
-    private static readonly LogLevel CurrLogLevel = LogLevel.OnlyFocussing;
+    private static readonly LogLevel CurrLogLevel = LogLevel.OnlyInProgress;
 
     [System.Diagnostics.Conditional("UNITY_EDITOR")]
     public static void Log(object msg, LoggingMode mode)

@@ -7,7 +7,7 @@ namespace TH.SaveLoad
     {
         UniTask LoadLastScene(string saveFile);
         
-        UniTask SaveAsync(string saveFile);
+        UniTask SaveAsync(string saveFile, SceneEntry sceneEntry = null);
         UniTask DeleteAsync(string saveFile);
         UniTask LoadAsync(string saveFile);
     }

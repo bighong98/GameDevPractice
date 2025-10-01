@@ -67,7 +67,9 @@ namespace TH.Resource
                         Util.Log($"[{PreLoadLabel} - {key}] {count} / {totalCount}", Util.LoggingMode.Completed); // 디버깅용 로그
                         if (count == totalCount)
                         {
+                            Util.Log($"[ResourceLoader] finished loading label '{PreLoadLabel}' assets", Util.LoggingMode.InProgress);
                             NotifyResourceLoad?.Invoke(PreLoadLabel);// 리소스 로딩 대기중인 클래스들에게 로딩 완료 이벤트 전달
+                            loadStatus[PreLoadLabel] = LoadStatus.Done;
                         }
                     });
             });
@@ -84,6 +86,8 @@ namespace TH.Resource
 
                     if (count == totalCount)
                     {
+                        Util.Log($"[ResourceLoader] finished loading label '{label}' assets", Util.LoggingMode.InProgress);
+
                         NotifyResourceLoad?.Invoke(label);// 리소스 로딩 대기중인 클래스들에게 로딩 완료 이벤트 전달
                         loadStatus[label] = LoadStatus.Done;
                     }
@@ -158,7 +162,6 @@ namespace TH.Resource
                         });
                     }
                 }
-                loadStatus[label] = LoadStatus.Done;
             };
         }
         
@@ -219,7 +222,6 @@ namespace TH.Resource
                 await tcs.Task;
             }
             Addressables.Release(handle);
-            loadStatus[label] = LoadStatus.Done;
         }
 
         private void LoadMultipleSpriteAsync(string key, Action<Sprite[]> callback = null)

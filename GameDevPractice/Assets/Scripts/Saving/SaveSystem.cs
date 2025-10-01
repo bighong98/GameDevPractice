@@ -8,6 +8,7 @@ using UnityEngine.SceneManagement;
 using Unity.Serialization.Json;
 using TH.SceneManagement;
 using RPG.Saving;
+using TH.Resource;
 
 namespace TH.SaveLoad
 {
@@ -15,10 +16,15 @@ namespace TH.SaveLoad
     {
         private static readonly Dictionary<Type, MethodInfo> CachedMethodInfos = new Dictionary<Type, MethodInfo>();
         private static readonly Dictionary<string, Type> CachedTypes = new Dictionary<string, Type>();
-
+        private SceneCatalogSO sceneCatalog;
+        private const int DefaultSceneIndexInCatalog = 0;
+        
         public SaveSystem()
         {
-            
+            ResourceManager.Instance.ReserveOperation(() =>
+            {
+                sceneCatalog = ResourceManager.Instance.Load<SceneCatalogSO>("SceneCatalogSO");
+            });
         }
         
         public async UniTask LoadLastScene(string saveFile)
@@ -28,16 +34,25 @@ namespace TH.SaveLoad
             await UniTask.SwitchToMainThread();
             await UniTask.Yield(); // 1프레임 지연
             
-            await GameSceneManager.Instance.LoadSceneAsync(data.lastSceneBuildIndex);
+            // await GameSceneManager.Instance.LoadSceneAsync(data.lastSceneBuildIndex);
+            if (sceneCatalog == null)
+            {
+                sceneCatalog = ResourceManager.Instance.Load<SceneCatalogSO>("SceneCatalogSO");
+            }
+            if (data.lastSceneEntry is not { key: { } key } || string.IsNullOrEmpty(key))
+            {
+                key = sceneCatalog.entries[DefaultSceneIndexInCatalog].key; // 저장된 씬이 없다면 디폴트 씬으로 이동
+            }
+            await GameSceneManager.Instance.LoadSceneAsync(key);
             await UniTask.Yield(); // 1프레임 지연
             
             RestoreState(data);
         }
 
-        public async UniTask SaveAsync(string saveFile)
+        public async UniTask SaveAsync(string saveFile, SceneEntry sceneEntry = null)
         {
             await UniTask.SwitchToMainThread();
-            try { Save(saveFile); }
+            try { Save(saveFile, sceneEntry); }
             catch (Exception e) { Debug.LogError($"[SaveSystem] SaveAsync() failed: {e.Message}"); }
             await UniTask.Yield();
         }
@@ -56,19 +71,24 @@ namespace TH.SaveLoad
             await UniTask.Yield();
         }
         
-        private void Save(string saveFile)
+        private void Save(string saveFile, SceneEntry sceneEntry = null)
         {
-            var buildIndex = SceneManager.GetActiveScene().buildIndex;
+            // var buildIndex = SceneManager.GetActiveScene().buildIndex;
+            var sceneName = SceneManager.GetActiveScene().name;
 
             SaveFileData data = LoadFile(saveFile);
-            data.lastSceneBuildIndex = buildIndex;
+
+            data.lastSceneEntry = sceneEntry;
+            // data.lastSceneBuildIndex = buildIndex;
             
             List<SavableEntry> sceneEntries = new List<SavableEntry>();
             List<SavableEntry> globalEntries = new List<SavableEntry>();
             CaptureState(sceneEntries, globalEntries);
             
-            data.sceneEntries[buildIndex] = sceneEntries;
-            data.globalEntries = globalEntries;
+            // data.sceneData[buildIndex] = sceneEntries;
+            data.sceneData[sceneName] = sceneEntries;
+            data.globalData = globalEntries;
+            data.lastSceneEntry = sceneCatalog.GetCurrentSceneEntry();
 
             SaveFile(saveFile, data);
         }
@@ -126,20 +146,23 @@ namespace TH.SaveLoad
         // SavableEntity 에 상태 복원
         private void RestoreState(SaveFileData data)
         {
-            int buildIndex = SceneManager.GetActiveScene().buildIndex;
-            var sceneEntries = data.sceneEntries;
+            // int buildIndex = SceneManager.GetActiveScene().buildIndex;
+            var sceneName = SceneManager.GetActiveScene().name;
+            var sceneEntries = data.sceneData;
             List<SavableEntry> entries = new();
             
-            if (sceneEntries.TryGetValue(buildIndex, out var targetSceneEntries))
+            // if (sceneEntries.TryGetValue(buildIndex, out var targetSceneEntries))
+            if (sceneEntries.TryGetValue(sceneName, out var targetSceneEntries))
             {
                 entries.AddRange(targetSceneEntries);
             }
             else
             {
-                Debug.Log($"[SaveSystem] No saved data for scene {buildIndex}");
+                // Util.Log($"[SaveSystem] No saved data for scene '{buildIndex}'");
+                Util.Log($"[SaveSystem] No saved data for scene '{sceneName}'", Util.LoggingMode.InProgress);
             }
             
-            if (data.globalEntries is { Count: > 0 } globEntries)
+            if (data.globalData is { Count: > 0 } globEntries)
             {
                 entries.AddRange(globEntries);
             }

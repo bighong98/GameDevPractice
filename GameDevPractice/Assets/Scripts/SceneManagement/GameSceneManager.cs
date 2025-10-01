@@ -20,6 +20,7 @@ namespace TH.SceneManagement
         {
             base.Awake();
             if (IsInvalidInstance()) return;
+            sceneLoader = ServiceLocator.Require<ISceneLoader>();
             
             SceneManager.sceneLoaded += ((scene, mode) =>
             {
@@ -42,11 +43,7 @@ namespace TH.SceneManagement
 
         #region Initialization
 
-        protected override void InitOnce()
-        {
-            sceneLoader = ServiceLocator.Require<ISceneLoader>();
-        }
-
+        protected override void InitOnce() { }
         protected override void InitOnceAfterPreLoad() {}
         protected override void Init() {}
         protected override void InitAfterPreLoad() {}
@@ -69,6 +66,17 @@ namespace TH.SceneManagement
         
             await TaskBeforeLoadScene();
             await sceneLoader.LoadSceneAsync("");
+        }
+        
+        public async UniTask LoadSceneAsync(string key, bool reload = false)
+        {
+            if (!reload && SceneManager.GetActiveScene().name == key)
+            {
+                return; // reload 목적이 아니라면, 동일 씬으로의 이동x
+            }
+        
+            await TaskBeforeLoadScene();
+            await sceneLoader.LoadSceneAsync(key);
         }
 
         #endregion

@@ -19,6 +19,7 @@ namespace TH.SceneManagement
         : base(AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(scene)))
         {
             sceneName = scene.name;
+            Util.Log($"[{nameof(AssetReferenceScene)}] sceneName: '{sceneName}'");
         }
 
         public override bool ValidateAsset(string path)

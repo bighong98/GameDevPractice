@@ -21,13 +21,17 @@ namespace TH.Resource
         public bool PreLoadState => preLoadState;
         
         private const string PreLoadLabel = "PreLoad";
-        
-        #region Initialization
 
-        protected override void InitOnce()
+        protected override void Awake()
         {
+            base.Awake();
+            if (IsInvalidInstance()) return;
             resourceLoader = ServiceLocator.Require<IResourceLoader>();
         }
+
+        #region Initialization
+
+        protected override void InitOnce() { }
 
         protected override void InitOnceAfterPreLoad() { }
 

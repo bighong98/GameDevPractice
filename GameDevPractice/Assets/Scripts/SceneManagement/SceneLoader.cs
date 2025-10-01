@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using TH.Core.Service;
 using TH.Resource;
+using TH.SaveLoad;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -36,10 +37,14 @@ namespace TH.SceneManagement
             Init();
         }
 
+        private bool testing = false;
         private async void Init()
         {
-            await LoadSceneAsync("Sandbox");
+            if (testing)
+                await LoadSceneAsync("Sandbox");
         }
+
+        #region PreLoad
 
         private async UniTask WaitForPreLoad()
         {
@@ -73,6 +78,8 @@ namespace TH.SceneManagement
             cts?.Dispose();
         }
 
+        #endregion
+        
         #region Load/Unload Scene
 
         private async UniTask LoadLoadingSceneAsync(Action<float> onProgress = null, CancellationToken token = default)
@@ -100,7 +107,7 @@ namespace TH.SceneManagement
 
         public UniTask LoadSceneAsync(AssetReferenceScene sceneRef, IEnumerable<Func<CancellationToken, UniTask>> preTasks = null, Action<float> onProgress = null, CancellationToken token = default)
         {
-            throw new System.NotImplementedException();
+            return UniTask.CompletedTask;
         }
 
         public async UniTask LoadSceneAsync(string key, IEnumerable<Func<CancellationToken, UniTask>> preTasks = null, Action<float> onProgress = null,
@@ -223,6 +230,16 @@ namespace TH.SceneManagement
 
         #endregion
 
+        public bool TryGetCurrentSceneEntry(out SceneEntry entry)
+        {
+            if (currentSceneHandle.IsValid())
+            {
+                
+            }
+
+            entry = null;
+            return false;
+        }
     }
 }
 

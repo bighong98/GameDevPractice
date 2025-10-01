@@ -6,20 +6,39 @@ using Cysharp.Threading.Tasks;
 using RPG.SceneManagement;
 using TH.Core.Service;
 using UnityEngine;
+using TH.Resource;
+using IServiceProvider = TH.Core.Service.IServiceProvider;
 
 namespace TH.SaveLoad
 {
     public class SavingWrapper : MonoBehaviour
     {
         private const string defaultSaveFile = "save";
+        private const string preloadLabel = "PreLoad";
         private ISaveSystem saveSystem;
+        
 
         [SerializeField] private float fadeInTime = 0.2f;
         private void Awake()
         {
             // saveSystem = GetComponent<SaveSystem>();
             saveSystem = ServiceLocator.Get<ISaveSystem>();
-            LoadLastScene().Forget();
+            if (ServiceLocator.TryGet(out IResourceLoader resourceLoader))
+            {
+                if (resourceLoader.IsPreLoadDone())
+                    Init(preloadLabel);
+                else
+                    resourceLoader.NotifyResourceLoad += Init;
+            }
+        }
+
+        private void Init(string label)
+        {
+            if (label == preloadLabel)
+            {
+                Util.Log($"[SavingWrapper] Init() invoked");
+                LoadLastScene().Forget();
+            }
         }
         
         private async UniTask LoadLastScene()
