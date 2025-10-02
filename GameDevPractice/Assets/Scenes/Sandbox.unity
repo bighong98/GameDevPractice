@@ -1292,14 +1292,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 5508705068389815492, guid: 5f2413f6eb536cc4db8daabb6d71a29d, type: 3}
-      propertyPath: destination
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5508705068389815492, guid: 5f2413f6eb536cc4db8daabb6d71a29d, type: 3}
-      propertyPath: sceneToLoad
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 7641280697070465874, guid: 5f2413f6eb536cc4db8daabb6d71a29d, type: 3}
       propertyPath: m_LocalPosition.x
       value: 5.5
@@ -1340,6 +1332,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8063112104861481351, guid: 5f2413f6eb536cc4db8daabb6d71a29d, type: 3}
+      propertyPath: info
+      value: 
+      objectReference: {fileID: 11400000, guid: c5969c1849098d7449eb13124d74336d, type: 2}
+    - target: {fileID: 8063112104861481351, guid: 5f2413f6eb536cc4db8daabb6d71a29d, type: 3}
+      propertyPath: destination.sceneName
+      value: Sandbox2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8063112104861481351, guid: 5f2413f6eb536cc4db8daabb6d71a29d, type: 3}
+      propertyPath: destination.m_AssetGUID
+      value: b88032d70465029478a4718851aeceff
+      objectReference: {fileID: 0}
     - target: {fileID: 8098874167255327764, guid: 5f2413f6eb536cc4db8daabb6d71a29d, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -1352,7 +1356,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: Portal
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 5508705068389815492, guid: 5f2413f6eb536cc4db8daabb6d71a29d, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []

@@ -15,6 +15,7 @@ namespace TH.SceneManagement
         public string SceneName => sceneName;
         
 #if UNITY_EDITOR
+        public AssetReferenceScene() {} // parameterless constructor for serialization 
         public AssetReferenceScene(SceneAsset scene)
         : base(AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(scene)))
         {

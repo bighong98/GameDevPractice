@@ -105,20 +105,28 @@ namespace TH.SceneManagement
         }
         
 
-        public UniTask LoadSceneAsync(AssetReferenceScene sceneRef, IEnumerable<Func<CancellationToken, UniTask>> preTasks = null, Action<float> onProgress = null, CancellationToken token = default)
-        {
-            return UniTask.CompletedTask;
-        }
+        // public UniTask LoadSceneAsync(AssetReferenceScene sceneRef, IEnumerable<Func<CancellationToken, UniTask>> preTasks = null, Action<float> onProgress = null, CancellationToken token = default)
+        // {
+        //     return UniTask.CompletedTask;
+        // }
 
-        public async UniTask LoadSceneAsync(string key, IEnumerable<Func<CancellationToken, UniTask>> preTasks = null, Action<float> onProgress = null,
-            CancellationToken token = default)
+        public async UniTask LoadSceneAsync(object key, IEnumerable<Func<CancellationToken, UniTask>> preTasks = null,
+            Action<float> onProgress = null, CancellationToken token = default)
         {
-            if (string.IsNullOrWhiteSpace(key))
-                throw new ArgumentException($"[{nameof(SceneLoader)}] {nameof(LoadSceneAsync)} empty key");
+            if (key is string strKey)
+            {
+                if (string.IsNullOrWhiteSpace(strKey))
+                    throw new ArgumentException($"[{nameof(SceneLoader)}] {nameof(LoadSceneAsync)} empty key");
+            }
+            else if (key is AssetReference refKey)
+            {
+                if (!refKey.IsValid() || !refKey.RuntimeKeyIsValid())
+                    throw new ArgumentException($"[{nameof(SceneLoader)}] {nameof(LoadSceneAsync)} invalid AssetReferenceScene key '{refKey}'");
+            }
 
             if (inFlight) return;
-            inFlight = true; // 동시호출 방지(임시)
-
+            inFlight = true;
+            
             try
             {
                 await UniTask.WhenAll(LoadLoadingSceneAsync(token: token), RunPreTasks(preTasks, token)); // 로딩 씬 로드, 타겟 씬 로드 전 사전 작업
@@ -132,6 +140,28 @@ namespace TH.SceneManagement
             finally { inFlight = false; }
         }
 
+        // public async UniTask LoadSceneAsync(string key, IEnumerable<Func<CancellationToken, UniTask>> preTasks = null, Action<float> onProgress = null,
+        //     CancellationToken token = default)
+        // {
+        //     if (string.IsNullOrWhiteSpace(key))
+        //         throw new ArgumentException($"[{nameof(SceneLoader)}] {nameof(LoadSceneAsync)} empty key");
+        //
+        //     if (inFlight) return;
+        //     inFlight = true; // 동시호출 방지(임시)
+        //
+        //     try
+        //     {
+        //         await UniTask.WhenAll(LoadLoadingSceneAsync(token: token), RunPreTasks(preTasks, token)); // 로딩 씬 로드, 타겟 씬 로드 전 사전 작업
+        //         var result = await LoadSceneWithAddressablesAsync(key, onProgress, token); // 타겟 씬 로드
+        //         await UniTask.WhenAll(UnloadPreviousSceneAsync(token), UnloadLoadingSceneAsync(token)); // 로딩 씬 언로드, 기존 씬 언로드
+        //         
+        //         ReportProgress(1); // 진행도 60%
+        //         OnSceneChanged?.Invoke(result.Scene);
+        //     }
+        //     catch (Exception e) {Util.Log($"exception occured while loadingScene '{key}', {e}");}
+        //     finally { inFlight = false; }
+        // }
+
         private async UniTask RunPreTasks(IEnumerable<Func<CancellationToken, UniTask>> preTasks, CancellationToken token)
         {
             if (preTasks != null) // 씬 로드 전 사전 작업 실행
@@ -144,7 +174,7 @@ namespace TH.SceneManagement
             }
         }
 
-        private async UniTask<SceneInstance> LoadSceneWithAddressablesAsync(string key, Action<float> onProgress = null,
+        private async UniTask<SceneInstance> LoadSceneWithAddressablesAsync(object key, Action<float> onProgress = null,
             CancellationToken token = default)
         {
             AsyncOperationHandle<SceneInstance> handle = default;

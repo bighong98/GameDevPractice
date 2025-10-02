@@ -14,8 +14,7 @@ namespace TH.SceneManagement
         IProgress<float> Progress { get; }
         void BindProgress(IProgress<float> reporter);
         void BindProgress(Action<float> onProgress);
-        UniTask LoadSceneAsync(AssetReferenceScene sceneRef, IEnumerable<Func<CancellationToken, UniTask>> preTasks = null, Action<float> onProgress = null, CancellationToken token = default);
-        UniTask LoadSceneAsync(string key, IEnumerable<Func<CancellationToken, UniTask>> preTasks = null, Action<float> onProgress = null, CancellationToken token = default);
+        UniTask LoadSceneAsync(object key, IEnumerable<Func<CancellationToken, UniTask>> preTasks = null, Action<float> onProgress = null, CancellationToken token = default);
         event Func<UniTask> OnBeforeSceneChanged;
         event Action<Scene> OnSceneChanged;
     }

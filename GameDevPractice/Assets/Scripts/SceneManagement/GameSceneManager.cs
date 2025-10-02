@@ -52,25 +52,37 @@ namespace TH.SceneManagement
 
         #region LoadScene
 
-        public async UniTask LoadSceneAsync(Enums.Scene scene, bool reload = false) // 비동기 씬 이동 (씬 이동 전 초기화 작업 수행)
-        {
-            await LoadSceneAsync((int)scene, reload);
-        }
+        // public async UniTask LoadSceneAsync(Enums.Scene scene, bool reload = false) // 비동기 씬 이동 (씬 이동 전 초기화 작업 수행)
+        // {
+        //     await LoadSceneAsync((int)scene, reload);
+        // }
 
-        public async UniTask LoadSceneAsync(int sceneIndex, bool reload = false)
-        {
-            if (!reload && SceneManager.GetActiveScene().buildIndex == sceneIndex)
-            {
-                return; // reload 목적이 아니라면, 동일 씬으로의 이동x
-            }
+        // public async UniTask LoadSceneAsync(int sceneIndex, bool reload = false)
+        // {
+        //     if (!reload && SceneManager.GetActiveScene().buildIndex == sceneIndex)
+        //     {
+        //         return; // reload 목적이 아니라면, 동일 씬으로의 이동x
+        //     }
+        //
+        //     await TaskBeforeLoadScene();
+        //     await sceneLoader.LoadSceneAsync("");
+        // }
+        //
+        // public async UniTask LoadSceneAsync(string key, bool reload = false)
+        // {
+        //     if (!reload && SceneManager.GetActiveScene().name == key)
+        //     {
+        //         return; // reload 목적이 아니라면, 동일 씬으로의 이동x
+        //     }
+        //
+        //     await TaskBeforeLoadScene();
+        //     await sceneLoader.LoadSceneAsync(key);
+        // }
         
-            await TaskBeforeLoadScene();
-            await sceneLoader.LoadSceneAsync("");
-        }
-        
-        public async UniTask LoadSceneAsync(string key, bool reload = false)
+        public async UniTask LoadSceneAsync(object key, bool reload = false)
         {
-            if (!reload && SceneManager.GetActiveScene().name == key)
+            if (!reload && (key is string strKey && SceneManager.GetActiveScene().name == strKey)
+                || (key is AssetReferenceScene sceneRef && SceneManager.GetActiveScene().name == sceneRef.SceneName))
             {
                 return; // reload 목적이 아니라면, 동일 씬으로의 이동x
             }

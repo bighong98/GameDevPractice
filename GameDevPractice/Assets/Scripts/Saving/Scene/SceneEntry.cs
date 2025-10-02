@@ -12,6 +12,7 @@ namespace TH.SaveLoad
         public string sceneId;
         public AssetReferenceScene sceneRef;
 
+        public SceneEntry() {}
         public SceneEntry(AssetReferenceScene sceneRef)
         {
             this.sceneRef = sceneRef;
