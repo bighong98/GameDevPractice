@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 7641280697070465874}
   - component: {fileID: 6786911371270695730}
   - component: {fileID: 5683346577492181683}
-  - component: {fileID: 5508705068389815492}
   - component: {fileID: 8063112104861481351}
   m_Layer: 0
   m_Name: Portal
@@ -84,21 +83,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &5508705068389815492
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8963691957439885939}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d7f1ea457dd105e48a3b7fd65552ecea, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  sceneToLoad: 1
-  spawnPoint: {fileID: 8098874167255327764}
-  destination: 1
 --- !u!114 &8063112104861481351
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -111,13 +95,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 70332287262b5604b853a666f347aa60, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TH.SceneManagement.Portal
-  destination:
-    m_AssetGUID: 
-    m_SubObjectName: 
-    m_SubObjectType: 
-    m_SubObjectGUID: 
-    m_EditorAssetChanged: 0
-    sceneName: 
+  info: {fileID: 0}
   spawnPoint: {fileID: 8098874167255327764}
 --- !u!1 &9000093922994249221
 GameObject:
