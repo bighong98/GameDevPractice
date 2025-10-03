@@ -126,17 +126,19 @@ namespace TH.SceneManagement
 
             if (inFlight) return;
             inFlight = true;
-            
+
             try
             {
-                await UniTask.WhenAll(LoadLoadingSceneAsync(token: token), RunPreTasks(preTasks, token)); // 로딩 씬 로드, 타겟 씬 로드 전 사전 작업
+                await UniTask.WhenAll(LoadLoadingSceneAsync(token: token),
+                    RunPreTasks(preTasks, token)); // 로딩 씬 로드, 타겟 씬 로드 전 사전 작업
                 var result = await LoadSceneWithAddressablesAsync(key, onProgress, token); // 타겟 씬 로드
-                await UniTask.WhenAll(UnloadPreviousSceneAsync(token), UnloadLoadingSceneAsync(token)); // 로딩 씬 언로드, 기존 씬 언로드
-                
+                await UniTask.WhenAll(UnloadPreviousSceneAsync(token),
+                    UnloadLoadingSceneAsync(token)); // 로딩 씬 언로드, 기존 씬 언로드
+
                 ReportProgress(1); // 진행도 60%
                 OnSceneChanged?.Invoke(result.Scene);
             }
-            catch (Exception e) {Util.Log($"exception occured while loadingScene '{key}', {e}");}
+            catch (Exception e) { Util.Log($"exception occured while loadingScene '{key}', {e}"); }
             finally { inFlight = false; }
         }
 

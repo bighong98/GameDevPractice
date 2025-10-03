@@ -13,7 +13,7 @@ namespace TH.Core.Service
         {
             if (TryGet(out T service))
             {
-                Util.Log($"[{nameof(ServiceProvider)}.{nameof(Get)}] Service '{typeof(T)} is provided'", Util.LoggingMode.InProgress);
+                Util.Log($"[{nameof(ServiceProvider)}.{nameof(Get)}] Service '{typeof(T)} is provided'", Util.LoggingMode.Completed);
                 return service;
             }
             

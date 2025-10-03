@@ -10,7 +10,7 @@ namespace TH.SceneManagement
 {
     [RequireComponent(typeof(Collider))]
     [RequireComponent(typeof(Rigidbody))]
-    public class Portal : MonoBehaviour, IScenePortal
+    public class Portal : MonoBehaviour
     {
         [SerializeField] private PortalInfoSO info;
         [SerializeField] private Transform spawnPoint;

@@ -39,6 +39,7 @@ namespace RPG.UI
         
         private void Awake()
         {
+            Util.SetMainCameraForUtilClass();
             rect = GetComponent<RectTransform>();
             BindObject(typeof(GameObjects));
             main = GetObject((int)GameObjects.Main).GetComponent<Slider>();

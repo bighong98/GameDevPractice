@@ -61,6 +61,7 @@ namespace TH.Attribute.Stat
 
         private void InitAfterLoad()
         {
+            Util.Log($"[StatHolder] InitAfterLoad() invoked", Util.LoggingMode.Completed);
             progression = ResourceManager.Instance.Load<ProgressionSO>("ProgressionSO.asset");
             if (progression == null)
                 Util.LogError($"[{gameObject.name}.{nameof(StatHolder)}] failed to load progression");

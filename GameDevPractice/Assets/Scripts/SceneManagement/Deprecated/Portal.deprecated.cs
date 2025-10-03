@@ -7,8 +7,9 @@ using UnityEngine.AI;
 using UnityEngine.SceneManagement;
 using TH.SceneManagement;
 using TH.SaveLoad;
+using RPG.SceneManagement;
 
-namespace RPG.SceneManagement
+namespace TH.Deprecated
 {
     public class Portal : MonoBehaviour
     {

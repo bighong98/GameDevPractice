@@ -47,12 +47,6 @@ namespace TH.Core
             {
                 _instance = this as T;
                 DontDestroyOnLoad(gameObject);
-
-                if (ServiceLocator.TryGet(out ISceneLoader sceneLoader))
-                {
-                    sceneLoader.OnBeforeSceneChanged += this.Clear;
-                    sceneLoader.OnSceneChanged += this.OnSceneChanged;
-                }
             }
             else if (_instance != this)
             {
@@ -63,7 +57,13 @@ namespace TH.Core
 
         protected virtual void Start()
         {
+            if (ServiceLocator.TryGet(out ISceneLoader sceneLoader))
+            {
+                sceneLoader.OnBeforeSceneChanged += this.Clear;
+                sceneLoader.OnSceneChanged += this.OnSceneChanged;
+            }
             
+            OnSceneChanged(SceneManager.GetActiveScene());
         }
         
         protected abstract void InitOnce(); // 인스턴스 생성 후 최초 1회만 실행, OnSceneChanged에서 실행

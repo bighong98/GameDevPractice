@@ -91,6 +91,7 @@ namespace TH.Resource
 
         private void OnPreLoadDone()
         {
+            preLoadState = true;
             NotifyPreLoad?.Invoke();
             RunReserved();
         }
