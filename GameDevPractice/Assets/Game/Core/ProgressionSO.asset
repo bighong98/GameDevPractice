@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: ProgressionSO
   m_EditorClassIdentifier: Assembly-CSharp::RPG.Stats.ProgressionSO
   characterClasses:
-  - characterClass: 1
+  - characterType: 1
     progressionStats:
-    - stat: 0
+    - stat: 101
       levels:
       - 100
       - 200
@@ -23,39 +23,39 @@ MonoBehaviour:
       - 400
       - 500
       - 600
-    - stat: 2
+    - stat: 1002
       levels:
       - 100
       - 300
       - 600
       - 1000
       - 1500
-  - characterClass: 2
+  - characterType: 2
     progressionStats:
-    - stat: 0
+    - stat: 101
       levels:
       - 30
       - 60
       - 90
       - 120
       - 150
-    - stat: 1
+    - stat: 1001
       levels:
       - 5
       - 10
       - 15
       - 20
       - 25
-  - characterClass: 3
+  - characterType: 3
     progressionStats:
-    - stat: 0
+    - stat: 101
       levels:
       - 35
       - 70
       - 105
       - 140
       - 175
-    - stat: 1
+    - stat: 1001
       levels:
       - 20
       - 40

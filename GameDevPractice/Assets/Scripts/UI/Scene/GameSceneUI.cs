@@ -192,13 +192,13 @@ public class GameSceneUI : BaseUI
         int currLevel = level;
         int prevLevel = level - 1;
         
-        if (prevLevel > 0 && statHolder.GetStat(GameStat.ExperienceToLevelUp, prevLevel) is { } floor)
+        if (prevLevel > 0 && statHolder.GetStat(GameStats.ExperienceToLevelUp, prevLevel) is { } floor)
         {
             Util.Log($"[{nameof(GameSceneUI)}.{nameof(OnLevelUp)}()] floorXp is changed: {floor}", Util.LoggingMode.Completed);
             floorXp = floor;
         }
 
-        if (currLevel > 0 && statHolder.GetStat(GameStat.ExperienceToLevelUp, currLevel) is { } ceil)
+        if (currLevel > 0 && statHolder.GetStat(GameStats.ExperienceToLevelUp, currLevel) is { } ceil)
         {
             Util.Log($"[{nameof(GameSceneUI)}.{nameof(OnLevelUp)}()] ceilXp is changed: {ceil}", Util.LoggingMode.Completed);
             ceilXp = ceil;

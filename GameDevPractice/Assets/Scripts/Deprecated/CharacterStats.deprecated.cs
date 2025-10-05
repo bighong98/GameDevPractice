@@ -5,34 +5,17 @@ using RPG.Attribute;
 using TH.Attribute;
 using UnityEngine;
 using TH.Core.Pool;
+using TH.Attribute.Stat;
+using UnityEngine.Serialization;
 
 namespace RPG.Stats
 {
-    public enum CharacterClass
-    {
-        Default, // means not initialized
-        
-        Player,
-        EnemyTest1,
-        EnemyTest2,
-        EnemyTest3,
-        
-        Max, // means End of CharacterClass Enum (Always must be end of enum)
-    }
-
-    public enum GameStat
-    {
-        Health, // 최대체력
-        ExperienceReward, // 경험치량(몬스터 처치 시, 플레이어에게는 없음)
-        ExperienceToLevelUp, // 레벨업에 필요한 경험치 필요량 (반드시 배열 길이가 (최대레벨-1)이어야함)
-    }
-    
     [RequireComponent(typeof(CharacterTypeHolder))]
     public class CharacterStats : MonoBehaviour
     {
         [Range(1, 99)] 
         [SerializeField] private int startingLevel = 1;
-        [SerializeField] private CharacterClass characterClass;
+        [FormerlySerializedAs("characterClass")] [SerializeField] private CharacterType characterType;
         [SerializeField] private ProgressionSO progression;
 
         // 레벨 (레벨, 레벨업 이펙트 관련 기능 이관 고려)
@@ -100,20 +83,20 @@ namespace RPG.Stats
             if (GetComponent<CharacterTypeHolder>() is not { } typeHolder) return;
             
             var charInfo = await typeHolder.GetTypeAsync();
-            characterClass = charInfo.characterClass;
+            characterType = charInfo.characterType;
             startingLevel = charInfo.startingLevel;
         }
 
         
 
-        public float GetStat(GameStat statType)
+        public float GetStat(GameStats stats)
         {
-            return progression.GetProgressionStat(statType, characterClass, startingLevel);
+            return progression.GetProgressionStat(stats, characterType, startingLevel);
         }
 
-        public float GetStat(GameStat statType, int level)
+        public float GetStat(GameStats stats, int level)
         {
-            return progression.GetProgressionStat(statType, characterClass, level);
+            return progression.GetProgressionStat(stats, characterType, level);
         }
 
         #region Level
@@ -157,11 +140,11 @@ namespace RPG.Stats
 
         private int CalculateLevel(float currentXP)
         {
-            int penultimateLevel = progression.GetMaxLevel(GameStat.ExperienceToLevelUp, characterClass);
+            int penultimateLevel = progression.GetMaxLevel(GameStats.ExperienceToLevelUp, characterType);
             
             for (int level = 1; level <= penultimateLevel; level++)
             {
-                if (progression.GetProgressionStat(GameStat.ExperienceToLevelUp, characterClass, level) is
+                if (progression.GetProgressionStat(GameStats.ExperienceToLevelUp, characterType, level) is
                         { } xpToLevelUp && xpToLevelUp > currentXP)
                 {
                     return level;

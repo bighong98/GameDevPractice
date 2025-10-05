@@ -59,9 +59,9 @@ namespace RPG.Attribute
             hp = new LazyValue<float>(GetInitialHealth);
             rewardXp = new LazyValue<float>(() =>
             {
-                if (statHolder != null && statHolder.GetStat(GameStat.ExperienceReward) is {} result)
+                if (statHolder != null && statHolder.GetStat(GameStats.ExperienceReward) is {} result)
                 {
-                    return result;
+                    return result.Value;
                 }
                 Util.Log($"[{gameObject.name}.{nameof(Health)}] failed to initialize rewardXp field");
                 return 0;
@@ -75,10 +75,8 @@ namespace RPG.Attribute
             
             UIManager.Instance.ReserveOperation(() =>
             {
-                if (this != null)
-                {
-                    UIManager.Instance.GetUIFromPool<HPBar>(HPBarPrefab, UICanvas.AnchoredOverlay).SetOwner(this);
-                }
+                if (this == null) return;
+                UIManager.Instance.GetUIFromPool<HPBar>(HPBarPrefab, UICanvas.AnchoredOverlay).SetOwner(this);
             });
         }
 
@@ -98,8 +96,9 @@ namespace RPG.Attribute
 
         private float GetInitialHealth()
         {
-            // return GetComponent<CharacterStats>().GetStat(GameStat.Health);
-            return statHolder?.GetStat(GameStat.Health) ?? 0; 
+            if (statHolder?.GetStat(GameStats.Health) is not { } stat) return 0;
+            stat.OnStatChanged += () => { hp.Value = stat.Value; Util.Log($"[{gameObject.name}.{nameof(Health)}] hp stat changed. trying to invoke SetHp({stat.Value})", Util.LoggingMode.Completed); };
+            return stat.Value;
         }
 
         // 최대 체력 + 현재 체력 조정
@@ -186,7 +185,7 @@ namespace RPG.Attribute
         private const int LevelUpRegenerationPercentage = 50;
         private void OnLevelUp(int level)
         {
-            SetMaxHp(statHolder.GetStat(GameStat.Health, level));
+            SetMaxHp(statHolder.GetStat(GameStats.Health, level));
             SetCurrentHp(hp.Value + maxHp.Value * ((float)LevelUpRegenerationPercentage / 100));
             Util.Log($"OnLevelUp: hp: {hp.Value}", Util.LoggingMode.Completed);
         }

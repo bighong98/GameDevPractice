@@ -6,6 +6,7 @@ using TH.Core.Pool;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using TH.Resource;
+using TH.Attribute.Stat;
 
 namespace TH.Attribute
 {
@@ -129,11 +130,11 @@ namespace TH.Attribute
             if (progression == null) // ProgressionSO 참조가 없는 경우 startingLevel 반환
                 return startingLevel;
             
-            int penultimateLevel = progression.GetMaxLevel(GameStat.ExperienceToLevelUp, CharacterClass.Player);
+            int penultimateLevel = progression.GetMaxLevel(GameStats.ExperienceToLevelUp, CharacterType.Player);
             
             for (int level = 1; level <= penultimateLevel; level++)
             {
-                if (progression.GetProgressionStat(GameStat.ExperienceToLevelUp, CharacterClass.Player, level) is
+                if (progression.GetProgressionStat(GameStats.ExperienceToLevelUp, CharacterType.Player, level) is
                         { } xpToLevelUp && xpToLevelUp > xp)
                 {
                     return level;
@@ -146,7 +147,7 @@ namespace TH.Attribute
         private bool CalculateXpFromLevel(int level, out float xp)
         {
             if (progression != null &&
-                progression.GetProgressionStat(GameStat.ExperienceToLevelUp, CharacterClass.Player, level) is
+                progression.GetProgressionStat(GameStats.ExperienceToLevelUp, CharacterType.Player, level) is
                     float result)
             {
                 xp = result;

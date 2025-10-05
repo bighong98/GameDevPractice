@@ -18,6 +18,7 @@ MonoBehaviour:
   showInMinimap: 0
   minimapSprite: {fileID: 0}
   minimapSpriteColor: {r: 1, g: 1, b: 1, a: 1}
-  characterClass: 2
+  characterType: 2
+  characterBaseStats: {fileID: 11400000, guid: 7e507f31a56583d42923f7e4b8a1f0d8, type: 2}
   height: 0
   startingLevel: 1
