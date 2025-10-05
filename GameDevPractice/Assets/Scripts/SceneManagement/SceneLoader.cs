@@ -90,12 +90,11 @@ namespace TH.SceneManagement
             
             var op = SceneManager.LoadSceneAsync(LoadingSceneName, LoadSceneMode.Single);
 
-            if (OnBeforeSceneChanged != null)
-                await UniTask.WhenAll(
-                    op.ToUniTask(cancellationToken: token),
-                    WaitForPreLoad(),
-                    OnBeforeSceneChanged()
-                );
+            
+            await UniTask.WhenAll(
+                op.ToUniTask(cancellationToken: token),
+                WaitForPreLoad()
+            );
         }
 
         private static async UniTask UnloadLoadingSceneAsync(CancellationToken token = default)
@@ -128,7 +127,9 @@ namespace TH.SceneManagement
                     RunPreTasks(preTasks, token)); // 로딩 씬 로드, 타겟 씬 로드 전 사전 작업
                 var result = await LoadSceneWithAddressablesAsync(key, onProgress, token); // 타겟 씬 로드
                 await UniTask.WhenAll(UnloadPreviousSceneAsync(token),
-                    UnloadLoadingSceneAsync(token)); // 로딩 씬 언로드, 기존 씬 언로드
+                        UnloadLoadingSceneAsync(token),
+                        OnBeforeSceneChanged!()); // 로딩 씬 언로드, 기존 씬 언로드
+                
 
                 ReportProgress(1); // 진행도 60%
                 OnSceneChanged?.Invoke(result.Scene);
@@ -201,7 +202,7 @@ namespace TH.SceneManagement
             {
                 try
                 {
-                    OnBeforeSceneChanged?.Invoke(); // 기존 씬 언로드 전에 정리작업 실행
+                    // OnBeforeSceneChanged?.Invoke(); // 기존 씬 언로드 전에 정리작업 실행
                     var prev = prevSceneHandle.Result;
                     await Addressables.UnloadSceneAsync(prev, autoReleaseHandle: true)
                         .ToUniTask(cancellationToken: token);

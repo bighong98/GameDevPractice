@@ -16,6 +16,8 @@ namespace TH.UI
             SceneManager.activeSceneChanged += (prev, curr) => { InitAfterSceneChanged(curr); };
         }
 
+        public void ForceInit() => Init();
+        
         void Init()
         {
             RenewCamera();

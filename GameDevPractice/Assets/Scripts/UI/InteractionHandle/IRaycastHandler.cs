@@ -15,6 +15,7 @@ namespace TH.UI
         Vector3 GetMouseWorldPosition();
         Vector3 GetScreenWorldPosition(Vector2 pos = new Vector2());
         bool GetMouseScreenPosition(RectTransform rect, Vector2 pos, out Vector2 result);
+        void ForceInit();
     }
 }
 

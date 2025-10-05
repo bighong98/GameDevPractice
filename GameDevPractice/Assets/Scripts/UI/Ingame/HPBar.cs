@@ -5,6 +5,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using RPG.Attribute;
 using TH.Core.Pool;
+using TH.Core.Service;
+using TH.UI;
 
 // HP Bar Controller using UI Component Image, Slider
 namespace RPG.UI
@@ -36,10 +38,10 @@ namespace RPG.UI
         #endregion
 
         private CancellationToken token;
+        private IRaycastHandler raycastHandler;
         
         private void Awake()
         {
-            Util.SetMainCameraForUtilClass();
             rect = GetComponent<RectTransform>();
             BindObject(typeof(GameObjects));
             main = GetObject((int)GameObjects.Main).GetComponent<Slider>();
@@ -47,16 +49,18 @@ namespace RPG.UI
 
             if (main == null || sub == null)
             {
-                Util.Log($"[{nameof(HPBar)}] failed to initialize", Util.LoggingMode.Completed);
+                Util.LogError($"[{nameof(HPBar)}] failed to initialize");
                 ReleaseSelf();
             }
 
             token = destroyCancellationToken;
+            raycastHandler = ServiceLocator.Get<IRaycastHandler>();
+            raycastHandler.ForceInit();
         }
 
         private void LateUpdate()
         {
-            if (!isHiding && target != null && Util.IsInsideScreen(target.position, out var result))
+            if (!isHiding && target != null && raycastHandler.IsInsideScreen(target.position, out var result))
             {
                 rect.position = result;
                 Show();

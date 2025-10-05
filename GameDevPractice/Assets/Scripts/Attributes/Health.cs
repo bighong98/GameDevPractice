@@ -75,7 +75,12 @@ namespace RPG.Attribute
             
             UIManager.Instance.ReserveOperation(() =>
             {
-                if (this == null) return;
+                Util.Log($"[{gameObject.name}.Health] trying to create hp bar");
+                if (this == null)
+                {
+                    Util.Log($"[{gameObject.name}.Health] failed to create hp bar");
+                    return;
+                }
                 UIManager.Instance.GetUIFromPool<HPBar>(HPBarPrefab, UICanvas.AnchoredOverlay).SetOwner(this);
             });
         }

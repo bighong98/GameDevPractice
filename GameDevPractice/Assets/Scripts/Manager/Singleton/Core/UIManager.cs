@@ -48,6 +48,7 @@ namespace RPG.UI
             // {
             //     await Clear();
             // });
+            SetUIContainer();
         }
 
         protected override void InitOnceAfterPreLoad()
@@ -60,8 +61,24 @@ namespace RPG.UI
             // Util.SetMainCameraForUtilClass();
             
             Util.Log($"[UIManager] Init() in scene '{SceneManager.GetActiveScene().name}'", Util.LoggingMode.InProgress);
+
             
-            root = new GameObject("UI_Root").transform;
+
+            // SetSceneUI();
+            // SetTooltip();
+            
+            InputManager.Instance.OnEscaped += OnEscapeCalled;
+            
+            InputManager.Instance.OnSingleClicked -= OnPopupOutSideSelected; // 중복 구독 방지
+            InputManager.Instance.OnSingleClicked += OnPopupOutSideSelected;
+        }
+
+        private void SetUIContainer()
+        {
+            var rootGo = new GameObject("UI_Root");
+            DontDestroyOnLoad(rootGo);
+            // root = new GameObject("UI_Root").transform;
+            root = rootGo.transform;
             canvases = new();
             
             var t = typeof(UICanvas);
@@ -73,16 +90,8 @@ namespace RPG.UI
                 SetCanvas(go);
                 canvases.Add(go);
             }
-            
-            // SetSceneUI();
-            // SetTooltip();
-            
-            InputManager.Instance.OnEscaped += OnEscapeCalled;
-            
-            InputManager.Instance.OnSingleClicked -= OnPopupOutSideSelected; // 중복 구독 방지
-            InputManager.Instance.OnSingleClicked += OnPopupOutSideSelected;
         }
-        
+
         protected override void InitAfterPreLoad()
         {
             SetSceneUI();
@@ -202,6 +211,11 @@ namespace RPG.UI
             }
         }
 
+        private void EnsureUIParent()
+        {
+            
+        }
+        
         private Transform GetUIParent(UICanvas type)
         {
             if (canvases[(int)type] is { } canvasGo) 

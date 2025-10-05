@@ -84,7 +84,7 @@ namespace TH.Core
         // 씬 로드가 완료된 후 싱글톤 초기화가 진행됨
         protected virtual void OnSceneChanged(Scene scene)
         {
-            Util.Log($"[{GetType().Name}] OnSceneChanged invoked in scene '{scene.name}'",Util.LoggingMode.Completed);
+            Util.Log($"[{GetType().Name}] OnSceneChanged invoked in scene '{scene.name}'",Util.LoggingMode.InProgress);
             
             if (!hasInitializedOnce) // 인스턴스 생성 후 최초 1회만 초기화가 필요한 작업 처리
             {
@@ -103,7 +103,7 @@ namespace TH.Core
 
             if (!isInitialized)
             {
-                Util.Log($"[{GetType().Name}] Init() in scene '{scene.name}'", Util.LoggingMode.Completed);
+                Util.Log($"[{GetType().Name}] Init() in scene '{scene.name}'", Util.LoggingMode.InProgress);
                 Init();
 
                 if (_instance is not Singleton<ResourceManager>) // 본인이 ResourceManager면 실행x
