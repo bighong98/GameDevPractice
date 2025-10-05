@@ -2,6 +2,7 @@ using TH.Combat;
 using TH.Resource;
 using TH.SaveLoad;
 using TH.SceneManagement;
+using TH.UI;
 using UnityEngine;
 
 namespace TH.Core.Service
@@ -22,6 +23,7 @@ namespace TH.Core.Service
             ServiceLocator.Register<IResourceLoader>(new ResourceLoader());
             ServiceLocator.Register<ISceneLoader>(new SceneLoader());
             ServiceLocator.Register<ISaveSystem>(new SaveSystem());
+            ServiceLocator.Register<IRaycastHandler>(new RaycastHandler());
             ServiceLocator.Register<IDamageCalculator>(new DamageCalculator());
             ServiceLocator.Register<ICombatSystem>(new CombatSystem());
         }
