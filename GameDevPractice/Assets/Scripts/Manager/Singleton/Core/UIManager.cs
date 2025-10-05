@@ -77,7 +77,6 @@ namespace RPG.UI
         {
             var rootGo = new GameObject("UI_Root");
             DontDestroyOnLoad(rootGo);
-            // root = new GameObject("UI_Root").transform;
             root = rootGo.transform;
             canvases = new();
             
