@@ -2,6 +2,8 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using TH.Core.Pool;
+using TH.Core.Service;
+using TH.UI;
 using TH.Utils;
 
 namespace RPG.UI
@@ -56,12 +58,19 @@ namespace RPG.UI
         protected CancellationTokenSource PopupCTS; // 해당 팝업의 토큰 소스 (다른 팝업에 종속되어있을 때)
         protected CancellationTokenRegistration OwnerCTSRegistration; // 종속된 팝업과의 연결
         protected bool isTokenChained = false; // 현재 다른 팝업에 종속되어있는지 여부
+        protected IRaycastHandler raycastHandler;
         
         public enum DuplicatedPopupHandle
         {
             Allow, // 복수의 동일 타입 팝업UI 호출 가능 (Show only)
             Toggle, // 기존에 활성화된 동일 타입 팝업UI가 있으면 Close(only), 없으면 Show(only)
             Replace, // 기존에 활성화된 동일 타입 팝업UI를 닫고, 새 팝업UI를 호출 (Close + Show)
+        }
+
+        protected override void Awake()
+        {
+            base.Awake();
+            raycastHandler = ServiceLocator.Require<IRaycastHandler>(); // todo: UIManager에서 주입 고려
         }
         
         public override bool Init()
@@ -185,8 +194,11 @@ namespace RPG.UI
         private const float lerpSpeed = 10f;    // 부드럽게 따라오는 속도 (Lerp 계수)
         private void UpdatePopupPosition()
         {
-            Vector3 screenPosition = Util.GetWorldScreenPosition(cachedPosition, false);
-            Util.GetMouseScreenPosition(parentRect, screenPosition, out var anchoredPos);
+            // Vector3 screenPosition = Util.GetWorldScreenPosition(cachedPosition, false);
+            // Util.GetMouseScreenPosition(parentRect, screenPosition, out var anchoredPos);
+            
+            Vector3 screenPosition = raycastHandler.GetWorldScreenPosition(cachedPosition, false);
+            raycastHandler.GetMouseScreenPosition(parentRect, screenPosition, out var anchoredPos);
             
             float distance = Vector2.Distance(Rect.anchoredPosition, anchoredPos);
             
@@ -232,7 +244,8 @@ namespace RPG.UI
             if (placePointerPosition)
             {
                 // if (Util.GetMouseScreenPosition(parentRect, InputManager.Instance.PointerPos, out var pointerPosition))
-                if (Util.GetMouseScreenPosition(parentRect, Input.mousePosition, out var pointerPosition))
+                // if (Util.GetMouseScreenPosition(parentRect, Input.mousePosition, out var pointerPosition))
+                if (raycastHandler.GetMouseScreenPosition(parentRect, Input.mousePosition, out var pointerPosition))
                 {
                     Rect.anchoredPosition = pointerPosition;
                 }

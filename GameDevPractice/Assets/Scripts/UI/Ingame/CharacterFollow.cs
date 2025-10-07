@@ -1,4 +1,5 @@
 using System;
+using TH.UI;
 using UnityEngine;
 using UnityEngine.UI;
 using TH.Utils;
@@ -8,6 +9,7 @@ public class CharacterFollow : MonoBehaviour
     [SerializeField] private Transform target;
     private RectTransform selfRect;
     private Image image;
+    private IRaycastHandler raycastHandler;
 
     private void Awake()
     {
@@ -19,7 +21,8 @@ public class CharacterFollow : MonoBehaviour
     private void LateUpdate()
     {
         if (target == null) return;
-        if (Util.IsInsideScreen(target.position, out var result))
+        // if (Util.IsInsideScreen(target.position, out var result))
+        if (raycastHandler.IsInsideScreen(target.position, out var result))
         {
             selfRect.position = result;
             Show();

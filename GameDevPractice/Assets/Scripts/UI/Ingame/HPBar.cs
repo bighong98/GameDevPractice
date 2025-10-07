@@ -41,8 +41,10 @@ namespace RPG.UI
         private CancellationToken token;
         private IRaycastHandler raycastHandler;
         
-        private void Awake()
+        protected override void Awake()
         {
+            base.Awake();
+            
             rect = GetComponent<RectTransform>();
             BindObject(typeof(GameObjects));
             main = GetObject((int)GameObjects.Main).GetComponent<Slider>();

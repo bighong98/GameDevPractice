@@ -33,8 +33,9 @@ namespace RPG.UI
         private Action yesAction;
         private Action noAction;
         
-        private void Awake()
+        protected override void Awake()
         {
+            base.Awake();
             Init();
         }
 

@@ -35,8 +35,9 @@ public class DetailedItemTooltipUI : PopupUI
     private const string DefaultUnEquipText = "장착해제";
     private const string DefaultDivideText = "개수 분리";
 
-    private void Awake()
+    protected override void Awake()
     {
+        base.Awake();
         Init();
     }
 

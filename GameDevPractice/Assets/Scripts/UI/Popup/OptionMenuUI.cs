@@ -34,8 +34,9 @@ namespace RPG.UI
         private float prevBgmValue;
         private float prevSfxValue;
 
-        private void Awake()
+        protected override void Awake()
         {
+            base.Awake();
             Init();
         }
 

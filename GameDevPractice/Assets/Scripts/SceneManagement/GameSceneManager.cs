@@ -25,7 +25,7 @@ namespace TH.SceneManagement
             
             SceneManager.sceneLoaded += ((scene, mode) =>
             {
-                Util.SetMainCameraForUtilClass();
+                // Util.SetMainCameraForUtilClass();
                 initializationTasks?.SafeInvoke(true);
                 currentSceneLoaded = true;
             });
@@ -37,7 +37,7 @@ namespace TH.SceneManagement
             if (IsInvalidInstance()) return;
             if (currentSceneLoaded) return;
             
-            Util.SetMainCameraForUtilClass();
+            // Util.SetMainCameraForUtilClass();
             initializationTasks?.SafeInvoke(true);
             currentSceneLoaded = true;
         }

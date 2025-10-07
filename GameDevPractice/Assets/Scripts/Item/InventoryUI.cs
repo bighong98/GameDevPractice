@@ -57,7 +57,6 @@ namespace RPG.UI
         private PointerEventData pointerEventData;
         private List<RaycastResult> raycastResults;
         private RectTransform inventoryUIRect; // 인벤토리UI 경계 기준 (현재 Contents.RectTransform)
-        private IRaycastHandler raycastHandler;
         
         private UI_ItemTooltip itemTooltip;
         private QuestionPopupUI removeConfirmPopup;
@@ -87,9 +86,10 @@ namespace RPG.UI
         private Vector3 beginDragIconPoint;
         private Vector3 beginDragCursorPoint;
         
-        private void Awake()
+        protected override void Awake()
         {
-            raycastHandler = ServiceLocator.Require<IRaycastHandler>();
+            base.Awake();
+            // raycastHandler = ServiceLocator.Require<IRaycastHandler>();
             raycastResults = new List<RaycastResult>();
             pointerEventData = new PointerEventData(EventSystem.current);
             
@@ -696,7 +696,8 @@ namespace RPG.UI
         
         private T RaycastAndGetFirstComponent<T>() where T : Component
         {
-            return Util.RaycastAndGetFirstUIComponent<T>(pointerEventData, raycastResults);
+            return raycastHandler.RaycastAndGetFirstUIComponent<T>(pointerEventData, raycastResults);
+            // return Util.RaycastAndGetFirstUIComponent<T>(pointerEventData, raycastResults);
             // raycastResults.Clear();
             // // graphicRaycaster.Raycast(pointerEventData, raycastResults);
             // EventSystem.current.RaycastAll(pointerEventData, raycastResults);

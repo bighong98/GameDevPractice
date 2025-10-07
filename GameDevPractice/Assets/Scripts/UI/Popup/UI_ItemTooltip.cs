@@ -17,8 +17,9 @@ namespace RPG.UI
 
         #endregion
 
-        private void Awake()
+        protected override void Awake()
         {
+            base.Awake();
             Init();
         }
 

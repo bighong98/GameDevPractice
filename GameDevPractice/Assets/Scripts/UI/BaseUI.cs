@@ -18,7 +18,12 @@ namespace RPG.UI
         
         protected Canvas canvas;
         protected CanvasGroup canvasGroup;
-        
+
+        protected virtual void Awake()
+        {
+            
+        }
+
         public virtual bool Init()
         {
             if (_init) // if already initialized, return false

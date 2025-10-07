@@ -48,8 +48,9 @@ public class GameSceneUI : BaseUI
     private float ceilXp;
     private float currXp;
     
-    private void Awake()
+    protected override void Awake()
     {
+        base.Awake();
         Init();
     }
 

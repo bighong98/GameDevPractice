@@ -13,80 +13,80 @@ using Random = UnityEngine.Random;
 
 public static class Util
 {
-    private static Camera mainCamera;
+    // private static Camera mainCamera;
     private static bool _isQuitting = false;
     public static bool IsQuitting { get { return _isQuitting; } }
     
-    public static void SetMainCameraForUtilClass() // UIManager.Init()에서 호출됨
-    {
-        if (mainCamera == null)
-            mainCamera = Camera.main;
-    }
+    // public static void SetMainCameraForUtilClass() // UIManager.Init()에서 호출됨
+    // {
+    //     if (mainCamera == null)
+    //         mainCamera = Camera.main;
+    // }
 
-    #region Position Conversion (WorldSpace <-> Screen, etc)
+    #region Position Conversion (WorldSpace <-> Screen, etc) (deprecated)
 
-    private static Vector3 GetMouseWorldPosition(bool nullCheck = true)
-    {
-        if (nullCheck && mainCamera == null)
-            mainCamera = Camera.main;
+    // private static Vector3 GetMouseWorldPosition(bool nullCheck = true)
+    // {
+    //     if (nullCheck && mainCamera == null)
+    //         mainCamera = Camera.main;
+    //
+    //     // Vector2 screenPos = InputManager.Instance.PointerPos;
+    //     Vector2 screenPos = Input.mousePosition;
+    //     Vector3 mouseWorldPosition = mainCamera.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, 10f)); // 10f is magic number
+    //     mouseWorldPosition.z = 0f;
+    //     return mouseWorldPosition;
+    // }
 
-        // Vector2 screenPos = InputManager.Instance.PointerPos;
-        Vector2 screenPos = Input.mousePosition;
-        Vector3 mouseWorldPosition = mainCamera.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, 10f)); // 10f is magic number
-        mouseWorldPosition.z = 0f;
-        return mouseWorldPosition;
-    }
+    // public static Vector3 GetScreenWorldPosition(Vector2 pos = new Vector2(), bool nullCheck = true)
+    // {
+    //     // Default: InputManager로부터 현재 포인터/마우스 위치 기준으로 World Space 좌표 반환
+    //     if (pos == Vector2.zero)
+    //         return GetMouseWorldPosition(nullCheck);
+    //     
+    //     if (nullCheck && mainCamera == null)
+    //         mainCamera = Camera.main;
+    //     
+    //     Vector3 mouseWorldPosition = mainCamera.ScreenToWorldPoint(new Vector3(pos.x, pos.y, 10f)); // 10f is magic number
+    //     mouseWorldPosition.z = 0f;
+    //     return mouseWorldPosition;
+    // }
 
-    public static Vector3 GetScreenWorldPosition(Vector2 pos = new Vector2(), bool nullCheck = true)
-    {
-        // Default: InputManager로부터 현재 포인터/마우스 위치 기준으로 World Space 좌표 반환
-        if (pos == Vector2.zero)
-            return GetMouseWorldPosition(nullCheck);
-        
-        if (nullCheck && mainCamera == null)
-            mainCamera = Camera.main;
-        
-        Vector3 mouseWorldPosition = mainCamera.ScreenToWorldPoint(new Vector3(pos.x, pos.y, 10f)); // 10f is magic number
-        mouseWorldPosition.z = 0f;
-        return mouseWorldPosition;
-    }
+    // public static Vector3 GetWorldScreenPosition(Vector3 pos, bool ignoreDepthZ = true, bool nullCheck = true)
+    // {
+    //     if (nullCheck && mainCamera == null)
+    //         mainCamera = Camera.main;
+    //     Vector3 worldScreenPosition = mainCamera.WorldToScreenPoint(pos);
+    //     
+    //     if (ignoreDepthZ)
+    //         worldScreenPosition.z = 0f;
+    //     
+    //     return worldScreenPosition;
+    // }
 
-    public static Vector3 GetWorldScreenPosition(Vector3 pos, bool ignoreDepthZ = true, bool nullCheck = true)
-    {
-        if (nullCheck && mainCamera == null)
-            mainCamera = Camera.main;
-        Vector3 worldScreenPosition = mainCamera.WorldToScreenPoint(pos);
-        
-        if (ignoreDepthZ)
-            worldScreenPosition.z = 0f;
-        
-        return worldScreenPosition;
-    }
+    // public static bool GetMouseScreenPosition(RectTransform rect, Vector2 pos, out Vector2 result)
+    // {
+    //     return RectTransformUtility.ScreenPointToLocalPointInRectangle(
+    //         rect,
+    //         pos,
+    //         null,
+    //         out result
+    //     );
+    // }
 
-    public static bool GetMouseScreenPosition(RectTransform rect, Vector2 pos, out Vector2 result)
-    {
-        return RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            rect,
-            pos,
-            null,
-            out result
-        );
-    }
-
-    public static bool IsInsideScreen(Vector3 worldPosition, out Vector3 screenPosition, bool ignoreLOD = true, float maxDistance = 0)
-    {
-        if (GetWorldScreenPosition(worldPosition, false, false) 
-                is { x: {} x and > 0, y: {} y and > 0, z: {} z and >= 0 } result 
-            && x < Screen.width && y < Screen.width // 화면 안에 존재하는지 확인
-            && !(!ignoreLOD && z > maxDistance)) // LOD 확인
-        {
-            screenPosition = result;
-            return true;
-        }
-
-        screenPosition = Vector3.zero;
-        return false;
-    }
+    // public static bool IsInsideScreen(Vector3 worldPosition, out Vector3 screenPosition, bool ignoreLOD = true, float maxDistance = 0)
+    // {
+    //     if (GetWorldScreenPosition(worldPosition, false, false) 
+    //             is { x: {} x and > 0, y: {} y and > 0, z: {} z and >= 0 } result 
+    //         && x < Screen.width && y < Screen.width // 화면 안에 존재하는지 확인
+    //         && !(!ignoreLOD && z > maxDistance)) // LOD 확인
+    //     {
+    //         screenPosition = result;
+    //         return true;
+    //     }
+    //
+    //     screenPosition = Vector3.zero;
+    //     return false;
+    // }
     
     
 
@@ -237,23 +237,23 @@ public static class Util
 
     #endregion
 
-    #region Raycast
+    #region Raycast (deprecated)
 
-    private static readonly List<RaycastResult> _raycastResults = new List<RaycastResult>();
-    public static T RaycastAndGetFirstUIComponent<T>(PointerEventData pointerEventData, List<RaycastResult> raycastResults) where T : Component
-    {
-        raycastResults.Clear();
-        EventSystem.current.RaycastAll(pointerEventData, raycastResults);
-
-        if (raycastResults.Count == 0) return null;
-        // Util.Log($"{nameof(RaycastAndGetFirstUIComponent)}: {raycastResults[0]}", LoggingMode.Completed);
-        return raycastResults[0].gameObject.GetComponent<T>();
-    }
-
-    public static T RaycastAndGetFirstPhysicsComponent<T>(Vector2 pos, int layerMask) where T : Component
-    {
-        return Physics2D.OverlapPoint(GetScreenWorldPosition(pos), layerMask)?.GetComponent<T>();
-    }
+    // private static readonly List<RaycastResult> _raycastResults = new List<RaycastResult>();
+    // public static T RaycastAndGetFirstUIComponent<T>(PointerEventData pointerEventData, List<RaycastResult> raycastResults) where T : Component
+    // {
+    //     raycastResults.Clear();
+    //     EventSystem.current.RaycastAll(pointerEventData, raycastResults);
+    //
+    //     if (raycastResults.Count == 0) return null;
+    //     // Util.Log($"{nameof(RaycastAndGetFirstUIComponent)}: {raycastResults[0]}", LoggingMode.Completed);
+    //     return raycastResults[0].gameObject.GetComponent<T>();
+    // }
+    //
+    // public static T RaycastAndGetFirstPhysicsComponent<T>(Vector2 pos, int layerMask) where T : Component
+    // {
+    //     return Physics2D.OverlapPoint(GetScreenWorldPosition(pos), layerMask)?.GetComponent<T>();
+    // }
 
     #endregion
 

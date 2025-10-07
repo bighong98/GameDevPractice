@@ -11,8 +11,9 @@ namespace RPG.UI
     {
         private Color _originalHighlightColor;
         private static readonly Color WarningHighlightColor = new Color(0.8f, 0.2f, 0.2f, 0.5f);
-        private void Awake()
+        protected override void Awake()
         {
+            base.Awake();
             Init();
         }
 

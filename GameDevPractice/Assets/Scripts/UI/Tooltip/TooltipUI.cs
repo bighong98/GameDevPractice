@@ -34,10 +34,10 @@ namespace RPG.UI
         private Vector2 rectOffset;
         private const float DefaultDelayDuration = 2.0f;
 
-        private void Awake()
+        protected override void Awake()
         {
-            if (Init() == false)
-                return;
+            base.Awake();
+            Init();
         }
 
         public override bool Init()
