@@ -44,7 +44,7 @@ public class GameSceneUI : BaseUI
     #endregion
 
     private readonly Slider[] sliders = new Slider[(int)Sliders.max];
-    private readonly SliderUIHandler[] sliderHandlers = new SliderUIHandler[(int)Sliders.max];
+    private readonly ISliderUIHandler[] sliderHandlers = new ISliderUIHandler[(int)Sliders.max];
     
     private IStatHolder statHolder;
     private float floorXp;
@@ -107,7 +107,7 @@ public class GameSceneUI : BaseUI
         // return Util.FindChild<Slider>(go, "bar");
     }
 
-    private void BindSliderEvent(SliderUIHandler sliderHandler)
+    private void BindSliderEvent(ISliderUIHandler sliderHandler)
     {
         if (sliderHandler.GetSlider is not { gameObject: { } go } || go == null) return;
         var parentGo = go.transform.parent.gameObject; // 임시
@@ -172,10 +172,10 @@ public class GameSceneUI : BaseUI
         return false;
     }
     
-    private void SetHPBar(float ratio)
-    {
-        sliders[(int)Sliders.HP].value = ratio;
-    }
+    // private void SetHPBar(float ratio)
+    // {
+    //     sliders[(int)Sliders.HP].value = ratio;
+    // }
 
     private void SetEXPBar(float ratio)
     {

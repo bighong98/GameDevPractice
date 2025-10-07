@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 namespace TH.UI
 {
-    public class SliderUIHandler
+    public class SliderUIHandler: ISliderUIHandler
     {
         private Slider slider;
         private float currFloor = 1f;
