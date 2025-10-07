@@ -9,7 +9,9 @@ using UnityEngine.EventSystems;
 using UnityEngine.Pool;
 using UnityEngine.UI;
 using TH.Core.Pool;
+using TH.Core.Service;
 using TH.Resource;
+using TH.UI;
 using TH.Utils;
 
 namespace RPG.UI
@@ -55,6 +57,7 @@ namespace RPG.UI
         private PointerEventData pointerEventData;
         private List<RaycastResult> raycastResults;
         private RectTransform inventoryUIRect; // 인벤토리UI 경계 기준 (현재 Contents.RectTransform)
+        private IRaycastHandler raycastHandler;
         
         private UI_ItemTooltip itemTooltip;
         private QuestionPopupUI removeConfirmPopup;
@@ -86,6 +89,7 @@ namespace RPG.UI
         
         private void Awake()
         {
+            raycastHandler = ServiceLocator.Require<IRaycastHandler>();
             raycastResults = new List<RaycastResult>();
             pointerEventData = new PointerEventData(EventSystem.current);
             
