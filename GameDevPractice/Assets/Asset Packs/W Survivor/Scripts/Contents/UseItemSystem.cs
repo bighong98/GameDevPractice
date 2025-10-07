@@ -17,7 +17,7 @@ public class UseItemSystem
                 return HealPlayer(1);
             
             default:
-                Util.Log("UseItemSystem: Invalid optionGroup");
+                Debug.Log("UseItemSystem: Invalid optionGroup");
                 return false;
         }   
     }

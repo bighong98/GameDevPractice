@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 using TH.Attribute.Stat;
+using TH.Utils;
 
 namespace RPG.Stats
 {
@@ -22,13 +23,13 @@ namespace RPG.Stats
             {
                 if (level < 1 || levels is not { Length: { } length } || length < level) 
                 {
-                    Util.Log($"[{nameof(ProgressionSO)}.{nameof(GetProgressionStat)}] failed to get stat. character: {Enum.GetName(typeof(CharacterType), characterType)}, stat: {Enum.GetName(typeof(GameStats), stats)}, level: {level}");
+                    Logg.Log($"[{nameof(ProgressionSO)}.{nameof(GetProgressionStat)}] failed to get stat. character: {Enum.GetName(typeof(CharacterType), characterType)}, stat: {Enum.GetName(typeof(GameStats), stats)}, level: {level}");
                     return 0; // out of boundary exception 방어
                 }   
                 return levels[level - 1];
             }
 
-            Util.Log($"[{nameof(ProgressionSO)}] failed to Find Progression stat. " +
+            Logg.Log($"[{nameof(ProgressionSO)}] failed to Find Progression stat. " +
                      $"\n arguments: stat: {stats}, class: {characterType}, level: {level}");
             return 0; // 테이블에 없다면 0 반환
         }

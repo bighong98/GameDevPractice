@@ -5,6 +5,7 @@ using TH.Core.Service;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using TH.Core;
+using TH.Utils;
 
 namespace TH.SceneManagement
 {
@@ -114,7 +115,7 @@ namespace TH.SceneManagement
         {
             if (currentSceneLoaded)
             {
-                Util.Log($"[{nameof(GameSceneManager)}] RegisterInitializationTask: trying to run task", Util.LoggingMode.Completed);
+                Logg.Log($"[{nameof(GameSceneManager)}] RegisterInitializationTask: trying to run task", Logg.LoggingMode.Completed);
                 task?.Invoke(true);
             }
             else initializationTasks += task;
@@ -165,7 +166,7 @@ namespace TH.SceneManagement
                 if (cleanupTasks.Dequeue() is not { } task) continue;
             
                 try { await task(); }
-                catch (Exception e) { Util.LogError($"Exception occured while Clean-up task. {e}"); }
+                catch (Exception e) { Logg.LogError($"Exception occured while Clean-up task. {e}"); }
             }
         }
 

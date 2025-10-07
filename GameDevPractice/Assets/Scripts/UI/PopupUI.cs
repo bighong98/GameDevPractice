@@ -2,6 +2,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using TH.Core.Pool;
+using TH.Utils;
 
 namespace RPG.UI
 {
@@ -131,7 +132,7 @@ namespace RPG.UI
             if (!ownerToken.CanBeCanceled || ownerToken.IsCancellationRequested)
             {
                 CancelPopupCTS();
-                Util.LogError($"[{nameof(GetType)}.{nameof(PopupUI)}.{nameof(ChainPopupCTS)}] InValid ownerToken");
+                Logg.LogError($"[{nameof(GetType)}.{nameof(PopupUI)}.{nameof(ChainPopupCTS)}] InValid ownerToken");
                 return;
             }
             
@@ -169,7 +170,7 @@ namespace RPG.UI
         {
             if (cachedPosition == Vector3.zero || trackingPositionCTS == null)
             {
-                Util.Log($"{name}.PopupUI.TrackPopupPosition(): cachedPosition or trackingPositionCTS is null");
+                Logg.Log($"{name}.PopupUI.TrackPopupPosition(): cachedPosition or trackingPositionCTS is null");
                 return;
             }
             

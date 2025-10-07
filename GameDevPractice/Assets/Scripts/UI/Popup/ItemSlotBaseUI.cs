@@ -1,5 +1,6 @@
 using UnityEngine;
 using TH.Core.Pool;
+using TH.Utils;
 
 namespace RPG.UI
 {
@@ -62,7 +63,7 @@ namespace RPG.UI
             }
             else
             {
-                Util.Log("UI_ItemSlotBase: itemSprite is null", Util.LoggingMode.Completed);
+                Logg.Log("UI_ItemSlotBase: itemSprite is null", Logg.LoggingMode.Completed);
                 RemoveIcon();
             }
         }
@@ -164,7 +165,7 @@ namespace RPG.UI
 
         public void ReleaseSelf()
         {
-            Util.LogError($"ReleaseSelf not supported type: {this.GetType().FullName}");
+            Logg.LogError($"ReleaseSelf not supported type: {this.GetType().FullName}");
         }
 
         #endregion

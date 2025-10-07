@@ -6,6 +6,7 @@ using TH.SceneManagement;
 using TH.Resource;
 using Cysharp.Threading.Tasks;
 using UnityEngine.SceneManagement;
+using TH.Utils;
 
 namespace TH.Deprecated
 {
@@ -21,7 +22,7 @@ namespace TH.Deprecated
 
                 if (Util.IsQuitting)
                 {
-                    Util.LogError($"[{typeof(T).Name}] 파괴 이후에 Instance에 접근 시도 발생. {Environment.StackTrace}");
+                    Logg.LogError($"[{typeof(T).Name}] 파괴 이후에 Instance에 접근 시도 발생. {Environment.StackTrace}");
                 }
             
                 _instance = FindFirstObjectByType<T>();
@@ -50,7 +51,7 @@ namespace TH.Deprecated
             }
             else if (_instance != this)
             {
-                Util.Log($"{typeof(T).Name}: 중복 인스턴스가 존재하여 파괴됩니다.");
+                Logg.Log($"{typeof(T).Name}: 중복 인스턴스가 존재하여 파괴됩니다.");
                 Destroy(gameObject);
             }
         }
@@ -86,18 +87,18 @@ namespace TH.Deprecated
         // 씬 로드가 완료된 후 싱글톤 초기화가 진행됨
         private void AfterSceneLoaded(bool isSceneLoadCompleted)
         {
-            Util.Log($"[{typeof(T).Name}] AfterSceneLoaded()", Util.LoggingMode.Completed);
+            Logg.Log($"[{typeof(T).Name}] AfterSceneLoaded()", Logg.LoggingMode.Completed);
             if (!isSceneLoadCompleted) return;
 
             if (!hasInitializedOnce) // 인스턴스 생성 후 최초 1회만 초기화가 필요한 작업 처리
             {
-                Util.Log($"[{typeof(T).Name}] InitOnce()", Util.LoggingMode.Completed);
+                Logg.Log($"[{typeof(T).Name}] InitOnce()", Logg.LoggingMode.Completed);
                 InitOnce();
             
                 if (_instance is not Singleton<ResourceManager>) // 본인이 ResourceManager면 실행x
                     ResourceManager.Instance.WaitForPreLoadOnlyOnce((t) =>
                     {
-                        Util.Log($"[{typeof(T).Name}] InitOnceAfterPreLoad()", Util.LoggingMode.Completed);
+                        Logg.Log($"[{typeof(T).Name}] InitOnceAfterPreLoad()", Logg.LoggingMode.Completed);
                         InitOnceAfterPreLoad(t);
                     });
 
@@ -106,7 +107,7 @@ namespace TH.Deprecated
 
             if (!isInitialized) // 씬 이동마다 초기화가 필요한 작업 처리
             {
-                Util.Log($"[{GetType().Name}] Init()", Util.LoggingMode.InProgress);
+                Logg.Log($"[{GetType().Name}] Init()", Logg.LoggingMode.InProgress);
                 Init();
             
                 if (_instance is not Singleton<ResourceManager>) // 본인이 ResourceManager면 실행x
@@ -122,7 +123,7 @@ namespace TH.Deprecated
         
         protected virtual void OnSceneChanged(Scene scene)
         {
-            Util.Log($"[{GetType().Name}] OnSceneChanged invoked");
+            Logg.Log($"[{GetType().Name}] OnSceneChanged invoked");
             Clear();
         }
         
@@ -142,7 +143,7 @@ namespace TH.Deprecated
                 }
                 catch (Exception e)
                 {
-                    Util.LogError($"[{typeof(T).Name}] failure occured while running reserved operations. {e}");
+                    Logg.LogError($"[{typeof(T).Name}] failure occured while running reserved operations. {e}");
                 }
             }
         }
@@ -154,13 +155,13 @@ namespace TH.Deprecated
         
             if (singleton.IsInvalidInstance())
             {
-                Util.Log($"[{typeof(T).Name}] fail occured while {{nameof(ReserveOperation)}}. Instance is not valid", Util.LoggingMode.Completed);
+                Logg.Log($"[{typeof(T).Name}] fail occured while {{nameof(ReserveOperation)}}. Instance is not valid", Logg.LoggingMode.Completed);
                 return;
             }
 
             if (singleton.isInitialized)
             {
-                Util.Log($"[{typeof(T).Name}] trying to do reserved action: {action.Target}", Util.LoggingMode.Completed);
+                Logg.Log($"[{typeof(T).Name}] trying to do reserved action: {action.Target}", Logg.LoggingMode.Completed);
                 action?.Invoke();
             }
             else
@@ -171,7 +172,7 @@ namespace TH.Deprecated
         
         protected virtual void OnDestroy()
         {
-            // Util.Log($"[{typeof(T).Name}] OnDestroy Stack: {Environment.StackTrace}");
+            // Logg.Log($"[{typeof(T).Name}] OnDestroy Stack: {Environment.StackTrace}");
             if (Util.IsQuitting) return;
             if (_instance == this && _instance is not Singleton<GameSceneManager>)
             {

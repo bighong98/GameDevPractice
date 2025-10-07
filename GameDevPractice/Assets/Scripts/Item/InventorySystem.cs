@@ -7,6 +7,7 @@ using RPG.UI;
 using TH.Core.Service;
 using TH.Item;
 using TH.Resource;
+using TH.Utils;
 
 namespace RPG.Item
 {
@@ -69,13 +70,13 @@ namespace RPG.Item
 
              if (testData == null)
              {
-                 Util.Log("TestData is null");
+                 Logg.Log("TestData is null");
                  return;
              }
              
              foreach (var item in testData.items)
              {
-                Util.Log($"Trying to add {item.GetItemInfo.nameString}", Util.LoggingMode.Completed);
+                 Logg.Log($"Trying to add {item.GetItemInfo.nameString}", Logg.LoggingMode.Completed);
                 AddItem(item, checkInstanceType: true);
              }
             });
@@ -133,14 +134,14 @@ namespace RPG.Item
         
         public ItemSlot GetInventorySlot(int index)
         {
-            // Util.Log($"Trying to GetInventorySlot: {index}");
+            // Logg.Log($"Trying to GetInventorySlot: {index}");
             if (!IsValidInventorySlot(index)) return null;
             if (inventoryItems[index] is { IsAccessible: true } slot)
             {
                 return slot;
             }
             
-            Util.Log($"[InventorySystem.GetInventorySlot()] return null");
+            Logg.Log($"[InventorySystem.GetInventorySlot()] return null");
             return null;
         }
         
@@ -152,7 +153,7 @@ namespace RPG.Item
                 return slot;
             }
             
-            Util.Log($"[InventorySystem.GetEquippedSlot()] return null");
+            Logg.Log($"[InventorySystem.GetEquippedSlot()] return null");
             return null;
         }
         
@@ -222,7 +223,7 @@ namespace RPG.Item
         {
             if (slotUI is EquipmentSlotUI)
             {
-                Util.Log($"[FindUITargetSlot] UI_EquipmentSlot index:{slotUI.Index}", Util.LoggingMode.Completed);
+                Logg.Log($"[FindUITargetSlot] UI_EquipmentSlot index:{slotUI.Index}", Logg.LoggingMode.Completed);
                 if (!IsValidEquippedSlot(slotUI.Index)) return null;
                 
                 return equippedItems[slotUI.Index];
@@ -308,7 +309,7 @@ namespace RPG.Item
 
             foreach ((var itemData, int amount) in countableDict)
             {
-                Util.Log($"[{nameof(InventorySystem)}.{nameof(CombineStackables)}()] ({itemData.nameString}, {amount})", Util.LoggingMode.Completed);
+                Logg.Log($"[{nameof(InventorySystem)}.{nameof(CombineStackables)}()] ({itemData.nameString}, {amount})", Logg.LoggingMode.Completed);
                 int remain = amount;
                 while (remain > 0)
                 {
@@ -469,7 +470,7 @@ namespace RPG.Item
                 }
 
                 countableDict[itemInfo] = stored;
-                Util.Log($"[{nameof(InventorySystem)}.{nameof(UpdateCountableDict)}()] ({itemInfo}, {stored})", Util.LoggingMode.Completed);
+                Logg.Log($"[{nameof(InventorySystem)}.{nameof(UpdateCountableDict)}()] ({itemInfo}, {stored})", Logg.LoggingMode.Completed);
             }
         }
         
@@ -608,17 +609,17 @@ namespace RPG.Item
         public void DivideItem(ItemSlot slot, int amount = -1) // 아이템 개수 분리, CountableItem만 지원, amount: -1 -> 절반으로 분리
         {
             if (slot?.GetAmount <= 1) {
-                Util.Log($"[{nameof(InventorySystem)}.{nameof(DivideItem)}()] not enough amount");
+                Logg.Log($"[{nameof(InventorySystem)}.{nameof(DivideItem)}()] not enough amount");
                 return; // 대상 슬롯의 아이템 개수가 1 이하이면 취소
             }
             if (FindEmptySlotIndex() is not ({} foundIdx and >= 0)) {
-                Util.Log($"[{nameof(InventorySystem)}.{nameof(DivideItem)}()] no empty slot");
+                Logg.Log($"[{nameof(InventorySystem)}.{nameof(DivideItem)}()] no empty slot");
                 return; // 빈 슬롯이 없으면 취소
             }
 
             if (inventoryItems[foundIdx] is not { } foundSlot || ReferenceEquals(slot, foundSlot))
             {
-                Util.Log($"[{nameof(InventorySystem)}.{nameof(DivideItem)}()] found slot is same with origin slot");
+                Logg.Log($"[{nameof(InventorySystem)}.{nameof(DivideItem)}()] found slot is same with origin slot");
                 return;
             }
             
@@ -663,7 +664,7 @@ namespace RPG.Item
                     }
                     break;
                 default:
-                    Util.Log($"[{nameof(InventorySystem)}.{nameof(DivideItem)}()] not supported item Type. {slot?.GetItemInfo}");
+                    Logg.Log($"[{nameof(InventorySystem)}.{nameof(DivideItem)}()] not supported item Type. {slot?.GetItemInfo}");
                     break;
             }
         }

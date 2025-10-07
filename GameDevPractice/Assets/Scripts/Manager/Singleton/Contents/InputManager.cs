@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 using Cysharp.Threading.Tasks;
 using RPG.UI;
 using TH.Core;
+using TH.Utils;
 
 public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, UserInput.IGlobalActions, UserInput.IUIActions
 {
@@ -189,7 +190,7 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
         if (context is { interaction: UnityEngine.InputSystem.Interactions.MultiTapInteraction, phase: InputActionPhase.Performed }
             && IsWithoutModifiers())
         {
-            Util.Log("Double Click Occured", Util.LoggingMode.Completed);
+            Logg.Log("Double Click Occured", Logg.LoggingMode.Completed);
             OnDoubleClicked?.Invoke(currentPointerPos);
         }
     }
@@ -231,7 +232,7 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
     {
         if (context.phase == InputActionPhase.Performed && IsWithoutModifiers())
         {
-            Util.Log("Alternative Click Occured", Util.LoggingMode.Completed);
+            Logg.Log("Alternative Click Occured", Logg.LoggingMode.Completed);
             OnAltClicked?.Invoke(PointerPos);
         }
     }

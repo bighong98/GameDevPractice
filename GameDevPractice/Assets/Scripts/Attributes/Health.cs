@@ -63,7 +63,7 @@ namespace RPG.Attribute
                 {
                     return result.Value;
                 }
-                Util.Log($"[{gameObject.name}.{nameof(Health)}] failed to initialize rewardXp field");
+                Logg.Log($"[{gameObject.name}.{nameof(Health)}] failed to initialize rewardXp field");
                 return 0;
             });
         }
@@ -75,10 +75,10 @@ namespace RPG.Attribute
             
             UIManager.Instance.ReserveOperation(() =>
             {
-                Util.Log($"[{gameObject.name}.Health] trying to create hp bar");
+                Logg.Log($"[{gameObject.name}.Health] trying to create hp bar");
                 if (this == null)
                 {
-                    Util.Log($"[{gameObject.name}.Health] failed to create hp bar");
+                    Logg.Log($"[{gameObject.name}.Health] failed to create hp bar");
                     return;
                 }
                 UIManager.Instance.GetUIFromPool<HPBar>(HPBarPrefab, UICanvas.AnchoredOverlay).SetOwner(this);
@@ -102,7 +102,7 @@ namespace RPG.Attribute
         private float GetInitialHealth()
         {
             if (statHolder?.GetStat(GameStats.Health) is not { } stat) return 0;
-            stat.OnStatChanged += () => { hp.Value = stat.Value; Util.Log($"[{gameObject.name}.{nameof(Health)}] hp stat changed. trying to invoke SetHp({stat.Value})", Util.LoggingMode.Completed); };
+            stat.OnStatChanged += () => { hp.Value = stat.Value; Logg.Log($"[{gameObject.name}.{nameof(Health)}] hp stat changed. trying to invoke SetHp({stat.Value})", Logg.LoggingMode.Completed); };
             return stat.Value;
         }
 
@@ -122,7 +122,7 @@ namespace RPG.Attribute
             
             if (maxHp.Value is not ({ } max and > 0))
             {
-                Util.Log($"[{gameObject.name}.{nameof(SetCurrentHp)}]Max Hp is less or equal to 0. failed to set HP", Util.LoggingMode.Focussed);
+                Logg.Log($"[{gameObject.name}.{nameof(SetCurrentHp)}]Max Hp is less or equal to 0. failed to set HP", Logg.LoggingMode.Focussed);
                 Die(); // 최대 체력이 세팅되어있지 않다면 사망 처리
                 return;
             }
@@ -143,7 +143,7 @@ namespace RPG.Attribute
         {
             SetCurrentHp(hp.Value - damage); 
             
-            Util.Log($"[{gameObject.name}.{nameof(TakeDamage)}]: hp: {hp.Value}", Util.LoggingMode.InProgress);
+            Logg.Log($"[{gameObject.name}.{nameof(TakeDamage)}]: hp: {hp.Value}", Logg.LoggingMode.InProgress);
         }
         
         public void TakeDamage(in HitResult hitResult)
@@ -192,14 +192,14 @@ namespace RPG.Attribute
         {
             SetMaxHp(statHolder.GetStat(GameStats.Health, level));
             SetCurrentHp(hp.Value + maxHp.Value * ((float)LevelUpRegenerationPercentage / 100));
-            Util.Log($"OnLevelUp: hp: {hp.Value}", Util.LoggingMode.Completed);
+            Logg.Log($"OnLevelUp: hp: {hp.Value}", Logg.LoggingMode.Completed);
         }
 
         public object CaptureState()
         {
             #region For Debug
 
-            // Debug.Log($"[Health.CaptureState()] \n"+ 
+            // Logg.Log($"[Health.CaptureState()] \n"+ 
             //           $"id: {GetComponent<SavableEntity>().GetUniqueIdentifier()} \n" + 
             //           $"hp: {healthPoints}");
 
@@ -215,7 +215,7 @@ namespace RPG.Attribute
         {
             if (state is not HealthSaveData data) return false;
             
-            Util.Log($"[{gameObject.name}]RestoreState for Health: hp to {data.hp}" ,Util.LoggingMode.InProgress); 
+            Logg.Log($"[{gameObject.name}]RestoreState for Health: hp to {data.hp}" ,Logg.LoggingMode.InProgress); 
             
             SetHp(data.hp);
             // RefreshAliveState();

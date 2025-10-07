@@ -3,6 +3,7 @@ using UnityEngine.Pool;
 using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using TH.Utils;
 
 namespace TH.Core.Pool
 {
@@ -185,13 +186,13 @@ namespace TH.Core.Pool
         {
             if (obj == null)
             {
-                Util.Log($"[{nameof(PoolManager)}.{nameof(ReleaseFromPool)}()] is null");
+                Logg.Log($"[{nameof(PoolManager)}.{nameof(ReleaseFromPool)}()] is null");
                 return;
             }
 
             if (obj is not Component {} compo || obj.Origin == null)
             {
-                Util.Log($"[{nameof(PoolManager)}.{nameof(ReleaseFromPool)}()] {obj}: component or Origin is null");
+                Logg.Log($"[{nameof(PoolManager)}.{nameof(ReleaseFromPool)}()] {obj}: component or Origin is null");
                 return;
             }
 
@@ -232,7 +233,7 @@ namespace TH.Core.Pool
         {
             foreach (var pool in pools)
             {
-                Util.Log($"[{nameof(PoolManager)}] prefab: {pool.Key}, pool: {pool.Value}");
+                Logg.Log($"[{nameof(PoolManager)}] prefab: {pool.Key}, pool: {pool.Value}");
             }
         }
 

@@ -8,6 +8,7 @@ using TH.Core.Pool;
 using TH.Resource;
 using UnityEngine.SceneManagement;
 using TH.Core;
+using TH.Utils;
 
 namespace RPG.UI
 {
@@ -60,7 +61,7 @@ namespace RPG.UI
         {
             // Util.SetMainCameraForUtilClass();
             
-            Util.Log($"[UIManager] Init() in scene '{SceneManager.GetActiveScene().name}'", Util.LoggingMode.InProgress);
+            Logg.Log($"[UIManager] Init() in scene '{SceneManager.GetActiveScene().name}'", Logg.LoggingMode.InProgress);
 
             
 
@@ -99,7 +100,7 @@ namespace RPG.UI
 
         private void OnEscapeCalled()
         {
-            Util.Log($"[UIManager]OnEscapeCalled. popupStack.Count: {popupStacks?.Count}", Util.LoggingMode.Completed);
+            Logg.Log($"[UIManager]OnEscapeCalled. popupStack.Count: {popupStacks?.Count}", Logg.LoggingMode.Completed);
             if (popupStacks?.Count != 0)
             {
                 ClosePopupUI();
@@ -292,7 +293,7 @@ namespace RPG.UI
             
             InputManager.Instance.EnableUIActionMap();
             
-            Util.Log($"[{nameof(UIManager)}.{nameof(ShowPopupUI)}()] new Popup. name: {popup.name} popupStack.Count: {popupStacks.Count}", Util.LoggingMode.Completed);
+            Logg.Log($"[{nameof(UIManager)}.{nameof(ShowPopupUI)}()] new Popup. name: {popup.name} popupStack.Count: {popupStacks.Count}", Logg.LoggingMode.Completed);
             return popup;
         }
 
@@ -303,7 +304,7 @@ namespace RPG.UI
             
             if (popupStacks.Peek() != popup) // 
             {
-                Util.Log($"[{nameof(UIManager)}.{nameof(ClosePopupUI)}()]: failed to close popup : {popup.name}", Util.LoggingMode.Completed);
+                Logg.Log($"[{nameof(UIManager)}.{nameof(ClosePopupUI)}()]: failed to close popup : {popup.name}", Logg.LoggingMode.Completed);
                 return false;
             }
             
@@ -321,7 +322,7 @@ namespace RPG.UI
             PopupUI popup = popupStacks.Pop();
             if ((popup == null || !popup.gameObject.activeSelf) && loopEnabled)
             {
-                Util.Log($"{nameof(UIManager)}.{nameof(ClosePopupUI)}: popupStacks.Peek is empty or already closed. trying to close next popup", Util.LoggingMode.Completed);
+                Logg.Log($"{nameof(UIManager)}.{nameof(ClosePopupUI)}: popupStacks.Peek is empty or already closed. trying to close next popup", Logg.LoggingMode.Completed);
                 return ClosePopupUI(); // 다음 순서 팝업 닫기
             }
             
@@ -337,7 +338,7 @@ namespace RPG.UI
                         }
                         catch (Exception e)
                         {
-                            Util.LogError($"[{nameof(UIManager)}] Error during popup closing: {e}");
+                            Logg.LogError($"[{nameof(UIManager)}] Error during popup closing: {e}");
                         }
                     }).Forget();
                 }
@@ -422,7 +423,7 @@ namespace RPG.UI
             {
                 if (!RectTransformUtility.RectangleContainsScreenPoint(peekPopup.ContentArea, selectedPos))
                 {
-                    Util.Log("Outer background touched. close popup", Util.LoggingMode.Completed);
+                    Logg.Log("Outer background touched. close popup", Logg.LoggingMode.Completed);
                     ClosePopupUI(peekPopup, escapableCheck: true, ignoreOpenThreshold: false, waitForAnimation: true);
                 }
             }
@@ -433,7 +434,7 @@ namespace RPG.UI
             bool rValue = Time.unscaledTime - lastPopupOpenTime < popupOpenThreshold;
             if (rValue)
             {
-                Util.Log($"{nameof(IsBeforePopupThreshold)}: ClosePopupUI Guarded");
+                Logg.Log($"{nameof(IsBeforePopupThreshold)}: ClosePopupUI Guarded");
                 return rValue;
             }
 
@@ -454,7 +455,7 @@ namespace RPG.UI
                 }
                 else
                 {
-                    Util.Log($"Tooltip is null");
+                    Logg.Log($"Tooltip is null");
                 }
             });
         }
@@ -496,12 +497,12 @@ namespace RPG.UI
             if (popupStacks.Count != 0 && popupStacks.Peek() is T duplicatePopup)
             {
                 ClosePopupUI(duplicatePopup as PopupUI);
-                Util.Log($"duplicate popup closed: {duplicatePopup}", Util.LoggingMode.Completed);
+                Logg.Log($"duplicate popup closed: {duplicatePopup}", Logg.LoggingMode.Completed);
                 return true;
             }
             else
             {
-                Util.Log("There is no duplicate popup", Util.LoggingMode.Completed);
+                Logg.Log("There is no duplicate popup", Logg.LoggingMode.Completed);
                 return false;
             }
         }

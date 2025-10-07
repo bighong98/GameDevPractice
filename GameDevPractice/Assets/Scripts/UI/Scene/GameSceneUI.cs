@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TH.Attribute;
 using TH.Attribute.Stat;
+using TH.Utils;
 
 public class GameSceneUI : BaseUI
 {
@@ -128,7 +129,7 @@ public class GameSceneUI : BaseUI
             return true;
         }
 
-        Util.Log($"[{nameof(GameSceneUI)}.{nameof(TryConnectComponent)}] failed to Find Component: {typeof(T).Name}");
+        Logg.Log($"[{nameof(GameSceneUI)}.{nameof(TryConnectComponent)}] failed to Find Component: {typeof(T).Name}");
         c = default;
         return false;
     }
@@ -140,7 +141,7 @@ public class GameSceneUI : BaseUI
 
     private void SetEXPBar(float ratio)
     {
-        Util.Log($"[{nameof(GameSceneUI)}.{nameof(SetEXPBar)}] trying to set xp bar : {ratio}", Util.LoggingMode.Completed);
+        Logg.Log($"[{nameof(GameSceneUI)}.{nameof(SetEXPBar)}] trying to set xp bar : {ratio}", Logg.LoggingMode.Completed);
         sliders[(int)Sliders.EXP].value = ratio;
     }
 
@@ -155,7 +156,7 @@ public class GameSceneUI : BaseUI
         if (denominator.IsEqualFloat(0f)) return;
         var numerator = xp - floorXp;
         
-        Util.Log($"[{nameof(GameSceneUI)}.{nameof(OnExpChanged)}()] trying to set xp bar: {numerator} / {denominator}", Util.LoggingMode.Completed);
+        Logg.Log($"[{nameof(GameSceneUI)}.{nameof(OnExpChanged)}()] trying to set xp bar: {numerator} / {denominator}", Logg.LoggingMode.Completed);
         SetEXPBar(numerator / denominator);
     }
 
@@ -194,13 +195,13 @@ public class GameSceneUI : BaseUI
         
         if (prevLevel > 0 && statHolder.GetStat(GameStats.ExperienceToLevelUp, prevLevel) is { } floor)
         {
-            Util.Log($"[{nameof(GameSceneUI)}.{nameof(OnLevelUp)}()] floorXp is changed: {floor}", Util.LoggingMode.Completed);
+            Logg.Log($"[{nameof(GameSceneUI)}.{nameof(OnLevelUp)}()] floorXp is changed: {floor}", Logg.LoggingMode.Completed);
             floorXp = floor;
         }
 
         if (currLevel > 0 && statHolder.GetStat(GameStats.ExperienceToLevelUp, currLevel) is { } ceil)
         {
-            Util.Log($"[{nameof(GameSceneUI)}.{nameof(OnLevelUp)}()] ceilXp is changed: {ceil}", Util.LoggingMode.Completed);
+            Logg.Log($"[{nameof(GameSceneUI)}.{nameof(OnLevelUp)}()] ceilXp is changed: {ceil}", Logg.LoggingMode.Completed);
             ceilXp = ceil;
         }
         else

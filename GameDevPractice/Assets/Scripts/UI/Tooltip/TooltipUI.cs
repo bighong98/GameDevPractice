@@ -3,6 +3,7 @@ using TMPro;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using UnityEngine.InputSystem;
+using TH.Utils;
 
 namespace RPG.UI
 {
@@ -51,7 +52,7 @@ namespace RPG.UI
                 var result = FindFirstObjectByType<Canvas>();
                 if (result == null)
                 {
-                    Util.Log($"[{typeof(TooltipUI)}] Failed to find canvas for overlay");
+                    Logg.Log($"[{typeof(TooltipUI)}] Failed to find canvas for overlay");
                     return false;
                 }
 

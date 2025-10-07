@@ -3,6 +3,7 @@ using UnityEngine.Pool;
 using System;
 using Cysharp.Threading.Tasks;
 using TH.Core.Pool;
+using TH.Utils;
 
 public class Spawner<T> : MonoBehaviour where T : UnityEngine.Component, IPoolObject
 {
@@ -62,7 +63,7 @@ public class Spawner<T> : MonoBehaviour where T : UnityEngine.Component, IPoolOb
     {
         if (isInit == false)
         {
-            Util.Log($"{gameObject.name}.{nameof(Spawner<T>)}.Spawn: pool is null");
+            Logg.Log($"{gameObject.name}.{nameof(Spawner<T>)}.Spawn: pool is null");
             return null;
         }
 

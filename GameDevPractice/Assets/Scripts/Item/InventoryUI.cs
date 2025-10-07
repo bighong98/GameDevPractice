@@ -10,6 +10,7 @@ using UnityEngine.Pool;
 using UnityEngine.UI;
 using TH.Core.Pool;
 using TH.Resource;
+using TH.Utils;
 
 namespace RPG.UI
 {
@@ -91,7 +92,7 @@ namespace RPG.UI
             inventorySystem = FindFirstObjectByType<RPG.Item.InventorySystem>();
             if (inventorySystem == null)
             {
-                Util.LogError($"[{typeof(InventoryUI)}] Failed to Find InventorySystem instance");
+                Logg.LogError($"[{typeof(InventoryUI)}] Failed to Find InventorySystem instance");
                 return;
             }
             
@@ -516,7 +517,7 @@ namespace RPG.UI
         {
             if (inventorySystem == null) return;
             
-            Util.Log($"trying to TrySwapItems({fromSlotUI}.{fromSlotUI.Index}, {toSlotUI}.{toSlotUI.Index})", Util.LoggingMode.Completed);
+            Logg.Log($"trying to TrySwapItems({fromSlotUI}.{fromSlotUI.Index}, {toSlotUI}.{toSlotUI.Index})", Logg.LoggingMode.Completed);
             inventorySystem.TrySwapItems(fromSlotUI, toSlotUI);
         }
 
@@ -833,7 +834,7 @@ namespace RPG.UI
 
         private CancellationTokenSource AddNewItemModifyingProgressCTS(ItemSlotBaseUI slotUI)
         {
-            Util.Log($"{nameof(AddNewItemModifyingProgressCTS)}: {slotUI}", Util.LoggingMode.InProgress);
+            Logg.Log($"{nameof(AddNewItemModifyingProgressCTS)}: {slotUI}", Logg.LoggingMode.InProgress);
             if (progressingSlotAndCTSDictionary.TryGetValue(slotUI, out var cts)
                 && !(cts?.IsCancellationRequested ?? true))
             {
@@ -879,7 +880,7 @@ namespace RPG.UI
         {
             if (inventorySystem == null) return;
             if (inventorySystem.FindUITargetSlot(slotUI) is not { GetAmount: > 0, GetItem: {} item, GetItemInfo: {} itemInfo } slot) return;
-            Util.Log($"{nameof(ShowDetailedTooltip)}: {slotUI}");
+            Logg.Log($"{nameof(ShowDetailedTooltip)}: {slotUI}");
             var currSlotUI = slotUI;
             var newCTS = AddNewItemModifyingProgressCTS(currSlotUI);
             if (UIManager.Instance.ShowPopupUI<DetailedItemTooltipUI>() is { } popup)

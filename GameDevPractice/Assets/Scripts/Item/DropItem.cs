@@ -2,7 +2,8 @@ using System;
 using TH.Core.Service;
 using UnityEngine;
 using TH.Item;
-using GameDevTV.Utils;
+// using GameDevTV.Utils;
+using TH.Utils;
 
 namespace RPG.Item
 {
@@ -27,7 +28,7 @@ namespace RPG.Item
         
         public void Set(IInventorySystem inventorySystem) // 추후 오브젝트 풀링 적용시 아이템을 생성한 쪽에서 inventory의 참조를 전달
         {
-            inventory.value = inventorySystem;
+            inventory.Value = inventorySystem;
         }
 
         private void OnTriggerEnter(Collider other)
@@ -36,7 +37,7 @@ namespace RPG.Item
             {
                 //todo: 아이템 습득 애니메이션 추가
                 if (itemTypeHolder == null || inventory == null) return;
-                if (inventory.value.AddItem(new Item(itemTypeHolder.Type), 
+                if (inventory.Value.AddItem(new Item(itemTypeHolder.Type), 
                         itemTypeHolder.GetAmount, 
                         checkInstanceType: true, 
                         useImmediately) <= 0) // AddItem()은 인벤토리 아이템 추가 시도 후 잔량을 반환, 잔량이 0이라면
@@ -45,7 +46,7 @@ namespace RPG.Item
                 }
                 else
                 {
-                    Util.Log($"[{gameObject.name}.{nameof(DropItem)}] failed to pick up DropItem");
+                    Logg.Log($"[{gameObject.name}.{nameof(DropItem)}] failed to pick up DropItem");
                 }
                 //todo: else { // 아이템 도로 뱉는? 애니메이션 추가 }
             }

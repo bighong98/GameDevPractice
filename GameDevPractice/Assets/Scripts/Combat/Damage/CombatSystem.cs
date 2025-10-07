@@ -3,6 +3,7 @@ using TH.Combat;
 using TH.Core.Service;
 using UnityEngine;
 using TH.Resource;
+using TH.Utils;
 
 public sealed class CombatSystem : ICombatSystem
 {
@@ -27,7 +28,7 @@ public sealed class CombatSystem : ICombatSystem
         var result = damageCalc.Resolve(hitRequest, damageRule);
         if (hitRequest.Target is Component { gameObject: { activeSelf: true } })
         {
-            Util.Log($"[{nameof(CombatSystem)}.{nameof(ApplyHit)}]", Util.LoggingMode.Completed);
+            Logg.Log($"[{nameof(CombatSystem)}.{nameof(ApplyHit)}]", Logg.LoggingMode.Completed);
             hitRequest.Target.TakeDamage(result);
         }
     }

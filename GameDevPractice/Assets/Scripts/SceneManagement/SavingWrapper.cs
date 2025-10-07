@@ -1,13 +1,9 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using RPG.SceneManagement;
 using TH.Core.Service;
 using UnityEngine;
 using TH.Resource;
-using IServiceProvider = TH.Core.Service.IServiceProvider;
+using TH.Utils;
 
 namespace TH.SaveLoad
 {
@@ -36,7 +32,7 @@ namespace TH.SaveLoad
         {
             if (label == preloadLabel)
             {
-                Util.Log($"[SavingWrapper] Init() invoked");
+                Logg.Log($"[SavingWrapper] Init() invoked");
                 LoadLastScene().Forget();
             }
         }

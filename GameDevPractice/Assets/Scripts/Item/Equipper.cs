@@ -4,6 +4,7 @@ using RPG.Combat;
 using UnityEngine;
 using UnityEngine.Pool;
 using TH.Core.Pool;
+using TH.Utils;
 
 // 무기 장착/장착해제 시 무기 오브젝트 생성/생성해제(오브젝트 풀 기반)
 // 풀링된 장착무기 오브젝트의 참조를 추적
@@ -26,7 +27,7 @@ namespace RPG.Item
         {
             if (Util.FindChild(gameObject, "Root", recursive: true) is not { } root)
             {
-                Util.Log($"failed to find root for hand: {gameObject.name}");
+                Logg.Log($"failed to find root for hand: {gameObject.name}");
                 return;
             }
             
@@ -52,7 +53,7 @@ namespace RPG.Item
             if (fighter == null) fighter = GetComponent<Fighter>();
             if (fighter == null || leftHandTransform == null || rightHandTransform == null)
             {
-                Util.Log($"[{name}.{typeof(Equipper)}] failed to initialize");
+                Logg.Log($"[{name}.{typeof(Equipper)}] failed to initialize");
                 return;
             }
 

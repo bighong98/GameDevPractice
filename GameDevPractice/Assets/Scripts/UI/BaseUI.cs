@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.EventSystems;
+using TH.Utils;
 
 namespace RPG.UI
 {
@@ -96,7 +97,7 @@ namespace RPG.UI
         {
             if (go == null || asyncAction == null)
             {
-                Util.Log($"BindAsyncEvent(): go or asyncAction is null: {go.name}");
+                Logg.Log($"BindAsyncEvent(): go or asyncAction is null: {go.name}");
                 return;
             }
             UI_EventHandler eventHandler = go.GetOrAddComponent<UI_EventHandler>();

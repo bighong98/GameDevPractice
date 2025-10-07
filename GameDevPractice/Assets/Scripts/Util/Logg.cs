@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace TH.Utils
 {
-    public static class Logger
+    public static class Logg
     {
         [Flags]
         public enum LoggingMode

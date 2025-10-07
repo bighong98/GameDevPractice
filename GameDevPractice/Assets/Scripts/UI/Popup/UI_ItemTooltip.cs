@@ -1,5 +1,6 @@
 using RPG.Item;
 using UnityEngine;
+using TH.Utils;
 
 namespace RPG.UI
 {
@@ -38,7 +39,7 @@ namespace RPG.UI
         {
             if (item == null)
             {
-                Util.Log("itemTooltip: itemData is null");
+                Logg.Log("itemTooltip: itemData is null");
                 return;
             }
 
@@ -51,7 +52,7 @@ namespace RPG.UI
         {
             if (item == null)
             {
-                Util.Log("itemTooltip: itemData is null");
+                Logg.Log("itemTooltip: itemData is null");
                 return;
             }
 

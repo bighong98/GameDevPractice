@@ -11,6 +11,7 @@ using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.ResourceManagement.ResourceProviders;
 using UnityEngine.SceneManagement;
+using TH.Utils;
 
 namespace TH.SceneManagement
 {
@@ -54,7 +55,7 @@ namespace TH.SceneManagement
                 {
                     if (!resourceLoader.IsPreLoadDone())
                     {
-                        Util.Log($"[SceneLoader] WaitForPreLoad", Util.LoggingMode.Completed);
+                        Logg.Log($"[SceneLoader] WaitForPreLoad", Logg.LoggingMode.Completed);
                         resourceLoader.NotifyResourceLoad += OnPreloadDone;
                         while (!(cts?.IsCancellationRequested ?? true))
                         {
@@ -63,8 +64,8 @@ namespace TH.SceneManagement
                     }
                 }
             }
-            catch (Exception e) {Util.LogError($"{e}");}
-            finally{ Util.Log($"[SceneLoader] WaitForPreLoad is done", Util.LoggingMode.Completed);}
+            catch (Exception e) {Logg.LogError($"{e}");}
+            finally{ Logg.Log($"[SceneLoader] WaitForPreLoad is done", Logg.LoggingMode.Completed);}
         }
 
         private void OnPreloadDone(string label)
@@ -134,7 +135,7 @@ namespace TH.SceneManagement
                 ReportProgress(1); // 진행도 60%
                 OnSceneChanged?.Invoke(result.Scene);
             }
-            catch (Exception e) { Util.Log($"exception occured while loadingScene '{key}', {e}"); }
+            catch (Exception e) { Logg.Log($"exception occured while loadingScene '{key}', {e}"); }
             finally { inFlight = false; }
         }
         
@@ -172,7 +173,7 @@ namespace TH.SceneManagement
             }
             catch
             {
-                Util.Log($"[SceneLoader] exception occured while load scene with addressables '{handle.DebugName}'");
+                Logg.Log($"[SceneLoader] exception occured while load scene with addressables '{handle.DebugName}'");
                 if (handle.IsValid())
                 {
                     try
@@ -188,7 +189,7 @@ namespace TH.SceneManagement
                     }
                 }
 
-                Util.LogError($"[{nameof(SceneLoader)}] load scene failed: {key}");
+                Logg.LogError($"[{nameof(SceneLoader)}] load scene failed: {key}");
                 throw;
             }
             
@@ -206,9 +207,9 @@ namespace TH.SceneManagement
                     var prev = prevSceneHandle.Result;
                     await Addressables.UnloadSceneAsync(prev, autoReleaseHandle: true)
                         .ToUniTask(cancellationToken: token);
-                    Util.Log($"[SceneLoader] scene '{prev.Scene.name}' is unloaded");
+                    Logg.Log($"[SceneLoader] scene '{prev.Scene.name}' is unloaded");
                 }
-                catch (Exception e) { Util.LogError($"[{nameof(SceneLoader)}] {nameof(UnloadPreviousSceneAsync)}: exception occured while unload scene '{prevSceneHandle.DebugName}' - {e}"); }
+                catch (Exception e) { Logg.LogError($"[{nameof(SceneLoader)}] {nameof(UnloadPreviousSceneAsync)}: exception occured while unload scene '{prevSceneHandle.DebugName}' - {e}"); }
                 finally { prevSceneHandle = default; }
             }
         }
@@ -231,7 +232,7 @@ namespace TH.SceneManagement
         {
             Progress.Report(p);
             additive?.Invoke(p);
-            Util.Log($"[SceneLoader] progress: {p}", Util.LoggingMode.Completed);
+            Logg.Log($"[SceneLoader] progress: {p}", Logg.LoggingMode.Completed);
         }
 
         #endregion

@@ -6,6 +6,7 @@ using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.U2D;
 using Cysharp.Threading.Tasks;
+using TH.Utils;
 
 namespace TH.Resource
 {
@@ -64,10 +65,10 @@ namespace TH.Resource
                 LoadAllAsync<UnityEngine.Object>(PreLoadLabel, 
                     (key, count, totalCount) =>
                     {
-                        Util.Log($"[{PreLoadLabel} - {key}] {count} / {totalCount}", Util.LoggingMode.Completed); // 디버깅용 로그
+                        Logg.Log($"[{PreLoadLabel} - {key}] {count} / {totalCount}", Logg.LoggingMode.Completed); // 디버깅용 로그
                         if (count == totalCount)
                         {
-                            Util.Log($"[ResourceLoader] finished loading label '{PreLoadLabel}' assets", Util.LoggingMode.InProgress);
+                            Logg.Log($"[ResourceLoader] finished loading label '{PreLoadLabel}' assets", Logg.LoggingMode.InProgress);
                             NotifyResourceLoad?.Invoke(PreLoadLabel);// 리소스 로딩 대기중인 클래스들에게 로딩 완료 이벤트 전달
                             loadStatus[PreLoadLabel] = LoadStatus.Done;
                         }
@@ -79,14 +80,14 @@ namespace TH.Resource
         {
             foreach (var label in Enum.GetNames(typeof(PreLoadLabels)))
             {
-                Util.Log($"[ResourceLoader] start to load label '{label}' assets", Util.LoggingMode.Completed);
+                Logg.Log($"[ResourceLoader] start to load label '{label}' assets", Logg.LoggingMode.Completed);
                 await LoadAllAsyncAwaitable<UnityEngine.Object>(label, (key, count, totalCount) =>
                 {
-                    Util.Log($"[{label} - {key}] {count} / {totalCount}", Util.LoggingMode.Completed); // 디버깅용 로그
+                    Logg.Log($"[{label} - {key}] {count} / {totalCount}", Logg.LoggingMode.Completed); // 디버깅용 로그
 
                     if (count == totalCount)
                     {
-                        Util.Log($"[ResourceLoader] finished loading label '{label}' assets", Util.LoggingMode.InProgress);
+                        Logg.Log($"[ResourceLoader] finished loading label '{label}' assets", Logg.LoggingMode.InProgress);
 
                         NotifyResourceLoad?.Invoke(label);// 리소스 로딩 대기중인 클래스들에게 로딩 완료 이벤트 전달
                         loadStatus[label] = LoadStatus.Done;
@@ -313,7 +314,7 @@ namespace TH.Resource
             // 리소스 로드에 실패했다면 null 반환
             if (handle.Status != AsyncOperationStatus.Succeeded)
             {
-                Debug.LogError($"[{nameof(LoadAsync)}] Load failed for AssetReference<{typeof(T).Name}> with key: {assetRef.RuntimeKey}");
+                Logg.LogError($"[{nameof(LoadAsync)}] Load failed for AssetReference<{typeof(T).Name}> with key: {assetRef.RuntimeKey}");
                 return null;
             }
             // AssetReference로부터 리소스 로드에 성공했다면 핸들을 캐싱 및 리소스 반환

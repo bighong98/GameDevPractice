@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.EventSystems;
 using System.Collections.Generic;
+using TH.Utils;
 
 namespace TH.UI
 {
@@ -25,14 +26,14 @@ namespace TH.UI
 
         void InitOnce()
         {
-            Util.Log($"[RaycastHandler] InitOnce() invoked", Util.LoggingMode.Completed);
+            Logg.Log($"[RaycastHandler] InitOnce() invoked", Logg.LoggingMode.Completed);
             Init();
             //todo: 최초 1회 초기화 필요한 항목 처리
         }
         
         void InitAfterSceneChanged(Scene scene)
         {
-            Util.Log($"[RaycastHandler] InitAfterSceneChanged() invoked", Util.LoggingMode.Completed);
+            Logg.Log($"[RaycastHandler] InitAfterSceneChanged() invoked", Logg.LoggingMode.Completed);
             Init();
             //todo: 씬 변동마다 초기화 필요한 항목 처리
         }
@@ -50,7 +51,7 @@ namespace TH.UI
             EventSystem.current.RaycastAll(pointerEventData, raycastResults);
 
             if (raycastResults.Count == 0) return null;
-            Util.Log($"{nameof(RaycastAndGetFirstUIComponent)}: {raycastResults[0]}", Util.LoggingMode.Completed);
+            Logg.Log($"{nameof(RaycastAndGetFirstUIComponent)}: {raycastResults[0]}", Logg.LoggingMode.Completed);
             return raycastResults[0].gameObject.GetComponent<T>();
         }
         

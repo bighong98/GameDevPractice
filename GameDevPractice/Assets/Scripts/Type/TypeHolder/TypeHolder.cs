@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.AddressableAssets;
 using TH.Core.Pool;
 using TH.Resource;
+using TH.Utils;
 
 // 타입 데이터(TypeSO), 원본 프리팹 객체(Origin)을 포함하는 MonoBehaviour 기반 컴포넌트
 // 가능한 오브젝트 풀링해서 사용할 것 (PoolingManager.cs 참조)
@@ -49,7 +50,7 @@ public class TypeHolder<T> : MonoBehaviour, ITypeHolder<T>, IPoolObject where T 
         if (type != null || !typeRef.RuntimeKeyIsValid()) return;
         // type = await Util.ExtractAssetRefAsync<T>(typeRef);
         type = await ResourceManager.Instance.ExtractAssetRefAsync<T>(typeRef, token);
-        Util.Log($"[{gameObject.name}.{nameof(GetTypeFromRef)}] type: {type}", Util.LoggingMode.Completed);
+        Logg.Log($"[{gameObject.name}.{nameof(GetTypeFromRef)}] type: {type}", Logg.LoggingMode.Completed);
         SetMinimapSprite();
     }
 
@@ -79,7 +80,7 @@ public class TypeHolder<T> : MonoBehaviour, ITypeHolder<T>, IPoolObject where T 
         {
             if (data == null)
             {
-                Util.LogError($"[{name}.{nameof(GetType)}.{nameof(DeliverTypeData)}] failed to load from assetRefT '{typeRef}'");
+                Logg.LogError($"[{name}.{nameof(GetType)}.{nameof(DeliverTypeData)}] failed to load from assetRefT '{typeRef}'");
                 return;
             }
             
@@ -96,7 +97,7 @@ public class TypeHolder<T> : MonoBehaviour, ITypeHolder<T>, IPoolObject where T 
         if (type is not { prefab: {} prefabData } ) return; // typeSO에 프리팹 데이터가 존재하는지 확인
         
         if (Origin == null) Origin = prefabData;
-        Util.Log($"[{GetType().Name}.{nameof(AddToPool)}()] Origin == prefabData: {Origin == prefabData}", Util.LoggingMode.Completed);
+        Logg.Log($"[{GetType().Name}.{nameof(AddToPool)}()] Origin == prefabData: {Origin == prefabData}", Logg.LoggingMode.Completed);
         PoolManager.Instance.GetPool(prefab: prefabData); // 오브젝트 풀 생성 시도
     }
 

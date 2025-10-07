@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
+using TH.Utils;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -20,7 +21,7 @@ namespace TH.SceneManagement
         : base(AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(scene)))
         {
             sceneName = scene.name;
-            Util.Log($"[{nameof(AssetReferenceScene)}] sceneName: '{sceneName}'");
+            Logg.Log($"[{nameof(AssetReferenceScene)}] sceneName: '{sceneName}'");
         }
 
         public override bool ValidateAsset(string path)

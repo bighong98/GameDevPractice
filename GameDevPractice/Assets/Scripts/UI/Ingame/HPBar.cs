@@ -7,6 +7,7 @@ using RPG.Attribute;
 using TH.Core.Pool;
 using TH.Core.Service;
 using TH.UI;
+using TH.Utils;
 
 // HP Bar Controller using UI Component Image, Slider
 namespace RPG.UI
@@ -49,7 +50,7 @@ namespace RPG.UI
 
             if (main == null || sub == null)
             {
-                Util.LogError($"[{nameof(HPBar)}] failed to initialize");
+                Logg.LogError($"[{nameof(HPBar)}] failed to initialize");
                 ReleaseSelf();
             }
 
@@ -67,7 +68,7 @@ namespace RPG.UI
             }
             else
             {
-                Util.Log($"not in screen. Hide HPBar", Util.LoggingMode.Completed);
+                Logg.Log($"not in screen. Hide HPBar", Logg.LoggingMode.Completed);
                 Hide();
             }
         }
@@ -114,7 +115,7 @@ namespace RPG.UI
                 }
                 catch (Exception e)
                 {
-                    Util.LogError($"[{nameof(HPBar)}] error occurred while {nameof(ChangeFillSlowly)}(). {e}");
+                    Logg.LogError($"[{nameof(HPBar)}] error occurred while {nameof(ChangeFillSlowly)}(). {e}");
                 }
             }
             
@@ -152,7 +153,7 @@ namespace RPG.UI
             }
             catch (Exception e)
             {
-                Util.LogError($"[{nameof(HPBar)}] unexpected error occurred while {nameof(HideAfterSecond)}. {e}");
+                Logg.LogError($"[{nameof(HPBar)}] unexpected error occurred while {nameof(HideAfterSecond)}. {e}");
             }
             Hide(keepHiding);
         }
@@ -186,13 +187,13 @@ namespace RPG.UI
 
         private void OnMaxHealthChanged(float amount)
         {
-            Util.Log($"{target.gameObject.name}: max health is changed. {amount}", Util.LoggingMode.InProgress);
+            Logg.Log($"{target.gameObject.name}: max health is changed. {amount}", Logg.LoggingMode.InProgress);
         }
 
         private void OnOwnerDied()
         {
             if (gameObject is not { activeSelf: true }) return;
-            Util.Log($"[{target?.name}.{nameof(HPBar)}] {nameof(OnOwnerDied)}() invoked", Util.LoggingMode.Completed);
+            Logg.Log($"[{target?.name}.{nameof(HPBar)}] {nameof(OnOwnerDied)}() invoked", Logg.LoggingMode.Completed);
             HideAfterSecond(DelayHideByDeath, true).Forget();
         }
 

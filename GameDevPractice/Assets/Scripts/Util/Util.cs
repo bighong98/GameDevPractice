@@ -230,7 +230,7 @@ public static class Util
             }
             catch (Exception e)
             {
-                Util.LogError($"[{nameof(Util)}.{nameof(SafeInvoke)}]: Error while invoking {d.Method.Name}: {e}");
+                Debug.LogError($"[{nameof(Util)}.{nameof(SafeInvoke)}]: Error while invoking {d.Method.Name}: {e}");
             }
         }
     }
@@ -246,7 +246,7 @@ public static class Util
         EventSystem.current.RaycastAll(pointerEventData, raycastResults);
 
         if (raycastResults.Count == 0) return null;
-        Util.Log($"{nameof(RaycastAndGetFirstUIComponent)}: {raycastResults[0]}", LoggingMode.Completed);
+        // Util.Log($"{nameof(RaycastAndGetFirstUIComponent)}: {raycastResults[0]}", LoggingMode.Completed);
         return raycastResults[0].gameObject.GetComponent<T>();
     }
 
@@ -314,39 +314,39 @@ public static class Util
     
     #region Debug
 
-    public enum LoggingMode
-    {
-        Completed,
-        InProgress,
-        Focussed,
-    }
-    enum LogLevel
-    {
-        None,
-        OnlyFocussing,
-        OnlyInProgress,
-        All,
-    }
-    private static readonly LogLevel CurrLogLevel = LogLevel.OnlyInProgress;
+    // public enum LoggingMode
+    // {
+    //     Completed,
+    //     InProgress,
+    //     Focussed,
+    // }
+    // enum LogLevel
+    // {
+    //     None,
+    //     OnlyFocussing,
+    //     OnlyInProgress,
+    //     All,
+    // }
+    // private static readonly LogLevel CurrLogLevel = LogLevel.OnlyInProgress;
 
-    [System.Diagnostics.Conditional("UNITY_EDITOR")]
-    public static void Log(object msg, LoggingMode mode)
-    {
-        switch (mode)
-        {
-            case LoggingMode.InProgress when CurrLogLevel is LogLevel.All or LogLevel.OnlyInProgress:
-            case LoggingMode.Focussed when CurrLogLevel is not LogLevel.None:
-                Log(msg);
-                break;
-            default:
-                if (CurrLogLevel is LogLevel.All) Log(msg);
-                break;
-        }
-    }
-    [System.Diagnostics.Conditional("UNITY_EDITOR")]
-    public static void Log(object msg) => UnityEngine.Debug.Log(msg);
-    [System.Diagnostics.Conditional("UNITY_EDITOR")]
-    public static void LogError(object msg) => UnityEngine.Debug.LogError(msg);
+    // [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    // public static void Log(object msg, LoggingMode mode)
+    // {
+    //     switch (mode)
+    //     {
+    //         case LoggingMode.InProgress when CurrLogLevel is LogLevel.All or LogLevel.OnlyInProgress:
+    //         case LoggingMode.Focussed when CurrLogLevel is not LogLevel.None:
+    //             Log(msg);
+    //             break;
+    //         default:
+    //             if (CurrLogLevel is LogLevel.All) Log(msg);
+    //             break;
+    //     }
+    // }
+    // [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    // public static void Log(object msg) => UnityEngine.Debug.Log(msg);
+    // [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    // public static void LogError(object msg) => UnityEngine.Debug.LogError(msg);
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void InitForUtil()

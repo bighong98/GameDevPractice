@@ -2,6 +2,7 @@ using UnityEngine.SceneManagement;
 using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using UnityEngine;
 
 namespace TH.Deprecated
 {
@@ -102,7 +103,7 @@ namespace TH.Deprecated
         {
             if (currentSceneLoaded)
             {
-                Util.Log($"[{nameof(GameSceneManager)}] RegisterInitializationTask: trying to run task", Util.LoggingMode.Completed);
+                // Util.Log($"[{nameof(GameSceneManager)}] RegisterInitializationTask: trying to run task", Util.LoggingMode.Completed);
                 task?.Invoke(true);
             }
             else initializationTasks += task;
@@ -129,7 +130,7 @@ namespace TH.Deprecated
                 if (cleanupTasks.Dequeue() is not { } task) continue;
                 
                 try { await task(); }
-                catch (Exception e) { Util.LogError($"Exception occured while Clean-up task. {e}"); }
+                catch (Exception e) { Debug.LogError($"Exception occured while Clean-up task. {e}"); }
             }
         }
     }

@@ -9,6 +9,7 @@ using Unity.Serialization.Json;
 using TH.SceneManagement;
 using RPG.Saving;
 using TH.Resource;
+using TH.Utils;
 
 namespace TH.SaveLoad
 {
@@ -159,7 +160,7 @@ namespace TH.SaveLoad
             else
             {
                 // Util.Log($"[SaveSystem] No saved data for scene '{buildIndex}'");
-                Util.Log($"[SaveSystem] No saved data for scene '{sceneName}'", Util.LoggingMode.InProgress);
+                Logg.Log($"[SaveSystem] No saved data for scene '{sceneName}'", Logg.LoggingMode.InProgress);
             }
             
             if (data.globalData is { Count: > 0 } globEntries)
@@ -168,7 +169,7 @@ namespace TH.SaveLoad
             }
             else
             {
-                Debug.Log("[SaveSystem] No saved global data");
+                Logg.Log("[SaveSystem] No saved global data");
             }
 
             var grouped = new Dictionary<string, Dictionary<string, object>>(entries.Count);
@@ -178,7 +179,7 @@ namespace TH.SaveLoad
                 var type = GetTypeByName(entry.typeName);
                 if (type == null)
                 {
-                    Util.LogError($"[{nameof(SaveSystem)}.{nameof(RestoreState)}()] Type not found: {entry.typeName}");
+                    Logg.LogError($"[{nameof(SaveSystem)}.{nameof(RestoreState)}()] Type not found: {entry.typeName}");
                     continue;
                 }
 
@@ -193,13 +194,13 @@ namespace TH.SaveLoad
 
                     if (state == null)
                     {
-                        Util.LogError($"[{nameof(SaveSystem)}.{nameof(RestoreState)}()] FromJson Method missing for: {type.FullName}");
+                        Logg.LogError($"[{nameof(SaveSystem)}.{nameof(RestoreState)}()] FromJson Method missing for: {type.FullName}");
                         continue;
                     }
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError($"[SaveSystem] Restore failed for {entry.typeName}: {e}");
+                    Logg.LogError($"[SaveSystem] Restore failed for {entry.typeName}: {e}");
                     continue;
                 }
 
@@ -260,7 +261,7 @@ namespace TH.SaveLoad
             }
             catch (Exception e)
             {
-                Util.LogError($"[{nameof(SaveSystem)}.{nameof(SaveFile)}()] Failed to write new save file. {tmp}: {e.Message}");
+                Logg.LogError($"[{nameof(SaveSystem)}.{nameof(SaveFile)}()] Failed to write new save file. {tmp}: {e.Message}");
                 return; // 세이브 파일 생성 실패 시 중지
             }
 
@@ -327,7 +328,7 @@ namespace TH.SaveLoad
             }
             catch (Exception e)
             {
-                Util.LogError($"[{nameof(SaveSystem)}] MakeGenericMethod failed: {type.FullName}, {e.Message}");
+                Logg.LogError($"[{nameof(SaveSystem)}] MakeGenericMethod failed: {type.FullName}, {e.Message}");
                 return null;
             }
         }

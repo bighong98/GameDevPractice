@@ -112,7 +112,6 @@ namespace RPG.Stats
             if (newLevel > currentLevel.value)
             {
                 currentLevel.value = newLevel;
-                Util.Log($"level up: {gameObject.name}.{currentLevel.value}", Util.LoggingMode.Completed);
                 OnLevelUp?.Invoke(currentLevel.value);
                 // if (hasLevelUpEffect)
                 // {
@@ -126,7 +125,6 @@ namespace RPG.Stats
             if (level > currentLevel.value)
             {
                 currentLevel.value = level;
-                Util.Log($"level up: {gameObject.name}.{currentLevel.value}", Util.LoggingMode.InProgress);
                 //todo: 레벨에 영향을 받는 스탯 변경
             }
         }

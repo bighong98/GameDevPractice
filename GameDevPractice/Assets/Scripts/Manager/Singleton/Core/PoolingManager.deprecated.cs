@@ -185,13 +185,11 @@ public class PoolingManager : Singleton<PoolingManager>
     { // 풀링으로 생성된 오브젝트 반환 함수. 소속된 풀을 알 수 없을 때 사용
         if (component == null)
         {
-            Util.Log($"{nameof(PoolingManager)}: component is null. failed to ReleaseFromPool");
             return;
         }
 
         if (component.Origin == null)
         {
-            Util.Log($"{nameof(PoolingManager)}: {component.gameObject.name}.component.Origin is null. Destroying manually.");
             GameObject.Destroy(component.gameObject);
             return;
         }
@@ -210,7 +208,6 @@ public class PoolingManager : Singleton<PoolingManager>
     { // 반환해야하는 풀을 알고 있는 경우 사용. 명확하게 출처 풀을 알고 있는 경우 poolCheck = false 해서 사용
         if (pool == null || component == null || component.Origin == null)
         {
-            Util.Log($"{nameof(PoolingManager)}: component or Origin is null. Destroying manually.");
             GameObject.Destroy(component.gameObject);
             return;
         }
@@ -239,7 +236,6 @@ public class PoolingManager : Singleton<PoolingManager>
         void FailRelease()
         {
             Destroy(component.gameObject);
-            Util.Log($"{nameof(PoolingManager)}: component doesn't match with pool. pool: {pool}, component: {component.gameObject.name}");
         }
     }
 
@@ -259,7 +255,6 @@ public class PoolingManager : Singleton<PoolingManager>
             {
                 var prefab = (GameObject)entry.Key;
                 var pool = entry.Value;
-                Util.Log($"[Pool] Type: {type}, Prefab: {prefab.name}, Pool: {pool}");
             }
         }
     }

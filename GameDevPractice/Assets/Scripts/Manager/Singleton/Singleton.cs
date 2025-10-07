@@ -5,6 +5,7 @@ using TH.Core.Service;
 using UnityEngine;
 using TH.Resource;
 using TH.SceneManagement;
+using TH.Utils;
 using UnityEngine.SceneManagement;
 
 namespace TH.Core
@@ -21,7 +22,7 @@ namespace TH.Core
 
                 if (Util.IsQuitting)
                 {
-                    Util.LogError($"[{typeof(T).Name}] 파괴 이후에 Instance에 접근 시도 발생. {Environment.StackTrace}");
+                    Logg.LogError($"[{typeof(T).Name}] 파괴 이후에 Instance에 접근 시도 발생. {Environment.StackTrace}");
                 }
                 
                 _instance = FindFirstObjectByType<T>();
@@ -50,7 +51,7 @@ namespace TH.Core
             }
             else if (_instance != this)
             {
-                Util.Log($"{typeof(T).Name}: 중복 인스턴스가 존재하여 파괴됩니다.");
+                Logg.Log($"{typeof(T).Name}: 중복 인스턴스가 존재하여 파괴됩니다.");
                 Destroy(gameObject);
             }
         }
@@ -75,7 +76,7 @@ namespace TH.Core
         // 오버라이드해서 사용 및 base.Clear() 호출 필요
         protected virtual UniTask Clear() 
         {
-            Util.Log($"[{GetType().Name}] Clear() invoked", Util.LoggingMode.Completed);
+            Logg.Log($"[{GetType().Name}] Clear() invoked", Logg.LoggingMode.Completed);
             isInitialized = false; // 플래그 초기화
             return UniTask.CompletedTask;
         }
@@ -84,17 +85,17 @@ namespace TH.Core
         // 씬 로드가 완료된 후 싱글톤 초기화가 진행됨
         protected virtual void OnSceneChanged(Scene scene)
         {
-            Util.Log($"[{GetType().Name}] OnSceneChanged invoked in scene '{scene.name}'",Util.LoggingMode.InProgress);
+            Logg.Log($"[{GetType().Name}] OnSceneChanged invoked in scene '{scene.name}'",Logg.LoggingMode.InProgress);
             
             if (!hasInitializedOnce) // 인스턴스 생성 후 최초 1회만 초기화가 필요한 작업 처리
             {
-                Util.Log($"[{typeof(T).Name}] InitOnce invoked in scene '{scene.name}'", Util.LoggingMode.Completed);
+                Logg.Log($"[{typeof(T).Name}] InitOnce invoked in scene '{scene.name}'", Logg.LoggingMode.Completed);
                 InitOnce();
                 
                 if (_instance is not Singleton<ResourceManager>) // 본인이 ResourceManager면 실행x
                     ResourceManager.Instance.WaitForPreLoadOnlyOnce(() =>
                     {
-                        Util.Log($"[{typeof(T).Name}] InitOnceAfterPreLoad()", Util.LoggingMode.Completed);
+                        Logg.Log($"[{typeof(T).Name}] InitOnceAfterPreLoad()", Logg.LoggingMode.Completed);
                         InitOnceAfterPreLoad();
                     });
 
@@ -103,7 +104,7 @@ namespace TH.Core
 
             if (!isInitialized)
             {
-                Util.Log($"[{GetType().Name}] Init() in scene '{scene.name}'", Util.LoggingMode.InProgress);
+                Logg.Log($"[{GetType().Name}] Init() in scene '{scene.name}'", Logg.LoggingMode.InProgress);
                 Init();
 
                 if (_instance is not Singleton<ResourceManager>) // 본인이 ResourceManager면 실행x
@@ -125,7 +126,7 @@ namespace TH.Core
             {
                 try { reservedOperations.Dequeue()?.Invoke(); }
                 catch (Exception e) {
-                    Util.LogError($"[{typeof(T).Name}] failure occured while running reserved operations. {e}");
+                    Logg.LogError($"[{typeof(T).Name}] failure occured while running reserved operations. {e}");
                 }
             }
         }
@@ -137,13 +138,13 @@ namespace TH.Core
             
             if (singleton.IsInvalidInstance())
             {
-                Util.Log($"[{typeof(T).Name}] fail occured while {{nameof(ReserveOperation)}}. Instance is not valid", Util.LoggingMode.Completed);
+                Logg.Log($"[{typeof(T).Name}] fail occured while {{nameof(ReserveOperation)}}. Instance is not valid", Logg.LoggingMode.Completed);
                 return;
             }
 
             if (singleton.isInitialized)
             {
-                Util.Log($"[{typeof(T).Name}] trying to do reserved action: {action.Target}", Util.LoggingMode.Completed);
+                Logg.Log($"[{typeof(T).Name}] trying to do reserved action: {action.Target}", Logg.LoggingMode.Completed);
                 action?.Invoke();
             }
             else
@@ -154,7 +155,7 @@ namespace TH.Core
         
         protected virtual void OnDestroy()
         {
-            Util.Log($"[{typeof(T).Name}] OnDestroy Stack: {Environment.StackTrace}", Util.LoggingMode.Completed);
+            Logg.Log($"[{typeof(T).Name}] OnDestroy Stack: {Environment.StackTrace}", Logg.LoggingMode.Completed);
         }
     }
 }

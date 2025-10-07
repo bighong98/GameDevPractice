@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using TH.Utils;
 
 namespace RPG.Item
 {
@@ -44,7 +45,7 @@ namespace RPG.Item
                     UnEquip(prevItem); // 기존 장비 장착 해제
                 }
                 // 새 장비 장착 이벤트 전달
-                Util.Log($"[EquipmentSlot[{Index}]]: New Item Equipped", Util.LoggingMode.Completed);
+                Logg.Log($"[EquipmentSlot[{Index}]]: New Item Equipped", Logg.LoggingMode.Completed);
                 OnEquipmentChanged?.Invoke(this, new EquipmentSlotArgs(this.Item, EquipmentSlotArgs.EquipEventState.Equip));
                 return true;
             }
@@ -55,7 +56,7 @@ namespace RPG.Item
         private void UnEquip(Item item) // 장비 장착해제 (장착해제만 되고, 칸에 있는 아이템은 그대로 유지됨. 장비칸을 비우고 싶다면 Clear() 실행 필요)
         {
             // 기존 장비 장착해제 이벤트 전달
-            Util.Log($"[EquipmentSlot[{Index}]]: Item UnEquipped", Util.LoggingMode.Completed);
+            Logg.Log($"[EquipmentSlot[{Index}]]: Item UnEquipped", Logg.LoggingMode.Completed);
             OnEquipmentChanged?.Invoke(this, new EquipmentSlotArgs(item, EquipmentSlotArgs.EquipEventState.UnEquip));
         }
 

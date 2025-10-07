@@ -5,6 +5,7 @@ using TH.Combat;
 using UnityEngine;
 using TH.Core.Pool;
 using TH.Core.Service;
+using TH.Utils;
 
 public class ProjectileSpawner : Spawner<AttackProjectile>
 {
@@ -31,7 +32,7 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
     {
         if (owner is not { } shootingWeaponOwner)
         {
-            Util.Log($"[{name}.{nameof(ProjectileSpawner)}] failed to {nameof(InitializeProjectileSpawner)}");
+            Logg.Log($"[{name}.{nameof(ProjectileSpawner)}] failed to {nameof(InitializeProjectileSpawner)}");
             return;
         }
         
@@ -42,7 +43,7 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
 
         if (weaponTypeSO is { HasImpactEffect: true, GetImpactEffect: { } particlePrefab })
         {
-            Util.Log("Trying to Add PlayOnHitEffect as delegate");
+            Logg.Log("Trying to Add PlayOnHitEffect as delegate");
             // hasOnHitEffect = true;
             onHitParticlePrefab = particlePrefab;
             

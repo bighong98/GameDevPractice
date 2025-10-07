@@ -4,7 +4,6 @@ using RPG.Stats;
 using UnityEngine;
 using TH.Utils;
 using TH.Resource;
-using UnityEngine.Serialization;
 
 namespace TH.Attribute.Stat
 {
@@ -66,10 +65,10 @@ namespace TH.Attribute.Stat
 
         private void InitAfterLoad()
         {
-            Util.Log($"[StatHolder] InitAfterLoad() invoked", Util.LoggingMode.Completed);
+            Logg.Log($"[StatHolder] InitAfterLoad() invoked", Logg.LoggingMode.Completed);
             progression = ResourceManager.Instance.Load<ProgressionSO>("ProgressionSO.asset");
             if (progression == null)
-                Util.LogError($"[{gameObject.name}.{nameof(StatHolder)}] failed to load progression");
+                Logg.LogError($"[{gameObject.name}.{nameof(StatHolder)}] failed to load progression");
         }
 
         private void InitializeStats(ScriptableObject baseStatData)
@@ -98,7 +97,7 @@ namespace TH.Attribute.Stat
                 return stat;
             }
             
-            Util.LogError($"[{gameObject.name}] trying to get invalid stat type: {statType}");
+            Logg.LogError($"[{gameObject.name}] trying to get invalid stat type: {statType}");
             return null;
         }
         
@@ -116,7 +115,7 @@ namespace TH.Attribute.Stat
 
         public float GetStat(GameStats statType, int lv)
         {
-            Util.Log($"[from '{gameObject.name}'] GetStat({statType}, {characterType}, {lv})", Util.LoggingMode.Completed);
+            Logg.Log($"[from '{gameObject.name}'] GetStat({statType}, {characterType}, {lv})", Logg.LoggingMode.Completed);
             return progression.GetProgressionStat(statType, characterType, lv);
         }
     }

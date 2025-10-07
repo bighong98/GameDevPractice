@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using TH.Utils;
 
 namespace TH.Core.Service
 {
@@ -13,11 +14,11 @@ namespace TH.Core.Service
         {
             if (TryGet(out T service))
             {
-                Util.Log($"[{nameof(ServiceProvider)}.{nameof(Get)}] Service '{typeof(T)} is provided'", Util.LoggingMode.Completed);
+                Logg.Log($"[{nameof(ServiceProvider)}.{nameof(Get)}] Service '{typeof(T)} is provided'", Logg.LoggingMode.Completed);
                 return service;
             }
             
-            Util.LogError($"[{nameof(ServiceProvider)}] Service '{typeof(T)}' not found");
+            Logg.LogError($"[{nameof(ServiceProvider)}] Service '{typeof(T)}' not found");
             return null;
         }
 
@@ -27,7 +28,7 @@ namespace TH.Core.Service
             {
                 if (_services.TryGetValue(typeof(T), out var obj) && obj is T t)
                 {
-                    Util.Log($"[{nameof(ServiceProvider)}.{nameof(TryGet)}] Service '{typeof(T)} is provided'", Util.LoggingMode.Completed);
+                    Logg.Log($"[{nameof(ServiceProvider)}.{nameof(TryGet)}] Service '{typeof(T)} is provided'", Logg.LoggingMode.Completed);
                     service = t;
                     return true;
                 }
@@ -45,11 +46,11 @@ namespace TH.Core.Service
                 var key = typeof(T);
                 if (_services.ContainsKey(key))
                 {
-                    Util.LogError($"Service {key.Name} duplicated register");
+                    Logg.LogError($"Service {key.Name} duplicated register");
                     return;
                 }
                 
-                Util.Log($"[{nameof(ServiceLocator)}.{nameof(Register)}] new service registered: {instance.GetType().Name}", Util.LoggingMode.Completed);
+                Logg.Log($"[{nameof(ServiceLocator)}.{nameof(Register)}] new service registered: {instance.GetType().Name}", Logg.LoggingMode.Completed);
                 _services[key] = instance;
             }
         }
@@ -59,7 +60,7 @@ namespace TH.Core.Service
             if (instance == null) throw new ArgumentNullException(nameof(instance));
             lock (_gate)
             {
-                Util.Log($"[{nameof(ServiceLocator)}.{nameof(Replace)}] new service registered: {instance.GetType().Name}", Util.LoggingMode.Completed);
+                Logg.Log($"[{nameof(ServiceLocator)}.{nameof(Replace)}] new service registered: {instance.GetType().Name}", Logg.LoggingMode.Completed);
                 _services[typeof(T)] = instance;
             }
         }

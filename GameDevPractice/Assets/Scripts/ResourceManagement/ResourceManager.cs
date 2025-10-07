@@ -7,6 +7,7 @@ using TH.Core.Service;
 using UnityEngine.AddressableAssets;
 using Object = UnityEngine.Object;
 using TH.Core;
+using TH.Utils;
 
 namespace TH.Resource
 {
@@ -144,7 +145,7 @@ namespace TH.Resource
                 return clone;
             }
             
-            Util.LogError($"{nameof(ResourceManager)}.Instantiate: Failed to load prefab: {key}");
+            Logg.LogError($"{nameof(ResourceManager)}.Instantiate: Failed to load prefab: {key}");
             return null;
         }
 

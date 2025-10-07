@@ -39,10 +39,7 @@ public class UI_EventHandler : MonoBehaviour, IPointerClickHandler, IPointerDown
                 await OnClickAsyncHandler.Invoke();
             }
         }
-        catch (Exception e)
-        {
-            Util.Log(e);
-        }
+        catch (Exception e) { Debug.LogError(e); }
         finally
         {
             _isClickAsyncRunning = false;

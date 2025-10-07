@@ -1,5 +1,5 @@
 using System;
-using GameDevTV.Utils;
+// using GameDevTV.Utils;
 using RPG.Saving;
 using RPG.Stats;
 using TH.Core.Pool;
@@ -7,6 +7,7 @@ using UnityEngine;
 using Cysharp.Threading.Tasks;
 using TH.Resource;
 using TH.Attribute.Stat;
+using TH.Utils;
 
 namespace TH.Attribute
 {
@@ -35,14 +36,14 @@ namespace TH.Attribute
         private void InitBeforeLoad()
         {
             currentLevel = new LazyValue<int>(CalculateLevel);
-            GetCurrLevel = currentLevel.value;
+            GetCurrLevel = currentLevel.Value;
             GetCurrXp = currentXp;
         }
         
         private void InitAfterLoad()
         {
             progression = ResourceManager.Instance.Load<ProgressionSO>("ProgressionSO.asset");
-            Util.Log($"[{nameof(PlayerExperience)}.{nameof(InitAfterLoad)}()] progression: {progression}", Util.LoggingMode.Completed);
+            Logg.Log($"[{nameof(PlayerExperience)}.{nameof(InitAfterLoad)}()] progression: {progression}", Logg.LoggingMode.Completed);
             currentLevel.ForceInit();
             LevelUpTestMethod().Forget();
         }
@@ -50,7 +51,7 @@ namespace TH.Attribute
         private readonly TimeSpan oneSecond = TimeSpan.FromSeconds(1);
         private async UniTaskVoid LevelUpTestMethod()
         {
-            Util.Log($"[{nameof(PlayerExperience)}] '{nameof(LevelUpTestMethod)}' started", Util.LoggingMode.Completed);
+            Logg.Log($"[{nameof(PlayerExperience)}] '{nameof(LevelUpTestMethod)}' started", Logg.LoggingMode.Completed);
             int count = 0;
             while (count < 10)
             {
@@ -88,7 +89,7 @@ namespace TH.Attribute
         public void GainXp(float xp) // 경험치 획득
         {
             if (xp < 0) return; // 음수는 실행x
-            Util.Log($"Experience Gained ({xp})", Util.LoggingMode.Completed);
+            Logg.Log($"Experience Gained ({xp})", Logg.LoggingMode.Completed);
             SetXp(currentXp + xp, true);
         }
         
@@ -97,9 +98,9 @@ namespace TH.Attribute
         // notifyCallbacks: 콜백 실행 여부 (OnLevelChanged)
         public void SetLevel(int level, bool byForce = false, bool notifyCallbacks = true) 
         {
-            if (currentLevel is not { value: { } currLv } || currLv == level) return; // 현재 레벨과 동일하면 실행x
+            if (currentLevel is not { Value: { } currLv } || currLv == level) return; // 현재 레벨과 동일하면 실행x
             
-            currentLevel.value = level;
+            currentLevel.Value = level;
             if (byForce)
             {
                 CalculateXpFromLevel(level, out float xp);
@@ -108,9 +109,9 @@ namespace TH.Attribute
             else if (currLv < level)
             {
                 LevelUpEffectAction?.Invoke();
-                Util.Log($"Level up! ({level})", Util.LoggingMode.Completed);
+                Logg.Log($"Level up! ({level})", Logg.LoggingMode.Completed);
             }
-            OnLevelChanged?.Invoke(currentLevel.value);
+            OnLevelChanged?.Invoke(currentLevel.Value);
         }
 
         private int CalculateLevel() // 현재 경험치에 해당하는 레벨 계산 (= 현재 레벨 계산)

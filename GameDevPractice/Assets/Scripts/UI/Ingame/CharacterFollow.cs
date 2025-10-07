@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.UI;
+using TH.Utils;
 
 public class CharacterFollow : MonoBehaviour
 {
@@ -25,7 +26,7 @@ public class CharacterFollow : MonoBehaviour
         }
         else
         {
-            Util.Log($"not in screen");
+            Logg.Log($"not in screen");
             Hide();
         }
     }
