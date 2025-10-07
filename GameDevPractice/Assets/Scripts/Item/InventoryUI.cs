@@ -995,8 +995,10 @@ namespace RPG.UI
             UpdateAllEquippedSlotUI();
         }
         
-        private void Clear()
+        protected override void Clear()
         {
+            base.Clear();
+            
             CancelItemDrag();
             HideTooltip();
             HideHighlight();

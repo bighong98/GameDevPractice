@@ -7,7 +7,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using TH.Attribute;
 using TH.Attribute.Stat;
+using TH.UI;
 using TH.Utils;
+using Debug = System.Diagnostics.Debug;
 
 public class GameSceneUI : BaseUI
 {
@@ -42,6 +44,7 @@ public class GameSceneUI : BaseUI
     #endregion
 
     private readonly Slider[] sliders = new Slider[(int)Sliders.max];
+    private readonly SliderUIHandler[] sliderHandlers = new SliderUIHandler[(int)Sliders.max];
     
     private IStatHolder statHolder;
     private float floorXp;
@@ -68,6 +71,16 @@ public class GameSceneUI : BaseUI
         sliders[(int)Sliders.HP] = GetSlider(GetObject((int)GameObjects.HPBar));
         sliders[(int)Sliders.MP] = GetSlider(GetObject((int)GameObjects.MPBar));
         sliders[(int)Sliders.EXP] = GetSlider(GetObject((int)GameObjects.PlayerExpBar));
+
+        sliderHandlers[(int)Sliders.HP] = new SliderUIHandler(GetSlider(GetObject((int)GameObjects.HPBar)));
+        sliderHandlers[(int)Sliders.MP] = new SliderUIHandler(GetSlider(GetObject((int)GameObjects.MPBar)));
+        sliderHandlers[(int)Sliders.EXP] = new SliderUIHandler(GetSlider(GetObject((int)GameObjects.PlayerExpBar)));
+
+        foreach (var sliderHandler in sliderHandlers)
+        {
+            BindSliderEvent(sliderHandler);
+            sliderHandler.OffHighlight();
+        }
         
         return true;
     }
@@ -84,15 +97,35 @@ public class GameSceneUI : BaseUI
 
     private Slider GetSlider(GameObject go)
     {
-        return Util.FindChild<Slider>(go, "bar");
+        if (Util.FindChild<Slider>(go, "bar") is not { } slider)
+        {
+            slider = go.AddComponent<Slider>();
+            //todo: slider 기본 세팅
+        }
+        
+        return slider;
+        // return Util.FindChild<Slider>(go, "bar");
+    }
+
+    private void BindSliderEvent(SliderUIHandler sliderHandler)
+    {
+        if (sliderHandler.GetSlider is not { gameObject: { } go } || go == null) return;
+        var parentGo = go.transform.parent.gameObject; // 임시
+        
+        BindEvent(parentGo, sliderHandler.OnHighlight, type: Enums.UIEvent.PointerEnter);
+        BindEvent(parentGo, sliderHandler.OffHighlight, type: Enums.UIEvent.PointerExit);
     }
 
     private void ConnectComponents()
     {
         var player = FindFirstObjectByType<PlayerController>();
-        
+
         if (TryConnectComponent(player, out Health pHealth))
-            pHealth.OnHealthRatioChanged += SetHPBar;
+        {
+            // pHealth.OnHealthRatioChanged += SetHPBar;
+            pHealth.OnCurrHealthChanged += sliderHandlers[(int)GameObjects.HPBar].SetFloor;
+            pHealth.OnMaxHealthChanged += sliderHandlers[(int)GameObjects.HPBar].SetCeil;
+        }
         if (TryConnectComponent(player, out IExperience pExp))
             pExp.OnXpChanged += OnExpChanged;
         if (TryConnectComponent(player, out ILevel pLevel))
@@ -109,9 +142,13 @@ public class GameSceneUI : BaseUI
         if (Util.IsQuitting) return;
         var player = FindFirstObjectByType<PlayerController>();
         if (player == null) return;
-        
+
         if (TryConnectComponent(player, out Health pHealth))
-            pHealth.OnHealthRatioChanged -= SetHPBar;
+        {
+            // pHealth.OnHealthRatioChanged -= SetHPBar;
+            pHealth.OnCurrHealthChanged -= sliderHandlers[(int)GameObjects.HPBar].SetFloor;
+            pHealth.OnMaxHealthChanged -= sliderHandlers[(int)GameObjects.HPBar].SetCeil;
+        }
         if (TryConnectComponent(player, out IExperience pExp))
             pExp.OnXpChanged -= OnExpChanged;
         if (TryConnectComponent(player, out ILevel pLevel))
@@ -210,5 +247,14 @@ public class GameSceneUI : BaseUI
             ceilXp = 0;
         }
         //todo: 여기서 한번 더 xp 슬라이더 갱신할지 고려
+    }
+
+    protected override void Clear()
+    {
+        base.Clear();
+        foreach (var s in sliderHandlers)
+        {
+            s.OffHighlight();
+        }
     }
 }

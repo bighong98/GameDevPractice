@@ -213,6 +213,8 @@ namespace RPG.UI
         }
 
         #endregion
+
+        protected virtual void Clear() { } // 정리 작업
     }
 }
 

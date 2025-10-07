@@ -39,7 +39,8 @@ namespace RPG.Attribute
 
         public Action<float> OnHealthRatioChanged; // 현재 체력에 변동이 생긴 경우 (피격, 회복 등)
         public Action<float> OnMaxHealthChanged; // 최대 체력에 변동이 생긴 경우 (레벨 업, 장비 변경 등)
-
+        public Action<float> OnCurrHealthChanged; // 현재 체력에 변동이 생긴 경우 (피격, 회복 등)
+        
         [SerializeField] private GameObject HPBarPrefab; // serialize for debug
 
         private IAttackable lastAttacker; // 가장 최근 자신에게 피해를 입힌 대상
@@ -127,6 +128,7 @@ namespace RPG.Attribute
             
             var curr = hp.Value = Mathf.Clamp(amount, 0, max);
             OnHealthRatioChanged?.Invoke(curr / max);
+            OnCurrHealthChanged?.Invoke(curr);
             RefreshAliveState();
         }
 

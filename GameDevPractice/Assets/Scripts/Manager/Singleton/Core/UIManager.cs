@@ -54,7 +54,9 @@ namespace RPG.UI
 
         protected override void InitOnceAfterPreLoad()
         {
-            
+            // todo: 씬별 씬UI 생성 로직 추가 후 제거 (InitAfterPreLoad()에서 실행)
+            SetSceneUI();
+            SetTooltip();
         }
 
         protected override void Init()
@@ -94,8 +96,9 @@ namespace RPG.UI
 
         protected override void InitAfterPreLoad()
         {
-            SetSceneUI();
-            SetTooltip();
+            // 중복 생성 문제로 임시로 InitOnceAfterPreLoad()에서 실행
+            // SetSceneUI();
+            // SetTooltip();
         }
 
         private void OnEscapeCalled()
