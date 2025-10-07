@@ -224,12 +224,8 @@ public static class Util
         if (action == null) return;
         foreach (var d in action.GetInvocationList())
         {
-            try
-            {
-                (d as Action<bool>)?.Invoke(arg);
-            }
-            catch (Exception e)
-            {
+            try { (d as Action<bool>)?.Invoke(arg); }
+            catch (Exception e) {
                 Debug.LogError($"[{nameof(Util)}.{nameof(SafeInvoke)}]: Error while invoking {d.Method.Name}: {e}");
             }
         }
@@ -270,34 +266,34 @@ public static class Util
 
     #region Addressables
 
-    public static async UniTask<T> ExtractAssetRefAsync<T>(AssetReferenceT<T> reference) where T : UnityEngine.Object
-    {
-        if (reference == null)
-        {
-            Debug.LogError($"[ExtractAssetReference] reference is null.");
-            return null;
-        }
-
-        if (!reference.RuntimeKeyIsValid())
-        {
-            Debug.LogError($"[ExtractAssetReference] Invalid RuntimeKey for AssetReference<{typeof(T).Name}>. Asset: {reference.Asset?.name}");
-            return null;
-        }
-
-        var handle = reference.OperationHandle.IsValid()
-            ? reference.OperationHandle
-            : reference.LoadAssetAsync();
-
-        await handle.Task;
-
-        if (handle.Status != AsyncOperationStatus.Succeeded)
-        {
-            Debug.LogError($"[ExtractAssetReference] Load failed for AssetReference<{typeof(T).Name}> with key: {reference.RuntimeKey}");
-            return null;
-        }
-
-        return handle.Result as T;
-    }
+    // public static async UniTask<T> ExtractAssetRefAsync<T>(AssetReferenceT<T> reference) where T : UnityEngine.Object
+    // {
+    //     if (reference == null)
+    //     {
+    //         Debug.LogError($"[ExtractAssetReference] reference is null.");
+    //         return null;
+    //     }
+    //
+    //     if (!reference.RuntimeKeyIsValid())
+    //     {
+    //         Debug.LogError($"[ExtractAssetReference] Invalid RuntimeKey for AssetReference<{typeof(T).Name}>. Asset: {reference.Asset?.name}");
+    //         return null;
+    //     }
+    //
+    //     var handle = reference.OperationHandle.IsValid()
+    //         ? reference.OperationHandle
+    //         : reference.LoadAssetAsync();
+    //
+    //     await handle.Task;
+    //
+    //     if (handle.Status != AsyncOperationStatus.Succeeded)
+    //     {
+    //         Debug.LogError($"[ExtractAssetReference] Load failed for AssetReference<{typeof(T).Name}> with key: {reference.RuntimeKey}");
+    //         return null;
+    //     }
+    //
+    //     return handle.Result as T;
+    // }
 
 #if UNITY_EDITOR
     public static string GetAddressKeyInEditor(AssetReference assetRef)

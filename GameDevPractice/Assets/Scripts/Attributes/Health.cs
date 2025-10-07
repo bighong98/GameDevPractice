@@ -87,14 +87,12 @@ namespace RPG.Attribute
 
         private void OnEnable()
         {
-            // stats.OnLevelUp += this.OnLevelUp;
             if (!hasMutableLevel || levelHolder == null) return;
             levelHolder.OnLevelChanged += this.OnLevelUp;
         }
 
         private void OnDisable()
         {
-            // stats.OnLevelUp -= this.OnLevelUp;
             if (!hasMutableLevel || levelHolder == null) return;
             levelHolder.OnLevelChanged -= this.OnLevelUp;
         }
