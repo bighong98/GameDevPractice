@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TH.Attribute;
 using TH.Attribute.Stat;
+using TH.Resource;
 using TH.UI;
 using TH.Utils;
 using Debug = System.Diagnostics.Debug;
@@ -43,7 +44,7 @@ public class GameSceneUI : BaseUI
 
     #endregion
 
-    private readonly Slider[] sliders = new Slider[(int)Sliders.max];
+    // private readonly Slider[] sliders = new Slider[(int)Sliders.max];
     private readonly ISliderUIHandler[] sliderHandlers = new ISliderUIHandler[(int)Sliders.max];
     
     private IStatHolder statHolder;
@@ -67,10 +68,6 @@ public class GameSceneUI : BaseUI
         BindObject(typeof(GameObjects));
         BindTMPText(typeof(TMPTexts));
         BindImage(typeof(Images));
-
-        sliders[(int)Sliders.HP] = GetSlider(GetObject((int)GameObjects.HPBar));
-        sliders[(int)Sliders.MP] = GetSlider(GetObject((int)GameObjects.MPBar));
-        sliders[(int)Sliders.EXP] = GetSlider(GetObject((int)GameObjects.PlayerExpBar));
 
         sliderHandlers[(int)Sliders.HP] = new SliderUIHandler(GetSlider(GetObject((int)GameObjects.HPBar)));
         sliderHandlers[(int)Sliders.MP] = new SliderUIHandler(GetSlider(GetObject((int)GameObjects.MPBar)));
@@ -104,7 +101,6 @@ public class GameSceneUI : BaseUI
         }
         
         return slider;
-        // return Util.FindChild<Slider>(go, "bar");
     }
 
     private void BindSliderEvent(ISliderUIHandler sliderHandler)
@@ -119,6 +115,10 @@ public class GameSceneUI : BaseUI
     private void ConnectComponents()
     {
         var player = FindFirstObjectByType<PlayerController>();
+        if (player == null) return;
+        
+        if (TryConnectComponent(player, out IStatHolder pStatHolder))
+            statHolder = pStatHolder;
 
         if (TryConnectComponent(player, out Health pHealth))
         {
@@ -127,14 +127,9 @@ public class GameSceneUI : BaseUI
             pHealth.OnMaxHealthChanged += sliderHandlers[(int)GameObjects.HPBar].SetCeil;
         }
         if (TryConnectComponent(player, out IExperience pExp))
-            pExp.OnXpChanged += OnExpChanged;
+            pExp.OnXpChanged += sliderHandlers[(int)GameObjects.PlayerExpBar].SetFloor;
         if (TryConnectComponent(player, out ILevel pLevel))
-        {
             pLevel.OnLevelChanged += OnLevelUp;
-        }
-        if (TryConnectComponent(player, out IStatHolder pStatHolder))
-            statHolder = pStatHolder;
-        
     }
 
     private void DisConnectComponents()
@@ -145,18 +140,14 @@ public class GameSceneUI : BaseUI
 
         if (TryConnectComponent(player, out Health pHealth))
         {
-            // pHealth.OnHealthRatioChanged -= SetHPBar;
             pHealth.OnCurrHealthChanged -= sliderHandlers[(int)GameObjects.HPBar].SetFloor;
             pHealth.OnMaxHealthChanged -= sliderHandlers[(int)GameObjects.HPBar].SetCeil;
         }
+
         if (TryConnectComponent(player, out IExperience pExp))
-            pExp.OnXpChanged -= OnExpChanged;
+            pExp.OnXpChanged -= sliderHandlers[(int)GameObjects.PlayerExpBar].SetFloor;
         if (TryConnectComponent(player, out ILevel pLevel))
-        {
             pLevel.OnLevelChanged -= OnLevelUp;
-        }
-        if (TryConnectComponent(player, out IStatHolder pStatHolder))
-            statHolder = pStatHolder;
     }
 
     private bool TryConnectComponent<T>(in Component from, out T c)
@@ -171,52 +162,15 @@ public class GameSceneUI : BaseUI
         c = default;
         return false;
     }
-    
-    // private void SetHPBar(float ratio)
-    // {
-    //     sliders[(int)Sliders.HP].value = ratio;
-    // }
-
-    private void SetEXPBar(float ratio)
-    {
-        Logg.Log($"[{nameof(GameSceneUI)}.{nameof(SetEXPBar)}] trying to set xp bar : {ratio}", Logg.LoggingMode.Completed);
-        sliders[(int)Sliders.EXP].value = ratio;
-    }
 
     private void SetLevelText(int level)
     {
         GetTMPText((int)TMPTexts.levelText).SetText($"{level}");
     }
 
-    private void OnExpChanged(float xp)
-    {
-        var denominator = ceilXp - floorXp;
-        if (denominator.IsEqualFloat(0f)) return;
-        var numerator = xp - floorXp;
-        
-        Logg.Log($"[{nameof(GameSceneUI)}.{nameof(OnExpChanged)}()] trying to set xp bar: {numerator} / {denominator}", Logg.LoggingMode.Completed);
-        SetEXPBar(numerator / denominator);
-    }
-
     private void OnLevelUp(int level)
     {
         SetLevelText(level);
-
-        // if (playerStats == null && FindFirstObjectByType<PlayerController>() is {} foundPlayer
-        //     && foundPlayer.GetComponent<CharacterStats>() is {} pStats)
-        // {
-        //     playerStats = pStats;
-        // }
-        
-        // if (level > 0 && playerStats.GetStat(GameStat.ExperienceToLevelUp, level) is { } pResult)
-        // {
-        //     prevLevelUpXp = (int)pResult;
-        // }
-        //
-        // if (playerStats.GetStat(GameStat.ExperienceToLevelUp, level) is { } nResult)
-        // {
-        //     nextLevelUpXp = (int)nResult;
-        // }
 
         if (statHolder == null)
         {
@@ -231,22 +185,17 @@ public class GameSceneUI : BaseUI
         int currLevel = level;
         int prevLevel = level - 1;
         
-        if (prevLevel > 0 && statHolder.GetStat(GameStats.ExperienceToLevelUp, prevLevel) is { } floor)
+        if (prevLevel > 0 && statHolder.GetStat(GameStats.ExperienceToLevelUp, prevLevel) is { } baseline)
         {
-            Logg.Log($"[{nameof(GameSceneUI)}.{nameof(OnLevelUp)}()] floorXp is changed: {floor}", Logg.LoggingMode.Completed);
-            floorXp = floor;
+            Logg.Log($"[{nameof(GameSceneUI)}.{nameof(OnLevelUp)}()] xp baseline is changed: {baseline}", Logg.LoggingMode.Completed);
+            sliderHandlers[(int)Sliders.EXP].SetBaseline(baseline);
         }
 
         if (currLevel > 0 && statHolder.GetStat(GameStats.ExperienceToLevelUp, currLevel) is { } ceil)
         {
             Logg.Log($"[{nameof(GameSceneUI)}.{nameof(OnLevelUp)}()] ceilXp is changed: {ceil}", Logg.LoggingMode.Completed);
-            ceilXp = ceil;
+            sliderHandlers[(int)Sliders.EXP].SetCeil(ceil);
         }
-        else
-        {
-            ceilXp = 0;
-        }
-        //todo: 여기서 한번 더 xp 슬라이더 갱신할지 고려
     }
 
     protected override void Clear()
