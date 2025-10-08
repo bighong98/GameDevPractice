@@ -6,12 +6,12 @@ namespace TH.UI
 {
     public class SliderUIHandler: ISliderUIHandler
     {
-        private Slider slider;
+        private readonly Slider slider;
         private float currBaseline = 0f;
         private float currFloor = 1f;
         private float currCeil = 1f;
         
-        private TextMeshProUGUI text;
+        private readonly TextMeshProUGUI text;
         
         public SliderUIHandler(Slider s)
         {

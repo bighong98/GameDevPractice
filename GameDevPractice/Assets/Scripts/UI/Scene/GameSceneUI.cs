@@ -122,7 +122,6 @@ public class GameSceneUI : BaseUI
 
         if (TryConnectComponent(player, out Health pHealth))
         {
-            // pHealth.OnHealthRatioChanged += SetHPBar;
             pHealth.OnCurrHealthChanged += sliderHandlers[(int)GameObjects.HPBar].SetFloor;
             pHealth.OnMaxHealthChanged += sliderHandlers[(int)GameObjects.HPBar].SetCeil;
         }
