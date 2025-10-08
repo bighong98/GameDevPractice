@@ -58,14 +58,6 @@ public static class Enums
         OutOfRange, // 특정 건물/유닛의 생산이 지정 범위 밖에서 시도된 경우
         Insufficient, // 특정 건물/유닛 생산에 필요한 자원이 부족한 경우
     }
-    
-    public enum StatModCalcType
-    {
-        // 별도의 순서 지정이 없으면 Add -> PerAdd -> PerMul 순서로 계산됨
-        Add, // 고정값 합연산
-        PerAdd, // 퍼센트 합연산
-        PerMul, // 퍼센트 곱연산
-    }
 
     public enum StatType
     {

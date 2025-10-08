@@ -24,4 +24,8 @@ MonoBehaviour:
   isUsable: 1
   equipmentType: 0
   slotType: 1
+  equipmentStats:
+  - type: 101
+    calculation: 0
+    value: 7
   armorType: 0

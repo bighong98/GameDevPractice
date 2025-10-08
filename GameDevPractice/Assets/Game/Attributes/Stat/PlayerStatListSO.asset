@@ -15,3 +15,7 @@ MonoBehaviour:
   list:
   - type: 101
     value: 50
+  - type: 201
+    value: 0
+  - type: 202
+    value: 0

@@ -61,12 +61,6 @@ namespace RPG.UI
 
         protected override void Init()
         {
-            // Util.SetMainCameraForUtilClass();
-            
-            Logg.Log($"[UIManager] Init() in scene '{SceneManager.GetActiveScene().name}'", Logg.LoggingMode.InProgress);
-
-            
-
             // SetSceneUI();
             // SetTooltip();
             

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TH.Attribute.Stat;
 
 public abstract class EquipmentItem : BaseItem
 {
@@ -12,7 +13,7 @@ public abstract class EquipmentItem : BaseItem
     {
         #region For Test
 
-        Mods = new[] { new StatModifier(10, Enums.StatModCalcType.Add, this) };
+        Mods = new[] { new StatModifier(10, StatModCalcType.Add, this) };
         ModTypes = new[] { (int)Enums.StatType.Attack };
         
         #endregion

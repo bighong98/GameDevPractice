@@ -17,3 +17,7 @@ MonoBehaviour:
     value: 30
   - type: 1001
     value: 10
+  - type: 201
+    value: 5
+  - type: 202
+    value: 0

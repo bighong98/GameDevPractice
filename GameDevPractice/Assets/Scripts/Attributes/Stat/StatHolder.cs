@@ -118,6 +118,55 @@ namespace TH.Attribute.Stat
             Logg.Log($"[from '{gameObject.name}'] GetStat({statType}, {characterType}, {lv})", Logg.LoggingMode.Completed);
             return progression.GetProgressionStat(statType, characterType, lv);
         }
+
+        public bool AddModifier(GameStats type, StatModifier mod)
+        {
+            if (!stats.TryGetValue(type, out var stat)) return false;
+            
+            stat.AddModifier(mod);
+            Logg.Log($"[{gameObject.name}.{nameof(StatHolder)}.{nameof(AddModifier)}] '{type}' is changed to ({stat.Value})", Logg.LoggingMode.InProgress);
+            return true;
+        }
+
+        public bool RemoveModifier(GameStats type, StatModifier mod)
+        {
+            if (!stats.TryGetValue(type, out var stat)) return false;
+            
+            stat.RemoveModifier(mod);
+            return true;
+        }
+
+        public bool RemoveModifier(object source)
+        {
+            foreach (var stat in stats.Values)
+            {
+                stat.RemoveModifiersFromSource(source);
+            }
+
+            return true;
+        }
+
+        public void BindEvent(GameStats type, Action action)
+        {
+            if (!stats.TryGetValue(type, out var stat))
+            {
+                Logg.Log($"[{gameObject.name}.{nameof(StatHolder)}] failed to bind event to stat '{type}'");
+                return;
+            }
+
+            stat.OnStatChanged += action;
+        }
+        
+        public void UnBindEvent(GameStats type, Action action)
+        {
+            if (!stats.TryGetValue(type, out var stat))
+            {
+                Logg.Log($"[{gameObject.name}.{nameof(StatHolder)}] failed to bind event to stat '{type}'");
+                return;
+            }
+
+            stat.OnStatChanged -= action;
+        }
     }
 }
 

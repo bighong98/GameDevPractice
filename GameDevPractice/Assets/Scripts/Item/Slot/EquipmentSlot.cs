@@ -14,11 +14,11 @@ namespace RPG.Item
             Enums.EquippedItemSlotType validEquipSlotType = Enums.EquippedItemSlotType.Max) 
             : base(item, index, validTypes, accessible)
         {
-            ValidEquipSlotType = validEquipSlotType;
+            this.validEquipSlotType = validEquipSlotType;
         }
 
-        protected Enums.EquippedItemSlotType ValidEquipSlotType; // 슬롯에 장착 가능한 장비군(무기, 머리, 몸, 손, 발, 등)
-
+        protected Enums.EquippedItemSlotType validEquipSlotType; // 슬롯에 장착 가능한 장비군(무기, 머리, 몸, 손, 발, 등)
+        public Enums.EquippedItemSlotType ValidEquipSlotType => validEquipSlotType;
         public event EventHandler<EquipmentSlotArgs> OnEquipmentChanged; // 장착, 장착해제 전달용 이벤트핸들러
         
         public override bool CanStore(ItemTypeSO itemData)
@@ -27,7 +27,7 @@ namespace RPG.Item
             {
                 if (itemData is EquipmentTypeSO equipmentData)
                 {
-                    return ValidEquipSlotType == equipmentData.slotType;
+                    return validEquipSlotType == equipmentData.slotType;
                 }
             }
 

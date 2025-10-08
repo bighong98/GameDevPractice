@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using RPG.Combat;
+using RPG.Control;
 using RPG.Saving;
 using RPG.UI;
 using TH.Core.Service;
 using TH.Item;
 using TH.Resource;
 using TH.Utils;
+using UnityEngine.SceneManagement;
 
 namespace RPG.Item
 {
@@ -35,6 +37,8 @@ namespace RPG.Item
         
         private InventoryFilterType currFilter = InventoryFilterType.All;
         public InventoryFilterType CurrentFilter => currFilter; // 외부 접근용 프로퍼티
+
+        private PlayerController player;
         
         private void Awake()
         {
@@ -75,11 +79,18 @@ namespace RPG.Item
              }
              
              foreach (var item in testData.items)
-             {
-                 Logg.Log($"Trying to add {item.GetItemInfo.nameString}", Logg.LoggingMode.Completed);
-                AddItem(item, checkInstanceType: true);
+             { 
+                 Logg.Log($"Trying to add {item.GetItemInfo.nameString}", Logg.LoggingMode.Completed); 
+                 AddItem(item, checkInstanceType: true);
              }
             });
+
+            // 임시
+            player = GameObject.FindWithTag("Player").GetComponent<PlayerController>();
+            SceneManager.sceneLoaded += (_, _) =>
+            {
+                player = GameObject.FindWithTag("Player").GetComponent<PlayerController>();
+            };
         }
 
         #region Capacity
@@ -600,7 +611,7 @@ namespace RPG.Item
                 }
             }
         }
-
+        
         public void DivideItem(ItemSlotUI slotUI)
         {
             DivideItem(FindUITargetSlot(slotUI));
@@ -772,14 +783,16 @@ namespace RPG.Item
             }
         }
         
-        private void OnEquipmentChanged(object sender, EquipmentSlotArgs args) // 장비 아이템의 변동사항(장착/해제) 처리
+        private void OnEquipmentChanged(object sender, EquipmentSlotArgs args, bool temp) // 장비 아이템의 변동사항(장착/해제) 처리
         {
             if (args.State == EquipmentSlotArgs.EquipEventState.Equip && args.Item.GetItemInfo.itemType == Enums.ItemType.Equipment)
             {
                 if (args.Item.GetItemInfo is not WeaponTypeSO weaponTypeSO) return; // todo: 무기 이외 타입 처리 추가
                 
-                if (GameObject.FindWithTag("Player") is { } player &&
-                    player.GetComponent<Fighter>() is { } pFighter)
+                // if (GameObject.FindWithTag("Player") is { } player &&
+                //     player.GetComponent<Fighter>() is { } pFighter)
+                if (GameObject.FindWithTag("Player") is { } playerGo &&
+                    playerGo.GetComponent<Fighter>() is { } pFighter)
                 {
                     pFighter.EquipWeapon(weaponTypeSO); // 플레이어 캐릭터에게 장비 착용
                 }
@@ -787,8 +800,8 @@ namespace RPG.Item
             else // case: args.State == EquipmentSlotArgs.EquipEventState.UnEquip)
                  // or 장비가 아닌 아이템 (빈 아이템)을 장착하려 한 경우 -> 장착해제
             {
-                if (GameObject.FindWithTag("Player") is { } player &&
-                    player.GetComponent<Fighter>() is { } pFighter)
+                if (GameObject.FindWithTag("Player") is { } playerGo &&
+                    playerGo.GetComponent<Fighter>() is { } pFighter)
                 {
                     pFighter.UnEquipWeapon(); // 플레이어 캐릭터의 장비 착용 해제
                 }
@@ -796,6 +809,39 @@ namespace RPG.Item
 
             if (sender is ItemSlot changedSlot) 
                 NotifySlotUpdated(changedSlot); // 해당 장비 슬롯의 변동 알림 (인벤토리 UI 등에 동기화 목적)
+        }
+        
+        private void OnEquipmentChanged(object sender, EquipmentSlotArgs args) // 장비 아이템의 변동사항(장착/해제) 처리
+        {
+            Logg.Log($"[InventorySystem] OnEquipmentChanged Invoked - sender: {sender.GetType()}, args: ({args.Item}, {args.State})", Logg.LoggingMode.Focussed);
+            if (args is { Item: { GetItemInfo: not null } })
+            {
+                if (args.State == EquipmentSlotArgs.EquipEventState.Equip)
+                    Equip(args.Item);
+                else // case: EquipmentSlotArgs.EquipEventState.Equip
+                    UnEquip(args.Item);
+            }
+
+            if (sender is ItemSlot changedSlot) 
+                NotifySlotUpdated(changedSlot); // 해당 장비 슬롯의 변동 알림 (인벤토리 UI 등에 동기화 목적)
+        }
+
+        private void Equip(Item item)
+        {
+            Logg.Log($"[InventorySystem] Try to Equip '{item.GetItemInfo.nameString}'", Logg.LoggingMode.InProgress);
+            if (item is EquipmentItem equipment)
+            {
+                equipment.Equip(player);
+            }
+        }
+
+        private void UnEquip(Item item)
+        {
+            Logg.Log($"[InventorySystem] Try to UnEquip '{item.GetItemInfo.nameString}'");
+            if (item is EquipmentItem equipment)
+            {
+                equipment.UnEquip();
+            }
         }
 
         #endregion

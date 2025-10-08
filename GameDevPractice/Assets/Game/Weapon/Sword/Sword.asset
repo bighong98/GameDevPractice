@@ -24,6 +24,10 @@ MonoBehaviour:
   isUsable: 1
   equipmentType: 1
   slotType: 0
+  equipmentStats:
+  - type: 201
+    calculation: 0
+    value: 10
   weaponType: 0
   weaponAnimatorOverride: {fileID: 22100000, guid: bad3b4482a681fb4bb377898a52a866d, type: 2}
   EquippedPrefab: {fileID: 8466340430826345119, guid: f88d5b41db4f06b4e8240c80f2f734db, type: 3}

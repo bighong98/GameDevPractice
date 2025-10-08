@@ -1,5 +1,5 @@
 using UnityEngine;
-using StatModCalcType = Enums.StatModCalcType;
+using TH.Attribute.Stat;
 
 public class StatModifier
 {

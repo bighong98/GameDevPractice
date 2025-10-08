@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace TH.Attribute.Stat
 {
-    [CreateAssetMenu(fileName = "BaseStatListSO", menuName = "Scriptable Objects/BaseStatListSO")]
+    [CreateAssetMenu(fileName = "BaseStatListSO", menuName = "Scriptable Objects/GameStat/BaseStatListSO")]
     public class BaseStatListSO : ScriptableObject
     {
         public List<BaseStat> list;

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using UnityEngine;
-using StatModCalcType = Enums.StatModCalcType;
+using TH.Attribute.Stat;
 
 [Serializable]
 public class CombatStat
