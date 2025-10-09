@@ -7,8 +7,10 @@ using RPG.Movement;
 using RPG.Core;
 using RPG.Saving;
 using RPG.Attribute;
+using TH.Attribute.Stat;
 using TH.Combat;
 using TH.Core.Service;
+using TH.Item;
 using UnityEngine.Serialization;
 
 namespace RPG.Combat
@@ -26,6 +28,8 @@ namespace RPG.Combat
         
         private Mover mover;
         private Animator animator;
+        private IStatHolder statHolder;
+        private IInventorySystem inventorySystem;
         
         private static readonly int Attack1 = Animator.StringToHash("attack");
         private static readonly int StopAttack = Animator.StringToHash("stopAttack");
@@ -43,8 +47,10 @@ namespace RPG.Combat
             mover = GetComponent<Mover>();
             animator = GetComponent<Animator>();
             ActionScheduler = GetComponent<ActoinScheduler>();
+            statHolder = GetComponent<IStatHolder>();
 
             currentWeapon = new LazyValue<WeaponTypeSO>(SetDefaultWeapon);
+            // atkSource = new LazyValue<AttackSource>(SetAttackSource);
         }
 
         private void Start()
@@ -60,6 +66,7 @@ namespace RPG.Combat
         private void Update()
         {
             timeSinceLastAttack += Time.deltaTime;
+            if (!IsEquippingWeapon) return;
             if (target == null) return;
             if (target.IsDead) return;
             
@@ -93,11 +100,24 @@ namespace RPG.Combat
 
         #region CombatSystem Base (임시)
 
+        // private AttackSource currAttackSource => atkSource.value;
+        // private LazyValue<AttackSource> atkSource;
+        //
+        // private AttackSource SetAttackSource()
+        // {
+        //     return new AttackSource(this, statHolder.GetStat(GameStats.AD).Value);
+        // }
+        //
+        // private void UpdateAttackSource()
+        // {
+        //     atkSource.value = SetAttackSource();
+        // }
+
         private AttackSource currAttackSource;
 
         private void ChangeAttackSource()
         {
-            if (currentWeapon is { value: {} weaponData } )
+            if (currentWeapon is { value: { } weaponData })
             {
                 currAttackSource = new AttackSource(this, weaponData.GetDamage);
             }
@@ -245,7 +265,5 @@ namespace RPG.Combat
         }
 
         #endregion
-
-        
     }
 }
