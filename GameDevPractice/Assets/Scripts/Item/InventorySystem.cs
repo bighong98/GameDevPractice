@@ -783,33 +783,33 @@ namespace RPG.Item
             }
         }
         
-        private void OnEquipmentChanged(object sender, EquipmentSlotArgs args, bool temp) // 장비 아이템의 변동사항(장착/해제) 처리
-        {
-            if (args.State == EquipmentSlotArgs.EquipEventState.Equip && args.Item.GetItemInfo.itemType == Enums.ItemType.Equipment)
-            {
-                if (args.Item.GetItemInfo is not WeaponTypeSO weaponTypeSO) return; // todo: 무기 이외 타입 처리 추가
-                
-                // if (GameObject.FindWithTag("Player") is { } player &&
-                //     player.GetComponent<Fighter>() is { } pFighter)
-                if (GameObject.FindWithTag("Player") is { } playerGo &&
-                    playerGo.GetComponent<Fighter>() is { } pFighter)
-                {
-                    pFighter.EquipWeapon(weaponTypeSO); // 플레이어 캐릭터에게 장비 착용
-                }
-            }
-            else // case: args.State == EquipmentSlotArgs.EquipEventState.UnEquip)
-                 // or 장비가 아닌 아이템 (빈 아이템)을 장착하려 한 경우 -> 장착해제
-            {
-                if (GameObject.FindWithTag("Player") is { } playerGo &&
-                    playerGo.GetComponent<Fighter>() is { } pFighter)
-                {
-                    pFighter.UnEquipWeapon(); // 플레이어 캐릭터의 장비 착용 해제
-                }
-            }
-
-            if (sender is ItemSlot changedSlot) 
-                NotifySlotUpdated(changedSlot); // 해당 장비 슬롯의 변동 알림 (인벤토리 UI 등에 동기화 목적)
-        }
+        // private void OnEquipmentChanged(object sender, EquipmentSlotArgs args, bool temp) // 장비 아이템의 변동사항(장착/해제) 처리
+        // {
+        //     if (args.State == EquipmentSlotArgs.EquipEventState.Equip && args.Item.GetItemInfo.itemType == Enums.ItemType.Equipment)
+        //     {
+        //         if (args.Item.GetItemInfo is not WeaponTypeSO weaponTypeSO) return; // todo: 무기 이외 타입 처리 추가
+        //         
+        //         // if (GameObject.FindWithTag("Player") is { } player &&
+        //         //     player.GetComponent<Fighter>() is { } pFighter)
+        //         if (GameObject.FindWithTag("Player") is { } playerGo &&
+        //             playerGo.GetComponent<Fighter>() is { } pFighter)
+        //         {
+        //             pFighter.EquipWeapon(weaponTypeSO); // 플레이어 캐릭터에게 장비 착용
+        //         }
+        //     }
+        //     else // case: args.State == EquipmentSlotArgs.EquipEventState.UnEquip)
+        //          // or 장비가 아닌 아이템 (빈 아이템)을 장착하려 한 경우 -> 장착해제
+        //     {
+        //         if (GameObject.FindWithTag("Player") is { } playerGo &&
+        //             playerGo.GetComponent<Fighter>() is { } pFighter)
+        //         {
+        //             pFighter.UnEquipWeapon(); // 플레이어 캐릭터의 장비 착용 해제
+        //         }
+        //     }
+        //
+        //     if (sender is ItemSlot changedSlot) 
+        //         NotifySlotUpdated(changedSlot); // 해당 장비 슬롯의 변동 알림 (인벤토리 UI 등에 동기화 목적)
+        // }
         
         private void OnEquipmentChanged(object sender, EquipmentSlotArgs args) // 장비 아이템의 변동사항(장착/해제) 처리
         {

@@ -22,27 +22,33 @@ namespace RPG.Item
         private WeaponTypeHolder currentWeapon;
         // private readonly Dictionary<WeaponTypeSO, ObjectPool<WeaponTypeHolder>> weaponPools = new();
         private readonly Dictionary<WeaponTypeSO, ObjectPool<IPoolObject>> weaponPools = new();
+
+        private const string DefaultRootName = "Root";
+        private const string DefaultRightHandContainerName = "hand_r";
+        private const string DefaultLeftHandContainerName = "hand_l";
+        private const string DefaultRightWeaponContainerName = "weapon_r";
+        private const string DefaultLeftWeaponContainerName = "weapon_l";
         
         private void Awake()
         {
-            if (Util.FindChild(gameObject, "Root", recursive: true) is not { } root)
+            if (Util.FindChild(gameObject, DefaultRootName, recursive: true) is not { } root)
             {
                 Logg.Log($"failed to find root for hand: {gameObject.name}");
                 return;
             }
             
             if (rightHandTransform == null && 
-                Util.FindChildContainName<Transform>(root, "hand_r", true, false) is {} rResult)
+                Util.FindChildContainName<Transform>(root, DefaultRightHandContainerName, true, false) is {} rResult)
             {
-                var rightGo = (new GameObject("weapon_r")).transform;
+                var rightGo = (new GameObject(DefaultRightWeaponContainerName)).transform;
                 rightGo.SetParent(rResult, worldPositionStays: false);
                 rightHandTransform = rightGo;
             }
 
             if (leftHandTransform == null && 
-                Util.FindChildContainName<Transform>(root, "hand_l", true, false) is {} lResult)
+                Util.FindChildContainName<Transform>(root, DefaultLeftHandContainerName, true, false) is {} lResult)
             {
-                var leftGo = (new GameObject("weapon_l")).transform;
+                var leftGo = (new GameObject(DefaultLeftWeaponContainerName)).transform;
                 leftGo.SetParent(lResult, worldPositionStays: false);
                 leftHandTransform = leftGo;
             }

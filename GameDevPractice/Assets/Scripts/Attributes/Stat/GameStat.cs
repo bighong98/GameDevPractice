@@ -73,12 +73,11 @@ namespace TH.Attribute.Stat
 
             for (int i = statModifiers.Count - 1; i >= 0; i--) // 역순(= 가장 최근에 추가된 모드부터) 조회
             {
-                if (statModifiers[i].Source == source)
-                {
-                    statModifiers.RemoveAt(i);
-                    isDirty = true;
-                    removeDone = true; // 제거된 모드가 한 개라도 있다면: true 반환
-                }
+                if (statModifiers[i].Source != source) continue;
+                
+                statModifiers.RemoveAt(i);
+                isDirty = true;
+                removeDone = true; // 제거된 모드가 한 개라도 있다면: true 반환
             }
 
             return removeDone;
