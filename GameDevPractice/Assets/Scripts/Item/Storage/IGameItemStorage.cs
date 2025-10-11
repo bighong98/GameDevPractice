@@ -22,15 +22,15 @@ namespace TH.Item
 
         // read/get
         bool TryGetItem(int index, out IGameItem item);
-        bool TryGetItem(object key, out IGameItem item);
+        // bool TryGetItem(object key, out IGameItem item);
         bool TryGetItemSlot(int index, out IGameItemSlot itemSlot);
-        bool TryGetItemSlot(object key, out IGameItemSlot itemSlot);
+        // bool TryGetItemSlot(object key, out IGameItemSlot itemSlot);
         
         // delete/remove
         bool TryRemoveItem(int index); // 단순 아이템 제거
-        bool TryRemoveItem(object key);
+        // bool TryRemoveItem(object key);
         bool TryRemoveItem(int index, out IGameItem item); // 아이템 제거 후 제거된 아이템 확인 (아이템 이동 등에 사용)
-        bool TryRemoveItem(object key, out IGameItem item);
+        // bool TryRemoveItem(object key, out IGameItem item);
     }
 }
 

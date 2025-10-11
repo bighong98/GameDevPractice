@@ -250,9 +250,19 @@ namespace TH.Item
             return TransferItem(from, fromItem, to); // ** 없는 경우 -> 단순 아이템 이동
         }
 
+        public bool TryTransferItem(int fromIdx, int toIdx)
+        {
+            if (!IsValidSlotIdx(fromIdx) || !IsValidSlotIdx(toIdx)) return false;
+            return TryTransferItem(slots[fromIdx], slots[toIdx]);
+        }
+
         private bool TransferItem(IGameItemSlot fromSlot, IGameItem fromItem, IGameItemSlot toSlot)
         {
-            if (toSlot.TryStore(fromItem) && fromSlot.Clear()) return true; // 도착 슬롯에 아이템 저장 + 출발 슬롯 아이템 제거
+            if (toSlot.TryStore(fromItem) && fromSlot.Clear()) {
+                OnStoredItemChanged?.Invoke(fromSlot.Index);
+                OnStoredItemChanged?.Invoke(toSlot.Index);
+                return true; // 도착 슬롯에 아이템 저장 + 출발 슬롯 아이템 제거
+            }
 
             // 저장 실패 or 출발 슬롯 정리 실패 시 원복
             fromSlot.TryStore(fromItem, byForce: true); // 출발 슬롯에 원래 아이템을 강제 저장
@@ -262,7 +272,11 @@ namespace TH.Item
 
         private bool SwapItem(IGameItemSlot fromSlot, IGameItem fromItem, IGameItemSlot toSlot, IGameItem toItem)
         {
-            if (toSlot.TryStore(fromItem) && fromSlot.TryStore(toItem)) return true; // 아이템 슬롯 간 아이템 교환 시도
+            if (toSlot.TryStore(fromItem) && fromSlot.TryStore(toItem)) {
+                OnStoredItemChanged?.Invoke(fromSlot.Index);
+                OnStoredItemChanged?.Invoke(toSlot.Index);
+                return true; // 아이템 슬롯 간 아이템 교환 시도
+            }
 
             // 교환 실패 시 원복
             fromSlot.TryStore(fromItem, byForce: true);
@@ -419,15 +433,11 @@ namespace TH.Item
                 case Enums.ItemType.Countable:
                     if (item is CountableItem) return item;
                     return new CountableItem(item.GetItemInfo, item.GetAmount);
-                    break;
                 case Enums.ItemType.Equipment:
                     return new EquipmentItem(item.GetItemInfo);
-                    break;
                 default:
                     return item;
             }
-            Logg.LogError($"[PlayerInventory] failed to Make GameItem Instance");
-            return null;
         }
         
         private IGameItem EnsureItemInstanceByType(ItemTypeSO data, int amount = 1)
@@ -446,8 +456,6 @@ namespace TH.Item
                 default:
                     return new GameItem(data);
             }
-            Logg.LogError($"[PlayerInventory] failed to Make GameItem Instance");
-            return null;
         }
 
         #endregion

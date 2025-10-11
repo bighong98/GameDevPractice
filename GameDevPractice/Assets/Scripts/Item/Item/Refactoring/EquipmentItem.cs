@@ -4,12 +4,6 @@ namespace TH.Item
 {
     public class EquipmentItem : GameItem, IUsableItem
     {
-        public ItemTypeSO GetItemInfo { get; }
-        public Enums.ItemType Type { get; }
-        public int GetAmount { get; }
-        public bool IsValid { get; }
-        public bool IsEmpty { get; }
-        
         public EquipmentItem() {}
 
         public EquipmentItem(ItemTypeSO data) : base(data)

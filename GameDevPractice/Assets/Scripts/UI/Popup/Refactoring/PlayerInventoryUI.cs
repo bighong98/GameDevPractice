@@ -213,7 +213,7 @@ namespace TH.Item
         
         private void ConnectButtons()
         {
-            // GetButton((int)Buttons.ExitButton).onClick.AddListener(OnExitButtonPressed);
+            GetButton((int)Buttons.ExitButton).onClick.AddListener(OnExitButtonPressed);
             // GetButton((int)Buttons.SortButton).onClick.AddListener(OnSortButtonPressed);
             // GetButton((int)Buttons.CompressButton).onClick.AddListener(OnCompressButtonPressed);
             //
@@ -292,7 +292,8 @@ namespace TH.Item
         private void UpdateSlotUI(int index) // 인벤토리 슬롯 UI 갱신 (장비슬롯x)
         {
             // if (inventory.GetInventorySlot(index) is not { } itemSlot) return; // 인벤토리 시스템으로부터 슬롯 정보 받아오기
-            if (index < 0 && index >= inventory.Capacity) return;
+            
+            if (!IsValidInventoryIndex(index)) return;
             if (!inventory.TryGetItemSlot(index, out var itemSlot)) return;
             
             if (itemSlot.IsVisible) 
@@ -468,17 +469,12 @@ namespace TH.Item
 
         private bool IsValidInventoryIndex(int index) // 유효한 인벤토리 슬롯인지 검사
         {
-            return !(index < 0 || index >= slots.Count);
+            return index >= 0 && index < slots.Count;
         }
 
         private bool IsValidEquipIndex(int index) // 유효한 장비 슬롯인지 검사
         {
             return !(index < 0 || index >= equipmentSlots.Length);
-        }
-
-        private bool IsActiveSlotUI(int index) // 활성화된 인벤토리 슬롯인지 검사
-        {
-            return (IsValidInventoryIndex(index) && slots[index] is { isActiveAndEnabled: true });
         }
 
         #endregion
@@ -631,6 +627,7 @@ namespace TH.Item
             
             Logg.Log($"trying to TrySwapItems({fromSlotUI}.{fromSlotUI.Index}, {toSlotUI}.{toSlotUI.Index})", Logg.LoggingMode.Completed);
             // inventory.TrySwapItems(fromSlotUI, toSlotUI);
+            inventory.TryTransferItem(fromSlotUI.Index, toSlotUI.Index);
         }
 
         private void TryDiscardItem(ItemSlotBaseUI slotUI, bool confirm)
@@ -658,10 +655,10 @@ namespace TH.Item
             }
         }
         
-        // private void OnExitButtonPressed()
-        // {
-        //     UIManager.Instance.ClosePopupUI(this);
-        // }
+        private void OnExitButtonPressed()
+        {
+            UIManager.Instance.ClosePopupUI(this);
+        }
         //
         // private void OnCompressButtonPressed()
         // {

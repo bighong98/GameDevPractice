@@ -52,35 +52,39 @@ namespace RPG.UI
 
         public void ShowTooltip(ItemSlot item)
         {
-            if (item == null)
+            if (item == null || item.GetItemInfo == null)
             {
-                Logg.Log("itemTooltip: itemData is null");
+                Logg.LogError("itemTooltip: itemData is null");
                 return;
             }
 
             ShowTooltip();
-            GetTMPText((int)TMPTexts.ItemNameText).text = item.GetItemInfo.name;
-            GetTMPText((int)TMPTexts.ItemDescText).text = item.GetItemInfo.desc;
+            GetTMPText((int)TMPTexts.ItemNameText).SetText(item.GetItemInfo.name);
+            GetTMPText((int)TMPTexts.ItemDescText).SetText(item.GetItemInfo.desc);
+            // GetTMPText((int)TMPTexts.ItemNameText).text = item.GetItemInfo.name;
+            // GetTMPText((int)TMPTexts.ItemDescText).text = item.GetItemInfo.desc;
         }
         
         public void ShowTooltip(IGameItemSlot item)
         {
-            if (item == null)
+            if (item == null || item.GetItemInfo == null)
             {
-                Logg.Log("itemTooltip: itemData is null");
+                Logg.LogError("itemTooltip: itemData is null");
                 return;
             }
 
             ShowTooltip();
-            GetTMPText((int)TMPTexts.ItemNameText).text = item.GetItemInfo.name;
-            GetTMPText((int)TMPTexts.ItemDescText).text = item.GetItemInfo.desc;
+            GetTMPText((int)TMPTexts.ItemNameText).SetText(item.GetItemInfo.name);
+            GetTMPText((int)TMPTexts.ItemDescText).SetText(item.GetItemInfo.desc);
+            // GetTMPText((int)TMPTexts.ItemNameText).text = item.GetItemInfo.name;
+            // GetTMPText((int)TMPTexts.ItemDescText).text = item.GetItemInfo.desc;
         }
 
         public void ShowTooltip(string itemName, string itemDesc)
         {
             ShowTooltip();
-            GetTMPText((int)TMPTexts.ItemNameText).text = itemName;
-            GetTMPText((int)TMPTexts.ItemDescText).text = itemDesc;
+            GetTMPText((int)TMPTexts.ItemNameText).SetText(itemName);
+            GetTMPText((int)TMPTexts.ItemDescText).SetText(itemDesc);
         }
 
         public void MoveTooltip(Vector3 pos)
