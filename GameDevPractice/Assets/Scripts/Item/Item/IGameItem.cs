@@ -10,7 +10,7 @@ namespace TH.Item
         bool IsValid { get; }
         bool IsEmpty { get; }
 
-        T Clone<T>();
+        T Clone<T>() where T : IGameItem;
     }
 }
 
