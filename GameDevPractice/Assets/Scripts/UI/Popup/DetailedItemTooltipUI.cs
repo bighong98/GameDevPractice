@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using RPG.UI;
 using RPG.Item;
+using TH.Item;
 using TMPro;
 
 
@@ -54,6 +55,30 @@ public class DetailedItemTooltipUI : PopupUI
     }
 
     public bool SetTooltip(Item item, ItemSlotBaseUI slotUI, Action removeAction = null, Action useAction = null, Action divideAction = null)
+    {
+        if (item is not { GetAmount: > 0, GetItemInfo: { } itemInfo } ) return false;
+
+        if (GetImage((int)Images.ItemIconImage) is {} iconImage)
+        {
+            iconImage.sprite = itemInfo.sprite;
+        }
+        GetTMPText((int)TMPTexts.ItemNameText)?.SetText(itemInfo.nameString);
+        GetTMPText((int)TMPTexts.ItemDescText)?.SetText(itemInfo.desc);
+
+        SetTooltipButton(Buttons.TooltipRemoveButton, removeAction);
+        SetTooltipButton(Buttons.TooltipUseButton, useAction, buttonSetTask: (button) =>
+        {
+            if (Util.FindChild<TextMeshProUGUI>(button.gameObject, "text") is { } useButtonText)
+            {
+                useButtonText.SetText(GetUseButtonText(slotUI, itemInfo.itemType));
+            }
+        });
+        SetTooltipButton(Buttons.TooltipDivideButton, divideAction);
+        
+        return true;
+    }
+    
+    public bool SetTooltip(IGameItem item, ItemSlotBaseUI slotUI, Action removeAction = null, Action useAction = null, Action divideAction = null)
     {
         if (item is not { GetAmount: > 0, GetItemInfo: { } itemInfo } ) return false;
 

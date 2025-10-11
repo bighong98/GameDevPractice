@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 using Cysharp.Threading.Tasks;
 using RPG.UI;
 using TH.Core;
+using TH.Item;
 using TH.Utils;
 
 public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, UserInput.IGlobalActions, UserInput.IUIActions
@@ -117,7 +118,8 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
     {
         if (Input.GetKeyDown(KeyCode.I))
         {
-            UIManager.Instance.ShowPopupUI<InventoryUI>("InventoryUI.prefab");
+            // UIManager.Instance.ShowPopupUI<InventoryUI>("InventoryUI.prefab");
+            UIManager.Instance.ShowPopupUI<PlayerInventoryUI>("PlayerInventoryUI.prefab");
         }
     }
 

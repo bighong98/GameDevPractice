@@ -39,7 +39,7 @@ namespace TH.Item
 
         public bool CanStore(ItemTypeSO itemData)
         {
-            if (!IsValid || !IsAccessible) return false; // 접근 제한된 슬롯이면 실패처리
+            if (!IsAccessible) return false; // 접근 제한된 슬롯이면 실패처리
             if (ValidTypes == null || ValidTypes.Length == 0) return false; // 유효 아이템 타입이 없거나 타입 배열이 초기화되지 않았다면 실패처리
             // if (ValidTypes is not { Length: > 0 }) return false;
 

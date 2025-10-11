@@ -30,7 +30,7 @@ MonoBehaviour:
     - UI
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 24bacd3c14539a542a988524e7d33efa
-    m_Address: InventoryUI.prefab
+    m_Address: InventoryUI.prefab1
     m_ReadOnly: 0
     m_SerializedLabels:
     - PreLoad

@@ -1,4 +1,5 @@
 using TH.Combat;
+using TH.Item;
 using TH.Resource;
 using TH.SaveLoad;
 using TH.SceneManagement;
@@ -26,6 +27,7 @@ namespace TH.Core.Service
             ServiceLocator.Register<IRaycastHandler>(new RaycastHandler());
             ServiceLocator.Register<IDamageCalculator>(new DamageCalculator());
             ServiceLocator.Register<ICombatSystem>(new CombatSystem());
+            ServiceLocator.Register<IPlayerInventory>(new PlayerInventory());
         }
     }
 }

@@ -23,6 +23,8 @@ namespace TH.Item
         // read/get
         bool TryGetItem(int index, out IGameItem item);
         bool TryGetItem(object key, out IGameItem item);
+        bool TryGetItemSlot(int index, out IGameItemSlot itemSlot);
+        bool TryGetItemSlot(object key, out IGameItemSlot itemSlot);
         
         // delete/remove
         bool TryRemoveItem(int index); // 단순 아이템 제거

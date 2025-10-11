@@ -4,6 +4,7 @@ using RPG.Item;
 using RPG.Saving;
 using TH.Utils;
 using UnityEngine;
+using TH.Resource;
 
 namespace TH.Item
 {
@@ -18,13 +19,14 @@ namespace TH.Item
         public InventorySystem.InventoryFilterType CurrFilter { get; }
         
         public IReadOnlyCollection<IGameItemSlot> ItemSlots => slots;
-        private List<IGameItemSlot> slots = new List<IGameItemSlot>(capacity: MaxCapacity);
+        private List<IGameItemSlot> slots = new List<IGameItemSlot>(capacity: maxCapacity);
         private readonly Dictionary<ItemTypeSO, int> countableDict = new(); // CountableItem의 종류별 개수 (trim, sort 최적화 목적)
 
-        public int Capacity { get; private set; }
+        public int Capacity => capacity;
+        public int MaxCapacity => maxCapacity;
         private int capacity;
         private const int InitialCapacity = 80;
-        private const int MaxCapacity = 256;
+        private const int maxCapacity = 256;
 
         private int GetEndIdx => Mathf.Min(capacity, slots.Count) - 1; // return value -1 means not initialized or cleared 
         private bool IsValidSlotIdx(int index) => index >= 0 && index <= GetEndIdx;
@@ -32,7 +34,29 @@ namespace TH.Item
         
         public PlayerInventory()
         {
+            SetCapacity(InitialCapacity);
             FillInventoryWithEmptySlots();
+            
+            ResourceManager.Instance.WaitForPreLoad(() =>
+            {
+                InventoryTestData testData =
+                    ResourceManager.Instance.Load<GameObject>("InventoryTestData.prefab").GetComponent<InventoryTestData>();
+
+                if (testData == null)
+                {
+                    Logg.Log("TestData is null");
+                    return;
+                }
+             
+                foreach (var item in testData.items)
+                { 
+                    Logg.Log($"Trying to add {item.GetItemInfo.nameString}", Logg.LoggingMode.InProgress);
+                    if (!TryStore(EnsureItemInstanceByType(item.GetItemInfo, item.GetAmount)))
+                    {
+                        Logg.Log($"[PlayerInventory] failed to add test data item '{item}'");
+                    }
+                }
+            });
         }
         
         #region Store (Take in)
@@ -50,7 +74,10 @@ namespace TH.Item
         {
             if (!IsValidSlotIdx(index)) return false;
             if (slots[index] is not { IsAccessible: true, HasItem: false } slot) return false;
-            return slot.TryStore(item);
+            
+            var result = slot.TryStore(item);
+            if (result) OnStoredItemChanged?.Invoke(index);
+            return result;
         }
 
         public bool TryStore(IGameItem item, int amount, out int excess)
@@ -149,6 +176,25 @@ namespace TH.Item
         {
             Logg.LogError($"[{nameof(PlayerInventory)}] object type key not supported");
             item = null;
+            return false;
+        }
+
+        public bool TryGetItemSlot(int index, out IGameItemSlot itemSlot)
+        {
+            if (IsValidSlotIdx(index) && slots[index] is { IsAccessible: true } slot)
+            {
+                itemSlot = slot;
+                return true;
+            }
+
+            itemSlot = default;
+            return false;
+        }
+
+        public bool TryGetItemSlot(object key, out IGameItemSlot itemSlot)
+        {
+            Logg.LogError($"[{nameof(PlayerInventory)}] object type key not supported");
+            itemSlot = null;
             return false;
         }
 
@@ -306,7 +352,7 @@ namespace TH.Item
         
         public bool SetCapacity(int capa, bool byForce = false)
         {
-            if (capa > MaxCapacity || capa == capacity) return false; // 현재 capacity와 동일하거나 최대 capacity를 초과하면 false
+            if (capa > maxCapacity || capa == capacity) return false; // 현재 capacity와 동일하거나 최대 capacity를 초과하면 false
             
             capacity = capa;
             OnCapacityChanged?.Invoke(capa);
@@ -363,7 +409,11 @@ namespace TH.Item
 
         private IGameItem EnsureItemInstanceByType(IGameItem item)
         {
-            if (item is not { GetItemInfo: { itemType: { } type } }) return null;
+            if (item is not { GetItemInfo: { itemType: { } type } })
+            {
+                Logg.LogError($"[PlayerInventory] failed to Make GameItem Instance");
+                return null;
+            }
             switch (type)
             {
                 case Enums.ItemType.Countable:
@@ -371,12 +421,33 @@ namespace TH.Item
                     return new CountableItem(item.GetItemInfo, item.GetAmount);
                     break;
                 case Enums.ItemType.Equipment:
-                    //todo
+                    return new EquipmentItem(item.GetItemInfo);
                     break;
                 default:
                     return item;
             }
-            throw new NotImplementedException();
+            Logg.LogError($"[PlayerInventory] failed to Make GameItem Instance");
+            return null;
+        }
+        
+        private IGameItem EnsureItemInstanceByType(ItemTypeSO data, int amount = 1)
+        {
+            if (data is not { itemType: { } type })
+            {
+                Logg.LogError($"[PlayerInventory] failed to Make GameItem Instance");
+                return null;
+            }
+            switch (type)
+            {
+                case Enums.ItemType.Countable:
+                    return new CountableItem(data, amount);
+                case Enums.ItemType.Equipment:
+                    return new EquipmentItem(data);
+                default:
+                    return new GameItem(data);
+            }
+            Logg.LogError($"[PlayerInventory] failed to Make GameItem Instance");
+            return null;
         }
 
         #endregion
