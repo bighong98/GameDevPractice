@@ -5,7 +5,8 @@ namespace TH.Item
 {
     public interface IMutableCapacity
     {
-        event Action<int> OnCapacityChanged;
+        public int MaxCapacity { get; } // 설정 가능한 수용량 최댓값
+        event Action<int> OnCapacityChanged; 
         bool SetCapacity(int capa, bool byForce = false);
     }
 }

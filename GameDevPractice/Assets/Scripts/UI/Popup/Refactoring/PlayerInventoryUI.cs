@@ -605,6 +605,7 @@ namespace TH.Item
         {
             if (inventory == null) return;
             // inventory.TryUseItem(slotUI);
+            inventory.TryUseItem(slotUI.Index);
         }
 
         private void TryShowDetailedItemTooltip(Vector2 pos)
@@ -768,7 +769,7 @@ namespace TH.Item
             }
             
             void HighlightCurrSlot() => mouseOverSlot.ShowHighlight();
-            void WarningCurrSlot() => (mouseOverSlot as EquipmentSlotUI)?.ShowWarningHighlight();
+            // void WarningCurrSlot() => (mouseOverSlot as EquipmentSlotUI)?.ShowWarningHighlight();
             void UnHighlightPrevSlot()
             {
                 if (prevSlot == null) return;

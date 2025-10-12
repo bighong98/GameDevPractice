@@ -5,6 +5,7 @@ using RPG.Saving;
 using TH.Utils;
 using UnityEngine;
 using TH.Resource;
+using UnityEngine.SceneManagement;
 
 namespace TH.Item
 {
@@ -26,6 +27,8 @@ namespace TH.Item
         private int capacity;
         private const int maxCapacity = 256;
         private const int InitialCapacity = 80;
+
+        private CharacterTypeHolder player;
         
 
         private int GetEndIdx => Mathf.Min(capacity, slots.Count) - 1; // return value -1 means not initialized or cleared 
@@ -57,6 +60,11 @@ namespace TH.Item
                     }
                 }
             });
+
+            SceneManager.sceneLoaded += (_, _) =>
+            {
+                player = GameObject.FindGameObjectWithTag("Player").GetComponent<CharacterTypeHolder>();
+            };
         }
         
         #region Store (Take in)
@@ -104,7 +112,7 @@ namespace TH.Item
                     else
                     {
                         index = FindEmptySlotIndex(index + 1);
-                        if (index == -1)
+                        if (index < 0)
                         {
                             UpdateCountableDict(remain);
                             excess = remain;
@@ -285,6 +293,50 @@ namespace TH.Item
         }
         
         #endregion
+
+        #region Use(Consume/Equip)
+
+        public bool TryUseItem(int index) // 사용 시도 및 성공 여부 반환
+        {
+            return TryUseItem(index, player); // todo: null 대신 player를 기본으로
+        }
+
+        public bool TryUseItem(int index, object user) // + 사용자 객체 전달
+        {
+            if (!TryGetItem(index, out var item) || item is not IUsableItem uItem)
+            {
+                Logg.Log($"[PlayerInventory] TryUseItem({index}, {user}) failed because item is null or not usable", Logg.LoggingMode.InProgress);
+                return false;
+            }
+
+            if (!TryUseItem(uItem, user))
+            {
+                // todo: 필요시 실패 사유 전달
+                Logg.Log($"[PlayerInventory] TryUseItem({index}, {user}) failed because item is null or not usable", Logg.LoggingMode.InProgress);
+                return false;
+            }
+            
+            NotifySlotChanged(index); // 아이템 사용 성공 시 변동사항 전달
+            return true;
+        }
+
+        private bool TryUseItem(IUsableItem item, object user)
+        {
+            switch (item)
+            {
+                case EquipmentItem equipment:
+                    //todo: Equipper와 소통 -> 장비 장착/장착해제 시도
+                    break;
+                
+                default:
+                    return item.Use(user);
+            }
+
+            return true;
+        }
+        
+
+        #endregion
         
         #region Compare
 
@@ -458,6 +510,7 @@ namespace TH.Item
             switch (type)
             {
                 case Enums.ItemType.Countable:
+                    if (data.isUsable) return new ConsumableItem(data, amount);
                     return new CountableItem(data, amount);
                 case Enums.ItemType.Equipment:
                     return new EquipmentItem(data);
@@ -497,6 +550,7 @@ namespace TH.Item
             };
         }
         #endregion
+
         
     }
 }

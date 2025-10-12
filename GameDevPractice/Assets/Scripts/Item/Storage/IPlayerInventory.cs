@@ -4,9 +4,14 @@ using System;
 
 namespace TH.Item
 {
-    public interface IPlayerInventory : IGameItemStorage, IFilterableStorage, IMutableCapacity, IRearrangeableStorage
+    public interface IPlayerInventory : 
+        IGameItemStorage, 
+        IFilterableStorage, 
+        IMutableCapacity, 
+        IRearrangeableStorage,
+        IUsableItemStorage
     {
-        public int MaxCapacity { get; }
+        
     }
 }
 
