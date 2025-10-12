@@ -32,7 +32,7 @@ namespace RPG.Item
         public event Action<int> OnEquippedSlotChanged; // 1개의 장비 슬롯 초기화가 필요한 경우 (인덱스 접근)
         public event Action OnInventoryChanged; // 인벤토리 전체 초기화가 필요한 경우
         // public event Action OnEquippedChanged; // 장착 슬롯 전체 초기화가 필요한 경우
-        public event Action<InventorySystem.InventoryFilterType> OnInventoryFilterChanged;
+        public event Action<InventoryFilterType> OnInventoryFilterChanged;
         
         
         private InventoryFilterType currFilter = InventoryFilterType.All;
@@ -343,14 +343,6 @@ namespace RPG.Item
             {
                 inventoryItems[i].Index = i;
             }
-        }
-
-        public enum InventoryFilterType
-        {
-            All,
-            Equipment,
-            Consumable,
-            Resource,
         }
 
         private void FilterInven(InventoryFilterType filter)
@@ -745,6 +737,14 @@ namespace RPG.Item
         
         #region UI Interaction
 
+        public enum InventoryFilterType
+        {
+            All,
+            Equipment,
+            Consumable,
+            Resource,
+        }
+        
         public void TrySwapItems(ItemSlotBaseUI fromSlotUI, ItemSlotBaseUI toSlotUI) // 아이템 드래그&드랍
         {
             // UI_ItemSlotBase를 가지는 다른 오브젝트(ex-창고)가 생길 경우, FindUITargetSlot()이 제대로 작동하지 않을 수 있음

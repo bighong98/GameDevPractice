@@ -10,14 +10,13 @@ namespace TH.Item
 {
     public sealed class PlayerInventory : IPlayerInventory, ISavable
     {
-        public event Action<int> OnStoredItemChanged;
+        public event Action<int> OnStoredItemChanged; // 직접 .Invoke() 호출하지 말고 NotifySlotChanged(index) 사용할 것
         public event Action OnStorageChanged;
         public event Action<int> OnCapacityChanged;
-        
-        public event Action<InventorySystem.InventoryFilterType> OnInventoryFilterChanged;
-        
-        public InventorySystem.InventoryFilterType CurrFilter { get; }
-        
+        public event Action<InventoryFilterType> OnInventoryFilterChanged;
+
+        public InventoryFilterType CurrFilter { get; private set; } = InventoryFilterType.All;
+
         public IReadOnlyCollection<IGameItemSlot> ItemSlots => slots;
         private List<IGameItemSlot> slots = new List<IGameItemSlot>(capacity: maxCapacity);
         private readonly Dictionary<ItemTypeSO, int> countableDict = new(); // CountableItem의 종류별 개수 (trim, sort 최적화 목적)
@@ -25,8 +24,9 @@ namespace TH.Item
         public int Capacity => capacity;
         public int MaxCapacity => maxCapacity;
         private int capacity;
-        private const int InitialCapacity = 80;
         private const int maxCapacity = 256;
+        private const int InitialCapacity = 80;
+        
 
         private int GetEndIdx => Mathf.Min(capacity, slots.Count) - 1; // return value -1 means not initialized or cleared 
         private bool IsValidSlotIdx(int index) => index >= 0 && index <= GetEndIdx;
@@ -76,7 +76,7 @@ namespace TH.Item
             if (slots[index] is not { IsAccessible: true, HasItem: false } slot) return false;
             
             var result = slot.TryStore(item);
-            if (result) OnStoredItemChanged?.Invoke(index);
+            if (result) NotifySlotChanged(index);
             return result;
         }
 
@@ -98,7 +98,7 @@ namespace TH.Item
                         else
                         {
                             remain = (slots[index].GetItem as ICountableItem)?.AddAmount(remain) ?? 0;
-                            OnStoredItemChanged?.Invoke(index);
+                            NotifySlotChanged(index);
                         }
                     }
                     else
@@ -135,7 +135,7 @@ namespace TH.Item
                 // 빈칸에 아이템 저장 성공 시 
                 remain--;
                 //todo: UseImmediately 옵션
-                OnStoredItemChanged?.Invoke(index);
+                NotifySlotChanged(index);
             }
 
             excess = remain;
@@ -259,8 +259,8 @@ namespace TH.Item
         private bool TransferItem(IGameItemSlot fromSlot, IGameItem fromItem, IGameItemSlot toSlot)
         {
             if (toSlot.TryStore(fromItem) && fromSlot.Clear()) {
-                OnStoredItemChanged?.Invoke(fromSlot.Index);
-                OnStoredItemChanged?.Invoke(toSlot.Index);
+                NotifySlotChanged(fromSlot.Index);
+                NotifySlotChanged(toSlot.Index);
                 return true; // 도착 슬롯에 아이템 저장 + 출발 슬롯 아이템 제거
             }
 
@@ -273,8 +273,8 @@ namespace TH.Item
         private bool SwapItem(IGameItemSlot fromSlot, IGameItem fromItem, IGameItemSlot toSlot, IGameItem toItem)
         {
             if (toSlot.TryStore(fromItem) && fromSlot.TryStore(toItem)) {
-                OnStoredItemChanged?.Invoke(fromSlot.Index);
-                OnStoredItemChanged?.Invoke(toSlot.Index);
+                NotifySlotChanged(fromSlot.Index);
+                NotifySlotChanged(toSlot.Index);
                 return true; // 아이템 슬롯 간 아이템 교환 시도
             }
 
@@ -321,6 +321,14 @@ namespace TH.Item
         #endregion
         
         #region Slot
+
+        private void NotifySlotChanged(int index)
+        {
+            if (!IsValidSlotIdx(index)) return;
+            if (slots[index] is not { } slot) return;
+            slot.SetVisibility(IsVisibleByFilter(slot, CurrFilter));
+            OnStoredItemChanged?.Invoke(index);
+        }
 
         private IGameItemSlot GetSlot(int index)
         {
@@ -460,6 +468,35 @@ namespace TH.Item
 
         #endregion
 
+        #region Filter
+
+        public void SetFilter(InventoryFilterType filter)
+        {
+            if (CurrFilter == filter) return;
+            CurrFilter = filter;
+
+            for (int i = 0; i < capacity; i++)
+            {
+                var slot = slots[i];
+                slot.SetVisibility(IsVisibleByFilter(slot, filter));
+            }
+            
+            OnInventoryFilterChanged?.Invoke(CurrFilter);
+        }
+
+        
+        public static bool IsVisibleByFilter(IGameItemSlot slot, InventoryFilterType filter)
+        {
+            return filter switch
+            {
+                InventoryFilterType.All => true,
+                InventoryFilterType.Equipment => slot is { GetItemInfo: { itemType: Enums.ItemType.Equipment } },
+                InventoryFilterType.Consumable => slot is { GetItemInfo: { itemType: Enums.ItemType.Countable, isUsable: true }, GetAmount: > 0 }, 
+                InventoryFilterType.Resource => slot is { GetItemInfo: { itemType: Enums.ItemType.Countable, isUsable: false }, GetAmount: > 0 }, 
+                _ => false
+            };
+        }
+        #endregion
         
     }
 }

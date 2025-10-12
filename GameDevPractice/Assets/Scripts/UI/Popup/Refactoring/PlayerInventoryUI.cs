@@ -11,6 +11,7 @@ using TH.Resource;
 using UnityEngine.Pool;
 using TH.Utils;
 using Cysharp.Threading.Tasks;
+using DG.Tweening;
 
 namespace TH.Item
 {
@@ -50,8 +51,7 @@ namespace TH.Item
         #endregion
         
         private IPlayerInventory inventory;
-
-        private GraphicRaycaster graphicRaycaster;
+        
         private PointerEventData pointerEventData;
         private List<RaycastResult> raycastResults;
         private RectTransform inventoryUIRect;
@@ -97,8 +97,8 @@ namespace TH.Item
         private void OnEnable()
         {
             SubscribeInputEvents();
-            // OnInventoryCapacityChanged(inventorySystem.Capacity);
-            // OnFilterChanged(inventorySystem.CurrentFilter);
+            OnInventoryCapacityChanged(inventory.Capacity);
+            OnFilterChanged(inventory.CurrFilter);
             ConnectDataWithSlotUIs();
         }
 
@@ -135,7 +135,6 @@ namespace TH.Item
 
             if (GetObject((int)GameObjects.Contents) is { } contentsArea)
             {
-                graphicRaycaster = contentsArea.GetOrAddComponent<GraphicRaycaster>();
                 inventoryUIRect = contentsArea.GetComponent<RectTransform>();
             }
             
@@ -152,8 +151,8 @@ namespace TH.Item
             
             ConnectButtons();
             InitializeSlotUIs();
-            // FillButtonDict();
-            // CacheOriginalFilterButtonScales();
+            FillButtonDict();
+            CacheOriginalFilterButtonScales();
             
             // 인벤토리 슬롯UI 전체 초기화
             for (int i = 0; i < slots.Count; i++)
@@ -214,25 +213,25 @@ namespace TH.Item
         private void ConnectButtons()
         {
             GetButton((int)Buttons.ExitButton).onClick.AddListener(OnExitButtonPressed);
-            // GetButton((int)Buttons.SortButton).onClick.AddListener(OnSortButtonPressed);
-            // GetButton((int)Buttons.CompressButton).onClick.AddListener(OnCompressButtonPressed);
-            //
-            // GetButton((int)Buttons.AllFilterButton).onClick.AddListener(() =>
-            // {
-            //     OnFilterButtonPressed(InventorySystem.InventoryFilterType.All);
-            // });
-            // GetButton((int)Buttons.EquipmentFilterButton).onClick.AddListener(() =>
-            // {
-            //     OnFilterButtonPressed(InventorySystem.InventoryFilterType.Equipment);
-            // });
-            // GetButton((int)Buttons.ConsumableFilterButton).onClick.AddListener(() =>
-            // {
-            //     OnFilterButtonPressed(InventorySystem.InventoryFilterType.Consumable);
-            // });
-            // GetButton((int)Buttons.ResourceFilterButton).onClick.AddListener(() =>
-            // {
-            //     OnFilterButtonPressed(InventorySystem.InventoryFilterType.Resource);
-            // });
+            GetButton((int)Buttons.SortButton).onClick.AddListener(OnSortButtonPressed);
+            GetButton((int)Buttons.CompressButton).onClick.AddListener(OnCompressButtonPressed);
+            
+            GetButton((int)Buttons.AllFilterButton).onClick.AddListener(() =>
+            {
+                OnFilterButtonPressed(InventoryFilterType.All);
+            });
+            GetButton((int)Buttons.EquipmentFilterButton).onClick.AddListener(() =>
+            {
+                OnFilterButtonPressed(InventoryFilterType.Equipment);
+            });
+            GetButton((int)Buttons.ConsumableFilterButton).onClick.AddListener(() =>
+            {
+                OnFilterButtonPressed(InventoryFilterType.Consumable);
+            });
+            GetButton((int)Buttons.ResourceFilterButton).onClick.AddListener(() =>
+            {
+                OnFilterButtonPressed(InventoryFilterType.Resource);
+            });
         }
         
         private void SubscribeInputEvents()
@@ -269,20 +268,20 @@ namespace TH.Item
             // inventory.OnEquippedSlotChanged += OnEquipmentSlotUpdated;
 
             inventory.OnStorageChanged += this.OnInventoryUpdated;
-            // inventory.OnCapacityChanged += this.OnInventoryCapacityChanged;
-            // inventory.OnInventoryFilterChanged += this.OnFilterChanged;
+            inventory.OnCapacityChanged += this.OnInventoryCapacityChanged;
+            inventory.OnInventoryFilterChanged += this.OnFilterChanged;
         }
 
         private void DisConnectDataWithSlotUIs()
         {
-            // if (Util.IsQuitting) return;
+            if (Util.IsQuitting) return;
             
             inventory.OnStoredItemChanged -= OnInventorySlotUpdated;
             // inventory.OnEquippedSlotChanged -= OnEquipmentSlotUpdated;
             
             inventory.OnStorageChanged -= this.OnInventoryUpdated;
-            // inventory.OnCapacityChanged -= this.OnInventoryCapacityChanged;
-            // inventory.OnInventoryFilterChanged -= this.OnFilterChanged;
+            inventory.OnCapacityChanged -= this.OnInventoryCapacityChanged;
+            inventory.OnInventoryFilterChanged -= this.OnFilterChanged;
         }
         #endregion
 
@@ -297,13 +296,9 @@ namespace TH.Item
             if (!inventory.TryGetItemSlot(index, out var itemSlot)) return;
             
             if (itemSlot.IsVisible) 
-            {
                 EnableSlotUI(index);
-            }
             else // 슬롯이 비가시처리된 경우 (인벤토리 필터 등)
-            {
                 DisableSlotUI(index);
-            }
             
             if (itemSlot is not { HasItem: true } ) // 슬롯에 아이템이 없는 경우 (빈 슬롯)
             {
@@ -411,32 +406,32 @@ namespace TH.Item
         
         #region Handle Event
         
-        // private void OnFilterChanged(InventorySystem.InventoryFilterType filter)
-        // {
-        //     HighlightSelectedFilterButton(filter);
-        //     UpdateAllItemSlotUIs();
-        //     GetButton((int)Buttons.SortButton).interactable = (filter == InventorySystem.InventoryFilterType.All);
-        // }
-        //
-        // private void OnInventoryCapacityChanged(int capa)
-        // {
-        //     int currCount = slots.Count; 
-        //     if (currCount == capa) return;
-        //     if (currCount > capa) // case: 인벤토리 칸 감소
-        //     {
-        //         for (int i = capa; i < currCount; i++)
-        //         {
-        //             DisableSlotUI(i);
-        //         } 
-        //     }
-        //     else // case: itemSlotUIs.Count < capa : 인벤토리 칸 증가
-        //     {
-        //         for (int i = currCount; i < capa; i++)
-        //         {
-        //             EnableSlotUI(i);
-        //         } 
-        //     }
-        // }
+        private void OnFilterChanged(InventoryFilterType filter)
+        {
+            HighlightSelectedFilterButton(filter);
+            UpdateAllItemSlotUIs();
+            GetButton((int)Buttons.SortButton).interactable = (filter == InventoryFilterType.All);
+        }
+        
+        private void OnInventoryCapacityChanged(int capa)
+        {
+            int currCount = slots.Count; 
+            if (currCount == capa) return;
+            if (currCount > capa) // case: 인벤토리 칸 감소
+            {
+                for (int i = capa; i < currCount; i++)
+                {
+                    DisableSlotUI(i);
+                } 
+            }
+            else // case: itemSlotUIs.Count < capa : 인벤토리 칸 증가
+            {
+                for (int i = currCount; i < capa; i++)
+                {
+                    EnableSlotUI(i);
+                } 
+            }
+        }
 
         private void OnInventorySlotUpdated(int index)
         {
@@ -659,24 +654,24 @@ namespace TH.Item
         {
             UIManager.Instance.ClosePopupUI(this);
         }
-        //
-        // private void OnCompressButtonPressed()
-        // {
-        //     if (inventory == null) return;
-        //     inventory.CompressInven(false);
-        // }
-        //
-        // private void OnSortButtonPressed()
-        // {
-        //     if (inventory == null) return;
-        //     inventory.CompressInven(true);
-        // }
-        //
-        // private void OnFilterButtonPressed(InventorySystem.InventoryFilterType filter)
-        // {
-        //     if (inventory == null) return;
-        //     inventory.TryFilterInven(filter);
-        // }
+        
+        private void OnCompressButtonPressed()
+        {
+            if (inventory == null) return;
+            // inventory.CompressInven(false);
+        }
+        
+        private void OnSortButtonPressed()
+        {
+            if (inventory == null) return;
+            // inventory.CompressInven(true);
+        }
+        
+        private void OnFilterButtonPressed(InventoryFilterType filter)
+        {
+            if (inventory == null) return;
+            // inventory.TryFilterInven(filter);
+        }
         
         #endregion
 
@@ -905,6 +900,90 @@ namespace TH.Item
         }
 
         #endregion
+        
+                
+        #region Inventory Filter
+
+        private readonly Dictionary<int, Transform> filterButtonDict = new ();
+        private readonly Dictionary<Transform, Vector3> buttonOriginScale = new ();
+        private const float HighlightScale = 1.2f;
+        private const float TweenDuration = 0.15f;
+        private void FillButtonDict()
+        {
+            filterButtonDict[(int)InventoryFilterType.All] 
+                = GetButton((int)Buttons.AllFilterButton).transform;
+            filterButtonDict[(int)InventoryFilterType.Equipment] 
+                = GetButton((int)Buttons.EquipmentFilterButton).transform;
+            filterButtonDict[(int)InventoryFilterType.Consumable] 
+                = GetButton((int)Buttons.ConsumableFilterButton).transform;
+            filterButtonDict[(int)InventoryFilterType.Resource] 
+                = GetButton((int)Buttons.ResourceFilterButton).transform;
+        }
+
+        private void CacheOriginalFilterButtonScales()
+        {
+            foreach (var button in filterButtonDict.Values)
+            {
+                CacheOriginalScale(button);
+            }
+        }
+
+        private Transform GetFilterButtonByType(InventoryFilterType filterType)
+        {
+            if (filterButtonDict.TryGetValue((int)filterType, out var button))
+            {
+                return button;
+            }
+
+            return null;
+        }
+
+        private void HighlightSelectedFilterButton(InventoryFilterType filterType)
+        {
+            if (GetFilterButtonByType(filterType) is not { } button) return;
+            
+            foreach (var kv in buttonOriginScale)
+            {
+                if (kv.Key is not { } other || other == button) continue;
+
+                UnHighlightFilterButton(other, kv.Value);
+            }
+            
+            HighlightFilterButton(button);
+        }
+
+        private static void UnHighlightFilterButton(Transform other, Vector3 scale)
+        {
+            other.DOKill();
+            other.DOScale(scale, TweenDuration)
+                .SetUpdate(UpdateType.Late, true)
+                .SetEase(Ease.OutQuad)
+                .SetLink(other.gameObject, LinkBehaviour.KillOnDestroy);
+        }
+
+        private void HighlightFilterButton(Transform trs)
+        {
+            trs.DOKill();
+            if (!buttonOriginScale.TryGetValue(trs, out var originalScale))
+            {
+                buttonOriginScale[trs] = originalScale = trs.localScale;
+            }
+            trs.DOScale(originalScale * HighlightScale, TweenDuration)
+                .SetUpdate(UpdateType.Late, true)
+                .SetEase(Ease.OutBack)
+                .SetLink(trs.gameObject, LinkBehaviour.KillOnDestroy);
+        }
+
+        private void CacheOriginalScale(Transform t)
+        {
+            if (t != null && !buttonOriginScale.ContainsKey(t))
+            {
+                buttonOriginScale[t] = t.localScale;
+            }
+        }
+
+        #endregion
+      
         
         private void Refresh()
         {
