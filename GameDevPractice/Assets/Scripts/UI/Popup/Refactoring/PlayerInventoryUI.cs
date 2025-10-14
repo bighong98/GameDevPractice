@@ -264,7 +264,7 @@ namespace TH.Item
 
         private void ConnectDataWithSlotUIs()
         {
-            inventory.OnStoredItemChanged += OnInventorySlotUpdated;
+            inventory.OnSlotChanged += OnInventorySlotUpdated;
             // inventory.OnEquippedSlotChanged += OnEquipmentSlotUpdated;
 
             inventory.OnStorageChanged += this.OnInventoryUpdated;
@@ -276,7 +276,7 @@ namespace TH.Item
         {
             if (Util.IsQuitting) return;
             
-            inventory.OnStoredItemChanged -= OnInventorySlotUpdated;
+            inventory.OnSlotChanged -= OnInventorySlotUpdated;
             // inventory.OnEquippedSlotChanged -= OnEquipmentSlotUpdated;
             
             inventory.OnStorageChanged -= this.OnInventoryUpdated;

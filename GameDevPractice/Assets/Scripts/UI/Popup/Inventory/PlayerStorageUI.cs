@@ -1,0 +1,198 @@
+using UnityEngine;
+using System;
+using System.Collections.Generic;
+using RPG.UI;
+using TH.Item;
+using UnityEngine.EventSystems;
+
+namespace TH.UI
+{
+    public class PlayerStorageUI : BaseUI, IPlayerStorageUI, IPointerMoveHandler, IPointerExitHandler, IPointerClickHandler, IBeginDragHandler, IEndDragHandler
+    {
+        public IReadOnlyCollection<IInvenSlotUI> Slots => slots;
+        [SerializeField] private List<IInvenSlotUI> slots;
+        
+        public event Action<int> OnSlotHovered;
+        public event Action<int> OffSlotHovered;
+        public event Action<int> OnSlotClicked;
+        public event Action<int> OnSlotDragged;
+        public event Action<int> OffSlotDragged;
+
+        #region Enums
+
+        enum GameObjects
+        {
+            InventoryArea,
+            ItemSlots,
+            DragDropIconHolder,
+        }
+
+        #endregion
+
+        protected override void Awake()
+        {
+            base.Awake();
+            BindObject(typeof(GameObjects));
+            
+            InitSlotUIs();
+        }
+
+        #region Initialization
+
+        private void InitSlotUIs()
+        {
+            int idx = 0;
+            foreach (var slot in slots)
+            {
+                slot.SetIndex(idx++);
+            }
+        }
+
+        #endregion
+        
+        #region Draw/Show/Hide Slot (IStorageUI)
+
+        public void DrawSlot(int index, object data)
+        {
+            if (!TryGetSlot(index, out IInvenSlotUI slot)) return;
+            if (data is not IGameItem { GetItemInfo: { } itemInfo } item)
+            {
+                slot.Clear();
+                return;
+            }
+            
+            slot.SetIcon(itemInfo.sprite);
+            if (item.GetAmount is {} amount and > 1)
+                slot.SetAmount(amount);
+        }
+
+        public void ShowSlot(int index)
+        {
+            if (!TryGetSlot(index, out IInvenSlotUI slot)) return;
+            slot.SetVisibility(true);
+        }
+
+        public void HideSlot(int index)
+        {
+            if (!TryGetSlot(index, out IInvenSlotUI slot)) return;
+            slot.SetVisibility(false);
+        }
+
+        #endregion
+        
+        #region Highlight (IHighlightableStorageUI)
+
+        public void HighlightSlot(int index)
+        {
+            if (!TryGetSlot(index, out IInvenSlotUI slot)) return;
+            slot.Highlight();
+        }
+
+        public void HighlightSlot(int index, int highlightType)
+        {
+            HighlightSlot(index);
+        }
+
+        public void UnHighlightSlot(int index)
+        {
+            if (!TryGetSlot(index, out IInvenSlotUI slot)) return;
+            slot.UnHighlight();
+        }
+
+        public void UnHighlightSlot(int index, int highlightType)
+        {
+            UnHighlightSlot(index);
+        }
+
+        #endregion
+
+        #region Helper Methods
+
+        private bool IsValidSlotUIIdx(int index)
+        {
+            return index >= 0 && index < slots.Count;
+        }
+        
+        private bool TryGetSlot(int index, out IInvenSlotUI slot)
+        {
+            if (!IsValidSlotUIIdx(index))
+            {
+                slot = null;
+                return false;
+            }
+
+            slot = slots[index];
+            return true;
+        }
+
+        #endregion
+
+        #region Handle User Input
+
+        private ISlotUI lastHoveredSlot;
+        
+        public void OnPointerMove(PointerEventData eventData)
+        {
+            switch (eventData.pointerEnter)
+            {
+                // 새로운 슬롯에 포인터가 이동한 경우
+                case {} target when target.TryGetComponent(out ISlotUI slotUI) && slotUI != lastHoveredSlot:
+                    if (lastHoveredSlot is {Index: {} lastHoveredIndex}) OffSlotHovered?.Invoke(lastHoveredIndex);
+                    lastHoveredSlot = slotUI;
+                    OnSlotHovered?.Invoke(slotUI.Index);
+                    break;
+                
+                // 슬롯이 없는 빈 공간으로 이동했는데 기존에 머무르던 슬롯이 있는 경우
+                case null when lastHoveredSlot != null:
+                    OffSlotHovered?.Invoke(lastHoveredSlot.Index);
+                    lastHoveredSlot = null;
+                    break;
+                
+                default: // 기존 슬롯에서 머무르고 있거나 기존에 머무르던 슬롯이 없고 빈공간에 포인터가 위치해있는 경우
+                    break;
+            }
+        }
+
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            if (lastHoveredSlot == null) return;
+            
+            OffSlotHovered?.Invoke(lastHoveredSlot.Index);
+            lastHoveredSlot = null;
+        }
+
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            if (eventData.pointerClick is { } target &&
+                target.TryGetComponent(out ISlotUI slotUI))
+            {
+                OnSlotClicked?.Invoke(slotUI.Index);
+            } 
+        }
+        
+        public void OnBeginDrag(PointerEventData eventData)
+        {
+            if (eventData.pointerPress is { } target
+                && target.TryGetComponent(out ISlotUI slotUI))
+            {
+                OnSlotDragged?.Invoke(slotUI.Index);
+            }
+        }
+
+        public void OnEndDrag(PointerEventData eventData)
+        {
+            if (eventData.pointerEnter is { } target
+                && target.TryGetComponent(out ISlotUI slotUI))
+            {
+                OffSlotDragged?.Invoke(slotUI.Index);
+            }
+            else
+                OffSlotDragged?.Invoke(-1); // -1 means drop failed
+        }
+
+        #endregion
+        
+        
+    }
+}
+

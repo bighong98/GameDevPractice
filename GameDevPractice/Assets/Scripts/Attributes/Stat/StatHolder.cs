@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using RPG.Stats;
+using TH.Item;
 using UnityEngine;
 using TH.Utils;
 using TH.Resource;
@@ -12,12 +13,15 @@ namespace TH.Attribute.Stat
         [SerializeField] private CharacterType characterType;
         [SerializeField] private ProgressionSO progression; // serialize for debug
         
+        private Dictionary<GameStats, GameStat> stats = new Dictionary<GameStats, GameStat>();
+        
         private int startingLevel; 
-        [SerializeField] private int level;
+        [SerializeField] private int level; // serialize for debug
         private ILevel levelHolder;
         private bool hasMutableLevel;
 
-        private Dictionary<GameStats, GameStat> stats = new Dictionary<GameStats, GameStat>();
+        private IEquipHandler equipHandler;
+        private bool hasEquipHandler;
         
         private void Awake()
         {
@@ -27,6 +31,11 @@ namespace TH.Attribute.Stat
 
         private void OnEnable()
         {
+            if (equipHandler != null)
+            {
+                equipHandler.OnEquipmentChanged += this.OnEquipmentChanged;
+            }
+            
             if (!hasMutableLevel || progression == null) return; 
             
             levelHolder.OnLevelChanged += UpdateStatsByLevel;
@@ -35,11 +44,44 @@ namespace TH.Attribute.Stat
         
         private void OnDisable()
         {
+            if (equipHandler != null)
+            {
+                equipHandler.OnEquipmentChanged += this.OnEquipmentChanged;
+            }
+            
             if (!hasMutableLevel || progression == null) return; 
             
             levelHolder.OnLevelChanged -= UpdateStatsByLevel;
         }
 
+        #region Initialization
+
+        private void InitBeforeLoad()
+        {
+            // if (TryGetComponent(out ILevel iLevel))
+            // {
+            //     levelHolder = iLevel;
+            //     hasMutableLevel = true;
+            // }
+            
+            // if (TryGetComponent(out IEquipHandler iEquipHandler))
+            //     equipHandler = iEquipHandler;
+
+            hasMutableLevel = TryGetComponent(out ILevel iLevel);
+            if (hasMutableLevel) levelHolder = iLevel;
+
+            hasEquipHandler = TryGetComponent(out IEquipHandler iEquipHandler);
+            if (hasEquipHandler) equipHandler = iEquipHandler;
+        }
+
+        private void InitAfterLoad()
+        {
+            Logg.Log($"[StatHolder] InitAfterLoad() invoked", Logg.LoggingMode.Completed);
+            progression = ResourceManager.Instance.Load<ProgressionSO>("ProgressionSO.asset");
+            if (progression == null)
+                Logg.LogError($"[{gameObject.name}.{nameof(StatHolder)}] failed to load progression");
+        }
+        
         public void ReceiveType(ScriptableObject typeInfo)
         {
             if (typeInfo == null || typeInfo is not CharacterTypeSO charInfo) return;
@@ -53,25 +95,8 @@ namespace TH.Attribute.Stat
             level = startingLevel;
             UpdateStatsByLevel(level);
         }
-
-        private void InitBeforeLoad()
-        {
-            if (TryGetComponent(out ILevel iLevel))
-            {
-                levelHolder = iLevel;
-                hasMutableLevel = true;
-            }
-        }
-
-        private void InitAfterLoad()
-        {
-            Logg.Log($"[StatHolder] InitAfterLoad() invoked", Logg.LoggingMode.Completed);
-            progression = ResourceManager.Instance.Load<ProgressionSO>("ProgressionSO.asset");
-            if (progression == null)
-                Logg.LogError($"[{gameObject.name}.{nameof(StatHolder)}] failed to load progression");
-        }
-
-        private void InitializeStats(ScriptableObject baseStatData)
+        
+        private void InitializeStats(ScriptableObject baseStatData) // call by ReceiveType()
         {
             if (baseStatData == null || 
                 baseStatData is not BaseStatListSO { list: { } baseStats }) return;
@@ -81,6 +106,9 @@ namespace TH.Attribute.Stat
             }
         }
 
+        #endregion
+        
+
         private void UpdateStatsByLevel(int lv)
         {
             if (level == lv) return;
@@ -88,7 +116,9 @@ namespace TH.Attribute.Stat
             
             //todo: 레벨에 비례해 변동되는 능력치 반영
         }
-        
+
+        #region Get Stat
+
         public GameStat GetStat(GameStats statType)
         {
             // return progression.GetProgressionStat(statType, characterType, startingLevel);
@@ -119,6 +149,10 @@ namespace TH.Attribute.Stat
             return progression.GetProgressionStat(statType, characterType, lv);
         }
 
+        #endregion
+
+        #region Update Stat (Apply Stat Modifier)
+
         public bool AddModifier(GameStats type, StatModifier mod)
         {
             if (!stats.TryGetValue(type, out var stat)) return false;
@@ -146,6 +180,8 @@ namespace TH.Attribute.Stat
             return true;
         }
 
+        #endregion
+        
         public void BindEvent(GameStats type, Action action)
         {
             if (!stats.TryGetValue(type, out var stat))
@@ -167,6 +203,56 @@ namespace TH.Attribute.Stat
 
             stat.OnStatChanged -= action;
         }
+
+
+        #region Handle Events
+
+        private void OnEquipmentChanged(object sender, EquipArgs args)
+        {
+            //todo: sender 검사
+            if (args.Item is not IEquipmentItem equipment)
+            {
+                Logg.LogError($"[{gameObject.name}.StatHolder] Empty EquipArgs delivered");
+                return;
+            }
+
+            switch (args.State)
+            {
+                case EquipArgs.EquipEventState.Equip:
+                    AddModifiersFromEquipment(equipment);
+                    break;
+                case EquipArgs.EquipEventState.UnEquip:
+                    RemoveModifiersFromEquipment(equipment);
+                    break;
+                default:
+                    Logg.LogError($"[{gameObject.name}.OnEquipmentChanged] Invalid EquipEventState");
+                    break;
+            }
+        }
+
+        private void AddModifiersFromEquipment(IEquipmentItem equipment)
+        {
+            if (equipment.EquipmentStats is not { } equipmentStats)
+            {
+                Logg.LogError($"[{gameObject.name}.StatHolder] Empty Equipment StatModifier Data from '{equipment}'");
+                return;
+            }
+
+            foreach (var statData in equipmentStats)
+            {
+                AddModifier(statData.type, statData.GetModifier(equipment));
+            }
+        }
+
+        private void RemoveModifiersFromEquipment(IEquipmentItem equipment)
+        {
+            RemoveModifier(equipment);
+        }
+
+        #endregion
+        
+        
+        
     }
 }
 

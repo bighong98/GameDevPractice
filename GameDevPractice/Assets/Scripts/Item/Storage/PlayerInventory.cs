@@ -11,7 +11,7 @@ namespace TH.Item
 {
     public sealed class PlayerInventory : IPlayerInventory, ISavable
     {
-        public event Action<int> OnStoredItemChanged; // 직접 .Invoke() 호출하지 말고 NotifySlotChanged(index) 사용할 것
+        public event Action<int> OnSlotChanged; // 직접 .Invoke() 호출하지 말고 NotifySlotChanged(index) 사용할 것
         public event Action OnStorageChanged;
         public event Action<int> OnCapacityChanged;
         public event Action<InventoryFilterType> OnInventoryFilterChanged;
@@ -23,8 +23,8 @@ namespace TH.Item
         private readonly Dictionary<ItemTypeSO, int> countableDict = new(); // CountableItem의 종류별 개수 (trim, sort 최적화 목적)
 
         public int Capacity => capacity;
-        public int MaxCapacity => maxCapacity;
         private int capacity;
+        public int MaxCapacity => maxCapacity;
         private const int maxCapacity = 256;
         private const int InitialCapacity = 80;
 
@@ -379,7 +379,7 @@ namespace TH.Item
             if (!IsValidSlotIdx(index)) return;
             if (slots[index] is not { } slot) return;
             slot.SetVisibility(IsVisibleByFilter(slot, CurrFilter));
-            OnStoredItemChanged?.Invoke(index);
+            OnSlotChanged?.Invoke(index);
         }
 
         private IGameItemSlot GetSlot(int index)

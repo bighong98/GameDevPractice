@@ -6,6 +6,7 @@ namespace TH.Item
 {
     public interface IPlayerInventory : 
         IGameItemStorage, 
+        IStackableStorage,
         IFilterableStorage, 
         IMutableCapacity, 
         IRearrangeableStorage,

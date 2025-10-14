@@ -7,7 +7,7 @@ namespace TH.Item
     public interface IGameItemStorage
     {
         // delegate event
-        event Action<int> OnStoredItemChanged; // 특정 슬롯 데이터 갱신
+        event Action<int> OnSlotChanged; // 특정 슬롯 데이터 갱신
         event Action OnStorageChanged; // 전체 슬롯 데이터 갱신 
         
         // collection (readonly)
@@ -17,7 +17,6 @@ namespace TH.Item
         // write/store
         bool TryStore(IGameItem item); // 빈슬롯/적절한 슬롯에 보관, 초과분 버림
         bool TryStore(IGameItem item, int index); // 특정 슬롯에 보관
-        bool TryStore(IGameItem item, int amount, out int excess); // 동일한 아이템을 {amount}개 보관, 초과분 존재할 경우 excess로 반환
         
 
         // read/get
