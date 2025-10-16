@@ -15,6 +15,13 @@ MonoBehaviour:
   m_GroupName: Default Local Group
   m_GUID: 3b559008265abd04ba68b9cac872e7db
   m_SerializeEntries:
+  - m_GUID: 74bd640d5d22cca46bd8e0648a556856
+    m_Address: InventoryUI.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad
+    - UI
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a994a00b04a1790409189b10bc867785
     m_Address: PlayerInventoryUI.prefab
     m_ReadOnly: 0

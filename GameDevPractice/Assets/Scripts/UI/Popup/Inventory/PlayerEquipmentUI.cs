@@ -1,20 +1,19 @@
-using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using RPG.UI;
 using TH.Item;
-using TH.Utils;
+using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace TH.UI
 {
-    public class PlayerStorageUI : BaseUI, IPlayerStorageUI, IPointerMoveHandler, IPointerExitHandler, IPointerClickHandler, IBeginDragHandler, IEndDragHandler
+    public class PlayerEquipmentUI : BaseUI, IEquipmentHolderUI, IPointerMoveHandler, IPointerExitHandler, IPointerClickHandler, IBeginDragHandler, IEndDragHandler
     {
-        [SerializeField] private List<InvenSlotUI> slots;
+        [SerializeField] private List<EquipSlotUI> slots;
         IEnumerable IStorageUI.Slots => Slots;
-        public IReadOnlyCollection<IInvenSlotUI> Slots { get { return readOnlySlots ??= slots.AsReadOnly(); } }
-        private IReadOnlyCollection<IInvenSlotUI> readOnlySlots;
+        public IReadOnlyCollection<IEquipmentSlotUI> Slots { get { return readOnlySlots ??= slots.AsReadOnly(); } }
+        private IReadOnlyCollection<IEquipmentSlotUI> readOnlySlots;
         
         public event Action<int> OnSlotHovered;
         public event Action<int> OffSlotHovered;
@@ -22,28 +21,14 @@ namespace TH.UI
         public event Action<int> OnSlotDragged;
         public event Action<int> OffSlotDragged;
 
-        #region Enums
-
-        enum GameObjects
-        {
-            InventoryArea,
-            ItemSlots,
-            DragDropIconHolder,
-        }
-
-        #endregion
-
         protected override void Awake()
         {
             base.Awake();
-            BindObject(typeof(GameObjects));
             
             InitSlotUIs();
         }
-
-        #region Initialization
-
-        private void InitSlotUIs()
+        
+        private void InitSlotUIs() // todo: 실제 장비슬롯에 맞게 수정 필요
         {
             int idx = 0;
             foreach (var slot in slots)
@@ -52,79 +37,66 @@ namespace TH.UI
             }
         }
 
-        #endregion
-        
         #region Draw/Show/Hide Slot (IStorageUI)
-        
-
         public void DrawSlot(int index, object data)
         {
-            Logg.Log($"[PlayerStorageUI] DrawSlot({index}, {data})", Logg.LoggingMode.InProgress);
-            if (!TryGetSlot(index, out IInvenSlotUI slot))
-            {
-                Logg.LogError($"[PlayerStorageUI] DrawSlot({index}) failed to TryGetSlot UI");
-                return;
-            }
+            if (!TryGetSlot(index, out IEquipmentSlotUI slot)) return;
             if (data is not IGameItem { GetItemInfo: { } itemInfo } item)
             {
-                Logg.LogError($"[PlayerStorageUI] DrawSlot({index}) itemInfo or item is invalid");
                 slot.Clear();
                 return;
             }
-            Logg.Log($"[PlayerStorageUI] DrawSlot({index}) trying to set icon and amount", Logg.LoggingMode.InProgress);
             slot.SetIcon(itemInfo.sprite);
-            if (item.GetAmount is {} amount and > 1)
-                slot.SetAmount(amount);
         }
 
         public void ShowSlot(int index)
         {
-            if (!TryGetSlot(index, out IInvenSlotUI slot)) return;
+            if (!TryGetSlot(index, out var slot)) return;
             slot.SetVisibility(true);
         }
 
         public void HideSlot(int index)
         {
-            if (!TryGetSlot(index, out IInvenSlotUI slot)) return;
+            if (!TryGetSlot(index, out var slot)) return;
             slot.SetVisibility(false);
         }
 
         #endregion
         
         #region Highlight (IHighlightableStorageUI)
-
         public void HighlightSlot(int index)
         {
-            if (!TryGetSlot(index, out IInvenSlotUI slot)) return;
+            if (!TryGetSlot(index, out var slot)) return;
             slot.Highlight();
         }
 
         public void HighlightSlot(int index, int highlightType)
         {
-            HighlightSlot(index);
+            if (!TryGetSlot(index, out var slot)) return;
+            slot.Highlight(highlightType);
         }
 
         public void UnHighlightSlot(int index)
         {
-            if (!TryGetSlot(index, out IInvenSlotUI slot)) return;
+            if (!TryGetSlot(index, out var slot)) return;
             slot.UnHighlight();
         }
 
         public void UnHighlightSlot(int index, int highlightType)
         {
-            UnHighlightSlot(index);
+            if (!TryGetSlot(index, out var slot)) return;
+            slot.UnHighlight(highlightType);
         }
 
         #endregion
-
-        #region Helper Methods
+        
+        #region Helper Mehthods
 
         private bool IsValidSlotUIIdx(int index)
         {
             return index >= 0 && index < slots.Count;
         }
-        
-        private bool TryGetSlot(int index, out IInvenSlotUI slot)
+        private bool TryGetSlot(int index, out IEquipmentSlotUI slot)
         {
             if (!IsValidSlotUIIdx(index))
             {
@@ -137,7 +109,7 @@ namespace TH.UI
         }
 
         #endregion
-
+        
         #region Handle User Input
 
         private ISlotUI lastHoveredSlot;
@@ -202,6 +174,7 @@ namespace TH.UI
         }
 
         #endregion
+        
     }
 }
 

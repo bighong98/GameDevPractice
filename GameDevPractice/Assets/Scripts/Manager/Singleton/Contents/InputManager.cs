@@ -119,7 +119,9 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
         if (Input.GetKeyDown(KeyCode.I))
         {
             // UIManager.Instance.ShowPopupUI<InventoryUI>("InventoryUI.prefab");
-            UIManager.Instance.ShowPopupUI<PlayerInventoryUI>("PlayerInventoryUI.prefab");
+            // UIManager.Instance.ShowPopupUI<PlayerInventoryUI>("PlayerInventoryUI.prefab");
+            UIManager.Instance.ShowPopupUI<TH.UI.InventoryUI>("InventoryUI.prefab");
+
         }
     }
 

@@ -20,6 +20,13 @@ namespace TH.Item
         private void Awake()
         {
             FillEquipmentSlots();
+            //todo: 기본 장비가 있다면 장착 -> ITypeDependant
+            //todo: 저장된 착용 장비가 있다면 장착 -> ISavable
+        }
+
+        private void Start()
+        {
+            OnStorageChanged?.Invoke(); // todo: 기본 장비, 저장 장비 착용 로직 추가 후 호출 시점 조정
         }
 
         #region Initialization

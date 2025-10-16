@@ -214,7 +214,7 @@ namespace RPG.UI
 
         #endregion
 
-        protected virtual void Clear() { } // 정리 작업
+        protected virtual void Clear() { } // 정리 작업. PopupUI의 경우 UIManager에 의해 
     }
 }
 

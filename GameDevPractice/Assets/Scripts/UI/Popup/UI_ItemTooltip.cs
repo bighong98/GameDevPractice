@@ -57,12 +57,8 @@ namespace RPG.UI
                 Logg.LogError("itemTooltip: itemData is null");
                 return;
             }
-
-            ShowTooltip();
-            GetTMPText((int)TMPTexts.ItemNameText).SetText(item.GetItemInfo.name);
-            GetTMPText((int)TMPTexts.ItemDescText).SetText(item.GetItemInfo.desc);
-            // GetTMPText((int)TMPTexts.ItemNameText).text = item.GetItemInfo.name;
-            // GetTMPText((int)TMPTexts.ItemDescText).text = item.GetItemInfo.desc;
+            
+            ShowTooltip(item.GetItemInfo.name, item.GetItemInfo.desc);
         }
         
         public void ShowTooltip(IGameItemSlot item)
@@ -72,12 +68,8 @@ namespace RPG.UI
                 Logg.LogError("itemTooltip: itemData is null");
                 return;
             }
-
-            ShowTooltip();
-            GetTMPText((int)TMPTexts.ItemNameText).SetText(item.GetItemInfo.name);
-            GetTMPText((int)TMPTexts.ItemDescText).SetText(item.GetItemInfo.desc);
-            // GetTMPText((int)TMPTexts.ItemNameText).text = item.GetItemInfo.name;
-            // GetTMPText((int)TMPTexts.ItemDescText).text = item.GetItemInfo.desc;
+            
+            ShowTooltip(item.GetItemInfo.name, item.GetItemInfo.desc);
         }
 
         public void ShowTooltip(string itemName, string itemDesc)
@@ -85,8 +77,13 @@ namespace RPG.UI
             ShowTooltip();
             GetTMPText((int)TMPTexts.ItemNameText).SetText(itemName);
             GetTMPText((int)TMPTexts.ItemDescText).SetText(itemDesc);
+            Logg.Log($"[ItemTooltip] ('{itemName}', {itemDesc}", Logg.LoggingMode.Completed);
         }
 
+        public void MoveTooltip(Vector2 pos)
+        {
+            transform.position = pos;
+        }
         public void MoveTooltip(Vector3 pos)
         {
             transform.position = pos;

@@ -65,6 +65,8 @@ namespace TH.Item
             {
                 player = GameObject.FindGameObjectWithTag("Player").GetComponent<CharacterTypeHolder>();
             };
+            
+            OnStorageChanged?.Invoke();
         }
         
         #region Store (Take in)
