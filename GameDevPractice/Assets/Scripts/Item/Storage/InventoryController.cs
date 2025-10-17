@@ -56,6 +56,8 @@ namespace TH.Item
         private void OnDisable()
         {
             pInventory.OnStorageChanged -= RefreshStorageUI;
+
+            Clear();
         }
 
         private void Start()
@@ -66,25 +68,31 @@ namespace TH.Item
                 return;
             }
             
-            ConnectStorageUIEvent(storageUI);
-            ConnectEquipmentUIEvent(equipmentUI);
+            BindStorageUIEvents(storageUI);
+            BindEquipmentUIEvents(equipmentUI);
+            BindButtonEvents();
             RefreshStorageUI();
         }
 
         #region Initialization
 
-        private void ConnectStorageUIEvent(IPlayerStorageUI pStorageUI)
+        private void BindStorageUIEvents(IPlayerStorageUI pStorageUI)
         {
             SubscribeHoverEnterEvent(pStorageUI);
             SubscribeHoverExitEvent(pStorageUI);
             SubscribeClickEvent(pStorageUI);
         }
 
-        private void ConnectEquipmentUIEvent(IEquipmentHolderUI pEquipUI)
+        private void BindEquipmentUIEvents(IEquipmentHolderUI pEquipUI)
         {
             SubscribeHoverEnterEvent(pEquipUI);
             SubscribeHoverExitEvent(pEquipUI);
             SubscribeClickEvent(pEquipUI);
+        }
+
+        private void BindButtonEvents()
+        {
+            pInvenUI.OnExitUICalled += OnExitCalled;
         }
 
         #endregion
@@ -108,7 +116,7 @@ namespace TH.Item
 
         #endregion
 
-        #region Handle Input Event
+        #region Handle Input Event (Slot)
 
         private void OnSlotHovered(IHoverableStorageUI target, int index)
         {
@@ -127,6 +135,7 @@ namespace TH.Item
                 itemTooltip.MoveTooltip(InputManager.Instance.PointerPos); //todo: 가능하면 UI에서 직접 받아오기
                 itemTooltip.ShowTooltip(slot);
             }
+            else itemTooltip.HideTooltip(); // 아이템이 없는 슬롯일 경우 툴팁 비활성화
         }
 
         private void OffSlotHovered(IHoverableStorageUI targetUI, int index)
@@ -135,6 +144,7 @@ namespace TH.Item
                 SetHighlightSlot(lastHovered.Source, lastHovered.Index, false); // 기록된 슬롯도 하이라이트 비활성화
             SetHighlightSlot(targetUI, index, false); // 타겟 슬롯 하이라이트 비활성화
             lastHovered.Clear(); // 호버링 슬롯 기록 초기화
+            itemTooltip.HideTooltip();
         }
 
         private void OnSlotClicked(IClickableStorageUI targetUI, int index)
@@ -142,13 +152,21 @@ namespace TH.Item
             if (GetStorageFromUI(targetUI) is not { } storage) return;
             if (!storage.TryGetItem(index, out var item)) return;
             if (item.GetItemInfo is not { } itemInfo) return;
-            
             //todo: 아이템 상세 툴팁 출력
             if (UIManager.Instance.ShowPopupUI<DetailedItemTooltipUI>() is {} popup)
             {
                 //todo: 팝업 체인 결합
                 //todo: 팝업 정보 등록 
             }
+        }
+
+        #endregion
+
+        #region Handle Input Event (Button)
+
+        private void OnExitCalled()
+        {
+            UIManager.Instance.ClosePopupUI((PopupUI)pInvenUI); // todo: 타입 캐스팅/체크 UIManager에서 처리하도록 변경
         }
 
         #endregion
@@ -195,6 +213,11 @@ namespace TH.Item
             {
                 pEquipHolder = e;
             }
+        }
+
+        private void Clear()
+        {
+            itemTooltip.HideTooltip();
         }
     }
 }

@@ -4,8 +4,8 @@ namespace TH.Item
 {
     public interface IFilterableStorage
     {
-        event Action<InventoryFilterType> OnInventoryFilterChanged;
-        public InventoryFilterType CurrFilter { get; }
+        event Action<InventoryFilterType> OnFilterChanged;
+        public InventoryFilterType CurrentFilter { get; }
         public void SetFilter(InventoryFilterType filter);
     }
 

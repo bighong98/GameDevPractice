@@ -2,10 +2,12 @@ using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using RPG.UI;
 using TH.Item;
 using TH.Utils;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace TH.UI
 {
@@ -59,7 +61,6 @@ namespace TH.UI
 
         public void DrawSlot(int index, object data)
         {
-            Logg.Log($"[PlayerStorageUI] DrawSlot({index}, {data})", Logg.LoggingMode.InProgress);
             if (!TryGetSlot(index, out IInvenSlotUI slot))
             {
                 Logg.LogError($"[PlayerStorageUI] DrawSlot({index}) failed to TryGetSlot UI");
@@ -71,7 +72,6 @@ namespace TH.UI
                 slot.Clear();
                 return;
             }
-            Logg.Log($"[PlayerStorageUI] DrawSlot({index}) trying to set icon and amount", Logg.LoggingMode.InProgress);
             slot.SetIcon(itemInfo.sprite);
             if (item.GetAmount is {} amount and > 1)
                 slot.SetAmount(amount);
@@ -171,10 +171,10 @@ namespace TH.UI
             OffSlotHovered?.Invoke(lastHoveredSlot.Index);
             lastHoveredSlot = null;
         }
-
+        
         public void OnPointerClick(PointerEventData eventData)
         {
-            if (eventData.pointerClick is { } target &&
+            if (eventData.pointerEnter is { } target &&
                 target.TryGetComponent(out ISlotUI slotUI))
             {
                 OnSlotClicked?.Invoke(slotUI.Index);
@@ -183,7 +183,7 @@ namespace TH.UI
         
         public void OnBeginDrag(PointerEventData eventData)
         {
-            if (eventData.pointerPress is { } target
+            if (eventData.pointerEnter is { } target
                 && target.TryGetComponent(out ISlotUI slotUI))
             {
                 OnSlotDragged?.Invoke(slotUI.Index);

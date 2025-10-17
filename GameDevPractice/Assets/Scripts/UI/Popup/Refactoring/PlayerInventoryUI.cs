@@ -98,7 +98,7 @@ namespace TH.Item
         {
             SubscribeInputEvents();
             OnInventoryCapacityChanged(inventory.Capacity);
-            OnFilterChanged(inventory.CurrFilter);
+            OnFilterChanged(inventory.CurrentFilter);
             ConnectDataWithSlotUIs();
         }
 
@@ -269,7 +269,7 @@ namespace TH.Item
 
             inventory.OnStorageChanged += this.OnInventoryUpdated;
             inventory.OnCapacityChanged += this.OnInventoryCapacityChanged;
-            inventory.OnInventoryFilterChanged += this.OnFilterChanged;
+            inventory.OnFilterChanged += this.OnFilterChanged;
         }
 
         private void DisConnectDataWithSlotUIs()
@@ -281,7 +281,7 @@ namespace TH.Item
             
             inventory.OnStorageChanged -= this.OnInventoryUpdated;
             inventory.OnCapacityChanged -= this.OnInventoryCapacityChanged;
-            inventory.OnInventoryFilterChanged -= this.OnFilterChanged;
+            inventory.OnFilterChanged -= this.OnFilterChanged;
         }
         #endregion
 

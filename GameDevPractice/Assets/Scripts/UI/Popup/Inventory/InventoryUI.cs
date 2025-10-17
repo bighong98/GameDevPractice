@@ -14,7 +14,8 @@ namespace TH.UI
 
         public IPlayerStorageUI StorageUI => storageUI;
         public IEquipmentHolderUI EquipmentUI => equipmentUI;
-        public event Action<DragSlotInfo> OnDrag;
+        public event Action<DragSlotInfo> OnDragDrop;
+        public event Action OnExitUICalled;
 
         // drag
         private bool isDragging = false;
@@ -22,7 +23,7 @@ namespace TH.UI
         private int beginDragIdx; // 드래그가 시작된 슬롯의 인덱스
 
         // itemTooltip
-        private UI_ItemTooltip itemTooltip;
+        // private UI_ItemTooltip itemTooltip;
         
         #region Enum
 
@@ -60,8 +61,9 @@ namespace TH.UI
             
             BindObject(typeof(GameObjects));
             BindButton(typeof(Buttons));
+            BindButtonEvents();
             
-            LoadTooltip();
+            // LoadTooltip();
         }
         
         private void Start()
@@ -91,15 +93,15 @@ namespace TH.UI
             }
         }
         
-        private void LoadTooltip()
-        {
-            // 아이템 툴팁 UI 로드
-            if (ResourceManager.Instance.Instantiate("UI_ItemTooltip.prefab", transform) is { } tooltipObj)
-            {
-                itemTooltip = tooltipObj.GetComponent<UI_ItemTooltip>();
-                itemTooltip.HideTooltip();
-            }
-        }
+        // private void LoadTooltip()
+        // {
+        //     // 아이템 툴팁 UI 로드
+        //     if (ResourceManager.Instance.Instantiate("UI_ItemTooltip.prefab", transform) is { } tooltipObj)
+        //     {
+        //         itemTooltip = tooltipObj.GetComponent<UI_ItemTooltip>();
+        //         itemTooltip.HideTooltip();
+        //     }
+        // }
 
         #endregion
         
@@ -136,7 +138,7 @@ namespace TH.UI
             if (!isDragging) return; // 드래그 중이 아닐 경우 중지
             if (beginDragUI == null || beginDragIdx == default) return; // 드래그 시작 슬롯 데이터가 유효하지 않으면 중지
             
-            OnDrag?.Invoke(new DragSlotInfo(beginDragUI, beginDragIdx, sourceUI, index)); // 드래그 발생 이벤트 호출
+            OnDragDrop?.Invoke(new DragSlotInfo(beginDragUI, beginDragIdx, sourceUI, index)); // 드래그 발생 이벤트 호출
             ClearDragState(); // 드래그 플래그 갱신
         }
 
@@ -151,20 +153,31 @@ namespace TH.UI
 
         #region Simple Item Tooltip
 
-        public void MoveTooltip(Vector2 pos)
-        {
-            itemTooltip.MoveTooltip(pos);
-        }
+        // public void MoveTooltip(Vector2 pos)
+        // {
+        //     itemTooltip.MoveTooltip(pos);
+        // }
+        //
+        // public void ShowTooltip(IGameItemSlot slot)
+        // {
+        //     itemTooltip.ShowTooltip(slot);
+        // }
+        //
+        // public void HideTooltip()
+        // {
+        //     itemTooltip.HideTooltip();
+        // }
 
-        public void ShowTooltip(IGameItemSlot slot)
-        {
-            itemTooltip.ShowTooltip(slot);
-        }
+        #endregion
 
-        public void HideTooltip()
+        #region Bind Button Event
+
+        private void BindButtonEvents()
         {
-            itemTooltip.HideTooltip();
+            GetButton((int)Buttons.ExitButton).onClick.AddListener(() => {OnExitUICalled?.Invoke();});
         }
+        
+        
 
         #endregion
         

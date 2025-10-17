@@ -1034,6 +1034,22 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7143690870946367009, guid: 9e56d4d581c83ff49916c8500f79d9cc, type: 3}
+      propertyPath: m_fontSize
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 7143690870946367009, guid: 9e56d4d581c83ff49916c8500f79d9cc, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 6a92fd3b8fe6188468ddd7d978c2ee91, type: 2}
+    - target: {fileID: 7143690870946367009, guid: 9e56d4d581c83ff49916c8500f79d9cc, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 4118353011660254800, guid: 6a92fd3b8fe6188468ddd7d978c2ee91, type: 2}
+    - target: {fileID: 7143690870946367009, guid: 9e56d4d581c83ff49916c8500f79d9cc, type: 3}
+      propertyPath: m_hasFontAssetChanged
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7769862014789445845, guid: 9e56d4d581c83ff49916c8500f79d9cc, type: 3}
       propertyPath: m_Name
       value: TooltipDivideButton

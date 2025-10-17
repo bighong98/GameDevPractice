@@ -14,9 +14,9 @@ namespace TH.Item
         public event Action<int> OnSlotChanged; // 직접 .Invoke() 호출하지 말고 NotifySlotChanged(index) 사용할 것
         public event Action OnStorageChanged;
         public event Action<int> OnCapacityChanged;
-        public event Action<InventoryFilterType> OnInventoryFilterChanged;
+        public event Action<InventoryFilterType> OnFilterChanged;
 
-        public InventoryFilterType CurrFilter { get; private set; } = InventoryFilterType.All;
+        public InventoryFilterType CurrentFilter { get; private set; } = InventoryFilterType.All;
 
         public IReadOnlyCollection<IGameItemSlot> ItemSlots => slots;
         private List<IGameItemSlot> slots = new List<IGameItemSlot>(capacity: maxCapacity);
@@ -380,7 +380,7 @@ namespace TH.Item
         {
             if (!IsValidSlotIdx(index)) return;
             if (slots[index] is not { } slot) return;
-            slot.SetVisibility(IsVisibleByFilter(slot, CurrFilter));
+            slot.SetVisibility(IsVisibleByFilter(slot, CurrentFilter));
             OnSlotChanged?.Invoke(index);
         }
 
@@ -527,8 +527,8 @@ namespace TH.Item
 
         public void SetFilter(InventoryFilterType filter)
         {
-            if (CurrFilter == filter) return;
-            CurrFilter = filter;
+            if (CurrentFilter == filter) return;
+            CurrentFilter = filter;
 
             for (int i = 0; i < capacity; i++)
             {
@@ -536,7 +536,7 @@ namespace TH.Item
                 slot.SetVisibility(IsVisibleByFilter(slot, filter));
             }
             
-            OnInventoryFilterChanged?.Invoke(CurrFilter);
+            OnFilterChanged?.Invoke(CurrentFilter);
         }
 
         
