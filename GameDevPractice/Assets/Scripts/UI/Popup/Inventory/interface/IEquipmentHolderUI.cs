@@ -6,6 +6,7 @@ namespace TH.UI
         IHighlightableStorageUI,
         IHoverableStorageUI,
         IClickableStorageUI,
+        ISubClickableStorageUI,
         IDraggableStorageUI
     {
     

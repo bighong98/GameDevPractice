@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using RPG.UI;
 using TH.Item;
+using TH.Utils;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -18,6 +19,7 @@ namespace TH.UI
         public event Action<int> OnSlotHovered;
         public event Action<int> OffSlotHovered;
         public event Action<int> OnSlotClicked;
+        public event Action<int> OnSlotSubClicked; 
         public event Action<int> OnSlotDragged;
         public event Action<int> OffSlotDragged;
 
@@ -38,7 +40,7 @@ namespace TH.UI
         }
 
         #region Draw/Show/Hide Slot (IStorageUI)
-        public void DrawSlot(int index, object data)
+        public void DrawSlot(int index, IGameItem data)
         {
             if (!TryGetSlot(index, out IEquipmentSlotUI slot)) return;
             if (data is not IGameItem { GetItemInfo: { } itemInfo } item)
@@ -149,7 +151,16 @@ namespace TH.UI
             if (eventData.pointerClick is { } target &&
                 target.TryGetComponent(out ISlotUI slotUI))
             {
-                OnSlotClicked?.Invoke(slotUI.Index);
+                switch (eventData.button)
+                {
+                    case PointerEventData.InputButton.Left when eventData.clickCount > 2:
+                    case PointerEventData.InputButton.Right:
+                        OnSlotSubClicked?.Invoke(slotUI.Index);
+                        break;
+                    default:
+                        OnSlotClicked?.Invoke(slotUI.Index);
+                        break;
+                }
             } 
         }
         

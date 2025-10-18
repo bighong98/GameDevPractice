@@ -1,12 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
+using TH.Item;
 
 namespace TH.UI
 {
     public interface IStorageUI
     { 
         IEnumerable Slots { get; }
-        void DrawSlot(int index, object data);
+        void DrawSlot(int index, IGameItem data);
         void ShowSlot(int index);
         void HideSlot(int index);
     }

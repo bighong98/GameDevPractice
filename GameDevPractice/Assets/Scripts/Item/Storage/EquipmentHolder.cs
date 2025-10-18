@@ -8,6 +8,7 @@ namespace TH.Item
     public class EquipmentHolder : MonoBehaviour, IEquipmentHolder, ISavable
     {
         public event EventHandler<EquipArgs> OnEquipmentChanged;
+        public event Action<IGameItemSlot> OnSlotChanged2;
         public event Action<int> OnSlotChanged;
         public event Action OnStorageChanged;
 
@@ -171,17 +172,6 @@ namespace TH.Item
 
         #endregion
 
-        // todo: Use 매서드 제거 고려 (TryRemove로 장착해제 구현 가능)
-        public bool TryUseItem(int index, object user)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool TryUseItem(int index)
-        {
-            throw new NotImplementedException();
-        }
-
         #region Validation
 
         private bool IsValidSlotIdx(int index)
@@ -209,6 +199,7 @@ namespace TH.Item
         private void NotifySlotChanged(int index)
         {
             OnSlotChanged?.Invoke(index);
+            OnSlotChanged2?.Invoke(equipments[index]);
         }
 
         #endregion

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using RPG.Item;
 using RPG.Saving;
+using TH.Core.Service;
 using TH.Utils;
 using UnityEngine;
 using TH.Resource;
@@ -11,6 +12,7 @@ namespace TH.Item
 {
     public sealed class PlayerInventory : IPlayerInventory, ISavable
     {
+        public event Action<IGameItemSlot> OnSlotChanged2;
         public event Action<int> OnSlotChanged; // 직접 .Invoke() 호출하지 말고 NotifySlotChanged(index) 사용할 것
         public event Action OnStorageChanged;
         public event Action<int> OnCapacityChanged;
@@ -30,10 +32,8 @@ namespace TH.Item
 
         private CharacterTypeHolder player;
         
-
         private int GetEndIdx => Mathf.Min(capacity, slots.Count) - 1; // return value -1 means not initialized or cleared 
         private bool IsValidSlotIdx(int index) => index >= 0 && index <= GetEndIdx;
-        
         
         public PlayerInventory()
         {
@@ -182,13 +182,6 @@ namespace TH.Item
             return false;
         }
 
-        public bool TryGetItem(object key, out IGameItem item)
-        {
-            Logg.LogError($"[{nameof(PlayerInventory)}] object type key not supported");
-            item = null;
-            return false;
-        }
-
         public bool TryGetItemSlot(int index, out IGameItemSlot itemSlot)
         {
             if (IsValidSlotIdx(index) && slots[index] is { IsAccessible: true } slot)
@@ -201,13 +194,6 @@ namespace TH.Item
             return false;
         }
 
-        public bool TryGetItemSlot(object key, out IGameItemSlot itemSlot)
-        {
-            Logg.LogError($"[{nameof(PlayerInventory)}] object type key not supported");
-            itemSlot = null;
-            return false;
-        }
-
         #endregion
 
         #region Remove (Take out)
@@ -217,12 +203,10 @@ namespace TH.Item
             if (!IsValidSlotIdx(index)) return false;
             if (slots[index] is not { IsAccessible: true, HasItem: true } slot) return false;
             
-            return slot.Clear();
-        }
-
-        public bool TryRemoveItem(object key)
-        {
-            throw new NotImplementedException();
+            var result = slot.Clear();
+            if (result) NotifySlotChanged(index);
+            
+            return result;
         }
 
         public bool TryRemoveItem(int index, out IGameItem item)
@@ -233,12 +217,8 @@ namespace TH.Item
             if (!slot.Clear(out var stored)) return false;
 
             item = stored;
+            NotifySlotChanged(index);
             return true;
-        }
-
-        public bool TryRemoveItem(object key, out IGameItem item)
-        {
-            throw new NotImplementedException();
         }
 
         #endregion
@@ -310,7 +290,7 @@ namespace TH.Item
                 Logg.Log($"[PlayerInventory] TryUseItem({index}, {user}) failed because item is null or not usable", Logg.LoggingMode.InProgress);
                 return false;
             }
-
+            
             if (!TryUseItem(uItem, user))
             {
                 // todo: 필요시 실패 사유 전달
@@ -319,21 +299,23 @@ namespace TH.Item
             }
             
             NotifySlotChanged(index); // 아이템 사용 성공 시 변동사항 전달
+            
             return true;
         }
-
+        
         private bool TryUseItem(IUsableItem item, object user)
         {
             switch (item)
             {
-                case EquipmentItem equipment:
+                case IEquipmentItem equipment:
                     //todo: Equipper와 소통 -> 장비 장착/장착해제 시도
+                    
                     break;
                 
                 default:
-                    return item.Use(user);
+                    break;
             }
-
+        
             return true;
         }
         
@@ -382,6 +364,7 @@ namespace TH.Item
             if (slots[index] is not { } slot) return;
             slot.SetVisibility(IsVisibleByFilter(slot, CurrentFilter));
             OnSlotChanged?.Invoke(index);
+            OnSlotChanged2?.Invoke(slots[index]);
         }
 
         private IGameItemSlot GetSlot(int index)

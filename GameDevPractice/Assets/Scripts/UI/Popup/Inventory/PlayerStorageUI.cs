@@ -21,6 +21,7 @@ namespace TH.UI
         public event Action<int> OnSlotHovered;
         public event Action<int> OffSlotHovered;
         public event Action<int> OnSlotClicked;
+        public event Action<int> OnSlotSubClicked;
         public event Action<int> OnSlotDragged;
         public event Action<int> OffSlotDragged;
 
@@ -59,34 +60,29 @@ namespace TH.UI
         #region Draw/Show/Hide Slot (IStorageUI)
         
 
-        public void DrawSlot(int index, object data)
+        public void DrawSlot(int index, IGameItem data)
         {
-            if (!TryGetSlot(index, out IInvenSlotUI slot))
-            {
-                Logg.LogError($"[PlayerStorageUI] DrawSlot({index}) failed to TryGetSlot UI");
-                return;
-            }
+            if (!TryGetSlot(index, out IInvenSlotUI slotUI)) return;
             if (data is not IGameItem { GetItemInfo: { } itemInfo } item)
             {
-                Logg.LogError($"[PlayerStorageUI] DrawSlot({index}) itemInfo or item is invalid");
-                slot.Clear();
+                slotUI.Clear();
                 return;
             }
-            slot.SetIcon(itemInfo.sprite);
+            slotUI.SetIcon(itemInfo.sprite);
             if (item.GetAmount is {} amount and > 1)
-                slot.SetAmount(amount);
+                slotUI.SetAmount(amount);
         }
 
         public void ShowSlot(int index)
         {
-            if (!TryGetSlot(index, out IInvenSlotUI slot)) return;
-            slot.SetVisibility(true);
+            if (!TryGetSlot(index, out IInvenSlotUI slotUI)) return;
+            slotUI.SetVisibility(true);
         }
 
         public void HideSlot(int index)
         {
-            if (!TryGetSlot(index, out IInvenSlotUI slot)) return;
-            slot.SetVisibility(false);
+            if (!TryGetSlot(index, out IInvenSlotUI slotUI)) return;
+            slotUI.SetVisibility(false);
         }
 
         #endregion
@@ -95,8 +91,8 @@ namespace TH.UI
 
         public void HighlightSlot(int index)
         {
-            if (!TryGetSlot(index, out IInvenSlotUI slot)) return;
-            slot.Highlight();
+            if (!TryGetSlot(index, out IInvenSlotUI slotUI)) return;
+            slotUI.Highlight();
         }
 
         public void HighlightSlot(int index, int highlightType)
@@ -106,8 +102,8 @@ namespace TH.UI
 
         public void UnHighlightSlot(int index)
         {
-            if (!TryGetSlot(index, out IInvenSlotUI slot)) return;
-            slot.UnHighlight();
+            if (!TryGetSlot(index, out IInvenSlotUI slotUI)) return;
+            slotUI.UnHighlight();
         }
 
         public void UnHighlightSlot(int index, int highlightType)
@@ -124,15 +120,15 @@ namespace TH.UI
             return index >= 0 && index < slots.Count;
         }
         
-        private bool TryGetSlot(int index, out IInvenSlotUI slot)
+        private bool TryGetSlot(int index, out IInvenSlotUI slotUI)
         {
             if (!IsValidSlotUIIdx(index))
             {
-                slot = null;
+                slotUI = null;
                 return false;
             }
 
-            slot = slots[index];
+            slotUI = slots[index];
             return true;
         }
 
@@ -177,7 +173,17 @@ namespace TH.UI
             if (eventData.pointerEnter is { } target &&
                 target.TryGetComponent(out ISlotUI slotUI))
             {
-                OnSlotClicked?.Invoke(slotUI.Index);
+                switch (eventData.button)
+                {
+                    case PointerEventData.InputButton.Left when eventData.clickCount > 2:
+                    case PointerEventData.InputButton.Right:
+                        OnSlotSubClicked?.Invoke(slotUI.Index);
+                        break;
+                    default:
+                        OnSlotClicked?.Invoke(slotUI.Index);
+                        break;
+                }
+                
             } 
         }
         
@@ -202,6 +208,7 @@ namespace TH.UI
         }
 
         #endregion
+
     }
 }
 

@@ -25,11 +25,14 @@ namespace TH.Item
         private QuestionPopupUI removeConfirmPopup;
 
         private SlotUIInfo<IHoverableStorageUI> lastHovered;
+        
+        private IItemUsageHandler itemUsageHandler;
 
         
         private void Awake()
         {
             pInventory = ServiceLocator.Require<IPlayerInventory>();
+            itemUsageHandler = ServiceLocator.Require<IItemUsageHandler>();
             
             if (!TryGetComponent(out pInvenUI))
             {
@@ -51,12 +54,14 @@ namespace TH.Item
         private void OnEnable()
         {
             pInventory.OnStorageChanged += RefreshStorageUI;
+            pEquipHolder.OnStorageChanged += RefreshEquipmentUI;
         }
 
         private void OnDisable()
         {
             pInventory.OnStorageChanged -= RefreshStorageUI;
-
+            pEquipHolder.OnStorageChanged -= RefreshEquipmentUI;
+            
             Clear();
         }
 
@@ -67,20 +72,27 @@ namespace TH.Item
                 Logg.LogError($"[{nameof(InventoryController)}] failed to get {nameof(IPlayerStorageUI)}, {nameof(IEquipmentHolderUI)} from {nameof(IPlayerInventoryUI)}");
                 return;
             }
+
+            BindStorageEvents(pInventory);
+            BindStorageEvents(pEquipHolder);
             
             BindStorageUIEvents(storageUI);
             BindEquipmentUIEvents(equipmentUI);
             BindButtonEvents();
+            
             RefreshStorageUI();
+            RefreshEquipmentUI();
         }
 
         #region Initialization
 
+        // View(UI) Event Bind
         private void BindStorageUIEvents(IPlayerStorageUI pStorageUI)
         {
             SubscribeHoverEnterEvent(pStorageUI);
             SubscribeHoverExitEvent(pStorageUI);
             SubscribeClickEvent(pStorageUI);
+            SubscribeSubClickEvent(pStorageUI);
         }
 
         private void BindEquipmentUIEvents(IEquipmentHolderUI pEquipUI)
@@ -88,6 +100,7 @@ namespace TH.Item
             SubscribeHoverEnterEvent(pEquipUI);
             SubscribeHoverExitEvent(pEquipUI);
             SubscribeClickEvent(pEquipUI);
+            SubscribeSubClickEvent(pEquipUI);
         }
 
         private void BindButtonEvents()
@@ -95,10 +108,17 @@ namespace TH.Item
             pInvenUI.OnExitUICalled += OnExitCalled;
         }
 
+        // Model(Storage) Event Bind
+        private void BindStorageEvents(IGameItemStorage storage)
+        {
+            SubscribeSlotModifiedEvent(storage);
+        }
+
         #endregion
 
-        #region Subscribe Input Event
+        #region Subscribe Event
 
+        // Input Events (UI - View)
         private void SubscribeHoverEnterEvent(IHoverableStorageUI sourceUI)
         {
             sourceUI.OnSlotHovered += (index) => { OnSlotHovered(sourceUI, index); };
@@ -113,10 +133,33 @@ namespace TH.Item
         {
             sourceUI.OnSlotClicked += (index) => { OnSlotClicked(sourceUI, index); };
         }
+        
+        private void SubscribeSubClickEvent(ISubClickableStorageUI sourceUI)
+        {
+            sourceUI.OnSlotSubClicked += (index) => { OnSlotSubClicked(sourceUI, index); };
+        }
+        
+        // Input Events (Storage - Model)
+
+        private void SubscribeSlotModifiedEvent(IGameItemStorage storage)
+        {
+            storage.OnSlotChanged2 += (slot) => { OnSlotItemChanged(storage, slot); };
+        }
+        #endregion
+
+        #region Handle Storage Event
+
+        private void OnSlotItemChanged(IGameItemStorage storage, IGameItemSlot slot)
+        {
+            if (GetUIFromStorage(storage) is not { } ui) return;
+            if (slot == null) return;
+            
+            ui.DrawSlot(slot.Index, slot.GetItem);
+        }
 
         #endregion
 
-        #region Handle Input Event (Slot)
+        #region Handle Input Event (UI - Slot)
 
         private void OnSlotHovered(IHoverableStorageUI target, int index)
         {
@@ -160,9 +203,34 @@ namespace TH.Item
             }
         }
 
+        private void OnSlotSubClicked(ISubClickableStorageUI targetUI, int index)
+        {
+            if (GetStorageFromUI(targetUI) is not { } storage) return;
+            if (!storage.TryGetItemSlot(index, out var slot)) return;
+            if (slot.GetItemInfo is not {isUsable: true}) return;
+            
+            //todo: GetStorageFromUI 대신 출발, 도착 스토리지 반환하는 매서드 추가
+            IGameItemStorage dest;
+            if (storage == pInventory)
+                dest = pEquipHolder;
+            else dest = pInventory;
+            
+            
+            switch (slot.GetItemInfo.itemType)
+            {
+                case Enums.ItemType.Equipment:
+                    itemUsageHandler.Transfer(storage, dest, slot);
+                    break;
+                
+                default: 
+                    itemUsageHandler.Consume(storage, dest, slot); // todo: 개수 적용
+                    break;
+            } 
+        }
+
         #endregion
 
-        #region Handle Input Event (Button)
+        #region Handle Input Event (UI - Button)
 
         private void OnExitCalled()
         {
@@ -182,6 +250,18 @@ namespace TH.Item
                 }
             }
         }
+        
+        private void RefreshEquipmentUI()
+        {
+            var pEquipUI = pInvenUI.EquipmentUI;
+            foreach (var s in pEquipHolder.ItemSlots)
+            {
+                if (s is { IsVisible: true, HasItem: true, Index: { } index, GetItem: { } item })
+                {
+                    pEquipUI.DrawSlot(index, item);
+                }
+            }
+        }
 
         private void SetHighlightSlot(object source, int index, bool state)
         {
@@ -194,14 +274,16 @@ namespace TH.Item
 
         private IGameItemStorage GetStorageFromUI(object targetUI)
         {
-            if (targetUI == pInvenUI.StorageUI)
-            {
-                return pInventory;
-            }
-            if (targetUI == pInvenUI.EquipmentUI)
-            {
-                return pEquipHolder;
-            }
+            if (targetUI == pInvenUI.StorageUI) return pInventory;
+            if (targetUI == pInvenUI.EquipmentUI) return pEquipHolder;
+            
+            return null;
+        }
+
+        private IStorageUI GetUIFromStorage(object storage)
+        {
+            if (storage == pInventory) return pInvenUI.StorageUI;
+            if (storage == pEquipHolder) return pInvenUI.EquipmentUI;
 
             return null;
         }
