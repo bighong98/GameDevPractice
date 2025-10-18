@@ -2,7 +2,9 @@ using System;
 using RPG.UI;
 using TH.Item;
 using TH.Resource;
+using TH.Utils;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace TH.UI
 {
@@ -127,7 +129,7 @@ namespace TH.UI
         
         private void OnDragBegin(IDraggableStorageUI sourceUI, int index)
         {
-            if (isDragging) return;
+            if (isDragging) return; // 이미 드래그 중인 경우 무시
             isDragging = true;
             beginDragUI = sourceUI;
             beginDragIdx = index;
@@ -136,7 +138,7 @@ namespace TH.UI
         private void OnDragEnd(IDraggableStorageUI sourceUI, int index)
         {
             if (!isDragging) return; // 드래그 중이 아닐 경우 중지
-            if (beginDragUI == null || beginDragIdx == default) return; // 드래그 시작 슬롯 데이터가 유효하지 않으면 중지
+            if (beginDragUI == null) return; // 드래그 시작 슬롯 데이터가 유효하지 않으면 중지
             
             OnDragDrop?.Invoke(new DragSlotInfo(beginDragUI, beginDragIdx, sourceUI, index)); // 드래그 발생 이벤트 호출
             ClearDragState(); // 드래그 플래그 갱신

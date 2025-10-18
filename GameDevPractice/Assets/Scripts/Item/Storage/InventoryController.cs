@@ -80,6 +80,8 @@ namespace TH.Item
             BindEquipmentUIEvents(equipmentUI);
             BindButtonEvents();
             
+            pInvenUI.OnDragDrop += this.OnDragDrop;
+            
             RefreshStorageUI();
             RefreshEquipmentUI();
         }
@@ -226,6 +228,11 @@ namespace TH.Item
                     itemUsageHandler.Consume(storage, dest, slot); // todo: 개수 적용
                     break;
             } 
+        }
+
+        private void OnDragDrop(DragSlotInfo dragSlotInfo)
+        {
+            Logg.Log($"[InventoryController] DragDrop occured ({dragSlotInfo.From}, {dragSlotInfo.To})", Logg.LoggingMode.InProgress);
         }
 
         #endregion

@@ -9,7 +9,7 @@ using UnityEngine.EventSystems;
 
 namespace TH.UI
 {
-    public class PlayerEquipmentUI : BaseUI, IEquipmentHolderUI, IPointerMoveHandler, IPointerExitHandler, IPointerClickHandler, IBeginDragHandler, IEndDragHandler
+    public class PlayerEquipmentUI : BaseUI, IEquipmentHolderUI, IPointerMoveHandler, IPointerExitHandler, IPointerClickHandler, IBeginDragHandler, IEndDragHandler, IDragHandler, IDropHandler
     {
         [SerializeField] private List<EquipSlotUI> slots;
         IEnumerable IStorageUI.Slots => Slots;
@@ -148,7 +148,8 @@ namespace TH.UI
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            if (eventData.pointerClick is { } target &&
+            Logg.Log($"[PlayerEquipmentUI] OnPointerClick '{eventData.pointerEnter}'", Logg.LoggingMode.InProgress);
+            if (eventData.pointerEnter is { } target &&
                 target.TryGetComponent(out ISlotUI slotUI))
             {
                 switch (eventData.button)
@@ -166,18 +167,23 @@ namespace TH.UI
         
         public void OnBeginDrag(PointerEventData eventData)
         {
-            if (eventData.pointerPress is { } target
+            Logg.Log($"[PlayerEquipmentUI] OnBeginDrag invoked", Logg.LoggingMode.InProgress);
+            if (eventData.pointerEnter is { } target
                 && target.TryGetComponent(out ISlotUI slotUI))
             {
+                Logg.Log($"[PlayerEquipmentUI] OnBeginDrag trying to call OnSlotDragged.Invoke({slotUI})", Logg.LoggingMode.InProgress);
                 OnSlotDragged?.Invoke(slotUI.Index);
             }
         }
 
         public void OnEndDrag(PointerEventData eventData)
         {
+            Logg.Log($"[PlayerEquipmentUI] OnEndDrag invoked", Logg.LoggingMode.InProgress);
+            
             if (eventData.pointerEnter is { } target
                 && target.TryGetComponent(out ISlotUI slotUI))
             {
+                Logg.Log($"[PlayerEquipmentUI] OnEndDrag trying to call OffSlotDragged.Invoke({slotUI})", Logg.LoggingMode.InProgress);
                 OffSlotDragged?.Invoke(slotUI.Index);
             }
             else
@@ -186,6 +192,24 @@ namespace TH.UI
 
         #endregion
         
+        public void OnDrop(PointerEventData eventData)
+        {
+            Logg.Log($"[PlayerEquipmentUI] OnEndDrag invoked", Logg.LoggingMode.InProgress);
+
+            if (eventData.pointerEnter is { } target
+                && target.TryGetComponent(out ISlotUI slotUI))
+            {
+                Logg.Log($"[PlayerEquipmentUI] OnEndDrag trying to call OffSlotDragged.Invoke({slotUI})", Logg.LoggingMode.InProgress);
+                OffSlotDragged?.Invoke(slotUI.Index);
+            }
+            else
+                OffSlotDragged?.Invoke(-1); // -1 means drop failed
+        }
+        
+        public void OnDrag(PointerEventData eventData)
+        {
+           
+        }
     }
 }
 
