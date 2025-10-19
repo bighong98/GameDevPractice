@@ -17,6 +17,7 @@ namespace TH.Item
         
         // write/store
         bool TryStore(IGameItem item); // 빈슬롯/적절한 슬롯에 보관, 초과분 버림
+        bool TryStore(IGameItem item, out IGameItemSlot storedSlot); // 빈슬롯/유효 슬롯에 보관 + 보관된 슬롯 참조 반환 
         bool TryStore(IGameItem item, int index); // 특정 슬롯에 보관
         
 

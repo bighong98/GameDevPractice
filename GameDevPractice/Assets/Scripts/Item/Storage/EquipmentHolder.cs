@@ -100,6 +100,19 @@ namespace TH.Item
             return false;
         }
 
+        public bool TryStore(IGameItem item, out IGameItemSlot storedSlot)
+        {
+            if (TryGetValidSlot(item, out int index) && IsValidSlotIdx(index)) // 아이템을 장착할 수 있는 슬롯 인덱스 탐색 + 인덱스 유효성 검사
+            {
+                bool result = TryStore(item, index);
+                storedSlot = result ? equipments[index] : null; // 아이템 저장 성공 시 저장 슬롯 반환
+                return result;
+            }
+
+            storedSlot = null;
+            return false;
+        }
+
         public bool TryStore(IGameItem item, int index)
         {
             if (equipments[index] is {IsAccessible: true, HasItem: false} slot) // 슬롯이 접근 가능하고 비어있는지 확인

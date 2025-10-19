@@ -73,11 +73,32 @@ namespace TH.Item
 
         public bool TryStore(IGameItem item)
         {
-            item = EnsureItemInstanceByType(item);
-            int idx = FindEmptySlotIndex(0);
-            if (idx < 0) return false;
+            // item = EnsureItemInstanceByType(item);
+            // int idx = FindEmptySlotIndex(0);
+            // if (idx < 0) return false;
+            // return TryStore(item, idx);
 
-            return TryStore(item, idx);
+            if (EnsureItemInstanceByType(item) is { } modified &&
+                FindEmptySlotIndex(0) is { } index and >= 0)
+            {
+                return TryStore(modified, index);
+            }
+
+            return false;
+        }
+
+        public bool TryStore(IGameItem item, out IGameItemSlot storedSlot)
+        {
+            if (EnsureItemInstanceByType(item) is { } modified &&
+                FindEmptySlotIndex(0) is { } index and >= 0)
+            {
+                bool result = TryStore(modified, index);
+                storedSlot = result ? slots[index] : null;
+                return result;
+            }
+
+            storedSlot = null;
+            return false;
         }
 
         public bool TryStore(IGameItem item, int index)

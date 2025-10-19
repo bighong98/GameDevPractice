@@ -16,7 +16,9 @@ namespace TH.UI
 
         public IPlayerStorageUI StorageUI => storageUI;
         public IEquipmentHolderUI EquipmentUI => equipmentUI;
+        public event Action<IDraggableStorageUI, int> OnDragStarted;
         public event Action<DragSlotInfo> OnDragDrop;
+
         public event Action OnExitUICalled;
 
         // drag
@@ -133,11 +135,12 @@ namespace TH.UI
             isDragging = true;
             beginDragUI = sourceUI;
             beginDragIdx = index;
+            OnDragStarted?.Invoke(sourceUI, index); // 컨트롤러에게 드래그 가능 여부 확인을 위해 이벤트 호출
         }
 
         private void OnDragEnd(IDraggableStorageUI sourceUI, int index)
         {
-            if (!isDragging) return; // 드래그 중이 아닐 경우 중지
+            if (!isDragging) return; // 드래그 중이 아닐 경우 무시
             if (beginDragUI == null) return; // 드래그 시작 슬롯 데이터가 유효하지 않으면 중지
             
             OnDragDrop?.Invoke(new DragSlotInfo(beginDragUI, beginDragIdx, sourceUI, index)); // 드래그 발생 이벤트 호출
@@ -149,6 +152,16 @@ namespace TH.UI
             isDragging = false;
             beginDragUI = null;
             beginDragIdx = default;
+        }
+        
+        public void AllowDrag()
+        {
+            //todo: 드래그 아이템 고스트 생성
+        }
+
+        public void CancelDrag()
+        {
+            ClearDragState();
         }
 
         #endregion

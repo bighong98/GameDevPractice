@@ -11,7 +11,7 @@ using UnityEngine.UI;
 
 namespace TH.UI
 {
-    public class PlayerStorageUI : BaseUI, IPlayerStorageUI, IPointerMoveHandler, IPointerExitHandler, IPointerClickHandler, IBeginDragHandler, IEndDragHandler, IDragHandler
+    public class PlayerStorageUI : BaseUI, IPlayerStorageUI, IPointerMoveHandler, IPointerExitHandler, IPointerClickHandler, IBeginDragHandler, IEndDragHandler, IDragHandler, IDropHandler
     {
         [SerializeField] private List<InvenSlotUI> slots;
         IEnumerable IStorageUI.Slots => Slots;
@@ -170,7 +170,7 @@ namespace TH.UI
         
         public void OnPointerClick(PointerEventData eventData)
         {
-            Logg.Log($"[PlayerStorageUI] OnPointerClick '{eventData.pointerEnter}'", Logg.LoggingMode.InProgress);
+            Logg.Log($"[PlayerStorageUI] OnPointerClick '{eventData.pointerEnter}'", Logg.LoggingMode.Completed);
             if (eventData.pointerEnter is { } target &&
                 target.TryGetComponent(out ISlotUI slotUI))
             {
@@ -190,25 +190,19 @@ namespace TH.UI
         
         public void OnBeginDrag(PointerEventData eventData)
         {
-            Logg.Log($"[PlayerStorageUI] OnBeginDrag invoked '{eventData.pointerDrag}'", Logg.LoggingMode.InProgress);
+            Logg.Log($"[PlayerStorageUI] OnBeginDrag invoked '{eventData.pointerDrag}'", Logg.LoggingMode.Completed);
 
             if (eventData.pointerEnter is { } target
                 && target.TryGetComponent(out ISlotUI slotUI))
             {
-                Logg.Log($"[PlayerStorageUI] OnBeginDrag trying to call OnSlotDragged.Invoke({slotUI})", Logg.LoggingMode.InProgress);
+                Logg.Log($"[PlayerStorageUI] OnBeginDrag trying to call OnSlotDragged.Invoke({slotUI})", Logg.LoggingMode.Completed);
                 OnSlotDragged?.Invoke(slotUI.Index);
             }
         }
 
         public void OnEndDrag(PointerEventData eventData)
         {
-            if (eventData.pointerEnter is { } target
-                && target.TryGetComponent(out ISlotUI slotUI))
-            {
-                OffSlotDragged?.Invoke(slotUI.Index);
-            }
-            else
-                OffSlotDragged?.Invoke(-1); // -1 means drop failed
+            OnDrop(eventData);
         }
 
         #endregion

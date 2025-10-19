@@ -167,34 +167,25 @@ namespace TH.UI
         
         public void OnBeginDrag(PointerEventData eventData)
         {
-            Logg.Log($"[PlayerEquipmentUI] OnBeginDrag invoked", Logg.LoggingMode.InProgress);
+            Logg.Log($"[PlayerEquipmentUI] OnBeginDrag invoked", Logg.LoggingMode.Completed);
             if (eventData.pointerEnter is { } target
                 && target.TryGetComponent(out ISlotUI slotUI))
             {
-                Logg.Log($"[PlayerEquipmentUI] OnBeginDrag trying to call OnSlotDragged.Invoke({slotUI})", Logg.LoggingMode.InProgress);
+                Logg.Log($"[PlayerEquipmentUI] OnBeginDrag trying to call OnSlotDragged.Invoke({slotUI})", Logg.LoggingMode.Completed);
                 OnSlotDragged?.Invoke(slotUI.Index);
             }
         }
 
         public void OnEndDrag(PointerEventData eventData)
         {
-            Logg.Log($"[PlayerEquipmentUI] OnEndDrag invoked", Logg.LoggingMode.InProgress);
-            
-            if (eventData.pointerEnter is { } target
-                && target.TryGetComponent(out ISlotUI slotUI))
-            {
-                Logg.Log($"[PlayerEquipmentUI] OnEndDrag trying to call OffSlotDragged.Invoke({slotUI})", Logg.LoggingMode.InProgress);
-                OffSlotDragged?.Invoke(slotUI.Index);
-            }
-            else
-                OffSlotDragged?.Invoke(-1); // -1 means drop failed
+            OnDrop(eventData);
         }
 
         #endregion
         
         public void OnDrop(PointerEventData eventData)
         {
-            Logg.Log($"[PlayerEquipmentUI] OnEndDrag invoked", Logg.LoggingMode.InProgress);
+            Logg.Log($"[PlayerEquipmentUI] OnEndDrag invoked", Logg.LoggingMode.Completed);
 
             if (eventData.pointerEnter is { } target
                 && target.TryGetComponent(out ISlotUI slotUI))
@@ -205,7 +196,7 @@ namespace TH.UI
             else
                 OffSlotDragged?.Invoke(-1); // -1 means drop failed
         }
-        
+                
         public void OnDrag(PointerEventData eventData)
         {
            

@@ -79,9 +79,9 @@ namespace TH.Item
             BindStorageUIEvents(storageUI);
             BindEquipmentUIEvents(equipmentUI);
             BindButtonEvents();
-            
-            pInvenUI.OnDragDrop += this.OnDragDrop;
-            
+
+            BindDragDropUIEvents();
+
             RefreshStorageUI();
             RefreshEquipmentUI();
         }
@@ -108,6 +108,12 @@ namespace TH.Item
         private void BindButtonEvents()
         {
             pInvenUI.OnExitUICalled += OnExitCalled;
+        }
+        
+        private void BindDragDropUIEvents()
+        {
+            pInvenUI.OnDragStarted += this.OnDragStarted;
+            pInvenUI.OnDragDrop += this.OnDragDrop;
         }
 
         // Model(Storage) Event Bind
@@ -230,10 +236,46 @@ namespace TH.Item
             } 
         }
 
+        private void OnDragStarted(IDraggableStorageUI sourceUI, int slotIndex)
+        {
+            if (GetStorageFromUI(sourceUI) is not { } storage) // UI로부터 스토리지를 찾을 수 없거나
+            {
+                Logg.LogError($"[InventoryController] OnDragStarted() - failed to find storage from ui {sourceUI}");
+                return;
+            }
+            
+            if (!storage.TryGetItemSlot(slotIndex, out var slot) ||  // 슬롯을 찾을 수 없거나
+                !slot.HasItem) // 해당 슬롯이 비어있다면
+            {
+                pInvenUI.CancelDrag(); // 드래그 취소
+                return;
+            }
+
+            pInvenUI.AllowDrag(); // 드래그 허가 및 UI에게 필요한 시각적 효과 출력 명령
+        }
+
         private void OnDragDrop(DragSlotInfo dragSlotInfo)
         {
-            Logg.Log($"[InventoryController] DragDrop occured ({dragSlotInfo.From}, {dragSlotInfo.To})", Logg.LoggingMode.InProgress);
+            Logg.Log($"[InventoryController] DragDrop occured ({dragSlotInfo.From}, {dragSlotInfo.To})", Logg.LoggingMode.Completed);
+            
+            var from = dragSlotInfo.From;
+            var fromSource = from.source;
+
+            var to = dragSlotInfo.To;
+            var toSource = to.source;
+            
+            if (GetStorageFromUI(fromSource) is not { } fromStorage
+                || !fromStorage.TryGetItemSlot(from.index, out var fromSlot))
+                return;
+            
+            if (GetStorageFromUI(toSource) is not { } toStorage
+                || !toStorage.TryGetItemSlot(to.index, out var toSlot))
+                return;
+            
+            itemUsageHandler.TransferOrSwap(fromStorage, toStorage, fromSlot, toSlot);
         }
+        
+        
 
         #endregion
 
