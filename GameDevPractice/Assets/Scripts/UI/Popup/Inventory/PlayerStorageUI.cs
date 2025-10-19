@@ -171,6 +171,11 @@ namespace TH.UI
         public void OnPointerClick(PointerEventData eventData)
         {
             Logg.Log($"[PlayerStorageUI] OnPointerClick '{eventData.pointerEnter}'", Logg.LoggingMode.Completed);
+            if (eventData.dragging)
+            {
+                Logg.Log($"[PlayerStorageUI] OnPointerClick '{eventData.pointerEnter}' canceled because dragging is true", Logg.LoggingMode.Completed);
+                return;
+            }
             if (eventData.pointerEnter is { } target &&
                 target.TryGetComponent(out ISlotUI slotUI))
             {
