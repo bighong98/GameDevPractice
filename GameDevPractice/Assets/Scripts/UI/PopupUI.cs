@@ -96,6 +96,7 @@ namespace RPG.UI
 
         public virtual void ClosePopupUI()
         {
+            if (Util.IsQuitting) return;
             // 오브젝트 풀에서 관리하고, 풀 반환에 성공했다면 개별 비활성화 취소
             if (IsPooledObject && UIManager.Instance.ClosePopupUI(this)) return; 
             if (gameObject.activeSelf) return; // 이미 비활성화되었다면 취소

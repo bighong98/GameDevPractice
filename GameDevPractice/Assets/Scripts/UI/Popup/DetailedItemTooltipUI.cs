@@ -4,8 +4,23 @@ using UnityEngine.UI;
 using RPG.UI;
 using RPG.Item;
 using TH.Item;
+using TH.UI;
 using TMPro;
 
+namespace TH.UI
+{
+    public struct ButtonInfo
+    {
+        public string ButtonString;
+        public Action ButtonAction;
+
+        public ButtonInfo(string btnString, Action btnAction)
+        {
+            ButtonString = btnString;
+            ButtonAction = btnAction;
+        }
+    }
+}
 
 public class DetailedItemTooltipUI : PopupUI
 {
@@ -77,6 +92,20 @@ public class DetailedItemTooltipUI : PopupUI
         
         return true;
     }
+
+    public void SetTooltip(IGameItem item, ButtonInfo removeButton, ButtonInfo useButton, ButtonInfo divideButton)
+    {
+        if (item is not { GetAmount: > 0, GetItemInfo: { } itemInfo } ) return;
+        
+        if (GetImage((int)Images.ItemIconImage) is {} iconImage)
+            iconImage.sprite = itemInfo.sprite;
+        GetTMPText((int)TMPTexts.ItemNameText)?.SetText(itemInfo.nameString);
+        GetTMPText((int)TMPTexts.ItemDescText)?.SetText(itemInfo.desc);
+        
+        SetTooltipButton(Buttons.TooltipRemoveButton, removeButton);
+        SetTooltipButton(Buttons.TooltipUseButton, useButton);
+        SetTooltipButton(Buttons.TooltipDivideButton, divideButton);
+    }
     
     public bool SetTooltip(IGameItem item, ItemSlotBaseUI slotUI, Action removeAction = null, Action useAction = null, Action divideAction = null)
     {
@@ -122,6 +151,32 @@ public class DetailedItemTooltipUI : PopupUI
                 afterButtonSelectedTask?.Invoke();
             });
         }
+    }
+    
+    private void SetTooltipButton(Buttons buttonType, ButtonInfo buttonInfo, Action afterButtonSelectedTask = null)
+    {
+        if (GetButton((int)buttonType) is not { } button) return;
+
+        var buttonAction = buttonInfo.ButtonAction;
+        var buttonString = buttonInfo.ButtonString;
+        
+        bool buttonEnabled = buttonAction != null;
+        button.gameObject.SetActive(buttonEnabled);
+
+        if (!buttonEnabled) return;
+        
+        if (!string.IsNullOrEmpty(buttonString) && 
+            Util.FindChild<TextMeshProUGUI>(button.gameObject, "text", true) is {} btnStr)
+        {
+            btnStr.SetText(buttonString);
+        }
+            
+        button.onClick.AddListener(() =>
+        {
+            if (PopupCTS?.Token.IsCancellationRequested ?? true) return;
+            buttonAction?.Invoke();
+            afterButtonSelectedTask?.Invoke();
+        });
     }
 
     private static string GetUseButtonText(ItemSlotBaseUI slotUI, Enums.ItemType itemType)

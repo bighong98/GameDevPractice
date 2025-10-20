@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using RPG.Control;
 using RPG.UI;
 using TH.Core.Service;
@@ -121,6 +122,15 @@ namespace TH.Item
         {
             SubscribeSlotModifiedEvent(storage);
         }
+        
+        private void RenewPlayerReference()
+        {
+            if (FindFirstObjectByType<PlayerController>() is {} player 
+                && player.TryGetComponent(out IEquipmentHolder e))
+            {
+                pEquipHolder = e;
+            }
+        }
 
         #endregion
 
@@ -201,14 +211,9 @@ namespace TH.Item
         private void OnSlotClicked(IClickableStorageUI targetUI, int index)
         {
             if (GetStorageFromUI(targetUI) is not { } storage) return;
-            if (!storage.TryGetItem(index, out var item)) return;
-            if (item.GetItemInfo is not { } itemInfo) return;
-            //todo: 아이템 상세 툴팁 출력
-            if (UIManager.Instance.ShowPopupUI<DetailedItemTooltipUI>() is {} popup)
-            {
-                //todo: 팝업 체인 결합
-                //todo: 팝업 정보 등록 
-            }
+            if (!storage.TryGetItemSlot(index, out var slot)) return;
+            
+            ShowDetailedTooltip(storage, slot);
         }
 
         private void OnSlotSubClicked(ISubClickableStorageUI targetUI, int index)
@@ -289,6 +294,8 @@ namespace TH.Item
 
         #endregion
 
+        #region Control UI
+
         private void RefreshStorageUI()
         {
             var pStorageUI = pInvenUI.StorageUI;
@@ -322,6 +329,10 @@ namespace TH.Item
             else highUI.UnHighlightSlot(index);
         }
 
+        #endregion
+
+        #region Helper Method
+
         private IGameItemStorage GetStorageFromUI(object targetUI)
         {
             if (targetUI == pInvenUI.StorageUI) return pInventory;
@@ -338,18 +349,103 @@ namespace TH.Item
             return null;
         }
 
-        private void RenewPlayerReference()
+        #endregion
+
+        #region Sub Popup
+
+        private void ShowDetailedTooltip(IGameItemStorage storage, IGameItemSlot slot)
         {
-            if (FindFirstObjectByType<PlayerController>() is {} player 
-                && player.TryGetComponent(out IEquipmentHolder e))
-            {
-                pEquipHolder = e;
-            }
+            if (slot is not { IsAccessible: true, HasItem: true, GetItem: { } item, GetItemInfo: {} itemInfo}) return;
+            
+            var currSlot = slot; // 클로저 생성
+            var slotCTS = AddNewItemModifyProgress(currSlot);
+
+            if (UIManager.Instance.ShowPopupUI<DetailedItemTooltipUI>() is not { } popup) return;
+            
+            popup.ChainPopupCTS(slotCTS.Token);
+            popup.SetTooltip(
+                item: item,
+                removeButton: new ButtonInfo(null,
+                    itemInfo.itemType == Enums.ItemType.Special ? null : () => { storage.TryRemoveItem(slot.Index); }),
+                useButton: new ButtonInfo(GetUseButtonText(storage, itemInfo),
+                    itemInfo.isUsable ? () =>
+                    {
+                        //todo: 사용
+                        if (popup is {} validPopup) validPopup.ClosePopupUI();
+                    } : null
+                ),
+                divideButton: new ButtonInfo() //todo: 분리 기능 추가
+            );
         }
 
+        private const string DefaultRemoveText = "버리기";
+        private const string DefaultConsumeText = "사용";
+        private const string DefaultEquipText = "장착";
+        private const string DefaultUnEquipText = "장착해제";
+        private const string DefaultDivideText = "개수 분리";
+
+        private string GetUseButtonText(IGameItemStorage storage, ItemTypeSO itemInfo)
+        {
+            if (storage is IEquipmentHolder)
+                return DefaultUnEquipText;
+            if (itemInfo.itemType == Enums.ItemType.Equipment)
+                return DefaultEquipText;
+            return DefaultConsumeText;
+        }
+        
+        #endregion
+        
+        #region Sub Popup CTS
+        
+        // 현재 유저가 상호작용 중인 (상세 팝업 호출, 아이템 버리기 팝업 호출 등) 작업 목록 <슬롯, CTS> 
+        private readonly Dictionary<IGameItemSlot, CancellationTokenSource> progressingSlots = new ();
+
+        private CancellationTokenSource AddNewItemModifyProgress(IGameItemSlot slot)
+        {
+            Logg.Log($"{nameof(AddNewItemModifyProgress)}: {slot}", Logg.LoggingMode.InProgress);
+            if (progressingSlots.TryGetValue(slot, out var cts) &&
+                !(cts?.IsCancellationRequested ?? true))
+            {
+                return cts;
+            }
+
+            var newCTS = new CancellationTokenSource();
+            progressingSlots[slot] = newCTS;
+
+            return newCTS;
+        }
+        
+        private void CancelModifiedSlotProgress(IGameItemSlot slot)
+        {
+            if (slot == null) return;
+            if (!progressingSlots.TryGetValue(slot, out var slotCTS)) return;
+            
+            ClearCTS(slotCTS); // Cancel and Dispose
+            progressingSlots.Remove(slot);
+        }
+
+        private void CancelAllSlotProgress()
+        {
+            if (progressingSlots.Count == 0) return;
+            foreach (var cts in progressingSlots.Values)
+            {
+                ClearCTS(cts);
+            }
+        }
+        
+        private void ClearCTS(CancellationTokenSource tokenSource)
+        {
+            if (!tokenSource?.IsCancellationRequested ?? false)
+                tokenSource.Cancel();
+            tokenSource?.Dispose();
+        }
+        
+        #endregion
+        
         private void Clear()
         {
             itemTooltip.HideTooltip();
+            CancelAllSlotProgress();
         }
     }
 }
