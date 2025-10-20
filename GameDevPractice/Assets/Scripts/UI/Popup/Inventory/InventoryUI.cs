@@ -18,6 +18,7 @@ namespace TH.UI
 
         public IPlayerStorageUI StorageUI => storageUI;
         public IEquipmentHolderUI EquipmentUI => equipmentUI;
+        
         public event Action<IDraggableStorageUI, int> OnDragStarted;
         public event Action<DragSlotInfo> OnDragDrop;
         public event Action OnExitUICalled;
@@ -29,6 +30,7 @@ namespace TH.UI
         private bool isDragging = false;
         private IDraggableStorageUI beginDragSourceUI; // 드래그가 시작된 슬롯의 소속
         private int beginDragIdx; // 드래그가 시작된 슬롯의 인덱스
+        
         [SerializeField] private Transform dragDropGhost;
         private Image ghostImage;
         
