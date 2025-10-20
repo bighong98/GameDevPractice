@@ -9,7 +9,7 @@ using UnityEngine.EventSystems;
 
 namespace TH.UI
 {
-    public class PlayerEquipmentUI : BaseUI, IEquipmentHolderUI, IPointerMoveHandler, IPointerExitHandler, IPointerClickHandler, IBeginDragHandler, IEndDragHandler, IDragHandler, IDropHandler
+    public class PlayerEquipmentUI : BaseUI, IEquipmentHolderUI, IPointerMoveHandler, IPointerExitHandler, IBeginDragHandler, IEndDragHandler, IDragHandler, IDropHandler, IPointerDownHandler, IPointerUpHandler
     {
         [SerializeField] private List<EquipSlotUI> slots;
         IEnumerable IStorageUI.Slots => Slots;
@@ -148,7 +148,7 @@ namespace TH.UI
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            Logg.Log($"[PlayerEquipmentUI] OnPointerClick '{eventData.pointerEnter}'", Logg.LoggingMode.Completed);
+            Logg.Log($"[PlayerEquipmentUI] OnPointerClick '{eventData.pointerEnter}'", Logg.LoggingMode.InProgress);
             if (eventData.dragging)
             {
                 Logg.Log($"[PlayerEquipmentUI] OnPointerClick '{eventData.pointerEnter}' canceled because dragging is true", Logg.LoggingMode.Completed);
@@ -195,16 +195,26 @@ namespace TH.UI
             if (eventData.pointerEnter is { } target
                 && target.TryGetComponent(out ISlotUI slotUI))
             {
-                Logg.Log($"[PlayerEquipmentUI] OnEndDrag trying to call OffSlotDragged.Invoke({slotUI})", Logg.LoggingMode.InProgress);
+                Logg.Log($"[PlayerEquipmentUI] OnEndDrag trying to call OffSlotDragged.Invoke({slotUI})", Logg.LoggingMode.Completed);
                 OffSlotDragged?.Invoke(slotUI.Index);
             }
             else
                 OffSlotDragged?.Invoke(-1); // -1 means drop failed
         }
                 
-        public void OnDrag(PointerEventData eventData)
+        public void OnDrag(PointerEventData eventData) { }
+
+        private GameObject lastPointerDown;
+        public void OnPointerDown(PointerEventData eventData)
         {
-           
+            lastPointerDown = eventData.pointerEnter;
+        }
+
+        public void OnPointerUp(PointerEventData eventData)
+        {
+            if (lastPointerDown != eventData.pointerEnter) return;
+            
+            OnPointerClick(eventData);
         }
     }
 }

@@ -251,7 +251,7 @@ namespace TH.Item
                 return;
             }
 
-            pInvenUI.AllowDrag(); // 드래그 허가 및 UI에게 필요한 시각적 효과 출력 명령
+            pInvenUI.AllowDrag(slot.GetItemInfo.sprite); // 드래그 허가 및 UI에게 필요한 시각적 효과 출력 명령
         }
 
         private void OnDragDrop(DragSlotInfo dragSlotInfo)
@@ -272,6 +272,7 @@ namespace TH.Item
                 || !toStorage.TryGetItemSlot(to.index, out var toSlot))
                 return;
             
+            pInvenUI.CancelDrag();
             itemUsageHandler.TransferOrSwap(fromStorage, toStorage, fromSlot, toSlot);
         }
         

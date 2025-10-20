@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
 using RPG.UI;
 using TH.Item;
 using TH.Resource;
 using TH.Utils;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace TH.UI
 {
@@ -18,16 +20,17 @@ namespace TH.UI
         public IEquipmentHolderUI EquipmentUI => equipmentUI;
         public event Action<IDraggableStorageUI, int> OnDragStarted;
         public event Action<DragSlotInfo> OnDragDrop;
-
         public event Action OnExitUICalled;
+
+        private ScrollRect scroll;
+        private ICustomScrollRectHandler scrollDragHandler;
 
         // drag
         private bool isDragging = false;
-        private IDraggableStorageUI beginDragUI; // 드래그가 시작된 슬롯의 소속
+        private IDraggableStorageUI beginDragSourceUI; // 드래그가 시작된 슬롯의 소속
         private int beginDragIdx; // 드래그가 시작된 슬롯의 인덱스
-
-        // itemTooltip
-        // private UI_ItemTooltip itemTooltip;
+        [SerializeField] private Transform dragDropGhost;
+        private Image ghostImage;
         
         #region Enum
 
@@ -38,8 +41,6 @@ namespace TH.UI
             InventoryArea,
             ItemSlots,
             DragDropIconHolder,
-            
-            PopupArea,
         }
 
         enum Buttons
@@ -66,13 +67,24 @@ namespace TH.UI
             BindObject(typeof(GameObjects));
             BindButton(typeof(Buttons));
             BindButtonEvents();
-            
-            // LoadTooltip();
+
+            if (GetObject((int)GameObjects.InventoryArea).TryGetComponent<ScrollRect>(out scroll))
+            {
+                scrollDragHandler = (ICustomScrollRectHandler)scroll;
+            }
+            ghostImage = dragDropGhost.GetComponent<Image>();
         }
         
         private void Start()
         {
             SubscribeDragEvents();
+        }
+
+        private void LateUpdate()
+        {
+            if (!isDragging) return;
+
+            dragDropGhost.position = InputManager.Instance.PointerPos;
         }
 
         #region Initialization
@@ -96,16 +108,6 @@ namespace TH.UI
                 equipmentUI = (PlayerEquipmentUI)pEquipmentUI;
             }
         }
-        
-        // private void LoadTooltip()
-        // {
-        //     // 아이템 툴팁 UI 로드
-        //     if (ResourceManager.Instance.Instantiate("UI_ItemTooltip.prefab", transform) is { } tooltipObj)
-        //     {
-        //         itemTooltip = tooltipObj.GetComponent<UI_ItemTooltip>();
-        //         itemTooltip.HideTooltip();
-        //     }
-        // }
 
         #endregion
         
@@ -132,56 +134,49 @@ namespace TH.UI
         private void OnDragBegin(IDraggableStorageUI sourceUI, int index)
         {
             if (isDragging) return; // 이미 드래그 중인 경우 무시
-            isDragging = true;
-            beginDragUI = sourceUI;
-            beginDragIdx = index;
+
+            SetDragState(sourceUI, index);
             OnDragStarted?.Invoke(sourceUI, index); // 컨트롤러에게 드래그 가능 여부 확인을 위해 이벤트 호출
         }
 
         private void OnDragEnd(IDraggableStorageUI sourceUI, int index)
         {
             if (!isDragging) return; // 드래그 중이 아닐 경우 무시
-            if (beginDragUI == null) return; // 드래그 시작 슬롯 데이터가 유효하지 않으면 중지
+            if (beginDragSourceUI == null) return; // 드래그 시작 슬롯 데이터가 유효하지 않으면 중지
             
-            OnDragDrop?.Invoke(new DragSlotInfo(beginDragUI, beginDragIdx, sourceUI, index)); // 드래그 발생 이벤트 호출
-            ClearDragState(); // 드래그 플래그 갱신
+            OnDragDrop?.Invoke(new DragSlotInfo(beginDragSourceUI, beginDragIdx, sourceUI, index)); // 드래그 발생 이벤트 호출
+            ResetDragState(); // 드래그 플래그 갱신
         }
 
-        private void ClearDragState()
+        private void SetDragState(IDraggableStorageUI sourceUI, int index)
         {
-            isDragging = false;
-            beginDragUI = null;
-            beginDragIdx = default;
+            isDragging = true;
+            beginDragSourceUI = sourceUI;
+            beginDragIdx = index;
+            scrollDragHandler?.SetDragInteractable(false);
         }
         
-        public void AllowDrag()
+        private void ResetDragState()
         {
-            //todo: 드래그 아이템 고스트 생성
+            isDragging = false;
+            beginDragSourceUI = null;
+            beginDragIdx = default;
+            scrollDragHandler?.SetDragInteractable(true);
+        }
+        
+        public void AllowDrag(Sprite sprite)
+        {
+            Logg.Log($"[InventoryUI] AllowDrag invoked", Logg.LoggingMode.InProgress);
+            
+            ghostImage.sprite = sprite;
+            ghostImage.enabled = true;
         }
 
         public void CancelDrag()
         {
-            ClearDragState();
+            ResetDragState();
+            ghostImage.enabled = false;
         }
-
-        #endregion
-
-        #region Simple Item Tooltip
-
-        // public void MoveTooltip(Vector2 pos)
-        // {
-        //     itemTooltip.MoveTooltip(pos);
-        // }
-        //
-        // public void ShowTooltip(IGameItemSlot slot)
-        // {
-        //     itemTooltip.ShowTooltip(slot);
-        // }
-        //
-        // public void HideTooltip()
-        // {
-        //     itemTooltip.HideTooltip();
-        // }
 
         #endregion
 
@@ -192,14 +187,13 @@ namespace TH.UI
             GetButton((int)Buttons.ExitButton).onClick.AddListener(() => {OnExitUICalled?.Invoke();});
         }
         
-        
 
         #endregion
         
         protected override void Clear()
         {
             base.Clear();
-            ClearDragState();
+            ResetDragState();
         }
 
         public override void OnPopupClosed()

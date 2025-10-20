@@ -11,7 +11,7 @@ using UnityEngine.UI;
 
 namespace TH.UI
 {
-    public class PlayerStorageUI : BaseUI, IPlayerStorageUI, IPointerMoveHandler, IPointerExitHandler, IPointerClickHandler, IBeginDragHandler, IEndDragHandler, IDragHandler, IDropHandler
+    public class PlayerStorageUI : BaseUI, IPlayerStorageUI, IPointerMoveHandler, IPointerExitHandler, IBeginDragHandler, IEndDragHandler, IDragHandler, IDropHandler, IPointerDownHandler, IPointerUpHandler
     {
         [SerializeField] private List<InvenSlotUI> slots;
         IEnumerable IStorageUI.Slots => Slots;
@@ -226,6 +226,19 @@ namespace TH.UI
         public void OnDrag(PointerEventData eventData)
         {
             
+        }
+
+        private GameObject lastPointerDown;
+        public void OnPointerDown(PointerEventData eventData)
+        {
+            lastPointerDown = eventData.pointerEnter;
+        }
+
+        public void OnPointerUp(PointerEventData eventData)
+        {
+            if (lastPointerDown != eventData.pointerEnter) return;
+            
+            OnPointerClick(eventData);
         }
     }
 }
