@@ -26,7 +26,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 498451220464002147, guid: 778cb8db32d7188459c167c91fc59635, type: 3}
       propertyPath: m_fontSizeMin
-      value: 16
+      value: 12
       objectReference: {fileID: 0}
     - target: {fileID: 498451220464002147, guid: 778cb8db32d7188459c167c91fc59635, type: 3}
       propertyPath: m_sharedMaterial

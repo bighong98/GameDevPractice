@@ -53,7 +53,7 @@ namespace TH.Item
              
                 foreach (var item in testData.items)
                 { 
-                    Logg.Log($"Trying to add {item.GetItemInfo.nameString}", Logg.LoggingMode.InProgress);
+                    Logg.Log($"Trying to add {item.GetItemInfo.nameString}", Logg.LoggingMode.Completed);
                     if (!TryStore(EnsureItemInstanceByType(item.GetItemInfo, item.GetAmount)))
                     {
                         Logg.Log($"[PlayerInventory] failed to add test data item '{item}'");
@@ -73,11 +73,6 @@ namespace TH.Item
 
         public bool TryStore(IGameItem item)
         {
-            // item = EnsureItemInstanceByType(item);
-            // int idx = FindEmptySlotIndex(0);
-            // if (idx < 0) return false;
-            // return TryStore(item, idx);
-
             if (EnsureItemInstanceByType(item) is { } modified &&
                 FindEmptySlotIndex(0) is { } index and >= 0)
             {
@@ -433,10 +428,33 @@ namespace TH.Item
         public bool SetCapacity(int capa, bool byForce = false)
         {
             if (capa > maxCapacity || capa == capacity) return false; // 현재 capacity와 동일하거나 최대 capacity를 초과하면 false
+
+            if (capa > capacity) ExpandCapacity(capa);
+            else ShrinkCapacity(capa);
             
             capacity = capa;
             OnCapacityChanged?.Invoke(capa);
             return true;
+        }
+
+        private void ShrinkCapacity(int capa)
+        {
+            for (int i = capa; i < capacity; i++)
+            {
+                if (GetSlot(i) is not { } slot) continue;
+                slot.SetVisibility(false);
+                slot.SetAccessibility(false);
+            }
+        }
+
+        private void ExpandCapacity(int capa)
+        {
+            for (int i = capacity; i < capa; i++)
+            {
+                if (GetSlot(i) is not { } slot) continue;
+                slot.SetVisibility(true);
+                slot.SetAccessibility(true);
+            }
         }
 
         #endregion

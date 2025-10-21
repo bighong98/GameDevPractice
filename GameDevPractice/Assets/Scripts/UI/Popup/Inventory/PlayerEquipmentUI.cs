@@ -42,25 +42,31 @@ namespace TH.UI
         #region Draw/Show/Hide Slot (IStorageUI)
         public void DrawSlot(int index, IGameItem data)
         {
-            if (!TryGetSlot(index, out IEquipmentSlotUI slot)) return;
+            if (!TryGetSlot(index, out var slotUI)) return;
             if (data is not IGameItem { GetItemInfo: { } itemInfo } item)
             {
-                slot.Clear();
+                slotUI.Clear();
                 return;
             }
-            slot.SetIcon(itemInfo.sprite);
+            slotUI.SetIcon(itemInfo.sprite);
+        }
+        
+        public void CleanSlot(int index)
+        {
+            if (!TryGetSlot(index, out var slotUI)) return;
+            slotUI.Clear();
         }
 
         public void ShowSlot(int index)
         {
-            if (!TryGetSlot(index, out var slot)) return;
-            slot.SetVisibility(true);
+            if (!TryGetSlot(index, out var slotUI)) return;
+            slotUI.SetVisibility(true);
         }
 
         public void HideSlot(int index)
         {
-            if (!TryGetSlot(index, out var slot)) return;
-            slot.SetVisibility(false);
+            if (!TryGetSlot(index, out var slotUI)) return;
+            slotUI.SetVisibility(false);
         }
 
         #endregion
@@ -68,26 +74,26 @@ namespace TH.UI
         #region Highlight (IHighlightableStorageUI)
         public void HighlightSlot(int index)
         {
-            if (!TryGetSlot(index, out var slot)) return;
-            slot.Highlight();
+            if (!TryGetSlot(index, out var slotUI)) return;
+            slotUI.Highlight();
         }
 
         public void HighlightSlot(int index, int highlightType)
         {
-            if (!TryGetSlot(index, out var slot)) return;
-            slot.Highlight(highlightType);
+            if (!TryGetSlot(index, out var slotUI)) return;
+            slotUI.Highlight(highlightType);
         }
 
         public void UnHighlightSlot(int index)
         {
-            if (!TryGetSlot(index, out var slot)) return;
-            slot.UnHighlight();
+            if (!TryGetSlot(index, out var slotUI)) return;
+            slotUI.UnHighlight();
         }
 
         public void UnHighlightSlot(int index, int highlightType)
         {
-            if (!TryGetSlot(index, out var slot)) return;
-            slot.UnHighlight(highlightType);
+            if (!TryGetSlot(index, out var slotUI)) return;
+            slotUI.UnHighlight(highlightType);
         }
 
         #endregion

@@ -97,7 +97,7 @@ namespace TH.Item
         private void OnEnable()
         {
             SubscribeInputEvents();
-            OnInventoryCapacityChanged(inventory.Capacity);
+            OnInventoryCapacityChanged((inventory as IGameItemStorage).Capacity);
             OnFilterChanged(inventory.CurrentFilter);
             ConnectDataWithSlotUIs();
         }
@@ -166,7 +166,7 @@ namespace TH.Item
         private void InitializeSlotUIs()
         {
             int slotNum = slots.Count;
-            int slotCap = inventory.Capacity;
+            int slotCap = (inventory as IGameItemStorage).Capacity;
 
             // 아이템 슬롯 UI 오브젝트 풀 생성
             if (ResourceManager.Instance.Load<GameObject>("ItemSlotUI.prefab") is { } loadedSlotUI)
@@ -175,7 +175,7 @@ namespace TH.Item
                 slotUIPool = PoolManager.Instance.GetPool(
                     itemSlotUIPrefab,
                     GetObject((int)GameObjects.ItemSlots).transform,
-                    capacity: inventory.Capacity,
+                    capacity: slotCap,
                     maxSize: inventory.MaxCapacity,
                     registerPool: false);
             }

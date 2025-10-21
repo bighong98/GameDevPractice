@@ -8,9 +8,15 @@ namespace TH.UI
         IHoverableStorageUI,
         IClickableStorageUI,
         ISubClickableStorageUI,
-        IDraggableStorageUI
+        IDraggableStorageUI,
+        IMutableCapacityStorageUI
     {
     
+    }
+
+    public interface IMutableCapacityStorageUI
+    {
+        void SetCapacity(int capa);
     }
 }
 

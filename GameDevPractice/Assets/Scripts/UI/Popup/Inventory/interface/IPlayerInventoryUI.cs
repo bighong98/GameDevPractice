@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace TH.UI
 {
-    public interface IPlayerInventoryUI
+    public interface IPlayerInventoryUI : IFilterableStorageUI
     {
         IPlayerStorageUI StorageUI { get; }
         IEquipmentHolderUI EquipmentUI { get; }
@@ -13,10 +13,11 @@ namespace TH.UI
         public void AllowDrag(Sprite sprite);
         public void CancelDrag();
         event Action OnExitUICalled; // 팝업 닫기 요청 발생
-        // 아이템 툴팁 관련 매서드
-        // void MoveTooltip(Vector2 pos);
-        // void ShowTooltip(IGameItemSlot slot);
-        // void HideTooltip();
+    }
+
+    public interface IFilterableStorageUI
+    {
+        event Action<InventoryFilterType> OnFilterButtonPressed;
     }
 }
 

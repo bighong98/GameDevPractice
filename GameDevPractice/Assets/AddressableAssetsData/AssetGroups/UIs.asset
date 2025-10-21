@@ -29,8 +29,8 @@ MonoBehaviour:
     - PreLoad
     - UI
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 24bacd3c14539a542a988524e7d33efa
-    m_Address: InventoryUI.prefab1
+  - m_GUID: 74bd640d5d22cca46bd8e0648a556856
+    m_Address: InventoryUI.prefab
     m_ReadOnly: 0
     m_SerializedLabels:
     - PreLoad
@@ -45,6 +45,13 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 92c94e40c2f05a543bdf17eb37b930f5
     m_Address: QuestionPopupUI.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad
+    - UI
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c91010d41f187134caba9eec03a0960d
+    m_Address: InvenSlotUI
     m_ReadOnly: 0
     m_SerializedLabels:
     - PreLoad

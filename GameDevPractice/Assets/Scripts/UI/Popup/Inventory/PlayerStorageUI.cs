@@ -2,12 +2,13 @@ using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Text;
 using RPG.UI;
+using TH.Core.Pool;
 using TH.Item;
+using TH.Resource;
 using TH.Utils;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
+using UnityEngine.Pool;
 
 namespace TH.UI
 {
@@ -24,6 +25,9 @@ namespace TH.UI
         public event Action<int> OnSlotSubClicked;
         public event Action<int> OnSlotDragged;
         public event Action<int> OffSlotDragged;
+
+        private GameObject slotUIPrefab;
+        private ObjectPool<IPoolObject> slotUIPool;
 
         #region Enums
 
@@ -42,6 +46,7 @@ namespace TH.UI
             BindObject(typeof(GameObjects));
             
             InitSlotUIs();
+            InitSlotUIPool();
         }
 
         #region Initialization
@@ -55,15 +60,33 @@ namespace TH.UI
             }
         }
 
+        private const int DefaultSlotUIPoolCapacity = 100;
+        private const int DefaultSlotUIPoolMax = 200;
+
+        private void InitSlotUIPool()
+        {
+            ResourceManager.Instance.ReserveOperation(() => {
+                if (ResourceManager.Instance.Load<GameObject>("InvenSlotUI")
+                    is not { } loadedSlotUI) return;
+
+                slotUIPrefab = loadedSlotUI;
+                slotUIPool = PoolManager.Instance.GetPool(
+                    slotUIPrefab,
+                    GetObject((int)GameObjects.ItemSlots).transform,
+                    capacity: DefaultSlotUIPoolCapacity,
+                    maxSize: DefaultSlotUIPoolMax,
+                    registerPool: false);
+            });
+        }
+
         #endregion
         
         #region Draw/Show/Hide Slot (IStorageUI)
-        
 
         public void DrawSlot(int index, IGameItem data)
         {
-            if (!TryGetSlot(index, out IInvenSlotUI slotUI)) return;
-            if (data is not IGameItem { GetItemInfo: { } itemInfo } item)
+            if (!TryGetSlot(index, out var slotUI)) return;
+            if (data is not { GetItemInfo: { } itemInfo } item)
             {
                 slotUI.Clear();
                 return;
@@ -73,15 +96,21 @@ namespace TH.UI
                 slotUI.SetAmount(amount);
         }
 
+        public void CleanSlot(int index)
+        {
+            if (!TryGetSlot(index, out var slotUI)) return;
+            slotUI.Clear();
+        }
+
         public void ShowSlot(int index)
         {
-            if (!TryGetSlot(index, out IInvenSlotUI slotUI)) return;
+            if (!TryGetSlot(index, out var slotUI)) return;
             slotUI.SetVisibility(true);
         }
 
         public void HideSlot(int index)
         {
-            if (!TryGetSlot(index, out IInvenSlotUI slotUI)) return;
+            if (!TryGetSlot(index, out var slotUI)) return;
             slotUI.SetVisibility(false);
         }
 
@@ -209,9 +238,7 @@ namespace TH.UI
         {
             OnDrop(eventData);
         }
-
-        #endregion
-
+        
         public void OnDrop(PointerEventData eventData)
         {
             if (eventData.pointerEnter is { } target
@@ -239,6 +266,31 @@ namespace TH.UI
             if (lastPointerDown != eventData.pointerEnter) return;
             
             OnPointerClick(eventData);
+        }
+
+        #endregion
+        
+        public void SetCapacity(int capacity)
+        {
+            int length = slots.Count;
+            if (capacity == length) return;
+            if (capacity > length)
+            {
+                for (int i = 0; i < capacity - length; i++)
+                {
+                    if (slotUIPool.Get() is not InvenSlotUI slotUI) continue;
+                    slotUI.SetIndex(i);
+                    slots.Add(slotUI);
+                }
+            }
+            else // case : capacity < length
+            {
+                for (int i = capacity; i < length; i++)
+                {
+                    HideSlot(i); // capacity 범위 밖 슬롯UI 비활성화
+                }
+            }
+            
         }
     }
 }

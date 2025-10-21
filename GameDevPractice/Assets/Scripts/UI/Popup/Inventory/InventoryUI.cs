@@ -22,6 +22,7 @@ namespace TH.UI
         public event Action<IDraggableStorageUI, int> OnDragStarted;
         public event Action<DragSlotInfo> OnDragDrop;
         public event Action OnExitUICalled;
+        public event Action<InventoryFilterType> OnFilterButtonPressed;
 
         private ScrollRect scroll;
         private ICustomScrollRectHandler scrollDragHandler;
@@ -187,8 +188,18 @@ namespace TH.UI
         private void BindButtonEvents()
         {
             GetButton((int)Buttons.ExitButton).onClick.AddListener(() => {OnExitUICalled?.Invoke();});
+            BindFilterButtonEvent(GetButton((int)Buttons.AllFilterButton), InventoryFilterType.All);
+            BindFilterButtonEvent(GetButton((int)Buttons.EquipmentFilterButton), InventoryFilterType.Equipment);
+            BindFilterButtonEvent(GetButton((int)Buttons.ConsumableFilterButton), InventoryFilterType.Consumable);
+            BindFilterButtonEvent(GetButton((int)Buttons.ResourceFilterButton), InventoryFilterType.Resource);
         }
-        
+
+        private void BindFilterButtonEvent(Button button, InventoryFilterType filter)
+        {
+            button.onClick.AddListener(() => {
+                OnFilterButtonPressed?.Invoke(filter);
+            });
+        }
 
         #endregion
         

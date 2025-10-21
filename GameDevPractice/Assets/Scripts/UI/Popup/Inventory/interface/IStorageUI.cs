@@ -8,6 +8,7 @@ namespace TH.UI
     { 
         IEnumerable Slots { get; }
         void DrawSlot(int index, IGameItem data);
+        void CleanSlot(int index);
         void ShowSlot(int index);
         void HideSlot(int index);
     }
