@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
+using DG.Tweening;
 using RPG.UI;
 using TH.Item;
-using TH.Resource;
 using TH.Utils;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace TH.UI
@@ -196,9 +195,66 @@ namespace TH.UI
 
         private void BindFilterButtonEvent(Button button, InventoryFilterType filter)
         {
+            filterButtons[filter] = button;
+            CacheOriginalScale(button);
             button.onClick.AddListener(() => {
                 OnFilterButtonPressed?.Invoke(filter);
             });
+        }
+
+        #endregion
+
+        #region Filter
+
+        private readonly Dictionary<InventoryFilterType, Button> filterButtons = new();
+        private readonly Dictionary<Button, Vector3> buttonOriginalScales = new();
+        private Button currentFilterButton;
+        
+        private const float HighlightScale = 1.2f;
+        private const float TweenDuration = 0.15f;
+        
+        public void UpdateFilter(InventoryFilterType filter)
+        {
+            if (!filterButtons.TryGetValue(filter, out var button)) return;
+            
+            HighlightFilterButton(button); // 새 필터 버튼 강조
+            UnHighlightFilterButton(currentFilterButton); // 기존 필터 버튼 강조 해제
+            currentFilterButton = button; // 현재 필터 갱신
+        }
+        
+        private void UnHighlightFilterButton(Button btn)
+        {
+            if (btn == null || btn.transform == null) return;
+            var other = btn.transform;
+            if (!buttonOriginalScales.TryGetValue(btn, out var scale)) return;
+            
+            other.DOKill();
+            other.DOScale(scale, TweenDuration)
+                .SetUpdate(UpdateType.Late, true)
+                .SetEase(Ease.OutQuad)
+                .SetLink(other.gameObject, LinkBehaviour.KillOnDestroy);
+        }
+
+        private void HighlightFilterButton(Button btn)
+        {
+            var trs = btn.transform;
+            trs.DOKill();
+            if (!buttonOriginalScales.TryGetValue(btn, out var originalScale))
+            {
+                buttonOriginalScales[btn] = originalScale = trs.localScale;
+            }
+            trs.DOScale(originalScale * HighlightScale, TweenDuration)
+                .SetUpdate(UpdateType.Late, true)
+                .SetEase(Ease.OutBack)
+                .SetLink(trs.gameObject, LinkBehaviour.KillOnDestroy);
+        }
+        
+        private void CacheOriginalScale(Button btn)
+        {
+            if (btn != null && !buttonOriginalScales.ContainsKey(btn))
+            {
+                buttonOriginalScales[btn] = btn.transform.localScale;
+            }
         }
 
         #endregion

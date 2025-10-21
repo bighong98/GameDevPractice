@@ -75,16 +75,20 @@ namespace TH.Item
                 return;
             }
 
+            // 스토리지(Model) 이벤트 바인드
             BindStorageEvents(pInventory);
             BindStorageEvents(pEquipHolder);
             SubscribeStorageCapacityEvent(pInventory);
             
+            // UI(View) 이벤트 바인드
             BindStorageUIEvents(storageUI);
             BindEquipmentUIEvents(equipmentUI);
             BindButtonEvents();
             BindDragDropUIEvents();
-
+            
+            // 일회성 강제 갱신
             OnStorageCapacityChanged(pInventory, pInventory.Capacity);
+            pInvenUI.UpdateFilter(currentFilter);
             RefreshStorageUI();
             RefreshEquipmentUI();
         }
@@ -297,12 +301,13 @@ namespace TH.Item
             
             FilterStorage(pInventory, filter);
             currentFilter = filter;
+            pInvenUI.UpdateFilter(filter);
         }
 
         #endregion
 
         #region Control UI
-
+        
         private void RefreshStorageUI(IGameItemStorage storage)
         {
             if (GetUIFromStorage(storage) is not { } storageUI) return;

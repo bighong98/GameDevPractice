@@ -18,6 +18,7 @@ namespace TH.UI
     public interface IFilterableStorageUI
     {
         event Action<InventoryFilterType> OnFilterButtonPressed;
+        void UpdateFilter(InventoryFilterType filter);
     }
 }
 
