@@ -4,6 +4,7 @@ using RPG.Combat;
 using UnityEngine;
 using UnityEngine.Pool;
 using TH.Core.Pool;
+using TH.Item;
 using TH.Utils;
 
 // 무기 장착/장착해제 시 무기 오브젝트 생성/생성해제(오브젝트 풀 기반)
@@ -12,8 +13,10 @@ using TH.Utils;
 namespace RPG.Item
 {
     [RequireComponent(typeof(Fighter))]
+    [RequireComponent(typeof(IEquipmentHolder))]
     public class Equipper : MonoBehaviour
     {
+        private IEquipmentHolder equipHolder;
         [SerializeField] private Fighter fighter; // serialize for debug
         [SerializeField] private Transform rightHandTransform;
         [SerializeField] private Transform leftHandTransform;
@@ -52,14 +55,16 @@ namespace RPG.Item
                 leftGo.SetParent(lResult, worldPositionStays: false);
                 leftHandTransform = leftGo;
             }
+
+            TryGetComponent<IEquipmentHolder>(out equipHolder);
+            if (fighter == null) TryGetComponent<Fighter>(out fighter);
         }
 
         private void Start()
         {
-            if (fighter == null) fighter = GetComponent<Fighter>();
             if (fighter == null || leftHandTransform == null || rightHandTransform == null)
             {
-                Logg.Log($"[{name}.{typeof(Equipper)}] failed to initialize");
+                Logg.LogError($"[{gameObject.name}] {nameof(Equipper)} failed to initialize");
                 return;
             }
 

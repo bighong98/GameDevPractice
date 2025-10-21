@@ -18,6 +18,8 @@ namespace TH.Item
         public int Capacity => DefaultSlotNums;
         private const int DefaultSlotNums = (int)Enums.EquippedItemSlotType.Max;
 
+        
+        
         private void Awake()
         {
             FillEquipmentSlots();
