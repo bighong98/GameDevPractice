@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace TH.Item
 {
-    public class EquipmentHolder : MonoBehaviour, IEquipmentHolder, ISavable
+    public class EquipmentHolder : MonoBehaviour, IEquipmentHolder, ISavable, ITypeDependent
     {
         public event EventHandler<EquipArgs> OnEquipmentChanged;
         public event Action<IGameItemSlot> OnSlotChanged2;
@@ -23,7 +23,6 @@ namespace TH.Item
         private void Awake()
         {
             FillEquipmentSlots();
-            //todo: 기본 장비가 있다면 장착 -> ITypeDependant
             //todo: 저장된 착용 장비가 있다면 장착 -> ISavable
         }
 
@@ -90,13 +89,13 @@ namespace TH.Item
         #endregion
         
         #region Store(Equip)
-
+        
         // 아이템 장착 (빈 슬롯일 경우에만 사용 가능)
         public bool TryStore(IGameItem item)
         {
             if (TryGetValidSlot(item, out int index) && IsValidSlotIdx(index)) // 아이템을 장착할 수 있는 슬롯 인덱스 탐색 + 인덱스 유효성 검사
             {
-                return TryStore(item, index);
+                TryStore(item, index);
             }
 
             return false;
@@ -117,9 +116,9 @@ namespace TH.Item
 
         public bool TryStore(IGameItem item, int index)
         {
-            if (equipments[index] is {IsAccessible: true, HasItem: false} slot) // 슬롯이 접근 가능하고 비어있는지 확인
+            if (equipments[index] is {IsAccessible: true} slot) // 슬롯이 접근 가능하고 비어있는지 확인
             {
-                bool result = slot.TryStore(item);
+                bool result = (!slot.HasItem || TryRemoveItem(index)) && slot.TryStore(item); // 기존 아이템 제거 시도 및 
                 if (result) NotifyEquip(item, index); // 아이템 장착 이벤트 호출
 
                 return result; // 결과 반환
@@ -141,17 +140,26 @@ namespace TH.Item
 
         public bool TryStore(IGameItem item, int index, out IGameItem existing)
         {
-            if (equipments[index] is {IsAccessible: true, HasItem: false} slot) // 슬롯이 접근 가능하고 비어있는지 확인
+            if (equipments[index] is not { IsAccessible: true } slot)
             {
-                bool result = slot.TryStore(item, out var ex);
-                existing = ex;
-                if (result) NotifyEquip(item, index); // 아이템 장착 이벤트 호출
-
-                return result; // 결과 반환
+                existing = null;
+                return false;
             }
 
-            existing = null;
-            return false;
+            existing = slot.HasItem ? slot.GetItem : null;
+            return TryStore(item, index);
+
+            // if (equipments[index] is {IsAccessible: true, HasItem: false} slot) // 슬롯이 접근 가능하고 비어있는지 확인
+            // {
+            //     bool result = slot.TryStore(item, out var ex);
+            //     existing = ex;
+            //     if (result) NotifyEquip(item, index); // 아이템 장착 이벤트 호출
+            //
+            //     return result; // 결과 반환
+            // }
+            //
+            // existing = null;
+            // return false;
         }
 
         #endregion
@@ -235,8 +243,16 @@ namespace TH.Item
         }
 
         #endregion
-
         
+        public void ReceiveType(ScriptableObject typeInfo)
+        {
+            if (typeInfo is not CharacterTypeSO charInfo) return;
+
+            foreach (var equipmentData in charInfo.defaultEquipments)
+            {
+                TryStore(new EquipmentItem(equipmentData));
+            }
+        }
     }
 }
 

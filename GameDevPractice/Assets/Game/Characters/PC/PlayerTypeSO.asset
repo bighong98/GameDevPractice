@@ -22,4 +22,7 @@ MonoBehaviour:
   characterBaseStats: {fileID: 11400000, guid: c46e71df86a1f764c87b6be0160beae4, type: 2}
   height: 0
   startingLevel: 1
+  defaultEquipments:
+  - {fileID: 11400000, guid: 0a600904131b2d64994bee447b8efe39, type: 2}
+  - {fileID: 11400000, guid: 24a647810f57bb345a370aa349b7758c, type: 2}
   levelUpEffect: {fileID: 672893909101835284, guid: 94089ecaec66ba248b810e3bfaf74600, type: 3}

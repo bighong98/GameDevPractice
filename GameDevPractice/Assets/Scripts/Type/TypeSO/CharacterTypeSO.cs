@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using RPG.Stats;
 using UnityEngine.Serialization;
@@ -10,4 +11,6 @@ public abstract class CharacterTypeSO : BaseTypeSO
     public BaseStatListSO characterBaseStats;
     public float height;
     public int startingLevel;
+
+    [SerializeField] public List<EquipmentTypeSO> defaultEquipments;
 }

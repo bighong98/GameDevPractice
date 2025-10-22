@@ -30,6 +30,7 @@ namespace RPG.Combat
         private Animator animator;
         private IStatHolder statHolder;
         private IInventorySystem inventorySystem;
+        private IEquipmentHolder equipHolder;
         
         private static readonly int Attack1 = Animator.StringToHash("attack");
         private static readonly int StopAttack = Animator.StringToHash("stopAttack");
@@ -48,6 +49,7 @@ namespace RPG.Combat
             animator = GetComponent<Animator>();
             ActionScheduler = GetComponent<ActoinScheduler>();
             statHolder = GetComponent<IStatHolder>();
+            equipHolder = GetComponent<IEquipmentHolder>();
 
             currentWeapon = new LazyValue<WeaponTypeSO>(SetDefaultWeapon);
             // atkSource = new LazyValue<AttackSource>(SetAttackSource);
@@ -55,8 +57,10 @@ namespace RPG.Combat
 
         private void Start()
         {
-            currentWeapon.ForceInit();
-            EquipWeapon(currentWeapon.value);
+            equipHolder.OnEquipmentChanged += OnEquipmentChanged;
+            
+            // currentWeapon.ForceInit();
+            // EquipWeapon(currentWeapon.value);
             if (ServiceLocator.TryGet(out ICombatSystem combat))
             {
                 combatSystem = combat;
@@ -117,10 +121,14 @@ namespace RPG.Combat
 
         private void ChangeAttackSource()
         {
-            if (currentWeapon is { value: { } weaponData })
+            if (statHolder.GetStat(statType: GameStats.AD) is { } result)
             {
-                currAttackSource = new AttackSource(this, weaponData.GetDamage);
+                currAttackSource = new AttackSource(this, result.Value);
             }
+            // if (currentWeapon is { value: { } weaponData })
+            // {
+            //     currAttackSource = new AttackSource(this, weaponData.GetDamage);
+            // }
         }
 
         #endregion
@@ -203,6 +211,19 @@ namespace RPG.Combat
         #endregion
 
         #region Weapon
+
+        private void OnEquipmentChanged(object sender, EquipArgs args)
+        {
+            if (args.Item is not { GetItemInfo: WeaponTypeSO weaponData }) return;
+            if (args.State == EquipArgs.EquipEventState.Equip)
+            {
+                EquipWeapon(weaponData);
+            }
+            else
+            {
+                UnEquipWeapon();
+            }
+        }
 
         private WeaponTypeSO SetDefaultWeapon() 
         {
