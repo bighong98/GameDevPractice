@@ -1,26 +1,27 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TH.SaveLoad;
 using UnityEngine;
 using UnityEditor;
 
 namespace RPG.Saving
 {
     [ExecuteAlways]
-    public class SavableEntity : MonoBehaviour
+    public class SavableEntity : MonoBehaviour, ISavableEntity
     {
-        [SerializeField] string uniqueIdentifier = "";
+        [SerializeField] private string uniqueIdentifier = "";
         [SerializeField] private bool isGlobal = false;
-        public bool IsGlobal { get { return isGlobal; } }
+        public bool IsGlobal => isGlobal;
         
         static Dictionary<string, SavableEntity> globalLookup = new Dictionary<string, SavableEntity>();
         static Dictionary<string, string> savedTypeLookup = new Dictionary<string, string>(); // (ISavable 구현 클래스 이름, 세이브 데이터 저장 객체 이름) -> RestoreState()에서 사용 목적
         private bool hasCaptured = false;
+
+        private static readonly string UniqueIdentifierPropertyName = "uniqueIdentifier";
         
-        public string GetUniqueIdentifier()
-        {
-            return uniqueIdentifier;
-        }
+        public string UniqueIdentifier => uniqueIdentifier;
+        
         
         public Dictionary<string, object> CaptureState()
         {
@@ -35,7 +36,6 @@ namespace RPG.Saving
                 
                 var savedTypeName = objState.GetType().AssemblyQualifiedName;
                 if (string.IsNullOrEmpty(savedTypeName)) continue; // 저장 데이터 타입 이름 검출에 실패하면 취소
-                // Debug.Log($"savedTypeName: {savedTypeName}");
                 
                 state[savedTypeName] = objState; // 현재 상태 등록
                 TryCacheSavedTypeName(savedTypeName, savable);
@@ -99,7 +99,7 @@ namespace RPG.Saving
             if (string.IsNullOrEmpty(gameObject.scene.path)) return; // 프리팹 내부의 GO인 경우 return
 
             SerializedObject serializedObject = new SerializedObject(this);
-            SerializedProperty property = serializedObject.FindProperty("uniqueIdentifier");
+            SerializedProperty property = serializedObject.FindProperty(UniqueIdentifierPropertyName);
             
             if (string.IsNullOrEmpty(property.stringValue) || !IsUnique(property.stringValue)) // 고유식별자가 비어있거나, 유일한 고유식별자가 아닌 경우
             {
@@ -123,7 +123,7 @@ namespace RPG.Saving
                 return true;
             }
 
-            if (globalLookup[candidate].GetUniqueIdentifier() != candidate)
+            if (globalLookup[candidate].UniqueIdentifier != candidate)
             {
                 globalLookup.Remove(candidate);
                 return true;

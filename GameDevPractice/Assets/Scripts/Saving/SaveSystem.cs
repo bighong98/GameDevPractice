@@ -17,17 +17,22 @@ namespace TH.SaveLoad
     {
         private static readonly Dictionary<Type, MethodInfo> CachedMethodInfos = new Dictionary<Type, MethodInfo>();
         private static readonly Dictionary<string, Type> CachedTypes = new Dictionary<string, Type>();
+        
         private SceneCatalogSO sceneCatalog;
         private const int DefaultSceneIndexInCatalog = 0;
+
+        private static readonly string SceneCatalogKey = "SceneCatalogSO";
         
         public SaveSystem()
         {
             ResourceManager.Instance.ReserveOperation(() =>
             {
-                sceneCatalog = ResourceManager.Instance.Load<SceneCatalogSO>("SceneCatalogSO");
+                sceneCatalog = ResourceManager.Instance.Load<SceneCatalogSO>(SceneCatalogKey);
             });
         }
         
+        #region Scene
+
         public async UniTask LoadLastScene(string saveFile)
         {
             if (LoadFile(saveFile) is not { } data) return;
@@ -35,10 +40,9 @@ namespace TH.SaveLoad
             await UniTask.SwitchToMainThread();
             await UniTask.Yield(); // 1프레임 지연
             
-            // await GameSceneManager.Instance.LoadSceneAsync(data.lastSceneBuildIndex);
             if (sceneCatalog == null)
             {
-                sceneCatalog = ResourceManager.Instance.Load<SceneCatalogSO>("SceneCatalogSO");
+                sceneCatalog = ResourceManager.Instance.Load<SceneCatalogSO>(SceneCatalogKey);
             }
             if (data.lastSceneEntry is not { key: { } key } || string.IsNullOrEmpty(key))
             {
@@ -50,11 +54,15 @@ namespace TH.SaveLoad
             RestoreState(data);
         }
 
+        #endregion
+        
+        #region Save/Load/Delete Async (public)
+
         public async UniTask SaveAsync(string saveFile, SceneEntry sceneEntry = null)
         {
             await UniTask.SwitchToMainThread();
             try { Save(saveFile, sceneEntry); }
-            catch (Exception e) { Debug.LogError($"[SaveSystem] SaveAsync() failed: {e.Message}"); }
+            catch (Exception e) { Logg.LogError($"[SaveSystem] SaveAsync() failed: {e.Message}"); }
             await UniTask.Yield();
         }
 
@@ -68,10 +76,14 @@ namespace TH.SaveLoad
         {
             await UniTask.SwitchToMainThread();
             try { Load(saveFile); }
-            catch (Exception e) { Debug.LogError($"[SaveSystem] LoadAsync() failed: {e.Message}"); }
+            catch (Exception e) { Logg.LogError($"[SaveSystem] LoadAsync() failed: {e.Message}"); }
             await UniTask.Yield();
         }
-        
+
+        #endregion
+
+        #region Save/Load/Delete (private)
+
         private void Save(string saveFile, SceneEntry sceneEntry = null)
         {
             // var buildIndex = SceneManager.GetActiveScene().buildIndex;
@@ -107,6 +119,8 @@ namespace TH.SaveLoad
             File.Delete(GetPathFromSaveFile(saveFile));
         }
 
+        #endregion
+        
         #region State (CaptureState, RestoreState)
 
         // 씬에 존재하는 모든 SavableEntity의 상태 수집, 저장데이터에 반영
@@ -122,28 +136,46 @@ namespace TH.SaveLoad
                     var type = GetTypeByName(typeName);
                     if (type == null) continue;
 
-                    try
-                    {
-                        string json = JsonSerialization.ToJson(stateObj, new JsonSerializationParameters
-                        {
-                            SerializedType = type
-                        });
-
-                        targetEntryList.Add(new SavableEntry
-                        {
-                            id = entity.GetUniqueIdentifier(),
-                            typeName = typeName,
-                            jsonPayload = json
-                        });
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.LogError($"[SaveSystem] Failed to serialize {typeName}: {e.Message}");
-                    }
+                    RegisterEntries(stateObj, type, targetEntryList, entity.UniqueIdentifier, typeName);
                 }
             }
+
+            foreach (var savable in Registers.Values)
+            {
+                var stateObj = savable.CaptureState();
+                if (stateObj == null) continue;
+                
+                var typeName = stateObj.GetType().AssemblyQualifiedName;
+                var type = GetTypeByName(typeName);
+                if (string.IsNullOrEmpty(typeName) || type == null) continue;
+                
+                RegisterEntries(stateObj, type, globalEntries, savable.UniqueIdentifier, typeName);
+            }
         }
-        
+
+        private static void RegisterEntries(object stateObj, Type type, List<SavableEntry> targetEntryList, 
+            string identifier, string typeName)
+        {
+            try
+            {
+                string json = JsonSerialization.ToJson(stateObj, new JsonSerializationParameters
+                {
+                    SerializedType = type
+                });
+
+                targetEntryList.Add(new SavableEntry
+                {
+                    id = identifier,
+                    typeName = typeName,
+                    jsonPayload = json
+                });
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[SaveSystem] Failed to serialize {typeName}: {e.Message}");
+            }
+        }
+
         // SavableEntity 에 상태 복원
         private void RestoreState(SaveFileData data)
         {
@@ -215,11 +247,32 @@ namespace TH.SaveLoad
 
             foreach (var entity in UnityEngine.Object.FindObjectsByType<SavableEntity>(UnityEngine.FindObjectsSortMode.None))
             {
-                string id = entity.GetUniqueIdentifier();
+                string id = entity.UniqueIdentifier;
                 if (grouped.TryGetValue(id, out var stateDict))
                 {
                     entity.RestoreState(stateDict);
                 }
+            }
+
+            foreach (var savable in Registers.Values)
+            {
+                if (!grouped.TryGetValue(savable.UniqueIdentifier, out var stateDict)) continue;
+
+                foreach (var entry in stateDict)
+                {
+                    var savedTypeName = entry.Key;
+                    var savedData = entry.Value;
+                    if (savedData == null) continue;
+
+                    try { savable.RestoreState(savedData); }
+                    catch (Exception e) {Logg.LogError($"[SaveSystem] Restore failed. ({savedTypeName}, {savedData}): {e}");}
+                }
+            }
+
+            foreach (var (id, stateDict) in grouped)
+            {
+                if (Registers.ContainsKey(id)) continue;
+                Registry[id] = stateDict;
             }
         }
 
@@ -281,7 +334,7 @@ namespace TH.SaveLoad
         
         #endregion
         
-        #region Method Type
+        #region Method Info
 
         private static readonly Dictionary<string, Type> BuiltinAliasTypes = new(StringComparer.Ordinal)
         {
@@ -362,182 +415,28 @@ namespace TH.SaveLoad
         
         #endregion
         
+        private static readonly Dictionary<string, Dictionary<string, object>> Registry = new(); // Non-MB 클래스 데이터
+        private static readonly Dictionary<string, ISavableWithId> Registers = new(); // Non-MB 클래스
+        public void Register(ISavableWithId savable)
+        {
+            Registers[savable.UniqueIdentifier] = savable;
+
+            if (!Registry.TryGetValue(savable.UniqueIdentifier, out var saved)) return;
+            try
+            {
+                foreach (var s in saved.Values)
+                {
+                    if (s == null) continue;
+                    savable.RestoreState(s);
+                }
+            }
+            catch (Exception e) {Logg.LogError($"[SaveSystem] Register.Restore failed {e}");}
+        }
+
+        public void UnRegister(ISavableWithId savable)
+        {
+            if (savable == null || string.IsNullOrEmpty(savable.UniqueIdentifier)) return;
+            Registers.Remove(savable.UniqueIdentifier);
+        }
     }
 }
-
-#region Deprecated
-
-        // private MethodInfo GetMethodByType(Type type)
-        // {
-        //     if (CachedMethodInfos.TryGetValue(type, out var result))
-        //     {
-        //         return result;
-        //     }
-        //
-        //     var methods = typeof(JsonSerialization).GetMethods(BindingFlags.Public | BindingFlags.Static);
-        //     foreach (var m in methods)
-        //     {
-        //         if (m.Name != "FromJson") continue;
-        //         if (!m.IsGenericMethodDefinition) continue;
-        //
-        //         var parameters = m.GetParameters();
-        //         if (parameters.Length != 2 ||
-        //             parameters[0].ParameterType != typeof(string) ||
-        //             parameters[1].ParameterType != typeof(JsonSerializationParameters))
-        //         {
-        //             continue;
-        //         }
-        //
-        //         var method = m.MakeGenericMethod(type);
-        //         CachedMethodInfos[type] = method;
-        //         return method;
-        //     }
-        //
-        //     return null;
-        // }
-        
-        // public void Save(string saveFile)
-        // {
-        //     SaveFileData data = new SaveFileData
-        //     {
-        //         lastSceneBuildIndex = SceneManager.GetActiveScene().buildIndex
-        //     };
-        //     
-        //     CaptureState(data);
-        //
-        //     SaveFile(saveFile, data);
-        // }
-        
-        // public void Load(string saveFile)
-        // {
-        //     var data = LoadFile(saveFile);
-        //     if (data != null)
-        //     {
-        //         RestoreState(data.entries);
-        //     }
-        // }
-        
-                // private void CaptureState(SaveFileData data)
-        // {
-        //     foreach (var entity in FindObjectsOfType<SavableEntity>())
-        //     {
-        //         var stateDict = entity.CaptureState(); // Dictionary<string, object>
-        //         
-        //         foreach (var (typeName, stateObj) in stateDict)
-        //         {
-        //             var type = GetTypeByName(typeName);
-        //             if (type == null) continue;
-        //
-        //             try
-        //             {
-        //                 string json = JsonSerialization.ToJson(stateObj, new JsonSerializationParameters
-        //                 {
-        //                     SerializedType = type
-        //                 });
-        //
-        //                 data.entries.Add(new SavableEntry
-        //                 {
-        //                     id = entity.GetUniqueIdentifier(),
-        //                     typeName = typeName,
-        //                     jsonPayload = json
-        //                 });
-        //             }
-        //             catch (Exception e)
-        //             {
-        //                 Debug.LogError($"[SaveSystem] Failed to serialize {typeName}: {e.Message}");
-        //             }
-        //         }
-        //     }
-        // }
-        
-        // private void RestoreState(List<SavableEntry> entries)
-        // {
-        //     var grouped = new Dictionary<string, Dictionary<string, object>>();
-        //
-        //     foreach (var entry in entries)
-        //     {
-        //         Debug.Log($"[Savable Entry info]\n" + 
-        //                   $"id: {entry.id}, \n" +
-        //                   $"type: {entry.typeName}, \n" +
-        //                   $"jsonPayload: {entry.jsonPayload}");
-        //         
-        //         var type = GetTypeByName(entry.typeName);
-        //         if (type == null)
-        //         {
-        //             Debug.Log($"[SaveSystem] 타입을 찾을 수 없음: {entry.typeName}");
-        //             continue;
-        //         }
-        //         
-        //         object state;
-        //         try
-        //         {
-        //             state = GetMethodByType(type)?.Invoke(null, new object[]
-        //             {
-        //                 entry.jsonPayload,
-        //                 new JsonSerializationParameters
-        //                 {
-        //                     SerializedType = type
-        //                 }
-        //             });
-        //             if (state == null)
-        //             {
-        //                 Debug.Log(
-        //                     $"[SaveSystem]: failed to get method. type: {type.FullName}, jsonPayload: {entry.jsonPayload}");
-        //                 continue;
-        //             }
-        //         }
-        //         catch (TargetInvocationException tie)
-        //         {
-        //             var inner = tie.InnerException;
-        //             Debug.LogError($"type: {type.Name}, message: {inner?.Message}, resultType: {inner?.GetType().Name}\n" + 
-        //                            $"StackTrace: {inner?.StackTrace}");
-        //             continue;
-        //         }
-        //         catch (Exception e)
-        //         {
-        //             Debug.LogError($"[SaveSystem]: Exception Occured while RestoreState(): {type.Name}, {e.Message}");
-        //             continue;
-        //         }
-        //
-        //         if (!grouped.TryGetValue(entry.id, out var dict))
-        //         {
-        //             dict = new Dictionary<string, object>();
-        //             grouped[entry.id] = dict;
-        //         }
-        //
-        //         dict[entry.typeName] = state;
-        //     }
-        //
-        //     foreach (var entity in FindObjectsOfType<SavableEntity>())
-        //     {
-        //         string id = entity.GetUniqueIdentifier();
-        //         if (grouped.TryGetValue(id, out var stateDict))
-        //         {
-        //             entity.RestoreState(stateDict);
-        //         }
-        //     }
-        // }
-        
-        // private MethodInfo GetMethodByType(Type type)
-        // {
-        //     if (CachedMethodInfos.TryGetValue(type, out var result))
-        //     {
-        //         return result; // 캐싱된 MethodInfo가 있으면 리턴
-        //     }
-        //
-        //     var methods = typeof(JsonSerialization).GetMethods(BindingFlags.Public | BindingFlags.Static);
-        //     foreach (var m in methods)
-        //     {
-        //         if (m.Name != "FromJson") continue;
-        //         if (!m.IsGenericMethodDefinition) continue;
-        //
-        //         var method = m.MakeGenericMethod(type);
-        //         CachedMethodInfos[type] = method;
-        //         return method;
-        //     }
-        //     return null;
-        // }
-        
-        #endregion
-        
-

@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace TH.Item
 {
-    public class EquipmentHolder : MonoBehaviour, IEquipmentHolder, ISavable, ITypeDependent
+    public class EquipmentHolder : MonoBehaviour, IEquipmentHolder, ITypeDependent
     {
         public event EventHandler<EquipArgs> OnEquipmentChanged;
         public event Action<IGameItemSlot> OnSlotChanged2;
@@ -221,13 +221,13 @@ namespace TH.Item
         
         public object CaptureState()
         {
-            //todo: 현재 장비 목록을 저장
+            // //todo: 현재 장비 목록을 저장
             throw new NotImplementedException();
         }
 
         public bool RestoreState(object state)
         {
-            //todo: 저장된 장비 목록을 장착
+            // //todo: 저장된 장비 목록을 장착
             throw new NotImplementedException();
         }
 

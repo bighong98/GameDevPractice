@@ -158,7 +158,7 @@ namespace TH.Attribute.Stat
             if (!stats.TryGetValue(type, out var stat)) return false;
             
             stat.AddModifier(mod);
-            Logg.Log($"[{gameObject.name}.{nameof(StatHolder)}.{nameof(AddModifier)}] '{type}' is changed to ({stat.Value})", Logg.LoggingMode.InProgress);
+            Logg.Log($"[{gameObject.name}.{nameof(StatHolder)}.{nameof(AddModifier)}] '{type}' is changed to ({stat.Value})", Logg.LoggingMode.Completed);
             return true;
         }
 

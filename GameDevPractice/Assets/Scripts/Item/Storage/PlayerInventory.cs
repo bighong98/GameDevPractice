@@ -6,11 +6,12 @@ using TH.Core.Service;
 using TH.Utils;
 using UnityEngine;
 using TH.Resource;
+using TH.SaveLoad;
 using UnityEngine.SceneManagement;
 
 namespace TH.Item
 {
-    public sealed class PlayerInventory : IPlayerInventory, ISavable
+    public sealed class PlayerInventory : IPlayerInventory, ISavableWithId
     {
         public event Action<IGameItemSlot> OnSlotChanged2;
         public event Action<int> OnSlotChanged; // 직접 .Invoke() 호출하지 말고 NotifySlotChanged(index) 사용할 것
@@ -59,6 +60,8 @@ namespace TH.Item
                         Logg.Log($"[PlayerInventory] failed to add test data item '{item}'");
                     }
                 }
+                
+                ServiceLocator.Get<ISaveSystem>().Register(this);
             });
 
             SceneManager.sceneLoaded += (_, _) =>
@@ -452,16 +455,35 @@ namespace TH.Item
 
         #region ISavable(save/load)
 
+        private const string inventoryIdentifier = "playerInventory";
+        public string UniqueIdentifier => inventoryIdentifier;
+        
         public object CaptureState()
         {
-            throw new NotImplementedException();
+            List<IGameItem> items = new();
+
+            foreach (var slot in slots)
+            {
+                if (slot is not { HasItem: true, GetItem: { } item }) continue;
+                items.Add(item.Clone<IGameItem>());
+            }
+
+            return items;
         }
 
         public bool RestoreState(object state)
         {
-            throw new NotImplementedException();
+            if (state is not List<IGameItem> items) return false;
+
+            foreach (var item in items)
+            {
+                TryStore(itemBuilder.GetItemFromData(item.GetItemInfo, item.GetAmount));
+            }
+
+            return true;
         }
 
+        
         #endregion
         
         #region Type Validation
@@ -552,8 +574,6 @@ namespace TH.Item
             };
         }
         #endregion
-
-        
     }
 }
 
