@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using GameDevTV.Utils;
 using UnityEngine;
 using RPG.Movement;
@@ -11,7 +9,6 @@ using TH.Attribute.Stat;
 using TH.Combat;
 using TH.Core.Service;
 using TH.Item;
-using UnityEngine.Serialization;
 
 namespace RPG.Combat
 {

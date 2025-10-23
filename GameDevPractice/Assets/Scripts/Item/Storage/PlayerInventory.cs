@@ -296,7 +296,7 @@ namespace TH.Item
 
         public bool TryUseItem(int index) // 사용 시도 및 성공 여부 반환
         {
-            return TryUseItem(index, player); // todo: null 대신 player를 기본으로
+            return TryUseItem(index, player);
         }
 
         public bool TryUseItem(int index, object user) // + 사용자 객체 전달
@@ -321,16 +321,7 @@ namespace TH.Item
         
         private bool TryUseItem(IUsableItem item, object user)
         {
-            switch (item)
-            {
-                case IEquipmentItem equipment:
-                    //todo: Equipper와 소통 -> 장비 장착/장착해제 시도
-                    
-                    break;
-                
-                default:
-                    break;
-            }
+            
         
             return true;
         }
@@ -523,24 +514,11 @@ namespace TH.Item
                     return item;
             }
         }
-        
+
+        private readonly IItemBuilder itemBuilder = new ItemBuilder();
         private IGameItem EnsureItemInstanceByType(ItemTypeSO data, int amount = 1)
         {
-            if (data is not { itemType: { } type })
-            {
-                Logg.LogError($"[PlayerInventory] failed to Make GameItem Instance");
-                return null;
-            }
-            switch (type)
-            {
-                case Enums.ItemType.Countable:
-                    if (data.isUsable) return new ConsumableItem(data, amount);
-                    return new CountableItem(data, amount);
-                case Enums.ItemType.Equipment:
-                    return new EquipmentItem(data);
-                default:
-                    return new GameItem(data);
-            }
+            return itemBuilder.GetItemFromData(data, amount);
         }
 
         #endregion

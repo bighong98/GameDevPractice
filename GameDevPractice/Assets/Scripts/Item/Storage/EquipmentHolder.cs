@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using RPG.Saving;
+using TH.Utils;
 using UnityEngine;
 
 namespace TH.Item
@@ -95,7 +96,7 @@ namespace TH.Item
         {
             if (TryGetValidSlot(item, out int index) && IsValidSlotIdx(index)) // 아이템을 장착할 수 있는 슬롯 인덱스 탐색 + 인덱스 유효성 검사
             {
-                TryStore(item, index);
+                return TryStore(item, index);
             }
 
             return false;
@@ -120,7 +121,7 @@ namespace TH.Item
             {
                 bool result = (!slot.HasItem || TryRemoveItem(index)) && slot.TryStore(item); // 기존 아이템 제거 시도 및 
                 if (result) NotifyEquip(item, index); // 아이템 장착 이벤트 호출
-
+                
                 return result; // 결과 반환
             }
 
@@ -148,18 +149,6 @@ namespace TH.Item
 
             existing = slot.HasItem ? slot.GetItem : null;
             return TryStore(item, index);
-
-            // if (equipments[index] is {IsAccessible: true, HasItem: false} slot) // 슬롯이 접근 가능하고 비어있는지 확인
-            // {
-            //     bool result = slot.TryStore(item, out var ex);
-            //     existing = ex;
-            //     if (result) NotifyEquip(item, index); // 아이템 장착 이벤트 호출
-            //
-            //     return result; // 결과 반환
-            // }
-            //
-            // existing = null;
-            // return false;
         }
 
         #endregion

@@ -11,9 +11,9 @@ GameObject:
   - component: {fileID: 4154614858722811310}
   - component: {fileID: 375753396304606403}
   - component: {fileID: 7309534592733157649}
-  - component: {fileID: 4306455784458696431}
   - component: {fileID: 1829299814520869813}
-  m_Layer: 0
+  - component: {fileID: 3180330915047869738}
+  m_Layer: 19
   m_Name: DropItem
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -83,19 +83,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &4306455784458696431
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4841038381261220486}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cfd76096c255aa545aa4b3846781c7f9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RPG.Item.DropItem
-  useImmediately: 1
 --- !u!114 &1829299814520869813
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -108,7 +95,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 54ea4a17db4d11d468bfb144d1dae8f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ItemTypeHolder
-  _type: {fileID: 0}
   type: {fileID: 0}
   typeRef:
     m_AssetGUID: 
@@ -119,3 +105,17 @@ MonoBehaviour:
   addToPool: 1
   amount: 1
   toDropItem: 1
+--- !u!114 &3180330915047869738
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4841038381261220486}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4dd43ce293ce52e4d886523327860b00, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TH.Control.DropItem
+  useImmediately: 1
+  amount: 1

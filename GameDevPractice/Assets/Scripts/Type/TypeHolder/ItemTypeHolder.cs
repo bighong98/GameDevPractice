@@ -19,9 +19,9 @@ public class ItemTypeHolder : TypeHolder<ItemTypeSO>
             MakeDropItem();
     }
 
-    public DropItem MakeDropItem(int itemAmount = 0)
+    public TH.Control.DropItem MakeDropItem(int itemAmount = 0)
     {
-        var dropItem = gameObject.GetOrAddComponent<DropItem>();
+        var dropItem = gameObject.GetOrAddComponent<TH.Control.DropItem>();
         if (itemAmount > 0)
             amount = itemAmount;
         return dropItem;

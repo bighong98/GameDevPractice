@@ -131,6 +131,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: Dropped Bow
       objectReference: {fileID: 0}
+    - target: {fileID: 485934382282723969, guid: d65c897b8507b1d499688c554148fe1e, type: 3}
+      propertyPath: m_Layer
+      value: 19
+      objectReference: {fileID: 0}
+    - target: {fileID: 4121597167110099249, guid: d65c897b8507b1d499688c554148fe1e, type: 3}
+      propertyPath: m_Layer
+      value: 19
+      objectReference: {fileID: 0}
     - target: {fileID: 8951071724262958505, guid: d65c897b8507b1d499688c554148fe1e, type: 3}
       propertyPath: m_LocalPosition.x
       value: 10.3
@@ -603,9 +611,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1891249396}
     m_Modifications:
+    - target: {fileID: 1092776949248055045, guid: 272caf2c346b5e04ea0b11b49067dc0a, type: 3}
+      propertyPath: m_Layer
+      value: 19
+      objectReference: {fileID: 0}
     - target: {fileID: 1181656062549879669, guid: 272caf2c346b5e04ea0b11b49067dc0a, type: 3}
       propertyPath: m_Name
       value: Dropped Fireball
+      objectReference: {fileID: 0}
+    - target: {fileID: 1181656062549879669, guid: 272caf2c346b5e04ea0b11b49067dc0a, type: 3}
+      propertyPath: m_Layer
+      value: 19
       objectReference: {fileID: 0}
     - target: {fileID: 7701418268176161885, guid: 272caf2c346b5e04ea0b11b49067dc0a, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1115,6 +1131,10 @@ PrefabInstance:
     - target: {fileID: 785334137700611097, guid: 979fea7d1693c584cb00a39a9d762e0d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1365668572096963489, guid: 979fea7d1693c584cb00a39a9d762e0d, type: 3}
+      propertyPath: m_Layer
+      value: 19
       objectReference: {fileID: 0}
     - target: {fileID: 2466537272173059495, guid: 979fea7d1693c584cb00a39a9d762e0d, type: 3}
       propertyPath: m_Name
@@ -1896,6 +1916,14 @@ PrefabInstance:
     - target: {fileID: 7059132959080541948, guid: d4c092d9dca59304fba951cae1d05868, type: 3}
       propertyPath: m_Name
       value: Dropped Sword
+      objectReference: {fileID: 0}
+    - target: {fileID: 7059132959080541948, guid: d4c092d9dca59304fba951cae1d05868, type: 3}
+      propertyPath: m_Layer
+      value: 19
+      objectReference: {fileID: 0}
+    - target: {fileID: 7145507794060943241, guid: d4c092d9dca59304fba951cae1d05868, type: 3}
+      propertyPath: m_Layer
+      value: 19
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

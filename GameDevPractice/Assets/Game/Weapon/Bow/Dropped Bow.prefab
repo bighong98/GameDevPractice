@@ -126,6 +126,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Dropped Bow
       objectReference: {fileID: 0}
+    - target: {fileID: 4841038381261220486, guid: f0ece510419d9a447b7d5089c094b803, type: 3}
+      propertyPath: m_Layer
+      value: 19
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:

@@ -31,27 +31,27 @@ namespace RPG.Item
             inventory.Value = inventorySystem;
         }
 
-        private void OnTriggerEnter(Collider other)
-        {
-            if (other.gameObject.CompareTag("Player"))
-            {
-                // todo: 리펙토링된 인벤토리에 저장
-                // //todo: 아이템 습득 애니메이션 추가
-                // if (itemTypeHolder == null || inventory == null) return;
-                // if (inventory.Value.AddItem(new Item(itemTypeHolder.Type), 
-                //         itemTypeHolder.GetAmount, 
-                //         checkInstanceType: true, 
-                //         useImmediately) <= 0) // AddItem()은 인벤토리 아이템 추가 시도 후 잔량을 반환, 잔량이 0이라면
-                // {
-                //     itemTypeHolder.ReleaseSelf(); // 현재 드랍 아이템 객체 풀에 반환
-                // }
-                // else
-                // {
-                //     Logg.Log($"[{gameObject.name}.{nameof(DropItem)}] failed to pick up DropItem");
-                // }
-                // //todo: else { // 아이템 도로 뱉는? 애니메이션 추가 }
-            }
-        }
+        // private void OnTriggerEnter(Collider other)
+        // {
+        //     if (other.gameObject.CompareTag("Player"))
+        //     {
+        //         // todo: 리펙토링된 인벤토리에 저장
+        //         // //todo: 아이템 습득 애니메이션 추가
+        //         // if (itemTypeHolder == null || inventory == null) return;
+        //         // if (inventory.Value.AddItem(new Item(itemTypeHolder.Type), 
+        //         //         itemTypeHolder.GetAmount, 
+        //         //         checkInstanceType: true, 
+        //         //         useImmediately) <= 0) // AddItem()은 인벤토리 아이템 추가 시도 후 잔량을 반환, 잔량이 0이라면
+        //         // {
+        //         //     itemTypeHolder.ReleaseSelf(); // 현재 드랍 아이템 객체 풀에 반환
+        //         // }
+        //         // else
+        //         // {
+        //         //     Logg.Log($"[{gameObject.name}.{nameof(DropItem)}] failed to pick up DropItem");
+        //         // }
+        //         // //todo: else { // 아이템 도로 뱉는? 애니메이션 추가 }
+        //     }
+        // }
     }
 }
 
