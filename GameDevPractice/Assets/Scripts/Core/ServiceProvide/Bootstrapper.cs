@@ -4,6 +4,7 @@ using TH.Resource;
 using TH.SaveLoad;
 using TH.SceneManagement;
 using TH.UI;
+using TH.Utils;
 using UnityEngine;
 
 namespace TH.Core.Service
@@ -29,6 +30,7 @@ namespace TH.Core.Service
             ServiceLocator.Register<ICombatSystem>(new CombatSystem());
             ServiceLocator.Register<IPlayerInventory>(new PlayerInventory());
             ServiceLocator.Register<IItemUsageHandler>(new ItemUsageHandler());
+            ServiceLocator.Register<IFloatingTextSpawner>(new FloatingTextSpawner());
         }
     }
 }

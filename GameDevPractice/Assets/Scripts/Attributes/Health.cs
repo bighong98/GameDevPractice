@@ -9,6 +9,7 @@ using RPG.UI;
 using TH.Attribute;
 using TH.Attribute.Stat;
 using TH.Combat;
+using TH.Core.Service;
 
 namespace RPG.Attribute
 {
@@ -23,7 +24,6 @@ namespace RPG.Attribute
         private LazyValue<float> hp;
         
         private Animator animator;
-        // private CharacterStats stats;
         private IStatHolder statHolder;
         private ILevel levelHolder;
         private bool hasMutableLevel;
@@ -37,6 +37,7 @@ namespace RPG.Attribute
         public float GetMaxHealth => maxHp.Value;
         public float GetCurrentHealthRatio => (hp.Value / maxHp.Value);
 
+        public event Action<HitResult> OnDamaged;
         public Action<float> OnHealthRatioChanged; // 현재 체력에 변동이 생긴 경우 (피격, 회복 등)
         public Action<float> OnMaxHealthChanged; // 최대 체력에 변동이 생긴 경우 (레벨 업, 장비 변경 등)
         public Action<float> OnCurrHealthChanged; // 현재 체력에 변동이 생긴 경우 (피격, 회복 등)
@@ -45,6 +46,8 @@ namespace RPG.Attribute
 
         private IAttackable lastAttacker; // 가장 최근 자신에게 피해를 입힌 대상
         private LazyValue<float> rewardXp;
+
+        private IFloatingTextSpawner textSpawner;
         
         private void Awake()
         {
@@ -55,6 +58,8 @@ namespace RPG.Attribute
                 levelHolder = iLevel;
                 hasMutableLevel = true;
             }
+
+            textSpawner = ServiceLocator.Get<IFloatingTextSpawner>();
 
             maxHp = new LazyValue<float>(GetInitialHealth);
             hp = new LazyValue<float>(GetInitialHealth);
@@ -88,12 +93,14 @@ namespace RPG.Attribute
 
         private void OnEnable()
         {
+            textSpawner.Register(this, FloatingTextEventType.Damage);
             if (!hasMutableLevel || levelHolder == null) return;
             levelHolder.OnLevelChanged += this.OnLevelUp;
         }
 
         private void OnDisable()
         {
+            textSpawner.UnRegister(this, FloatingTextEventType.Damage);
             if (!hasMutableLevel || levelHolder == null) return;
             levelHolder.OnLevelChanged -= this.OnLevelUp;
         }
@@ -142,7 +149,6 @@ namespace RPG.Attribute
         private void TakeDamage(float damage)
         {
             SetCurrentHp(hp.Value - damage); 
-            
             Logg.Log($"[{gameObject.name}.{nameof(TakeDamage)}]: hp: {hp.Value}", Logg.LoggingMode.InProgress);
         }
         
@@ -150,6 +156,7 @@ namespace RPG.Attribute
         {
             TakeDamage(hitResult.Damage);
             lastAttacker = hitResult.Attacker;
+            OnDamaged?.Invoke(hitResult);
         }
 
         private void RefreshAliveState()

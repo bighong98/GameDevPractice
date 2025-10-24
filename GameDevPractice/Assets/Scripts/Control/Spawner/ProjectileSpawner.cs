@@ -1,6 +1,7 @@
 using System;
 using RPG.Combat;
 using RPG.Attribute;
+using TH.Attribute.Stat;
 using TH.Combat;
 using UnityEngine;
 using TH.Core.Pool;
@@ -36,7 +37,19 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
         shootingWeaponOwner.OnTargetChanged += SetTarget;
         shootingWeaponOwner.OnAttack += Shoot;
 
-        projectileAttackSource = new AttackSource(shootingWeaponOwner, weaponTypeSO.GetDamage);
+        if (owner is Component c && c.TryGetComponent(out IStatHolder statHolder))
+        {
+            if (statHolder.GetStat(GameStats.AD) is { } stat)
+            {
+                stat.OnStatChanged += () =>
+                {
+                    SetAttackSource(shootingWeaponOwner, stat.Value);
+                };
+                SetAttackSource(shootingWeaponOwner, stat.Value);
+            }
+        }
+
+        // SetAttackSource(shootingWeaponOwner, weaponTypeSO.GetDamage);
 
         if (weaponTypeSO is { HasImpactEffect: true, GetImpactEffect: { } particlePrefab })
         {
@@ -58,6 +71,11 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
         }
     }
 
+    private void SetAttackSource(Fighter owner, float damage)
+    {
+        projectileAttackSource = new AttackSource(owner, damage);
+    }
+
     private void SetTarget(Health target)
     {
         projectileTarget = target;
@@ -73,6 +91,5 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
     private void PlayOnHitEffect(Vector3 pos)
     {
         PoolManager.Instance.GetFromPool<SimplePooledParticlePlayer>(onHitParticlePrefab, null, pos);
-        // PoolingManager.Instance.GetFromPool<SimplePooledParticlePlayer>(onHitParticlePrefab, null, pos);
     }
 }
