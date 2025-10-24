@@ -3,7 +3,6 @@ using GameDevTV.Utils;
 using UnityEngine;
 using RPG.Movement;
 using RPG.Core;
-using RPG.Saving;
 using RPG.Attribute;
 using TH.Attribute.Stat;
 using TH.Combat;
@@ -26,7 +25,6 @@ namespace RPG.Combat
         private Mover mover;
         private Animator animator;
         private IStatHolder statHolder;
-        private IInventorySystem inventorySystem;
         private IEquipmentHolder equipHolder;
         
         private static readonly int Attack1 = Animator.StringToHash("attack");

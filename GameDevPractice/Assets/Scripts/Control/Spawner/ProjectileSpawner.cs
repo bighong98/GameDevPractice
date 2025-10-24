@@ -18,15 +18,11 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
     private ICombatSystem combatSystem;
     
     [SerializeField] private GameObject onHitParticlePrefab;
-    // private bool hasOnHitEffect;
 
     protected override void Start()
     {
         base.Start();
-        if (ServiceLocator.TryGet(out ICombatSystem combat))
-        {
-            combatSystem = combat;
-        }
+        ServiceLocator.TryGet(out combatSystem);
     }
     
     public void InitializeProjectileSpawner(Fighter owner, WeaponTypeSO weaponTypeSO)
@@ -45,25 +41,19 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
         if (weaponTypeSO is { HasImpactEffect: true, GetImpactEffect: { } particlePrefab })
         {
             Logg.Log("Trying to Add PlayOnHitEffect as delegate");
-            // hasOnHitEffect = true;
             onHitParticlePrefab = particlePrefab;
             
             onCreate = obj =>
             {
-                // obj.OnHit += PlayOnHitEffect; // todo: 현 구조는 Spawner가 사라지면 PlayOnHitEffect 실행이 불가능함. 오류 발생 가능성이 존재한다면 수정 필요
-                if (obj is AttackProjectile projectile)
-                {
-                    projectile.SetProjectile(combatSystem, projectileAttackSource);
-                    projectile.OnHit += PlayOnHitEffect; // todo: 현 구조는 Spawner가 사라지면 PlayOnHitEffect 실행이 불가능함. 오류 발생 가능성이 존재한다면 수정 필요
-                }
+                if (obj is not AttackProjectile projectile) return;
+                projectile.SetProjectile(combatSystem, projectileAttackSource);
+                projectile.OnHit += PlayOnHitEffect; // todo: 현 구조는 Spawner가 사라지면 PlayOnHitEffect 실행이 불가능함. 오류 발생 가능성이 존재한다면 수정 필요
             };
 
             onGet = obj =>
             {
-                if (obj is AttackProjectile projectile)
-                {
-                    projectile.SetProjectile(projectileAttackSource);
-                }
+                if (obj is not AttackProjectile projectile) return;
+                projectile.SetProjectile(projectileAttackSource);
             };
         }
     }
