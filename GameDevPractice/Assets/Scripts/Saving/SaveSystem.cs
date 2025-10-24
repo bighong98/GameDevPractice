@@ -179,45 +179,33 @@ namespace TH.SaveLoad
         // SavableEntity 에 상태 복원
         private void RestoreState(SaveFileData data)
         {
-            // int buildIndex = SceneManager.GetActiveScene().buildIndex;
             var sceneName = SceneManager.GetActiveScene().name;
             var sceneEntries = data.sceneData;
-            List<SavableEntry> entries = new();
+            List<SavableEntry> entries = new(); // 세이브 데이터 리스트 생성
             
-            // if (sceneEntries.TryGetValue(buildIndex, out var targetSceneEntries))
+            // 현재 씬 세이브 데이터 검색
             if (sceneEntries.TryGetValue(sceneName, out var targetSceneEntries))
-            {
-                entries.AddRange(targetSceneEntries);
-            }
-            else
-            {
-                // Util.Log($"[SaveSystem] No saved data for scene '{buildIndex}'");
-                Logg.Log($"[SaveSystem] No saved data for scene '{sceneName}'", Logg.LoggingMode.InProgress);
-            }
+                entries.AddRange(targetSceneEntries); // 세이브 데이터 리스트에 추가
+            else Logg.Log($"[SaveSystem] No saved data for scene '{sceneName}'", Logg.LoggingMode.InProgress);
             
             if (data.globalData is { Count: > 0 } globEntries)
-            {
-                entries.AddRange(globEntries);
-            }
-            else
-            {
-                Logg.Log("[SaveSystem] No saved global data");
-            }
+                entries.AddRange(globEntries); // 글로벌(특정 씬에 종속되지 않는) 세이브 데이터 리스트에 추가
+            else Logg.Log("[SaveSystem] No saved global data");
 
-            var grouped = new Dictionary<string, Dictionary<string, object>>(entries.Count);
+            var grouped = new Dictionary<string, Dictionary<string, object>>(entries.Count); // <고유 식별자, 고유 객체의 <타입, 타입 데이터>> 딕셔너리 생성
 
             foreach (var entry in entries)
             {
-                var type = GetTypeByName(entry.typeName);
-                if (type == null)
+                if (GetTypeByName(entry.typeName) is not { } type) // 타입명으로 데이터 타입 조회(or 리플렉션 생성)
                 {
                     Logg.LogError($"[{nameof(SaveSystem)}.{nameof(RestoreState)}()] Type not found: {entry.typeName}");
                     continue;
                 }
 
-                object state;
+                object state; // 런타임 타입 세이브 데이터
                 try
                 {
+                    // json-> 런타임 세이브 데이터 생성
                     state = GetMethodByType(type)?.Invoke(null, new object[]
                     {
                         entry.jsonPayload,
@@ -235,16 +223,16 @@ namespace TH.SaveLoad
                     Logg.LogError($"[SaveSystem] Restore failed for {entry.typeName}: {e}");
                     continue;
                 }
-
+                // 고유 객체별 세이브 데이터 딕셔너리 조회
                 if (!grouped.TryGetValue(entry.id, out var dict))
                 {
-                    dict = new Dictionary<string, object>();
-                    grouped[entry.id] = dict;
+                    dict = new Dictionary<string, object>(); 
+                    grouped[entry.id] = dict; // 딕셔너리에 없으면 신규 등록
                 }
 
-                dict[entry.typeName] = state;
+                dict[entry.typeName] = state; // 해당 객체의 (데이터 타입명-데이터) 저장
             }
-
+            // MonoBehaviour 기반 ISavable 클래스 세이브 데이터 적용
             foreach (var entity in UnityEngine.Object.FindObjectsByType<SavableEntity>(UnityEngine.FindObjectsSortMode.None))
             {
                 string id = entity.UniqueIdentifier;
@@ -253,7 +241,7 @@ namespace TH.SaveLoad
                     entity.RestoreState(stateDict);
                 }
             }
-
+            // Non-Mono(일반 C#) ISavable 클래스 세이브 데이터 적용
             foreach (var savable in Registers.Values)
             {
                 if (!grouped.TryGetValue(savable.UniqueIdentifier, out var stateDict)) continue;
@@ -268,7 +256,7 @@ namespace TH.SaveLoad
                     catch (Exception e) {Logg.LogError($"[SaveSystem] Restore failed. ({savedTypeName}, {savedData}): {e}");}
                 }
             }
-
+            
             foreach (var (id, stateDict) in grouped)
             {
                 if (Registers.ContainsKey(id)) continue;
