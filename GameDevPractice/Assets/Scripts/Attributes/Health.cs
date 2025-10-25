@@ -37,7 +37,8 @@ namespace RPG.Attribute
         public float GetMaxHealth => maxHp.Value;
         public float GetCurrentHealthRatio => (hp.Value / maxHp.Value);
 
-        public event Action<HitResult> OnDamaged;
+        // public event Action<HitResult> OnDamaged;
+        public event HitEvent OnDamaged;
         public Action<float> OnHealthRatioChanged; // 현재 체력에 변동이 생긴 경우 (피격, 회복 등)
         public Action<float> OnMaxHealthChanged; // 최대 체력에 변동이 생긴 경우 (레벨 업, 장비 변경 등)
         public Action<float> OnCurrHealthChanged; // 현재 체력에 변동이 생긴 경우 (피격, 회복 등)
@@ -149,7 +150,7 @@ namespace RPG.Attribute
         private void TakeDamage(float damage)
         {
             SetCurrentHp(hp.Value - damage); 
-            Logg.Log($"[{gameObject.name}.{nameof(TakeDamage)}]: hp: {hp.Value}", Logg.LoggingMode.InProgress);
+            Logg.Log($"[{gameObject.name}.{nameof(TakeDamage)}]: hp: {hp.Value}", Logg.LoggingMode.Completed);
         }
         
         public void TakeDamage(in HitResult hitResult)
