@@ -70,22 +70,18 @@ namespace RPG.Attribute
                 {
                     return result.Value;
                 }
-                Logg.Log($"[{gameObject.name}.{nameof(Health)}] failed to initialize rewardXp field");
+                Logg.LogError($"[{gameObject.name}.{nameof(Health)}] failed to initialize rewardXp field");
                 return 0;
             });
         }
 
         private void Start()
         {
-            // maxHp.ForceInit();
-            // hp.ForceInit();
-            
             UIManager.Instance.ReserveOperation(() =>
             {
-                Logg.Log($"[{gameObject.name}.Health] trying to create hp bar");
                 if (this == null)
                 {
-                    Logg.Log($"[{gameObject.name}.Health] failed to create hp bar");
+                    Logg.LogError($"[{gameObject.name}.Health] failed to create hp bar");
                     return;
                 }
                 UIManager.Instance.GetUIFromPool<HPBar>(HPBarPrefab, UICanvas.AnchoredOverlay).SetOwner(this);
@@ -155,9 +151,11 @@ namespace RPG.Attribute
         
         public void TakeDamage(in HitResult hitResult)
         {
+            Logg.Log($"[{nameof(Health)}] TakeDamage Invoked, frameCount: {Time.frameCount}", Logg.LoggingMode.InProgress);
+
+            OnDamaged?.Invoke(hitResult);
             TakeDamage(hitResult.Damage);
             lastAttacker = hitResult.Attacker;
-            OnDamaged?.Invoke(hitResult);
         }
 
         private void RefreshAliveState()
@@ -223,7 +221,7 @@ namespace RPG.Attribute
         {
             if (state is not HealthSaveData data) return false;
             
-            Logg.Log($"[{gameObject.name}]RestoreState for Health: hp to {data.hp}" ,Logg.LoggingMode.InProgress); 
+            Logg.Log($"[{gameObject.name}]RestoreState for Health: hp to {data.hp}" ,Logg.LoggingMode.Completed); 
             
             SetHp(data.hp);
             // RefreshAliveState();

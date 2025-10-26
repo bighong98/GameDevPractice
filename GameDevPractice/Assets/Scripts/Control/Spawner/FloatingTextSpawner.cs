@@ -28,21 +28,20 @@ namespace TH.Utils
             //todo: 생성자 파라미터로 오브젝트 풀 주입
             ResourceManager.Instance.WaitForPreLoad(() =>
             {
-                damageTextPrefab = ResourceManager.Instance.Load<GameObject>("DamageText");
-                if (damageTextPrefab == null)
+                if (ResourceManager.Instance.Load<GameObject>("DamageText") is not {} prefab)
                 {
                     Logg.LogError($"[{nameof(FloatingTextSpawner)}] failed to get damage text prefab");
                     return;
                 }
-
-                if (PoolManager.Instance.GetPool(damageTextPrefab) is { } result)
-                {
-                    damageTextPool = result;
-                }
-                else
+                
+                if (PoolManager.Instance.GetPool(prefab) is not { } result)
                 {
                     Logg.LogError($"[{nameof(FloatingTextSpawner)}] failed to get damage text pool");
+                    return;
                 }
+                
+                damageTextPrefab = prefab;
+                damageTextPool = result;
             });
         }
 
@@ -105,9 +104,8 @@ namespace TH.Utils
         
         private void ShowDamageText(Transform anchor, in HitResult hr)
         {
-            Logg.Log($"[FTSpawner] print damage ({anchor.name}, {hr.Damage})", Logg.LoggingMode.InProgress);
-            // 풀에서 꺼내 TMP/DOTween 연출…
-            var s = PoolManager.Instance.GetFromPool<DamageTextHandler>(damageTextPrefab, anchor, anchor.position);
+            Logg.Log($"[FTSpawner] print damage ({anchor.name}, {hr.Damage})", Logg.LoggingMode.Completed);
+            var s = PoolManager.Instance.GetFromPool<DamageTextController>(damageTextPrefab, null, anchor.position);
             s.SetText(hr.Damage.ToString(CultureInfo.InvariantCulture));
         }
 

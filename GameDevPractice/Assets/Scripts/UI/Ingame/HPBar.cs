@@ -153,10 +153,7 @@ namespace RPG.UI
                     .Delay(deathDelaySpan, DelayType.Realtime, PlayerLoopTiming.PreLateUpdate,
                         token).SuppressCancellationThrow();
             }
-            catch (Exception e)
-            {
-                Logg.LogError($"[{nameof(HPBar)}] unexpected error occurred while {nameof(HideAfterSecond)}. {e}");
-            }
+            catch (Exception e) { Logg.LogError($"[{nameof(HPBar)}] unexpected error occurred while {nameof(HideAfterSecond)}. {e}"); }
             Hide(keepHiding);
         }
         
@@ -183,19 +180,19 @@ namespace RPG.UI
 
         private void OnHealthRatioChanged(float ratio)
         {
-            // Util.Log($"{target.gameObject.name}: health ratio is changed. {ratio}");
+            Logg.Log($"{target.gameObject.name}: health ratio is changed. {ratio}");
             SetFill(ratio);
         }
 
         private void OnMaxHealthChanged(float amount)
         {
-            Logg.Log($"{target.gameObject.name}: max health is changed. {amount}", Logg.LoggingMode.InProgress);
+            Logg.Log($"{target.gameObject.name}: HealthBar: max health is changed. {amount}", Logg.LoggingMode.Completed);
         }
 
         private void OnOwnerDied()
         {
             if (gameObject is not { activeSelf: true }) return;
-            Logg.Log($"[{target?.name}.{nameof(HPBar)}] {nameof(OnOwnerDied)}() invoked", Logg.LoggingMode.Completed);
+            Logg.Log($"[{target.name}.{nameof(HPBar)}] {nameof(OnOwnerDied)}() invoked", Logg.LoggingMode.Completed);
             HideAfterSecond(DelayHideByDeath, true).Forget();
         }
 
@@ -243,19 +240,14 @@ namespace RPG.UI
         public void OnDestroyFromPool()
         {
             if (!barAnimCTS.IsCancellationRequested)
-            {
                 barAnimCTS.Cancel();
-            }
             barAnimCTS.Dispose();
         }
 
         public void ReleaseSelf()
         {
-            if (gameObject.activeSelf)
-            {
-                // PoolingManager.Instance.ReleaseFromPool(this);
-                PoolManager.Instance.ReleaseFromPool(this);
-            }
+            if (!gameObject.activeSelf) return;
+            PoolManager.Instance.ReleaseFromPool(this);
         }
     }
 }

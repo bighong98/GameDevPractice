@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace TH.Utils
 {
-    public interface IFloatingTextHandler
+    public interface IFloatingTextController
     {
         void SetText(string s);
     }
