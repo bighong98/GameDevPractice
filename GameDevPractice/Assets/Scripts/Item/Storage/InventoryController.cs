@@ -17,7 +17,7 @@ namespace TH.Item
     public sealed class InventoryController: MonoBehaviour
     {
         // model
-        private IPlayerInventory pInventory;
+        private IPlayerStorage pStorage;
         private IEquipmentHolder pEquipHolder;
         // view
         private IPlayerInventoryUI pInvenUI;
@@ -33,7 +33,7 @@ namespace TH.Item
         
         private void Awake()
         {
-            pInventory = ServiceLocator.Require<IPlayerInventory>();
+            pStorage = ServiceLocator.Require<IPlayerStorage>();
             itemUsageHandler = ServiceLocator.Require<IItemUsageHandler>();
             
             if (!TryGetComponent(out pInvenUI))
@@ -55,13 +55,13 @@ namespace TH.Item
 
         private void OnEnable()
         {
-            pInventory.OnStorageChanged += RefreshStorageUI;
+            pStorage.OnStorageChanged += RefreshStorageUI;
             pEquipHolder.OnStorageChanged += RefreshEquipmentUI;
         }
 
         private void OnDisable()
         {
-            pInventory.OnStorageChanged -= RefreshStorageUI;
+            pStorage.OnStorageChanged -= RefreshStorageUI;
             pEquipHolder.OnStorageChanged -= RefreshEquipmentUI;
             
             Clear();
@@ -76,9 +76,9 @@ namespace TH.Item
             }
 
             // 스토리지(Model) 이벤트 바인드
-            BindStorageEvents(pInventory);
+            BindStorageEvents(pStorage);
             BindStorageEvents(pEquipHolder);
-            SubscribeStorageCapacityEvent(pInventory);
+            SubscribeStorageCapacityEvent(pStorage);
             
             // UI(View) 이벤트 바인드
             BindStorageUIEvents(storageUI);
@@ -87,7 +87,7 @@ namespace TH.Item
             BindDragDropUIEvents();
             
             // 일회성 강제 갱신
-            OnStorageCapacityChanged(pInventory, pInventory.Capacity);
+            OnStorageCapacityChanged(pStorage, pStorage.Capacity);
             pInvenUI.UpdateFilter(currentFilter);
             RefreshStorageUI();
             RefreshEquipmentUI();
@@ -168,7 +168,7 @@ namespace TH.Item
 
         private void SubscribeSlotModifiedEvent(IGameItemStorage storage)
         {
-            storage.OnSlotChanged2 += (slot) => { OnSlotItemChanged(storage, slot); };
+            storage.OnSlotChanged += (slot) => { OnSlotItemChanged(storage, slot); };
         }
 
         private void SubscribeStorageCapacityEvent(IMutableCapacity storage)
@@ -299,7 +299,7 @@ namespace TH.Item
         {
             if (filter == currentFilter) return; // 현재 필터와 동일한 필터로 변경은 무시
             
-            FilterStorage(pInventory, filter);
+            FilterStorage(pStorage, filter);
             currentFilter = filter;
             pInvenUI.UpdateFilter(filter);
         }
@@ -327,7 +327,7 @@ namespace TH.Item
 
         private void RefreshStorageUI()
         {
-            RefreshStorageUI(pInventory);
+            RefreshStorageUI(pStorage);
         }
         
         private void RefreshEquipmentUI()
@@ -356,9 +356,9 @@ namespace TH.Item
         private void HandleItemUse(IGameItemStorage storage, IGameItemSlot slot)
         {
             IGameItemStorage dest;
-            if (storage == pInventory)
+            if (storage == pStorage)
                 dest = pEquipHolder;
-            else dest = pInventory;
+            else dest = pStorage;
             
             switch (slot.GetItemInfo.itemType)
             {
@@ -389,7 +389,7 @@ namespace TH.Item
 
         private IGameItemStorage GetStorageFromUI(object targetUI)
         {
-            if (targetUI == pInvenUI.StorageUI) return pInventory;
+            if (targetUI == pInvenUI.StorageUI) return pStorage;
             if (targetUI == pInvenUI.EquipmentUI) return pEquipHolder;
             
             return null;
@@ -397,7 +397,7 @@ namespace TH.Item
 
         private IStorageUI GetUIFromStorage(object storage)
         {
-            if (storage == pInventory) return pInvenUI.StorageUI;
+            if (storage == pStorage) return pInvenUI.StorageUI;
             if (storage == pEquipHolder) return pInvenUI.EquipmentUI;
 
             return null;
@@ -495,7 +495,7 @@ namespace TH.Item
 
         private CancellationTokenSource AddNewItemModifyProgress(IGameItemSlot slot)
         {
-            Logg.Log($"{nameof(AddNewItemModifyProgress)}: {slot}", Logg.LoggingMode.InProgress);
+            Logg.Log($"{nameof(AddNewItemModifyProgress)}: {slot}", Logg.LoggingMode.Completed);
             if (progressingSlots.TryGetValue(slot, out var cts) &&
                 !(cts?.IsCancellationRequested ?? true))
             {

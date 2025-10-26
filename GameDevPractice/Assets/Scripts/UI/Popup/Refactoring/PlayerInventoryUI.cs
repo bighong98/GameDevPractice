@@ -50,7 +50,7 @@ namespace TH.Item
         
         #endregion
         
-        private IPlayerInventory inventory;
+        private IPlayerStorage storage;
         
         private PointerEventData pointerEventData;
         private List<RaycastResult> raycastResults;
@@ -89,7 +89,7 @@ namespace TH.Item
             
             raycastResults = new List<RaycastResult>();
             pointerEventData = new PointerEventData(EventSystem.current);
-            inventory = ServiceLocator.Require<IPlayerInventory>();
+            storage = ServiceLocator.Require<IPlayerStorage>();
             
             Init();
         }
@@ -97,8 +97,8 @@ namespace TH.Item
         private void OnEnable()
         {
             SubscribeInputEvents();
-            OnInventoryCapacityChanged((inventory as IGameItemStorage).Capacity);
-            OnFilterChanged(inventory.CurrentFilter);
+            OnStorageCapacityChanged((storage as IGameItemStorage).Capacity);
+            OnFilterChanged(storage.CurrentFilter);
             ConnectDataWithSlotUIs();
         }
 
@@ -166,7 +166,7 @@ namespace TH.Item
         private void InitializeSlotUIs()
         {
             int slotNum = slots.Count;
-            int slotCap = (inventory as IGameItemStorage).Capacity;
+            int slotCap = (storage as IGameItemStorage).Capacity;
 
             // 아이템 슬롯 UI 오브젝트 풀 생성
             if (ResourceManager.Instance.Load<GameObject>("ItemSlotUI.prefab") is { } loadedSlotUI)
@@ -176,7 +176,7 @@ namespace TH.Item
                     itemSlotUIPrefab,
                     GetObject((int)GameObjects.ItemSlots).transform,
                     capacity: slotCap,
-                    maxSize: inventory.MaxCapacity,
+                    maxSize: storage.MaxCapacity,
                     registerPool: false);
             }
             
@@ -264,24 +264,24 @@ namespace TH.Item
 
         private void ConnectDataWithSlotUIs()
         {
-            inventory.OnSlotChanged += OnInventorySlotUpdated;
+            // storage.OnSlotChanged += OnStorageSlotUpdated;
             // inventory.OnEquippedSlotChanged += OnEquipmentSlotUpdated;
 
-            inventory.OnStorageChanged += this.OnInventoryUpdated;
-            inventory.OnCapacityChanged += this.OnInventoryCapacityChanged;
-            inventory.OnFilterChanged += this.OnFilterChanged;
+            storage.OnStorageChanged += this.OnStorageUpdated;
+            storage.OnCapacityChanged += this.OnStorageCapacityChanged;
+            storage.OnFilterChanged += this.OnFilterChanged;
         }
 
         private void DisConnectDataWithSlotUIs()
         {
             if (Util.IsQuitting) return;
             
-            inventory.OnSlotChanged -= OnInventorySlotUpdated;
+            // storage.OnSlotChanged -= OnStorageSlotUpdated;
             // inventory.OnEquippedSlotChanged -= OnEquipmentSlotUpdated;
             
-            inventory.OnStorageChanged -= this.OnInventoryUpdated;
-            inventory.OnCapacityChanged -= this.OnInventoryCapacityChanged;
-            inventory.OnFilterChanged -= this.OnFilterChanged;
+            storage.OnStorageChanged -= this.OnStorageUpdated;
+            storage.OnCapacityChanged -= this.OnStorageCapacityChanged;
+            storage.OnFilterChanged -= this.OnFilterChanged;
         }
         #endregion
 
@@ -293,7 +293,7 @@ namespace TH.Item
             // if (inventory.GetInventorySlot(index) is not { } itemSlot) return; // 인벤토리 시스템으로부터 슬롯 정보 받아오기
             
             if (!IsValidInventoryIndex(index)) return;
-            if (!inventory.TryGetItemSlot(index, out var itemSlot)) return;
+            if (!storage.TryGetItemSlot(index, out var itemSlot)) return;
             
             if (itemSlot.IsVisible) 
                 EnableSlotUI(index);
@@ -375,8 +375,6 @@ namespace TH.Item
         }
 
         #endregion
-
-
         
         #region Slot Icon
         
@@ -402,7 +400,6 @@ namespace TH.Item
         }
 
         #endregion
-
         
         #region Handle Event
         
@@ -413,7 +410,7 @@ namespace TH.Item
             GetButton((int)Buttons.SortButton).interactable = (filter == InventoryFilterType.All);
         }
         
-        private void OnInventoryCapacityChanged(int capa)
+        private void OnStorageCapacityChanged(int capa)
         {
             int currCount = slots.Count; 
             if (currCount == capa) return;
@@ -433,7 +430,7 @@ namespace TH.Item
             }
         }
 
-        private void OnInventorySlotUpdated(int index)
+        private void OnStorageSlotUpdated(int index)
         {
             UpdateSlotUI(index);
             if (IsValidInventoryIndex(index))
@@ -451,14 +448,13 @@ namespace TH.Item
             }
         }
 
-        private void OnInventoryUpdated()
+        private void OnStorageUpdated()
         {
             UpdateAllItemSlotUIs();
             CancelAllItemModifyingProgress();
         }
 
         #endregion
-
         
         #region Validate Slot UI
 
@@ -603,14 +599,14 @@ namespace TH.Item
 
         private void TryUseItem(ItemSlotBaseUI slotUI)
         {
-            if (inventory == null) return;
+            if (storage == null) return;
             // inventory.TryUseItem(slotUI);
-            inventory.TryUseItem(slotUI.Index);
+            storage.TryUseItem(slotUI.Index);
         }
 
         private void TryShowDetailedItemTooltip(Vector2 pos)
         {
-            if (inventory == null) return;
+            if (storage == null) return;
             if (RaycastAndGetFirstComponent<ItemSlotBaseUI>() is { } slotUI)
             {
                 ShowDetailedTooltip(slotUI);
@@ -619,16 +615,16 @@ namespace TH.Item
         
         private void TrySwapItems(ItemSlotBaseUI fromSlotUI, ItemSlotBaseUI toSlotUI)
         {
-            if (inventory == null) return;
+            if (storage == null) return;
             
             Logg.Log($"trying to TrySwapItems({fromSlotUI}.{fromSlotUI.Index}, {toSlotUI}.{toSlotUI.Index})", Logg.LoggingMode.Completed);
             // inventory.TrySwapItems(fromSlotUI, toSlotUI);
-            inventory.TryTransferItem(fromSlotUI.Index, toSlotUI.Index);
+            storage.TryTransferItem(fromSlotUI.Index, toSlotUI.Index);
         }
 
         private void TryDiscardItem(ItemSlotBaseUI slotUI, bool confirm)
         {
-            if (inventory == null) return;
+            if (storage == null) return;
 
             if (confirm)
             {
@@ -637,13 +633,13 @@ namespace TH.Item
             else
             {
                 // inventory.RemoveItem(slotUI);
-                inventory.TryRemoveItem(slotUI.Index);
+                storage.TryRemoveItem(slotUI.Index);
             }
         }
 
         private void TryDivideItem(Vector2 pos)
         {
-            if (inventory == null) return;
+            if (storage == null) return;
             if (RaycastAndGetFirstComponent<ItemSlotUI>() is { } slotUI)
             {
                 Logg.Log($"[PlayerInventoryUI] trying to divideItem from '{slotUI}'");
@@ -658,19 +654,19 @@ namespace TH.Item
         
         private void OnCompressButtonPressed()
         {
-            if (inventory == null) return;
+            if (storage == null) return;
             // inventory.CompressInven(false);
         }
         
         private void OnSortButtonPressed()
         {
-            if (inventory == null) return;
+            if (storage == null) return;
             // inventory.CompressInven(true);
         }
         
         private void OnFilterButtonPressed(InventoryFilterType filter)
         {
-            if (inventory == null) return;
+            if (storage == null) return;
             // inventory.TryFilterInven(filter);
         }
         
@@ -706,7 +702,7 @@ namespace TH.Item
             UnHighlightEquipmentSlot(); // 이전에 강조된 슬롯이 존재하면 강조 해제
             
             // if (inventory.FindUITargetSlot(beginDragSlot) is not { HasItem: true } targetSlot) return;
-            if (!inventory.TryGetItemSlot(beginDragSlot.Index, out var slot)
+            if (!storage.TryGetItemSlot(beginDragSlot.Index, out var slot)
                 || slot is not { HasItem: true }) return;
             if (slot.GetItemInfo is not EquipmentTypeSO equipmentData) return;
             if (!IsValidEquipIndex((int)equipmentData.slotType)) return;
@@ -780,7 +776,7 @@ namespace TH.Item
             void ShowCurrTooltip()
             {
                 itemTooltip.MoveTooltip(currCursorPoint);
-                if (inventory.TryGetItemSlot(mouseOverSlot.Index, out var slot))
+                if (storage.TryGetItemSlot(mouseOverSlot.Index, out var slot))
                     itemTooltip.ShowTooltip(slot);
                 // itemTooltip.ShowTooltip(
                 //     mouseOverSlot switch
@@ -861,10 +857,10 @@ namespace TH.Item
                     RemoveConfirmText,
                     YesAction: () =>
                     {
-                        if (inventory == null) return; // 중간에 인벤토리 인스턴스의 참조를 잃어버린 경우 (씬 이동 등) 오류 방지
+                        if (storage == null) return; // 중간에 인벤토리 인스턴스의 참조를 잃어버린 경우 (씬 이동 등) 오류 방지
                         if (targetSlot == null || !targetSlot.gameObject.activeSelf) return; // 중간에 슬롯이 비활성화된 경우 오류 방지
                         // inventory.RemoveItem(targetSlot);
-                        inventory.TryRemoveItem(targetSlot.Index);
+                        storage.TryRemoveItem(targetSlot.Index);
                         if (popup is {} validPopup) validPopup.ClosePopupUI();
                     },
                     NoAction: () =>
@@ -876,9 +872,9 @@ namespace TH.Item
 
         private void ShowDetailedTooltip(ItemSlotBaseUI slotUI)
         {
-            if (inventory == null) return;
+            if (storage == null) return;
             // if (inventory.FindUITargetSlot(slotUI) is not { GetAmount: > 0, GetItem: {} item, GetItemInfo: {} itemInfo } slot) return;
-            if (!inventory.TryGetItem(slotUI.Index, out var item) || item.GetItemInfo is not { } itemInfo) return;
+            if (!storage.TryGetItem(slotUI.Index, out var item) || item.GetItemInfo is not { } itemInfo) return;
             
             Logg.Log($"{nameof(ShowDetailedTooltip)}: {slotUI}");
             var currSlotUI = slotUI;

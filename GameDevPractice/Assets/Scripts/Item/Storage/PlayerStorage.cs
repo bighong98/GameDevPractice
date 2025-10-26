@@ -11,10 +11,10 @@ using UnityEngine.SceneManagement;
 
 namespace TH.Item
 {
-    public sealed class PlayerInventory : IPlayerInventory, ISavableWithId
+    public sealed class PlayerStorage : IPlayerStorage, ISavableWithId
     {
-        public event Action<IGameItemSlot> OnSlotChanged2;
-        public event Action<int> OnSlotChanged; // 직접 .Invoke() 호출하지 말고 NotifySlotChanged(index) 사용할 것
+        public event Action<IGameItemSlot> OnSlotChanged;
+        // public event Action<int> OnSlotChanged; // 직접 .Invoke() 호출하지 말고 NotifySlotChanged(index) 사용할 것
         public event Action OnStorageChanged;
         public event Action<int> OnCapacityChanged;
         public event Action<InventoryFilterType> OnFilterChanged;
@@ -36,7 +36,7 @@ namespace TH.Item
         private int GetEndIdx => Mathf.Min(capacity, slots.Count) - 1; // return value -1 means not initialized or cleared 
         private bool IsValidSlotIdx(int index) => index >= 0 && index <= GetEndIdx;
         
-        public PlayerInventory()
+        public PlayerStorage()
         {
             SetCapacity(InitialCapacity);
             FillInventoryWithEmptySlots();
@@ -373,8 +373,8 @@ namespace TH.Item
             if (!IsValidSlotIdx(index)) return;
             if (slots[index] is not { } slot) return;
             slot.SetVisibility(IsVisibleByFilter(slot, CurrentFilter));
-            OnSlotChanged?.Invoke(index);
-            OnSlotChanged2?.Invoke(slots[index]);
+            // OnSlotChanged?.Invoke(index);
+            OnSlotChanged?.Invoke(slots[index]);
         }
 
         private IGameItemSlot GetSlot(int index)
@@ -504,7 +504,7 @@ namespace TH.Item
         {
             if (slots.Count > 0)
             {
-                Logg.Log($"[{nameof(PlayerInventory)}] item slot list has something before initialization", Logg.LoggingMode.InProgress);
+                Logg.Log($"[{nameof(PlayerStorage)}] item slot list has something before initialization", Logg.LoggingMode.InProgress);
                 slots.Clear();
             }
             for (int i = 0; i < InitialCapacity; i++)

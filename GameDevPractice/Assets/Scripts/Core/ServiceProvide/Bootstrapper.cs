@@ -28,7 +28,7 @@ namespace TH.Core.Service
             ServiceLocator.Register<IRaycastHandler>(new RaycastHandler());
             ServiceLocator.Register<IDamageCalculator>(new DamageCalculator());
             ServiceLocator.Register<ICombatSystem>(new CombatSystem());
-            ServiceLocator.Register<IPlayerInventory>(new PlayerInventory());
+            ServiceLocator.Register<IPlayerStorage>(new PlayerStorage());
             ServiceLocator.Register<IItemUsageHandler>(new ItemUsageHandler());
             ServiceLocator.Register<IFloatingTextSpawner>(new FloatingTextSpawner());
         }

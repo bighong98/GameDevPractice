@@ -11,7 +11,7 @@ namespace TH.Control
     public class PlayerInteractor : MonoBehaviour
     {
         private IEquipmentHolder playerEquip;
-        private IPlayerInventory playerStorage;
+        private IPlayerStorage playerStorage;
         private IItemUsageHandler itemUsageHandler;
         private readonly IItemBuilder itemBuilder = new ItemBuilder();
 
@@ -20,7 +20,7 @@ namespace TH.Control
         private void Awake()
         {
             transform.parent.TryGetComponent(out playerEquip);
-            playerStorage = ServiceLocator.Require<IPlayerInventory>();
+            playerStorage = ServiceLocator.Require<IPlayerStorage>();
         }
 
         private void OnTriggerEnter(Collider other)

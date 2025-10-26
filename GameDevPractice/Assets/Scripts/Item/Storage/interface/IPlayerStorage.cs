@@ -4,7 +4,7 @@ using System;
 
 namespace TH.Item
 {
-    public interface IPlayerInventory : 
+    public interface IPlayerStorage : 
         IGameItemStorage, 
         IStackableStorage,
         IFilterableStorage, 

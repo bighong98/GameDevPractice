@@ -37,19 +37,6 @@ namespace RPG.UI
         public void ShowTooltip() => gameObject.SetActive(true);
         public void HideTooltip() => gameObject.SetActive(false);
 
-        public void ShowTooltip(BaseItem item)
-        {
-            if (item == null)
-            {
-                Logg.Log("itemTooltip: itemData is null");
-                return;
-            }
-
-            ShowTooltip();
-            GetTMPText((int)TMPTexts.ItemNameText).text = item.ItemName;
-            GetTMPText((int)TMPTexts.ItemDescText).text = item.ItemDesc;
-        }
-
         public void ShowTooltip(ItemSlot item)
         {
             if (item == null || item.GetItemInfo == null)

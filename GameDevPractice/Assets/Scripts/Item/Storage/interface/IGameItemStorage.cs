@@ -7,8 +7,7 @@ namespace TH.Item
     public interface IGameItemStorage
     {
         // delegate event
-        event Action<IGameItemSlot> OnSlotChanged2;
-        event Action<int> OnSlotChanged; // 특정 슬롯 데이터 갱신
+        event Action<IGameItemSlot> OnSlotChanged;
         event Action OnStorageChanged; // 전체 슬롯 데이터 갱신 
         
         // collection (readonly)

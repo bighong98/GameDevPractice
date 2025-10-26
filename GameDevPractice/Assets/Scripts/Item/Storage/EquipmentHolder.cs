@@ -9,8 +9,7 @@ namespace TH.Item
     public class EquipmentHolder : MonoBehaviour, IEquipmentHolder, ITypeDependent
     {
         public event EventHandler<EquipArgs> OnEquipmentChanged;
-        public event Action<IGameItemSlot> OnSlotChanged2;
-        public event Action<int> OnSlotChanged;
+        public event Action<IGameItemSlot> OnSlotChanged;
         public event Action OnStorageChanged;
 
         public IReadOnlyCollection<IGameItemSlot> ItemSlots => equipments;
@@ -210,8 +209,7 @@ namespace TH.Item
 
         private void NotifySlotChanged(int index)
         {
-            OnSlotChanged?.Invoke(index);
-            OnSlotChanged2?.Invoke(equipments[index]);
+            OnSlotChanged?.Invoke(equipments[index]);
         }
 
         #endregion
