@@ -385,21 +385,6 @@ namespace TH.Item
         private void HandleItemUse(IGameItemStorage storage, IGameItemSlot slot)
         {
             OnSlotItemTryUsed(storage, slot);
-            // IGameItemStorage dest;
-            // if (storage == pStorage)
-            //     dest = pEquipHolder;
-            // else dest = pStorage;
-            //
-            // switch (slot.GetItemInfo.itemType)
-            // {
-            //     case Enums.ItemType.Equipment:
-            //         itemTransfer.Transfer(storage, dest, slot);
-            //         break;
-            //     
-            //     default: 
-            //         itemTransfer.Consume(storage, dest, slot); // todo: 개수 적용
-            //         break;
-            // }
         }
 
         private void FilterStorage(IGameItemStorage storage, InventoryFilterType filter)
