@@ -15,13 +15,13 @@ namespace TH.Item
         void TransferOrSwap(IGameItemStorage source, IGameItemSlot sourceSlot,
             IGameItemStorage other, IGameItemSlot otherSlot);
         
-        
-        void Transfer(IGameItemStorage source, IGameItemStorage destination, IGameItemSlot slot); // 저장소 간 아이템 이동
-
-        void Transfer(IGameItemStorage oneStorage, IGameItemStorage anotherStorage, 
-            IGameItemSlot oneSlot, IGameItemSlot anotherSlot);
-        void TransferOrSwap(IGameItemStorage oneStorage, IGameItemStorage anotherStorage, IGameItemSlot oneSlot,
-            IGameItemSlot anotherSlot); // 저장소 간 아이템 이동 (도착 슬롯 특정 및 자리 교환) //todo: 추가 파라미터로 취소/덮어쓰기/자리교환 선택하도록 변경
+        // deprecated
+        // void Transfer(IGameItemStorage source, IGameItemStorage destination, IGameItemSlot slot); // 저장소 간 아이템 이동
+        //
+        // void Transfer(IGameItemStorage oneStorage, IGameItemStorage anotherStorage, 
+        //     IGameItemSlot oneSlot, IGameItemSlot anotherSlot);
+        // void TransferOrSwap(IGameItemStorage oneStorage, IGameItemStorage anotherStorage, IGameItemSlot oneSlot,
+        //     IGameItemSlot anotherSlot); // 저장소 간 아이템 이동 (도착 슬롯 특정 및 자리 교환) //todo: 추가 파라미터로 취소/덮어쓰기/자리교환 선택하도록 변경
         
         void Consume(IGameItemStorage source, object destination, IGameItemSlot slot, int amount = 1);
     }

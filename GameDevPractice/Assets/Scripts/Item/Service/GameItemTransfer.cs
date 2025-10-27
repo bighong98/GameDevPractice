@@ -128,82 +128,6 @@ namespace TH.Item
             }
         }
         
-        public void Transfer(IGameItemStorage source, IGameItemStorage destination, IGameItemSlot slot)
-        {
-            if (slot is not { IsAccessible: true, HasItem: true, GetItem: {} item, GetItemInfo: { } data }) return;
-
-            if (!destination.TryStore(item, out var destSlot) || 
-                !(source.TryRemoveItem(slot.Index, out var existed) && item == existed))
-            {
-                destSlot?.Clear();
-                Logg.LogError($"[ItemUsageHandler] something went wrong while Transfer({source}, {destination}, {slot})");
-            }
-        }
-
-        public void Transfer(IGameItemStorage oneStorage, IGameItemStorage anotherStorage,
-            IGameItemSlot oneSlot, IGameItemSlot anotherSlot)
-        {
-            if (!anotherStorage.TryStore(oneSlot.GetItem, anotherSlot.Index))
-            {
-                Logg.LogError($"[ItemUsageHandler] Transfer(from TransferOrSwap) - TryStore({oneSlot.GetItem}, {anotherSlot.Index}) failed");
-                return;
-            }
-            
-            if (!oneStorage.TryRemoveItem(oneSlot.Index)) // 기존 슬롯에서 아이템 제거 시도
-            {
-                Logg.LogError($"[ItemUsageHandler] Transfer(from TransferOrSwap) - TryRemoveItem({anotherSlot.Index}) for roll back failed");
-                anotherStorage.TryRemoveItem(anotherSlot.Index); // 원복 시도
-            }
-        }
-        
-
-        public void TransferOrSwap(IGameItemStorage oneStorage, IGameItemStorage anotherStorage, 
-            IGameItemSlot oneSlot, IGameItemSlot anotherSlot)
-        {
-            Logg.Log($"[ItemUsageHandler] TransferOrSwap({oneStorage}, {anotherStorage}, {oneSlot}, {anotherSlot}) invoked", Logg.LoggingMode.Completed);
-
-            if (!(anotherSlot?.HasItem ?? false)) // anotherSlot(=드랍 슬롯)이 빈 슬롯이라면 단순 아이템 이동
-            {
-                Transfer(oneStorage, oneSlot,anotherStorage, anotherSlot);
-                // Transfer(oneStorage, anotherStorage, oneSlot, anotherSlot);
-                return;
-            }
-            
-            if (!oneStorage.TryRemoveItem(oneSlot.Index, out var oneItem) ||
-                !anotherStorage.TryRemoveItem(anotherSlot.Index, out var anotherItem))
-            {
-                if (oneItem != null) // anotherSource로부터 아이템 제거에 실패한 경우
-                    oneStorage.TryStore(oneItem, oneSlot.Index); // 원복
-                return;
-            }
-
-            if (!oneStorage.TryStore(anotherItem, oneSlot.Index))
-            {
-                if (oneStorage.TryStore(oneItem, oneSlot.Index) &&
-                    anotherStorage.TryStore(anotherItem, anotherSlot.Index))
-                {
-                    Logg.Log($"[{nameof(GameItemTransfer)}] ItemSwap failed and roll backed", Logg.LoggingMode.Completed);
-                    return;
-                }
-                
-                Logg.LogError($"[{nameof(GameItemTransfer)}] ItemSwap failed and roll back failed");
-                return;
-            }
-
-            if (!anotherStorage.TryStore(oneItem, anotherSlot.Index))
-            {
-                if (oneStorage.TryRemoveItem(oneSlot.Index) &&
-                    oneStorage.TryStore(oneItem, oneSlot.Index) &&
-                    anotherStorage.TryStore(anotherItem, anotherSlot.Index))
-                {
-                    Logg.Log($"[{nameof(GameItemTransfer)}] ItemSwap failed and roll backed", Logg.LoggingMode.Completed);
-                    return;
-                }
-                Logg.LogError($"[{nameof(GameItemTransfer)}] ItemSwap failed and roll back failed");
-                return;
-            }
-        }
-
         public void Consume(IGameItemStorage source, object destination, IGameItemSlot slot, int amount = 1)
         {
             if (slot is not { IsAccessible: true, HasItem: true, GetItem: {} item, GetItemInfo: { } data }) return;
@@ -219,3 +143,83 @@ namespace TH.Item
     }
 }
 
+
+#region Deprecated
+//
+// public void Transfer(IGameItemStorage source, IGameItemStorage destination, IGameItemSlot slot)
+//         {
+//             if (slot is not { IsAccessible: true, HasItem: true, GetItem: {} item, GetItemInfo: { } data }) return;
+//
+//             if (!destination.TryStore(item, out var destSlot) || 
+//                 !(source.TryRemoveItem(slot.Index, out var existed) && item == existed))
+//             {
+//                 destSlot?.Clear();
+//                 Logg.LogError($"[ItemUsageHandler] something went wrong while Transfer({source}, {destination}, {slot})");
+//             }
+//         }
+//
+//         public void Transfer(IGameItemStorage oneStorage, IGameItemStorage anotherStorage,
+//             IGameItemSlot oneSlot, IGameItemSlot anotherSlot)
+//         {
+//             if (!anotherStorage.TryStore(oneSlot.GetItem, anotherSlot.Index))
+//             {
+//                 Logg.LogError($"[ItemUsageHandler] Transfer(from TransferOrSwap) - TryStore({oneSlot.GetItem}, {anotherSlot.Index}) failed");
+//                 return;
+//             }
+//             
+//             if (!oneStorage.TryRemoveItem(oneSlot.Index)) // 기존 슬롯에서 아이템 제거 시도
+//             {
+//                 Logg.LogError($"[ItemUsageHandler] Transfer(from TransferOrSwap) - TryRemoveItem({anotherSlot.Index}) for roll back failed");
+//                 anotherStorage.TryRemoveItem(anotherSlot.Index); // 원복 시도
+//             }
+//         }
+//         
+//
+//         public void TransferOrSwap(IGameItemStorage oneStorage, IGameItemStorage anotherStorage, 
+//             IGameItemSlot oneSlot, IGameItemSlot anotherSlot)
+//         {
+//             Logg.Log($"[ItemUsageHandler] TransferOrSwap({oneStorage}, {anotherStorage}, {oneSlot}, {anotherSlot}) invoked", Logg.LoggingMode.Completed);
+//
+//             if (!(anotherSlot?.HasItem ?? false)) // anotherSlot(=드랍 슬롯)이 빈 슬롯이라면 단순 아이템 이동
+//             {
+//                 Transfer(oneStorage, oneSlot,anotherStorage, anotherSlot);
+//                 // Transfer(oneStorage, anotherStorage, oneSlot, anotherSlot);
+//                 return;
+//             }
+//             
+//             if (!oneStorage.TryRemoveItem(oneSlot.Index, out var oneItem) ||
+//                 !anotherStorage.TryRemoveItem(anotherSlot.Index, out var anotherItem))
+//             {
+//                 if (oneItem != null) // anotherSource로부터 아이템 제거에 실패한 경우
+//                     oneStorage.TryStore(oneItem, oneSlot.Index); // 원복
+//                 return;
+//             }
+//
+//             if (!oneStorage.TryStore(anotherItem, oneSlot.Index))
+//             {
+//                 if (oneStorage.TryStore(oneItem, oneSlot.Index) &&
+//                     anotherStorage.TryStore(anotherItem, anotherSlot.Index))
+//                 {
+//                     Logg.Log($"[{nameof(GameItemTransfer)}] ItemSwap failed and roll backed", Logg.LoggingMode.Completed);
+//                     return;
+//                 }
+//                 
+//                 Logg.LogError($"[{nameof(GameItemTransfer)}] ItemSwap failed and roll back failed");
+//                 return;
+//             }
+//
+//             if (!anotherStorage.TryStore(oneItem, anotherSlot.Index))
+//             {
+//                 if (oneStorage.TryRemoveItem(oneSlot.Index) &&
+//                     oneStorage.TryStore(oneItem, oneSlot.Index) &&
+//                     anotherStorage.TryStore(anotherItem, anotherSlot.Index))
+//                 {
+//                     Logg.Log($"[{nameof(GameItemTransfer)}] ItemSwap failed and roll backed", Logg.LoggingMode.Completed);
+//                     return;
+//                 }
+//                 Logg.LogError($"[{nameof(GameItemTransfer)}] ItemSwap failed and roll back failed");
+//                 return;
+//             }
+//         }
+
+#endregion

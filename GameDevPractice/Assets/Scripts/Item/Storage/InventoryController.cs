@@ -28,6 +28,7 @@ namespace TH.Item
         private SlotUIInfo<IHoverableStorageUI> lastHovered;
         private InventoryFilterType currentFilter = InventoryFilterType.All;
         
+        // outer service
         private IGameItemTransfer itemTransfer;
 
         
