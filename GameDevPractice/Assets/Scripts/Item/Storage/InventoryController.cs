@@ -28,13 +28,13 @@ namespace TH.Item
         private SlotUIInfo<IHoverableStorageUI> lastHovered;
         private InventoryFilterType currentFilter = InventoryFilterType.All;
         
-        private IItemUsageHandler itemUsageHandler;
+        private IGameItemTransfer itemTransfer;
 
         
         private void Awake()
         {
             pStorage = ServiceLocator.Require<IPlayerStorage>();
-            itemUsageHandler = ServiceLocator.Require<IItemUsageHandler>();
+            itemTransfer = ServiceLocator.Require<IGameItemTransfer>();
             
             if (!TryGetComponent(out pInvenUI))
             {
@@ -128,6 +128,8 @@ namespace TH.Item
         private void BindStorageEvents(IGameItemStorage storage)
         {
             SubscribeSlotModifiedEvent(storage);
+            if (storage is IUsableItemStorage uStorage)
+                SubscribeStorageUsageEvent(uStorage);
         }
         
         private void RenewPlayerReference()
@@ -175,6 +177,11 @@ namespace TH.Item
         {
             storage.OnCapacityChanged += (capacity) => { OnStorageCapacityChanged(storage, capacity); };
         }
+
+        private void SubscribeStorageUsageEvent(IUsableItemStorage storage)
+        {
+            storage.OnItemTryUsed += (slot) => { OnSlotItemTryUsed(storage, slot); };
+        }
         
         #endregion
 
@@ -193,6 +200,27 @@ namespace TH.Item
         {
             if (GetUIFromStorage(storage) is not IMutableCapacityStorageUI storageUI) return;
             UpdateStorageUICapacity(storageUI, capacity);
+        }
+
+        //todo: HandleItemUse()와 통합
+        private void OnSlotItemTryUsed(IGameItemStorage storage, IGameItemSlot slot)
+        {
+            if (slot is not { HasItem: true, GetItem: { } item, GetItemInfo: { } itemData }) return;
+            if (!itemData.isUsable) return;
+
+            IGameItemStorage dest = storage == pStorage ? pEquipHolder : pStorage;
+            
+            switch (item.Type)
+            {
+                case Enums.ItemType.Countable:
+                    itemTransfer.Consume(storage, dest, slot); // todo: 개수 적용
+                    break;
+                case Enums.ItemType.Equipment:
+                    itemTransfer.TransferOrSwap(storage, slot, dest);
+                    break;
+                default:
+                    break;
+            }
         }
 
         #endregion
@@ -281,7 +309,8 @@ namespace TH.Item
                 return;
             
             pInvenUI.CancelDrag();
-            itemUsageHandler.TransferOrSwap(fromStorage, toStorage, fromSlot, toSlot);
+            itemTransfer.TransferOrSwap(fromStorage, fromSlot, toStorage, toSlot);
+            // itemTransfer.TransferOrSwap(fromStorage, toStorage, fromSlot, toSlot);
         }
         
         
@@ -355,21 +384,22 @@ namespace TH.Item
 
         private void HandleItemUse(IGameItemStorage storage, IGameItemSlot slot)
         {
-            IGameItemStorage dest;
-            if (storage == pStorage)
-                dest = pEquipHolder;
-            else dest = pStorage;
-            
-            switch (slot.GetItemInfo.itemType)
-            {
-                case Enums.ItemType.Equipment:
-                    itemUsageHandler.Transfer(storage, dest, slot);
-                    break;
-                
-                default: 
-                    itemUsageHandler.Consume(storage, dest, slot); // todo: 개수 적용
-                    break;
-            }
+            OnSlotItemTryUsed(storage, slot);
+            // IGameItemStorage dest;
+            // if (storage == pStorage)
+            //     dest = pEquipHolder;
+            // else dest = pStorage;
+            //
+            // switch (slot.GetItemInfo.itemType)
+            // {
+            //     case Enums.ItemType.Equipment:
+            //         itemTransfer.Transfer(storage, dest, slot);
+            //         break;
+            //     
+            //     default: 
+            //         itemTransfer.Consume(storage, dest, slot); // todo: 개수 적용
+            //         break;
+            // }
         }
 
         private void FilterStorage(IGameItemStorage storage, InventoryFilterType filter)

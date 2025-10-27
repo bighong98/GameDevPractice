@@ -13,9 +13,9 @@ namespace TH.Item
 {
     public sealed class PlayerStorage : IPlayerStorage, ISavableWithId
     {
-        public event Action<IGameItemSlot> OnSlotChanged;
-        // public event Action<int> OnSlotChanged; // 직접 .Invoke() 호출하지 말고 NotifySlotChanged(index) 사용할 것
+        public event Action<IGameItemSlot> OnSlotChanged; //직접 .Invoke() 호출하지 말고 NotifySlotChanged(index) 사용할 것
         public event Action OnStorageChanged;
+        public event Action<IGameItemSlot> OnItemTryUsed; 
         public event Action<int> OnCapacityChanged;
         public event Action<InventoryFilterType> OnFilterChanged;
 
@@ -186,6 +186,26 @@ namespace TH.Item
 
         #endregion
 
+        #region IUsableItemStorage
+        
+        public bool TryStoreAndUse(IGameItem item, object user = null)
+        {
+            if (!TryStore(item, out var storedSlot)) return false;
+            
+            OnItemTryUsed?.Invoke(storedSlot);
+            return true;
+        }
+
+        public bool TryStoreAndUse(IGameItem item, int index, object user = null)
+        {
+            if (!TryStore(item, index)) return false;
+            
+            OnItemTryUsed?.Invoke(slots[index]);
+            return true;
+        }
+        
+        #endregion
+        
         #region Get (Find)
 
         public bool TryGetItem(int index, out IGameItem item)
@@ -294,43 +314,6 @@ namespace TH.Item
         }
         
         #endregion
-
-        #region Use(Consume/Equip)
-
-        public bool TryUseItem(int index) // 사용 시도 및 성공 여부 반환
-        {
-            return TryUseItem(index, player);
-        }
-
-        public bool TryUseItem(int index, object user) // + 사용자 객체 전달
-        {
-            if (!TryGetItem(index, out var item) || item is not IUsableItem uItem)
-            {
-                Logg.Log($"[PlayerInventory] TryUseItem({index}, {user}) failed because item is null or not usable", Logg.LoggingMode.InProgress);
-                return false;
-            }
-            
-            if (!TryUseItem(uItem, user))
-            {
-                // todo: 필요시 실패 사유 전달
-                Logg.Log($"[PlayerInventory] TryUseItem({index}, {user}) failed because item is null or not usable", Logg.LoggingMode.InProgress);
-                return false;
-            }
-            
-            NotifySlotChanged(index); // 아이템 사용 성공 시 변동사항 전달
-            
-            return true;
-        }
-        
-        private bool TryUseItem(IUsableItem item, object user)
-        {
-            
-        
-            return true;
-        }
-        
-
-        #endregion
         
         #region Compare
 
@@ -372,8 +355,8 @@ namespace TH.Item
         {
             if (!IsValidSlotIdx(index)) return;
             if (slots[index] is not { } slot) return;
+            
             slot.SetVisibility(IsVisibleByFilter(slot, CurrentFilter));
-            // OnSlotChanged?.Invoke(index);
             OnSlotChanged?.Invoke(slots[index]);
         }
 
@@ -410,7 +393,6 @@ namespace TH.Item
             {
                 var itemSlot = slots[i];
                 if (itemSlot is not { HasItem: true, GetItemInfo: {itemType: Enums.ItemType.Countable} }) continue;
-                // if (itemSlot.GetItemInfo.itemType != Enums.ItemType.Countable) continue;
                 if (!IsSameItem(itemSlot.GetItem, cItem)) continue;
 
                 return i; // 동일한 Countable 타입 아이템을 찾은 경우, 해당 인덱스 반환

@@ -138,6 +138,20 @@ namespace TH.Item
             return false;
         }
 
+        public bool TryStore(IGameItem item, out IGameItemSlot storedSlot, out IGameItem existing)
+        {
+            if (TryGetValidSlot(item, out int index) && IsValidSlotIdx(index)
+                && TryStore(item, index, out existing))
+            {
+                storedSlot = equipments[index];
+                return true;
+            }
+
+            storedSlot = null;
+            existing = null;
+            return false;
+        }
+
         public bool TryStore(IGameItem item, int index, out IGameItem existing)
         {
             if (equipments[index] is not { IsAccessible: true } slot)

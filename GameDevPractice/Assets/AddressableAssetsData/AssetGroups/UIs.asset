@@ -36,13 +36,6 @@ MonoBehaviour:
     - PreLoad
     - UI
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 879b2a5a272e1254cafe1c8f5fde6e3d
-    m_Address: ItemSlotUI.prefab
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - PreLoad
-    - UI
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 92c94e40c2f05a543bdf17eb37b930f5
     m_Address: QuestionPopupUI.prefab
     m_ReadOnly: 0

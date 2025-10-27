@@ -29,7 +29,7 @@ namespace TH.Core.Service
             ServiceLocator.Register<IDamageCalculator>(new DamageCalculator());
             ServiceLocator.Register<ICombatSystem>(new CombatSystem());
             ServiceLocator.Register<IPlayerStorage>(new PlayerStorage());
-            ServiceLocator.Register<IItemUsageHandler>(new ItemUsageHandler());
+            ServiceLocator.Register<IGameItemTransfer>(new GameItemTransfer());
             ServiceLocator.Register<IFloatingTextSpawner>(new FloatingTextSpawner());
         }
     }

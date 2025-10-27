@@ -601,7 +601,7 @@ namespace TH.Item
         {
             if (storage == null) return;
             // inventory.TryUseItem(slotUI);
-            storage.TryUseItem(slotUI.Index);
+            // storage.TryUseItem(slotUI.Index);
         }
 
         private void TryShowDetailedItemTooltip(Vector2 pos)

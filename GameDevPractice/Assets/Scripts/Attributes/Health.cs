@@ -151,8 +151,6 @@ namespace RPG.Attribute
         
         public void TakeDamage(in HitResult hitResult)
         {
-            Logg.Log($"[{nameof(Health)}] TakeDamage Invoked, frameCount: {Time.frameCount}", Logg.LoggingMode.InProgress);
-
             OnDamaged?.Invoke(hitResult);
             TakeDamage(hitResult.Damage);
             lastAttacker = hitResult.Attacker;
