@@ -81,7 +81,7 @@ namespace TH.Item
         public void TransferOrSwap(IGameItemStorage source, IGameItemSlot sourceSlot,
             IGameItemStorage other, IGameItemSlot otherSlot)
         {
-            Logg.Log($"[ItemUsageHandler] TransferOrSwap (<{source}, {sourceSlot}> - <{other}, {otherSlot}>) ", Logg.LoggingMode.InProgress);
+            Logg.Log($"[ItemUsageHandler] TransferOrSwap (<{source}, {sourceSlot}> - <{other}, {otherSlot}>) ", Logg.LoggingMode.Completed);
 
             if (!(otherSlot?.HasItem ?? false)) // 도착 슬롯이 빈 슬롯이면 일방향 이동 시도
             {

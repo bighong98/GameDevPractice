@@ -40,6 +40,7 @@ namespace TH.Item
             {
                 Logg.LogError($"[{nameof(InventoryController)}] failed to GetComponent<{nameof(IPlayerInventoryUI)}>. disable inventory controller");
                 this.enabled = false;
+                return;
             }
             
             RenewPlayerReference();
@@ -55,21 +56,9 @@ namespace TH.Item
 
         private void OnEnable()
         {
-            if (pStorage != null) pStorage.OnStorageChanged += RefreshStorageUI;
-            SubscribeEquipHolderEvents();
-        }
-
-        
-
-        private void OnDisable()
-        {
-            if (pStorage != null) pStorage.OnStorageChanged -= RefreshStorageUI;
-            UnSubscribeEquipHolderEvents();
-            
-            Clear();
+            RenewPlayerReference(); // 플레이어의 EquipHolder 인스턴스 참조 및 이벤트 갱신
         }
         
-
         private void Start()
         {
             if (pInvenUI is not { StorageUI: { } storageUI, EquipmentUI: { } equipmentUI })
@@ -83,8 +72,10 @@ namespace TH.Item
             BindStorageEvents(pEquipHolder);
             
             // UI(View) 이벤트 바인드
-            BindStorageUIEvents(storageUI);
-            BindEquipmentUIEvents(equipmentUI);
+            // BindStorageUIEvents(storageUI);
+            // BindEquipmentUIEvents(equipmentUI);
+            BindStorageUIEvents(pStorage);
+            BindStorageUIEvents(pEquipHolder);
             BindButtonEvents();
             BindDragDropUIEvents();
             
@@ -94,10 +85,43 @@ namespace TH.Item
             RefreshStorageUI();
             RefreshEquipmentUI();
         }
+        
+        private void OnDisable()
+        {
+            Clear();
+        }
+
+        private void OnDestroy()
+        {
+            Clear();
+            
+            UnBindStorageEvents(pStorage);
+            UnBindStorageEvents(pEquipHolder);
+            
+            if (itemTooltip != null && itemTooltip.gameObject != null)
+                Destroy(itemTooltip.gameObject);
+            
+            SceneManager.sceneLoaded -= RenewPlayerReference;
+        }
 
         #region Initialization
 
         // View(UI) Event Bind
+
+        private void BindStorageUIEvents(IGameItemStorage storage)
+        {
+            if (GetUIFromStorage(storage) is not { } storageUI) return;
+
+            if (storageUI is IHoverableStorageUI hStorageUI)
+            {
+                SubscribeHoverEnterEvent(hStorageUI);
+                SubscribeHoverExitEvent(hStorageUI);
+            }
+            if (storageUI is IClickableStorageUI cStorageUI)
+                SubscribeClickEvent(cStorageUI);
+            if (storageUI is ISubClickableStorageUI scStorageUI)
+                SubscribeSubClickEvent(scStorageUI);
+        }
         private void BindStorageUIEvents(IPlayerStorageUI pStorageUI)
         {
             SubscribeHoverEnterEvent(pStorageUI);
@@ -130,7 +154,9 @@ namespace TH.Item
         private void BindStorageEvents(IGameItemStorage storage)
         {
             if (storage == null) return;
-            
+         
+            // 개별 Subscribe 계열 매서드들이 반드시 UnSubscribe 이후 구독하도록 할 것 (이벤트 누적 방지)
+            SubscribeStorageModifiedEvent(storage);
             SubscribeSlotModifiedEvent(storage);
             if (storage is IMutableCapacity cStorage)
                 SubscribeStorageCapacityEvent(cStorage);
@@ -142,6 +168,7 @@ namespace TH.Item
         {
             if (storage == null) return;
             
+            UnSubscribeStorageModifiedEvent(storage);
             UnSubscribeSlotModifiedEvent(storage);
             if (storage is IMutableCapacity cStorage)
                 UnSubscribeStorageCapacityEvent(cStorage);
@@ -150,66 +177,104 @@ namespace TH.Item
         }
         
         
-        private void RenewPlayerReference(Scene s, LoadSceneMode m) { RenewPlayerReference(); }
+        private void RenewPlayerReference(Scene s, LoadSceneMode m) { RenewPlayerReference(); } // on
         private void RenewPlayerReference()
         {
-            if (pEquipHolder != null)
-            {
-                UnBindStorageEvents(pEquipHolder);
-                UnSubscribeEquipHolderEvents();
-            }
+            var old = pEquipHolder;
+            IEquipmentHolder newer = null;
             
             if (FindFirstObjectByType<PlayerController>() is {} player 
-                && player.TryGetComponent(out IEquipmentHolder e))
+                && player.TryGetComponent(out IEquipmentHolder newEquipHolder))
             {
-                pEquipHolder = e;
-                BindStorageEvents(pEquipHolder);
-                SubscribeEquipHolderEvents();
+                newer = newEquipHolder;
             }
+            
+            if (old != null && old != newer)
+                UnBindStorageEvents(old);
+
+            pEquipHolder = newer;
+            BindStorageEvents(pEquipHolder);
         }
 
         #endregion
 
-        #region Subscribe Event
+        #region Un/Subscribe Event
 
         // Input Events (UI - View)
+        private readonly Dictionary<IHoverableStorageUI, Action<int>> _hoverEnterHandlers = new();
+        private readonly Dictionary<IHoverableStorageUI, Action<int>> _hoverExitHandlers = new();
+        private readonly Dictionary<IClickableStorageUI, Action<int>> _clickHandlers = new();
+        private readonly Dictionary<ISubClickableStorageUI, Action<int>> _subClickHandlers = new();
+        
         private void SubscribeHoverEnterEvent(IHoverableStorageUI sourceUI)
         {
-            sourceUI.OnSlotHovered += (index) => { OnSlotHovered(sourceUI, index); };
+            UnSubscribeHoverEnterEvent(sourceUI);
+            Action<int> e = (index) => OnSlotHovered(sourceUI, index);
+            _hoverEnterHandlers[sourceUI] = e;
+            sourceUI.OnSlotHovered += e;
         }
 
         private void SubscribeHoverExitEvent(IHoverableStorageUI sourceUI)
         {
-            sourceUI.OffSlotHovered += (index) => { OffSlotHovered(sourceUI, index); };
+            UnSubscribeHoverExitEvent(sourceUI);
+            Action<int> e = (index) => OffSlotHovered(sourceUI, index);
+            _hoverExitHandlers[sourceUI] = e;
+            sourceUI.OffSlotHovered += e;
         }
 
         private void SubscribeClickEvent(IClickableStorageUI sourceUI)
         {
-            sourceUI.OnSlotClicked += (index) => { OnSlotClicked(sourceUI, index); };
+            UnSubscribeClickEvent(sourceUI);
+            Action<int> e = (index) => OnSlotClicked(sourceUI, index);
+            _clickHandlers[sourceUI] = e;
+            sourceUI.OnSlotClicked += e;
         }
         
         private void SubscribeSubClickEvent(ISubClickableStorageUI sourceUI)
         {
-            sourceUI.OnSlotSubClicked += (index) => { OnSlotSubClicked(sourceUI, index); };
+            UnSubscribeSubClickEvent(sourceUI);
+            Action<int> e = (index) => OnSlotSubClicked(sourceUI, index);
+            _subClickHandlers[sourceUI] = e;
+            sourceUI.OnSlotSubClicked += e;
+        }
+
+        private void UnSubscribeHoverEnterEvent(IHoverableStorageUI sourceUI)
+        {
+            if (_hoverEnterHandlers.Remove(sourceUI, out var e))
+                sourceUI.OnSlotHovered -= e;
+        }
+        private void UnSubscribeHoverExitEvent(IHoverableStorageUI sourceUI)
+        {
+            if (_hoverExitHandlers.Remove(sourceUI, out var e))
+                sourceUI.OffSlotHovered -= e;
+        }
+
+        private void UnSubscribeClickEvent(IClickableStorageUI sourceUI)
+        {
+            if (_clickHandlers.Remove(sourceUI, out var e))
+                sourceUI.OnSlotClicked -= e;
+        }
+
+        private void UnSubscribeSubClickEvent(ISubClickableStorageUI sourceUI)
+        {
+            if (_subClickHandlers.Remove(sourceUI, out var e))
+                sourceUI.OnSlotSubClicked -= e;
         }
         
         // Storage Events (Model)
-        
+        private readonly Dictionary<IGameItemStorage, Action> _storageChangedHandlers = new();
         private readonly Dictionary<IGameItemStorage, Action<IGameItemSlot>> _slotChangedHandlers = new();
         private readonly Dictionary<IUsableItemStorage, Action<IGameItemSlot>> _tryUsedHandlers = new();
         private readonly Dictionary<IMutableCapacity, Action<int>> _capacityHandlers = new();
-        
-        private void SubscribeEquipHolderEvents()
-        {
-            UnSubscribeEquipHolderEvents(); // 중복구독 방어
-            if (pEquipHolder != null) pEquipHolder.OnStorageChanged += RefreshEquipmentUI;
-        }
-        
-        private void UnSubscribeEquipHolderEvents()
-        {
-            if (pEquipHolder != null) pEquipHolder.OnStorageChanged -= RefreshEquipmentUI;
-        }
 
+        private void SubscribeStorageModifiedEvent(IGameItemStorage storage)
+        {
+            UnSubscribeStorageModifiedEvent(storage); // 중복 구독 방어
+            Action e = () => RefreshStorageUI(storage);
+            _storageChangedHandlers[storage] = e;
+            storage.OnStorageChanged += e;
+        }
+        
         private void SubscribeSlotModifiedEvent(IGameItemStorage storage)
         {
             UnSubscribeSlotModifiedEvent(storage); // 기존 이벤트가 있다면 정리
@@ -232,6 +297,12 @@ namespace TH.Item
             Action<IGameItemSlot> e = (slot) =>  OnSlotItemTryUsed(storage, slot);
             _tryUsedHandlers[storage] = e;
             storage.OnItemTryUsed += e;
+        }
+        
+        private void UnSubscribeStorageModifiedEvent(IGameItemStorage storage)
+        {
+            if (_storageChangedHandlers.Remove(storage, out var e))
+                storage.OnStorageChanged -= e;
         }
         
         private void UnSubscribeSlotModifiedEvent(IGameItemStorage storage)
@@ -270,8 +341,7 @@ namespace TH.Item
             if (GetUIFromStorage(storage) is not IMutableCapacityStorageUI storageUI) return;
             UpdateStorageUICapacity(storageUI, capacity);
         }
-
-        //todo: HandleItemUse()와 통합
+        
         private void OnSlotItemTryUsed(IGameItemStorage storage, IGameItemSlot slot)
         {
             if (slot is not { HasItem: true, GetItem: { } item, GetItemInfo: { } itemData }) return;
@@ -617,16 +687,6 @@ namespace TH.Item
         }
         
         #endregion
-
-        private void OnDestroy()
-        {
-            Clear();
-            UnBindStorageEvents(pStorage);
-            UnBindStorageEvents(pEquipHolder);
-            if (itemTooltip != null && itemTooltip.gameObject != null)
-                Destroy(itemTooltip.gameObject);
-            SceneManager.sceneLoaded -= RenewPlayerReference;
-        }
 
         private void Clear()
         {
