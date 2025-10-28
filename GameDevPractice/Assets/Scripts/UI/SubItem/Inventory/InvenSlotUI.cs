@@ -28,7 +28,7 @@ public class InvenSlotUI : BaseSlotUI, IInvenSlotUI
             return;
         }
 
-        if (amount < 1)
+        if (amount <= 1)
         {
             t.enabled = false;
             return;

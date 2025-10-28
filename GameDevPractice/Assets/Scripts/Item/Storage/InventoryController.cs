@@ -277,7 +277,7 @@ namespace TH.Item
         private void SubscribeStorageUsageEvent(IUsableItemStorage storage)
         {
             UnSubscribeStorageUsageEvent(storage); // 기존 이벤트가 있다면 정리
-            Action<IGameItemSlot> e = (slot) =>  OnSlotItemTryUsed(storage, slot);
+            Action<IGameItemSlot> e = (slot) => OnSlotItemTryUsed(storage, slot);
             _tryUsedHandlers[storage] = e;
             storage.OnItemTryUsed += e;
         }

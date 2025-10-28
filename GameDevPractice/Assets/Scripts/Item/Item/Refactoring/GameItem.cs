@@ -24,7 +24,7 @@ namespace TH.Item
         public bool IsValid => itemData != null && amount > 0;
         public bool IsEmpty => amount <= 0 || itemData == null;
         
-        public T Clone<T>() where T : IGameItem
+        public virtual T Clone<T>() where T : IGameItem
         {
             return (T)this.MemberwiseClone();
         }
