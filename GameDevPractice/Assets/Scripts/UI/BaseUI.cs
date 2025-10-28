@@ -131,8 +131,7 @@ namespace RPG.UI
         // use input as (int)Enum
         protected T Get<T>(int idx) where T : UnityEngine.Object
         {
-            UnityEngine.Object[] objects = null;
-            if (_objects.TryGetValue(typeof(T), out objects) == false)
+            if (!_objects.TryGetValue(typeof(T), out var objects))
                 return null;
 
             return objects[idx] as T;

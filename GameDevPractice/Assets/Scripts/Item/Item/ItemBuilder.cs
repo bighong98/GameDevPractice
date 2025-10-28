@@ -15,7 +15,6 @@ namespace TH.Item
             switch (type)
             {
                 case Enums.ItemType.Countable:
-                    if (data.isUsable) return new ConsumableItem(data, amount);
                     return new CountableItem(data, amount);
                 case Enums.ItemType.Equipment:
                     return new EquipmentItem(data);

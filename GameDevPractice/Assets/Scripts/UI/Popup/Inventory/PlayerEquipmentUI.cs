@@ -40,10 +40,10 @@ namespace TH.UI
         }
 
         #region Draw/Show/Hide Slot (IStorageUI)
-        public void DrawSlot(int index, IGameItem data)
+        public void DrawSlot(int index, IGameItem instance)
         {
             if (!TryGetSlot(index, out var slotUI)) return;
-            if (data is not IGameItem { GetItemInfo: { } itemInfo } item)
+            if (instance is not IGameItem { GetItemInfo: { } itemInfo } item)
             {
                 slotUI.Clear();
                 return;

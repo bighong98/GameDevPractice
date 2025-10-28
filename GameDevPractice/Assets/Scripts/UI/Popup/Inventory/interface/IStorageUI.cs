@@ -7,7 +7,7 @@ namespace TH.UI
     public interface IStorageUI
     { 
         IEnumerable Slots { get; }
-        void DrawSlot(int index, IGameItem data);
+        void DrawSlot(int index, IGameItem instance);
         void CleanSlot(int index);
         void ShowSlot(int index);
         void HideSlot(int index);

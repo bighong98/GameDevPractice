@@ -73,8 +73,8 @@ public abstract class BaseSlotUI : BaseUI, ISlotUI, IPoolObject
         RemoveIcon();
     }
     
-    private void ShowIcon() => GetImage((int)Images.ItemImage).enabled = true;
-    private void HideIcon() => GetImage((int)Images.ItemImage).enabled = false;
+    protected virtual void ShowIcon() => GetImage((int)Images.ItemImage).enabled = true;
+    protected virtual void HideIcon() => GetImage((int)Images.ItemImage).enabled = false;
     
     public virtual void Highlight() => GetImage((int)Images.HighLightImage).enabled = true;
     public virtual void UnHighlight() => GetImage((int)Images.HighLightImage).enabled = false;

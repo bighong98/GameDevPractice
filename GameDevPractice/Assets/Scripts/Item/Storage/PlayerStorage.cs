@@ -500,26 +500,32 @@ namespace TH.Item
             return new ItemSlot(index: index, item: null, validTypes: inventoryValidItemTypes);
         }
 
-        private IGameItem EnsureItemInstanceByType(IGameItem item)
-        {
-            if (item is not { GetItemInfo: { itemType: { } type } })
-            {
-                Logg.LogError($"[PlayerInventory] failed to Make GameItem Instance");
-                return null;
-            }
-            switch (type)
-            {
-                case Enums.ItemType.Countable:
-                    if (item is CountableItem) return item;
-                    return new CountableItem(item.GetItemInfo, item.GetAmount);
-                case Enums.ItemType.Equipment:
-                    return new EquipmentItem(item.GetItemInfo);
-                default:
-                    return item;
-            }
-        }
+        // private IGameItem EnsureItemInstanceByType(IGameItem item)
+        // {
+        //     if (item is not { GetItemInfo: { itemType: { } type } })
+        //     {
+        //         Logg.LogError($"[PlayerInventory] failed to Make GameItem Instance");
+        //         return null;
+        //     }
+        //     switch (type)
+        //     {
+        //         case Enums.ItemType.Countable:
+        //             if (item is CountableItem) return item;
+        //             return new CountableItem(item.GetItemInfo, item.GetAmount);
+        //         case Enums.ItemType.Equipment:
+        //             return new EquipmentItem(item.GetItemInfo);
+        //         default:
+        //             return item;
+        //     }
+        // }
 
         private readonly IItemBuilder itemBuilder = new ItemBuilder();
+
+        private IGameItem EnsureItemInstanceByType(IGameItem item)
+        {
+            if (item is not { GetAmount: int amount and > 0, GetItemInfo: { } itemInfo }) return null;
+            return itemBuilder.GetItemFromData(itemInfo, amount);
+        }
         private IGameItem EnsureItemInstanceByType(ItemTypeSO data, int amount = 1)
         {
             return itemBuilder.GetItemFromData(data, amount);

@@ -72,8 +72,6 @@ namespace TH.Item
             BindStorageEvents(pEquipHolder);
             
             // UI(View) 이벤트 바인드
-            // BindStorageUIEvents(storageUI);
-            // BindEquipmentUIEvents(equipmentUI);
             BindStorageUIEvents(pStorage);
             BindStorageUIEvents(pEquipHolder);
             BindButtonEvents();
@@ -121,21 +119,6 @@ namespace TH.Item
                 SubscribeClickEvent(cStorageUI);
             if (storageUI is ISubClickableStorageUI scStorageUI)
                 SubscribeSubClickEvent(scStorageUI);
-        }
-        private void BindStorageUIEvents(IPlayerStorageUI pStorageUI)
-        {
-            SubscribeHoverEnterEvent(pStorageUI);
-            SubscribeHoverExitEvent(pStorageUI);
-            SubscribeClickEvent(pStorageUI);
-            SubscribeSubClickEvent(pStorageUI);
-        }
-
-        private void BindEquipmentUIEvents(IEquipmentHolderUI pEquipUI)
-        {
-            SubscribeHoverEnterEvent(pEquipUI);
-            SubscribeHoverExitEvent(pEquipUI);
-            SubscribeClickEvent(pEquipUI);
-            SubscribeSubClickEvent(pEquipUI);
         }
 
         private void BindButtonEvents()
