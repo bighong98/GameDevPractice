@@ -168,7 +168,7 @@ namespace TH.UI
         
         public void AllowDrag(Sprite sprite)
         {
-            Logg.Log($"[InventoryUI] AllowDrag invoked", Logg.LoggingMode.InProgress);
+            Logg.Log($"[InventoryUI] AllowDrag invoked", Logg.LoggingMode.Completed);
             
             ghostImage.sprite = sprite;
             ghostImage.enabled = true;

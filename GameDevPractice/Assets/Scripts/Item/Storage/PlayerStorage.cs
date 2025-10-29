@@ -80,7 +80,7 @@ namespace TH.Item
                 FindEmptySlotIndex(0) is { } index and >= 0)
             {
                 if (item is CountableItem cItem)
-                    return TryStore(cItem, 1, out var e); //todo: 초과분 발생시 처리 추가
+                    return TryStore(cItem, 1, out var e); //todo: 초과분 발생시 처리 추가, 현재는 초과분이 소실
                 return TryStore(modified, index);
             }
 
@@ -146,121 +146,76 @@ namespace TH.Item
             }
             
             excess = countableItem.GetAmount * amount;
-            bool anyStored = false;
 
             // 1) 동일 스택에 병합 (가득 찰 때까지)
             int start = 0;
             while (excess > 0)
             {
-                int idx = FindIdenticalCountable(countableItem, start);
-                if (idx < 0) break;
-
-                if (!TryGetItemSlot(idx, out var slot) || !slot.HasItem)
-                {
-                    start = idx + 1;
-                    continue;
-                }
-
-                if (slot.GetItem is not ICountableItem exist)
-                {
-                    start = idx + 1;
-                    continue;
-                }
-
-                int overflow = exist.AddAmount(excess);
-                int used = excess - overflow;
-                if (used > 0)
-                {
-                    anyStored = true;
-                    NotifySlotChanged(idx);
-                }
-
-                excess = overflow;
-                start = idx + 1;
-            }
-
-            // 2) 남은 양을 빈 슬롯에 신규 스택으로 채우기
-            if (excess > 0)
-            {
-                int maxStack = countableItem.GetItemInfo.maxAmount > 0
-                    ? countableItem.GetItemInfo.maxAmount
-                    : int.MaxValue;
-
-                while (excess > 0)
-                {
-                    int idx = FindEmptySlotIndex(0);
-                    if (idx < 0) break;
-
-                    int put = Mathf.Min(excess, maxStack);
-                    var newStack = countableItem.Clone<ICountableItem>(put);
-                    if (newStack == null) break;
-
-                    if (TryStore((IGameItem)newStack, idx))
-                    {
-                        anyStored = true;
-                        NotifySlotChanged(idx);
-                        excess -= put;
-                    }
-                    else break;
-                }
+                if (!FindIdenticalCountable(countableItem, start, out var foundSlot)) break; // 인벤토리 내 동일 아이템이 없다면 루프 탈출
+                TryAdd(foundSlot, excess, out excess); // 개수 전달에 성공한 경우 남은 양(excess)에 반영
+                start = foundSlot.Index + 1; // 다음 루프에서는 찾은 슬롯 다음 슬롯부터 탐색 시작
             }
             
-            return anyStored;
+            if (excess <= 0) return true; // 남은 양이 없으면 return true;
+            
+            // 2) 남은 양을 빈 슬롯에 신규 스택으로 채우기
+            int maxStack = countableItem.GetItemInfo.maxAmount > 0
+                ? countableItem.GetItemInfo.maxAmount
+                : int.MaxValue;
+
+            while (excess > 0)
+            {
+                int idx = FindEmptySlotIndex(0);
+                if (idx < 0) break;
+                
+                int put = Mathf.Min(excess, maxStack);
+                var newStack = countableItem.Clone<ICountableItem>(put);
+                
+                if (newStack == null) break;
+                if (!TryStore((IGameItem)newStack, idx)) break;
+                
+                NotifySlotChanged(idx);
+                excess -= put;
+            }
+            
+            return excess <= 0;
+        }
+
+        private bool TryAdd(IGameItemSlot foundSlot, int amount, out int overflow)
+        {
+            if (foundSlot.GetItem is not ICountableItem cItem)
+            {
+                overflow = amount;
+                return false;
+            }
+            
+            overflow = cItem.AddAmount(amount);
+            int used = amount - overflow;
+            if (used <= 0) return false;
+            
+            NotifySlotChanged(foundSlot.Index);
+            return true;
         }
 
         public bool TryAdd(ICountableItem countableItem, int amount, int index, out int excess)
         {
+            if (countableItem == null || countableItem.IsEmpty || amount <= 0)
+            {
+                excess = amount;
+                return false;
+            }
+
+            amount *= countableItem.GetAmount;
             excess = amount;
-            if (countableItem == null || amount <= 0) return false;
-            if (!IsValidSlotIdx(index)) return false;
-            if (!TryGetItemSlot(index, out var slot) || !slot.IsAccessible) return false;
-
-            bool anyStored = false;
-
-            // 1) 슬롯이 비어있다면 신규 스택으로 넣기
-            if (!slot.HasItem)
-            {
-                int maxStack = countableItem.GetItemInfo.maxAmount > 0
-                    ? countableItem.GetItemInfo.maxAmount
-                    : int.MaxValue;
-
-                int put = Mathf.Min(amount, maxStack);
-                var newStack = countableItem.Clone<ICountableItem>(put);
-                if (newStack == null) return false;
-
-                if (TryStore((IGameItem)newStack, index))
-                {
-                    anyStored = true;
-                    NotifySlotChanged(index);
-                    excess -= put;
-                }
-
-                return anyStored;
-            }
-
-            // 2) 동일한 Countable 스택이라면 병합
-            if (slot.GetItem is ICountableItem exist &&
-                IsIdenticalCountableItem((IGameItem)countableItem, index, out _))
-            {
-                int overflow = exist.AddAmount(amount);
-                int used = amount - overflow;
-                if (used > 0)
-                {
-                    anyStored = true;
-                    NotifySlotChanged(index);
-                }
-
-                excess = overflow;
-                return anyStored;
-            }
-
-            // 3) 다른 아이템이 있으면 추가 불가
+            if (GetSlot(index) is
+                    { IsAccessible: true, HasItem: true, GetItem: { Type: Enums.ItemType.Countable } slotItem } slot
+                && countableItem.IsEqual(slotItem, ItemComparerExtension.ItemCompareMode.CompareData))
+                return TryAdd(slot, amount, out excess);
+            
             return false;
         }
-
+    
         #endregion
-
-
         
         #region Get (Find)
 
@@ -452,6 +407,22 @@ namespace TH.Item
             }
 
             return -1;
+        }
+
+        private bool FindIdenticalCountable(ICountableItem cItem, int start, out IGameItemSlot slot)
+        {
+            slot = null;
+            if (!IsValidSlotIdx(start)) return false;
+            int end = GetEndIdx;
+            
+            for (int i = start; i <= end; i++)
+            {
+                if (!IsIdenticalCountableItem(cItem, i, out var found)) continue;
+                slot = found; // 동일한 Countable 타입 아이템을 찾은 경우, 해당 인덱스 반환
+                return true;
+            }
+            
+            return false;
         }
 
         private bool IsIdenticalCountableItem(IGameItem cItem, int index, out IGameItemSlot slot)
