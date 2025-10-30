@@ -144,6 +144,7 @@ public class DetailedItemTooltipUI : PopupUI
         if (buttonEnabled)
         {
             buttonSetTask?.Invoke(button);
+            button.onClick.RemoveAllListeners();
             button.onClick.AddListener(() =>
             {
                 if (PopupCTS?.Token.IsCancellationRequested ?? true) return;
@@ -170,7 +171,8 @@ public class DetailedItemTooltipUI : PopupUI
         {
             btnStr.SetText(buttonString);
         }
-            
+        
+        button.onClick.RemoveAllListeners();
         button.onClick.AddListener(() =>
         {
             if (PopupCTS?.Token.IsCancellationRequested ?? true) return;
@@ -197,12 +199,10 @@ public class DetailedItemTooltipUI : PopupUI
     private void ClearButtonListeners()
     {
         if (GetButton((int)Buttons.TooltipRemoveButton) is { } removeButton)
-        {
             removeButton.onClick.RemoveAllListeners();
-        }
         if (GetButton((int)Buttons.TooltipUseButton) is { } useButton)
-        {
             useButton.onClick.RemoveAllListeners();
-        }
+        if (GetButton((int)Buttons.TooltipDivideButton) is {} divideButton)
+            divideButton.onClick.RemoveAllListeners();
     }
 }

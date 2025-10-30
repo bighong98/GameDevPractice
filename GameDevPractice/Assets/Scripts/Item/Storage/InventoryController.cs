@@ -261,7 +261,10 @@ namespace TH.Item
         private void SubscribeSlotModifiedEvent(IGameItemStorage storage)
         {
             UnSubscribeSlotModifiedEvent(storage); // 기존 이벤트가 있다면 정리
-            Action<IGameItemSlot> e = (slot) => OnSlotItemChanged(storage, slot);
+            Action<IGameItemSlot> e = (slot) =>
+            {
+                OnSlotItemChanged(storage, slot);
+            };
             _slotChangedHandlers[storage] = e;
             storage.OnSlotChanged += e;
         }
@@ -508,6 +511,12 @@ namespace TH.Item
             OnSlotItemTryUsed(storage, slot);
         }
 
+        private void HandleItemDivide(IGameItemStorage storage, IGameItemSlot slot, int expected)
+        {
+            if (storage is not IDividableStorage dStorage) return;
+            dStorage.TryDivide(slot.Index, expected);
+        }
+
         private void FilterStorage(IGameItemStorage storage, InventoryFilterType filter)
         {
             if (storage.ItemSlots.Count == 0) return;
@@ -543,7 +552,7 @@ namespace TH.Item
         private const string DefaultConsumeText = "사용";
         private const string DefaultEquipText = "장착";
         private const string DefaultUnEquipText = "장착해제";
-        private const string DefaultDivideText = "개수 분리";
+        private const string DefaultDivideText = "나누기";
 
         private string GetUseButtonText(IGameItemStorage storage, ItemTypeSO itemInfo)
         {
@@ -592,7 +601,13 @@ namespace TH.Item
                         if (popup is {} validPopup) validPopup.ClosePopupUI(); // 이후 팝업 닫기
                     } : null // 사용할 수 없는 아이템의 경우 사용 버튼 비활성화
                 ),
-                divideButton: new ButtonInfo() //todo: 분리 기능 추가
+                divideButton: new ButtonInfo(DefaultDivideText,
+                    itemInfo.itemType == Enums.ItemType.Countable ? () =>
+                    {
+                        HandleItemDivide(targetStorage, targetSlot, 1); // todo: 즉시 개수 분리하는 대신 개수 나누기용 팝업 추가 출력
+                        if (popup is {} validPopup) validPopup.ClosePopupUI(); // 이후 팝업 닫기
+                    } : null // 개수 분리가 지원되지 않는 아이템의 경우 나누기 버튼 비활성화
+                ) //todo: 분리 기능 추가
             );
         }
 

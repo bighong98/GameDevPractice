@@ -80,7 +80,7 @@ namespace TH.Item
                 FindEmptySlotIndex(0) is { } index and >= 0)
             {
                 if (item is CountableItem cItem)
-                    return TryStore(cItem, 1, out var e); //todo: 초과분 발생시 처리 추가, 현재는 초과분이 소실
+                    return TryStore(cItem, cItem.GetAmount, out var excess); //todo: 초과분 발생시 처리 추가, 현재는 초과분이 소실
                 return TryStore(modified, index);
             }
 
@@ -110,8 +110,6 @@ namespace TH.Item
             if (result) NotifySlotChanged(index);
             return result;
         }
-
-        
 
         #endregion
 
@@ -144,8 +142,7 @@ namespace TH.Item
                 excess = 0;
                 return false;
             }
-            
-            excess = countableItem.GetAmount * amount;
+            excess = amount;
 
             // 1) 동일 스택에 병합 (가득 찰 때까지)
             int start = 0;
@@ -169,10 +166,11 @@ namespace TH.Item
                 if (idx < 0) break;
                 
                 int put = Mathf.Min(excess, maxStack);
-                var newStack = countableItem.Clone<ICountableItem>(put);
+                // 아이템의 복사 객체를 만들고 {put}만큼 개수 설정 + 기존 아이템의 개수 조정 ({기존 개수} - {put})
+                var clone = countableItem.Clone<ICountableItem>(put); 
                 
-                if (newStack == null) break;
-                if (!TryStore((IGameItem)newStack, idx)) break;
+                if (clone == null) break;
+                if (!TryStore((IGameItem)clone, idx)) break;
                 
                 NotifySlotChanged(idx);
                 excess -= put;
@@ -204,8 +202,7 @@ namespace TH.Item
                 excess = amount;
                 return false;
             }
-
-            amount *= countableItem.GetAmount;
+            
             excess = amount;
             if (GetSlot(index) is
                     { IsAccessible: true, HasItem: true, GetItem: { Type: Enums.ItemType.Countable } slotItem } slot
@@ -215,6 +212,43 @@ namespace TH.Item
             return false;
         }
     
+        #endregion
+
+        #region IDividableStorage
+
+        public void TryDivide(int index, int expected)
+        {
+            Logg.Log($"[PlayerStorage] TryDivide({index}, {expected}) invoked", Logg.LoggingMode.Completed);
+            if (GetSlot(index) is not
+                {
+                    HasItem: true,
+                    GetItem: { Type: Enums.ItemType.Countable, GetAmount: {} total } item, // 1개는 분리 불가
+                } slot )
+            {
+                Logg.Log($"[PlayerStorage] TryDivide({index}, {expected}) - not valid slot", Logg.LoggingMode.Completed);
+                return;
+            }
+
+            if (item is not ICountableItem cItem)
+                cItem = (ICountableItem)EnsureItemInstanceByType(item);
+
+            int amount = Mathf.Min(expected, total - 1);
+            if (amount <= 0) return; // 1개는 분리 불가
+            
+            var clone = cItem.Clone<ICountableItem>(amount); // 아이템의 복사본 생성 + 분리한 개수 주입
+            // 빈 슬롯 탐색 + 해당 슬롯에 복사본 저장 시도
+            if (!FindEmptySlot(0, out var emptySlot)
+                || !TryStore(clone, emptySlot.Index))
+            {
+                Logg.Log($"[PlayerStorage] TryDivide({index}, {expected}) - failed to store item", Logg.LoggingMode.InProgress);
+                return;
+            }
+            // 복사본 분리 저장 성공 -> 기존 아이템에 개수 반영 및 인벤토리 변동 이벤트 전달
+            Logg.Log($"[PlayerStorage] TryDivide({index}, {expected}) - trying to SetAmount source item", Logg.LoggingMode.Completed);
+            cItem.SetAmount(total - amount);
+            NotifySlotChanged(slot);
+        }
+
         #endregion
         
         #region Get (Find)
@@ -367,14 +401,40 @@ namespace TH.Item
             if (!IsValidSlotIdx(index)) return;
             if (slots[index] is not { } slot) return;
             
+            NotifySlotChanged(slot);
+        }
+
+        private void NotifySlotChanged(IGameItemSlot slot)
+        {
+            Logg.Log($"[PlayerStorage] NotifySlotChanged({slot} - {slot.Index})", Logg.LoggingMode.Completed);
             slot.SetVisibility(IsVisibleByFilter(slot, CurrentFilter));
-            OnSlotChanged?.Invoke(slots[index]);
+            OnSlotChanged?.Invoke(slot);
         }
 
         private IGameItemSlot GetSlot(int index)
         {
             if (!IsValidSlotIdx(index)) return null;
             return slots[index];
+        }
+
+        private bool FindEmptySlot(int start, out IGameItemSlot found)
+        {
+            int end = GetEndIdx;
+            for (int i = start; i <= end; i++)
+            {
+                switch (slots[i])
+                {
+                    case null:
+                        found = slots[i] = MakeEmptySlot(index: i); // 해당 인덱스에 최초 접근시, ItemSlot 인스턴스 생성
+                        return true;
+                    case { IsAccessible: true, HasItem: false }:
+                        found = slots[i];
+                        return true;
+                }
+            }
+
+            found = null;
+            return false;
         }
 
         private int FindEmptySlotIndex(int start = 0) // 빈 인벤토리 슬롯 탐색
@@ -582,6 +642,7 @@ namespace TH.Item
             };
         }
         #endregion
+
         
     }
 }

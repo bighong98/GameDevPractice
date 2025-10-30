@@ -15,7 +15,6 @@ namespace TH.Item
             switch (type)
             {
                 case Enums.ItemType.Countable:
-                    Logg.Log($"[ItemBuilder] return CountableItem({data}, {amount})", Logg.LoggingMode.Completed);
                     return new CountableItem(data, amount);
                 case Enums.ItemType.Equipment:
                     return new EquipmentItem(data);
