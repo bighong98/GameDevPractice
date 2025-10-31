@@ -12,8 +12,7 @@ namespace TH.Item.Storage
         IRearrangeableStorage,
         IUsableItemStorage,
         ICountableItemStorage,
-        IDividableStorage,
-        IIntraSwappableStorage
+        IDividableStorage
     {
         
     }

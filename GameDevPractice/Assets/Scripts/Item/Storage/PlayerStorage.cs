@@ -358,11 +358,6 @@ namespace TH.Item
             return false;
         }
         
-        public bool TrySwap(IGameItemSlot one, IGameItemSlot another)
-        {
-            throw new NotImplementedException();
-        }
-        
         #endregion
         
         #region Compare
@@ -605,6 +600,7 @@ namespace TH.Item
         }
 
         private readonly IItemBuilder itemBuilder = new ItemBuilder();
+        private IPlayerStorage _playerStorageImplementation;
 
         private IGameItem EnsureItemInstanceByType(IGameItem item)
         {
