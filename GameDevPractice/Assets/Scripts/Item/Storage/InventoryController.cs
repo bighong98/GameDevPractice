@@ -8,7 +8,6 @@ using TH.Resource;
 using TH.UI;
 using TH.Utils;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 
 namespace TH.Item

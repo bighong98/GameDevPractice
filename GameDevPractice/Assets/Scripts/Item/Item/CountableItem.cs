@@ -1,71 +1,67 @@
 using UnityEngine;
 
-namespace RPG.Item
+namespace TH.Item
 {
-    public class CountableItem : Item
+    public class CountableItem : GameItem, ICountableItem
     {
-        public CountableItem() {}
+        public CountableItem() { }
+
         public CountableItem(ItemTypeSO data, int amount = 1) : base(data)
         {
-            Amount = amount;
+            base.amount = amount;
         }
-        
-        public bool IsFull => Amount >= ItemData.maxAmount;
+
+        public bool IsFull => amount >= itemData.maxAmount;
         
         public void SetAmount(int num)
         {
-            int max = ItemData.maxAmount;
-            Amount = Mathf.Clamp(num, 0, max); // 초과분은 버려짐
+            int max = itemData.maxAmount;
+            amount = Mathf.Clamp(num, 0, max);
         }
-        
+
         public int AddAmount(int num)
         {
-            int total = Amount + num;
+            int total = amount + num;
             SetAmount(total);
 
-            int max = ItemData.maxAmount;
-            return (total > max) ? (total - max) : 0; // 최대 개수 초과시 초과분 반환(초과하지 않으면 0 반환)
+            int max = itemData.maxAmount;
+            return (total > max) ? (total - max) : 0;
         }
 
-        public T SeparateAndClone<T>(int amount) where T : CountableItem
+        public T SeparateAndClone<T>(int expected) where T : ICountableItem
         {
-            if (base.Amount <= 1) return null; // 1개 이하로는 분리 불가능, null 반환
+            if (amount <= 1) return default;
 
-            if (amount > base.Amount - 1) // 예외처리) 아이템 개수보다 더 큰 값을 요구할 경우 1개만 남기고 분리, ex)11개에 SeparateAndClone(90) -> result: Clone(11 - 1)
-                amount = Amount - 1;
+            if (expected > amount - 1)
+                expected = amount - 1;
 
-            Amount -= amount;
+            amount -= expected;
             return Clone<T>(amount);
         }
 
-        public T Clone<T>(int amount, out int excess) where T : CountableItem
+        public T Clone<T>(int expected, out int excess) where T : ICountableItem
         {
-            int max = ItemData.maxAmount;
-            
-            if (amount > max)
+            int max = itemData.maxAmount;
+            if (expected > max)
             {
-                excess = max - amount;
-                amount = max;
+                excess = max - expected;
+                expected = max;
             }
-            else
-            {
-                excess = 0;
-            }
+            else excess = 0;
 
-            return Clone<T>(amount);
+            return Clone<T>(expected);
         }
 
-        public T Clone<T>(int amount = 1) where T : CountableItem
+        public T Clone<T>(int expected) where T : ICountableItem
         {
             T clone = base.Clone<T>();
-            if (clone is CountableItem countableClone)
+            if (clone is ICountableItem cItemClone)
             {
-                countableClone.SetAmount(amount);
+                cItemClone.SetAmount(expected);
             }
 
             return clone;
         }
-        
     }
 }
 
