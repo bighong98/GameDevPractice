@@ -5,7 +5,9 @@ using RPG.UI;
 using RPG.Item;
 using TH.Item;
 using TH.UI;
+using TH.Utils;
 using TMPro;
+using CountableItem = TH.Item.CountableItem;
 
 namespace TH.UI
 {
@@ -15,6 +17,18 @@ namespace TH.UI
         public Action ButtonAction;
 
         public ButtonInfo(string btnString, Action btnAction)
+        {
+            ButtonString = btnString;
+            ButtonAction = btnAction;
+        }
+    }
+
+    public struct ButtonInfo<T>
+    {
+        public string ButtonString;
+        public Action<T> ButtonAction;
+
+        public ButtonInfo(string btnString, Action<T> btnAction)
         {
             ButtonString = btnString;
             ButtonAction = btnAction;
@@ -44,12 +58,19 @@ public class DetailedItemTooltipUI : PopupUI
         ItemIconImage,
     }
 
+    enum GameObjects
+    {
+        ItemDivideSlider,
+    }
+
     #endregion
 
     private const string DefaultConsumeText = "사용";
     private const string DefaultEquipText = "장착";
     private const string DefaultUnEquipText = "장착해제";
-    private const string DefaultDivideText = "개수 분리";
+    private const string DefaultDivideText = "나누기";
+    
+    private ISliderUIControllerInteger sliderController;
 
     protected override void Awake()
     {
@@ -65,9 +86,90 @@ public class DetailedItemTooltipUI : PopupUI
         BindImage(typeof(Images));
         BindButton(typeof(Buttons));
         BindTMPText(typeof(TMPTexts));
+        BindObject(typeof(GameObjects));
 
+        if (GetObject((int)GameObjects.ItemDivideSlider) 
+                is not { } divideButton
+            || divideButton == null
+            || !divideButton.TryGetComponent(out sliderController))
+        {
+            Logg.LogError($"[DetailedItemTooltipUI] failed to get reference divideSlider");
+            return false;
+        }
+        
+        sliderController.Hide();
+        
         return true;
     }
+    
+    public void SetTooltip(IGameItem item, ButtonInfo removeButton, ButtonInfo useButton, ButtonInfo<int> divideButton)
+    {
+        if (item is not { GetAmount: > 0, GetItemInfo: { } itemInfo } ) return;
+        
+        if (GetImage((int)Images.ItemIconImage) is {} iconImage)
+            iconImage.sprite = itemInfo.sprite;
+        GetTMPText((int)TMPTexts.ItemNameText)?.SetText(itemInfo.nameString);
+        GetTMPText((int)TMPTexts.ItemDescText)?.SetText(itemInfo.desc);
+        
+        SetTooltipButton(Buttons.TooltipRemoveButton, removeButton);
+        SetTooltipButton(Buttons.TooltipUseButton, useButton);
+        
+        SetDivideAction(item, divideButton.ButtonAction);
+        SetTooltipButton(Buttons.TooltipDivideButton, divideButton.ButtonAction == null ? null : divideAction);
+    }
+    
+    private void SetTooltipButton(Buttons buttonType, ButtonInfo buttonInfo, Action afterButtonSelectedTask = null)
+    {
+        if (GetButton((int)buttonType) is not { } button) return;
+
+        var buttonAction = buttonInfo.ButtonAction;
+        var buttonString = buttonInfo.ButtonString;
+        
+        bool buttonEnabled = buttonAction != null;
+        button.gameObject.SetActive(buttonEnabled);
+
+        if (!buttonEnabled) return;
+        
+        if (!string.IsNullOrEmpty(buttonString) && 
+            Util.FindChild<TextMeshProUGUI>(button.gameObject, "text", true) is {} btnStr)
+        {
+            btnStr.SetText(buttonString);
+        }
+        
+        button.onClick.RemoveAllListeners();
+        button.onClick.AddListener(() =>
+        {
+            if (PopupCTS?.Token.IsCancellationRequested ?? true) return;
+            buttonAction?.Invoke();
+            afterButtonSelectedTask?.Invoke();
+        });
+    }
+
+    private Action divideAction;
+    private Action<int> cachedDivideAction;
+
+    private void SetDivideAction(IGameItem item, Action<int> divideButtonAction)
+    {
+        if (item is not CountableItem {GetAmount: {} max and > 1 } ) return;
+        if (sliderController != null)
+        {
+            if (cachedDivideAction != null)
+                sliderController.OnSliderValueConfirmed -= cachedDivideAction;
+            sliderController.OnSliderValueConfirmed += divideButtonAction;
+            cachedDivideAction = divideButtonAction;
+        }
+        
+        divideAction = () =>
+        {
+            if (sliderController == null) return;
+            if (PopupCTS?.IsCancellationRequested ?? true) return;
+            
+            sliderController.SetMinMax(1, max, Mathf.FloorToInt((1+max)/2.0f));
+            sliderController.Show();
+        };
+    }
+
+    #region Deprecated
 
     public bool SetTooltip(Item item, ItemSlotBaseUI slotUI, Action removeAction = null, Action useAction = null, Action divideAction = null)
     {
@@ -91,20 +193,6 @@ public class DetailedItemTooltipUI : PopupUI
         SetTooltipButton(Buttons.TooltipDivideButton, divideAction);
         
         return true;
-    }
-
-    public void SetTooltip(IGameItem item, ButtonInfo removeButton, ButtonInfo useButton, ButtonInfo divideButton)
-    {
-        if (item is not { GetAmount: > 0, GetItemInfo: { } itemInfo } ) return;
-        
-        if (GetImage((int)Images.ItemIconImage) is {} iconImage)
-            iconImage.sprite = itemInfo.sprite;
-        GetTMPText((int)TMPTexts.ItemNameText)?.SetText(itemInfo.nameString);
-        GetTMPText((int)TMPTexts.ItemDescText)?.SetText(itemInfo.desc);
-        
-        SetTooltipButton(Buttons.TooltipRemoveButton, removeButton);
-        SetTooltipButton(Buttons.TooltipUseButton, useButton);
-        SetTooltipButton(Buttons.TooltipDivideButton, divideButton);
     }
     
     public bool SetTooltip(IGameItem item, ItemSlotBaseUI slotUI, Action removeAction = null, Action useAction = null, Action divideAction = null)
@@ -153,34 +241,9 @@ public class DetailedItemTooltipUI : PopupUI
             });
         }
     }
+
+    #endregion
     
-    private void SetTooltipButton(Buttons buttonType, ButtonInfo buttonInfo, Action afterButtonSelectedTask = null)
-    {
-        if (GetButton((int)buttonType) is not { } button) return;
-
-        var buttonAction = buttonInfo.ButtonAction;
-        var buttonString = buttonInfo.ButtonString;
-        
-        bool buttonEnabled = buttonAction != null;
-        button.gameObject.SetActive(buttonEnabled);
-
-        if (!buttonEnabled) return;
-        
-        if (!string.IsNullOrEmpty(buttonString) && 
-            Util.FindChild<TextMeshProUGUI>(button.gameObject, "text", true) is {} btnStr)
-        {
-            btnStr.SetText(buttonString);
-        }
-        
-        button.onClick.RemoveAllListeners();
-        button.onClick.AddListener(() =>
-        {
-            if (PopupCTS?.Token.IsCancellationRequested ?? true) return;
-            buttonAction?.Invoke();
-            afterButtonSelectedTask?.Invoke();
-        });
-    }
-
     private static string GetUseButtonText(ItemSlotBaseUI slotUI, Enums.ItemType itemType)
     {
         return itemType switch
@@ -192,8 +255,16 @@ public class DetailedItemTooltipUI : PopupUI
 
     public override void OnPopupClosed()
     {
+        Logg.Log($"[{gameObject.name} - {nameof(DetailedItemTooltipUI)}] OnPopupClosed() invoked", Logg.LoggingMode.InProgress);
         ClearButtonListeners();
+        CloseAllSubItems();
         base.OnPopupClosed();
+    }
+
+    private void CloseAllSubItems()
+    {
+        if (sliderController != null)
+            sliderController.Hide();
     }
 
     private void ClearButtonListeners()

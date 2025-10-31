@@ -511,6 +511,12 @@ namespace TH.Item
             OnSlotItemTryUsed(storage, slot);
         }
 
+        private void HandleItemDivide(IGameItemStorage storage, IGameItemSlot slot, LazyValue<int> expected)
+        {
+            if (expected is not { Initialized: true }) return;
+            HandleItemDivide(storage, slot, expected.Value);
+        }
+        
         private void HandleItemDivide(IGameItemStorage storage, IGameItemSlot slot, int expected)
         {
             if (storage is not IDividableStorage dStorage) return;
@@ -601,13 +607,13 @@ namespace TH.Item
                         if (popup is {} validPopup) validPopup.ClosePopupUI(); // 이후 팝업 닫기
                     } : null // 사용할 수 없는 아이템의 경우 사용 버튼 비활성화
                 ),
-                divideButton: new ButtonInfo(DefaultDivideText,
-                    itemInfo.itemType == Enums.ItemType.Countable ? () =>
+                divideButton: new ButtonInfo<int>(DefaultDivideText,
+                    itemInfo.itemType == Enums.ItemType.Countable ? (expected) =>
                     {
-                        HandleItemDivide(targetStorage, targetSlot, 1); // todo: 즉시 개수 분리하는 대신 개수 나누기용 팝업 추가 출력
+                        HandleItemDivide(targetStorage, targetSlot, expected); // todo: 즉시 개수 분리하는 대신 개수 나누기용 팝업 추가 출력
                         if (popup is {} validPopup) validPopup.ClosePopupUI(); // 이후 팝업 닫기
                     } : null // 개수 분리가 지원되지 않는 아이템의 경우 나누기 버튼 비활성화
-                ) //todo: 분리 기능 추가
+                ) 
             );
         }
 

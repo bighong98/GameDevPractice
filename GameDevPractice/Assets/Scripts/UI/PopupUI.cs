@@ -130,10 +130,13 @@ namespace RPG.UI
             {
                 await PlayUIAnimationAsync(exitAnimation);
             }
+            OnPopupClosed();
         }
 
         #region Chained Popup CTS (CancellationTokenSource)
 
+        public bool IsCTSChainAlive => !(PopupCTS?.Token.IsCancellationRequested ?? true);
+        
         // 외부 객체(다른 팝업UI 등)에 현재 PopupUI 객체를 종속
         // ownerToken의 CTS가 .Cancel()이 호출되면 현재 팝업의 CTS도 연쇄적으로 .Cancel이 호출, 팝업이 닫힘
         public void ChainPopupCTS(CancellationToken ownerToken)  

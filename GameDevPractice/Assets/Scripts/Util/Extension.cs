@@ -37,4 +37,15 @@ public static class Extension
     {
         return Util.IsEqualFloat(a, b);
     }
+
+    public static T ClearDelegate<T>(this T del) where T : Delegate
+    {
+        if (del == null) return null;
+        foreach (var d in del.GetInvocationList())
+        {
+            del = (T)Delegate.Remove(del, d);
+        }
+
+        return del;
+    }
 }

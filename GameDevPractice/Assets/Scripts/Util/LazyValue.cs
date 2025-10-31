@@ -10,7 +10,7 @@ namespace TH.Utils
         private Func<T> _initializer;
 
         public bool Initialized { get; private set; }
-        private T Default = default;
+        private readonly T Default = default;
         
         public LazyValue(Func<T> initializer, T defaultValue = default)
         {
@@ -27,8 +27,13 @@ namespace TH.Utils
         public void ForceInit()
         {
             if (Initialized) return;
-            if (_initializer == null) 
-                throw new InvalidOperationException("Invalid initializer");
+            if (_initializer == null)
+            {
+                _value = Default;
+                Initialized = true;
+                Logg.LogError($"[LazyValue<{GetType()})>] ForceInit() called before initializer set");
+                return;
+            }
             
             _value = _initializer();
             Initialized = true;
