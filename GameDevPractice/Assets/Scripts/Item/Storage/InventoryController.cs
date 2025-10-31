@@ -434,7 +434,14 @@ namespace TH.Item
                 return;
             
             pInvenUI.CancelDrag();
-            itemTransfer.TransferOrSwap(fromStorage, fromSlot, toStorage, toSlot);
+
+            if (fromStorage == toStorage && fromStorage is IRearrangeableStorage rStorage)
+            {
+                Logg.Log($"[InventoryController] trying to intra swap ({fromSlot}, {toSlot})", Logg.LoggingMode.InProgress);
+                rStorage.TryTransferItem(fromSlot, toSlot);
+            }
+            else itemTransfer.TransferOrSwap(
+                fromStorage, fromSlot, toStorage, toSlot);
         }
         
         

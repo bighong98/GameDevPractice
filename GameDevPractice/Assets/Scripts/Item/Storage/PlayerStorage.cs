@@ -284,6 +284,7 @@ namespace TH.Item
 
         public bool TryRemoveItem(int index)
         {
+            Logg.Log($"[PlayerStorage] TryRemove({index}) invoked", Logg.LoggingMode.InProgress);
             if (!IsValidSlotIdx(index)) return false;
             if (slots[index] is not { IsAccessible: true, HasItem: true } slot) return false;
             
@@ -295,6 +296,7 @@ namespace TH.Item
 
         public bool TryRemoveItem(int index, out IGameItem item)
         {
+            Logg.Log($"[PlayerStorage] TryRemove({index}) invoked", Logg.LoggingMode.InProgress);
             item = default;
             if (!IsValidSlotIdx(index)) return false;
             if (slots[index] is not { IsAccessible: true, HasItem: true } slot) return false;

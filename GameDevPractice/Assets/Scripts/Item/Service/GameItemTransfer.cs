@@ -12,6 +12,7 @@ namespace TH.Item
                 Logg.LogError($"[GameItemTransfer] Transfer invoked from invalid slot ({source} - {slot})");
                 return;
             }
+            
             // 도착 저장소에 아이템 저장 시도 & 출발 저장소에서 아이템 제거 시도
             if (!destination.TryStore(item, out var destSlot) ||
                 !(source.TryRemoveItem(slot.Index, out var existed) && item.IsEqual(existed, ItemComparerExtension.ItemCompareMode.CompareInstance)))
@@ -49,12 +50,15 @@ namespace TH.Item
         public void TransferOrSwap(IGameItemStorage source, IGameItemSlot sourceSlot,
             IGameItemStorage other)
         {
+            Logg.Log($"[{nameof(GameItemTransfer)}] TransferOrSwap({source}, {sourceSlot}, {other})", Logg.LoggingMode.InProgress);
+            
             // sourceSlot이 접근 불가하거나 비어있을 경우 중단
             if (sourceSlot is not { IsAccessible: true, HasItem: true, GetItem: { } sourceItem })
             {
                 Logg.LogError($"[{nameof(GameItemTransfer)}] Transfer invoked from invalid slot ({source} - {sourceSlot})");
                 return;
             }
+            
             // other이 Swap을 지원하지 않는 저장소인 경우 -> 단순 아이템 이동 처리
             if (other is not IReplaceableStorage rOther) 
             {
@@ -62,16 +66,22 @@ namespace TH.Item
                 return;
             }
             
-            // Swap 시작
-            // 1) other에 아이템 저장 시도, 저장 전 슬롯에 아이템이 있었는지 확인 -> 있다면 swap
-            if (!rOther.TryStore(sourceItem, out var otherSlot, out var otherItem)
-                || otherItem == null) return; // other에 아이템 저장을 실패 혹은 otherSlot이 원래 빈 슬롯이라 Swap이 불필요한 경우 중단
-                
-            // 2) sourceSlot의 기존 아이템 제거 및 otherItem 새로 저장 시도
-            if (source.TryRemoveItem(sourceSlot.Index) && source.TryStore(otherItem, sourceSlot.Index))
-                return; // 2-a) Swap 성공 -> 매서드 종료
+            // other에 아이템 저장 시도, 저장된 슬롯과 기존 아이템 확인
+            if (!rOther.TryStore(sourceItem, out var otherSlot, out var otherItem)) return; // other에 아이템 저장 실패 -> 중단
+            // 기존 아이템 제거
+            if (!source.TryRemoveItem(sourceSlot.Index) && !other.TryRemoveItem(otherSlot.Index))
+            {
+                Logg.LogError($"[{nameof(GameItemTransfer)}] failed to roll back item from TransferOrSwap({source}, {sourceSlot}, {other}, {otherSlot})");
+                return;
+            }
+            // 저장 전 슬롯에 아이템이 있었는지 확인 -> 없다면 swap 불필요, 메서드 종료
+            if (otherItem == null) return; 
             
-            // 2-b) Swap 실패 -> 원복 시도
+            // sourceSlot에 otherItem 저장 (Swap)
+            if (source.TryStore(otherItem, sourceSlot.Index))
+                return; // Swap 성공 -> 메서드 종료
+            
+            // Swap 실패 -> 원복 시도
             // sourceSlot: 아이템이 존재한다면 제거 후 기존 sourceItem 다시 저장
             if ((!sourceSlot.HasItem || source.TryRemoveItem(sourceSlot.Index) && source.TryStore(sourceItem, sourceSlot.Index)) 
                 && other.TryRemoveItem(otherSlot.Index) // otherSlot: 새로 저장된 sourceItem 제거

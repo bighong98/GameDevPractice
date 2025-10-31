@@ -17,8 +17,6 @@ namespace TH.Item
 
         public int Capacity => DefaultSlotNums;
         private const int DefaultSlotNums = (int)Enums.EquippedItemSlotType.Max;
-
-        
         
         private void Awake()
         {
@@ -103,6 +101,7 @@ namespace TH.Item
 
         public bool TryStore(IGameItem item, out IGameItemSlot storedSlot)
         {
+            Logg.Log($"[EquipmentHolder] TryStore({item}) invoked", Logg.LoggingMode.InProgress);
             if (TryGetValidSlot(item, out int index) && IsValidSlotIdx(index)) // 아이템을 장착할 수 있는 슬롯 인덱스 탐색 + 인덱스 유효성 검사
             {
                 bool result = TryStore(item, index);
@@ -140,10 +139,12 @@ namespace TH.Item
 
         public bool TryStore(IGameItem item, out IGameItemSlot storedSlot, out IGameItem existing)
         {
+            Logg.Log($"[EquipmentHolder] TryStore({item}) invoked", Logg.LoggingMode.InProgress);
             if (TryGetValidSlot(item, out int index) && IsValidSlotIdx(index)
                 && TryStore(item, index, out existing))
             {
                 storedSlot = equipments[index];
+                Logg.Log($"[EquipmentHolder] TryStore({item}, out {storedSlot}, out {existing}) succeed", Logg.LoggingMode.InProgress);
                 return true;
             }
 
