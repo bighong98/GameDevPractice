@@ -1,86 +1,83 @@
 using UnityEngine;
 
-namespace RPG.Item
+namespace TH.Item
 {
-    public class ItemSlot
+    public class ItemSlot: IGameItemSlot
     {
-        [SerializeField] protected Item Item;
-        public int Index = -1; // Default: -1 (not initialized)
-
-        protected bool Accessible; // 슬롯 및 슬롯 내부 아이템 접근 가능 여부
-        protected bool Visible; // 슬롯 가시화 여부 (false일 경우 해당 슬롯UI가 비활성화)
-        protected Enums.ItemType[] ValidItemTypes; // 슬롯에 저장 가능한 아이템 타입 목록
-        
-        // 생성자 (Index는 따로 설정할 것)
-        public ItemSlot(Item item, int index = -1, Enums.ItemType[] validTypes = null, bool accessible = true, bool visible = true)
-        {
-            this.Item = item;
-            this.Index = index;
-            this.ValidItemTypes = validTypes;
-            this.Accessible = accessible;
-            this.Visible = visible;
-        }
-
-        public Item GetItem => this.Item;
+        [SerializeField] protected IGameItem Item;
+        [SerializeField] private int index; // serialize for debug
+        [SerializeField] protected Enums.ItemType[] ValidTypes;
+        public int Index { get; protected set; }
+        public IGameItem GetItem => Item;
         public ItemTypeSO GetItemInfo => Item?.GetItemInfo;
-        public int GetAmount => Item?.GetAmount ?? 0;
-        public bool IsAccessible => Accessible;
-        public bool IsVisible => Visible;
-        public bool IsValid => Item != null && Index >= 0; // 아이템 데이터가 존재하고, Index 초기화가 된 경우
-        public bool HasItem => this.Item is { GetAmount: > 0 };
+        public int GetAmount { get; protected set;}
+        public bool IsAccessible { get; protected set; }
+        public bool IsVisible { get; protected set;}
+        public bool IsValid => Item != null && Index >= 0;
+        public bool HasItem => Item is { GetAmount: > 0 };
         
-        public void SetAccessibility(bool state)
+        public ItemSlot() {}
+        public ItemSlot(IGameItem item = null, Enums.ItemType[] validTypes = null, bool accessible = true, bool visible = true)
         {
-            Accessible = state;
+            Item = item;
+            ValidTypes = validTypes;
+            IsAccessible = accessible;
+            IsVisible = visible;
+        }
+        public ItemSlot(int index, IGameItem item = null, Enums.ItemType[] validTypes = null, bool accessible = true, bool visible = true)
+        {
+            Index = index;
+            Item = item;
+            ValidTypes = validTypes;
+            IsAccessible = accessible;
+            IsVisible = visible;
         }
 
-        public void SetVisibility(bool state)
+        public void SetIndex(int idx) => Index = idx;
+        public void SetAccessibility(bool state) => IsAccessible = state;
+        public void SetVisibility(bool state) => IsVisible = state;
+
+        public virtual bool CanStore(ItemTypeSO itemData)
         {
-            Visible = state;
-        }
-        
-        public virtual bool CanStore(ItemTypeSO itemData) // 슬롯에 저장 가능한 아이템 타입 확인
-        {
-            if (!Accessible) return false; // 접근 제한된 슬롯이면 실패처리
-            if (ValidItemTypes == null || ValidItemTypes.Length == 0) return false; // 유효 아이템 타입이 없거나 타입 배열이 초기화되지 않았다면 실패처리
-            
+            if (!IsAccessible) return false; // 접근 제한된 슬롯이면 실패처리
+            if (ValidTypes == null || ValidTypes.Length == 0) return false; // 유효 아이템 타입이 없거나 타입 배열이 초기화되지 않았다면 실패처리
+            // if (ValidTypes is not { Length: > 0 }) return false;
+
             var type = itemData.itemType;
-            foreach (var expectedType in ValidItemTypes)
+            foreach (var expected in ValidTypes)
             {
-                if (type == expectedType) return true;
+                if (type == expected) return true;
             }
-            
+
             return false;
         }
 
-        public bool Store(Item item, out Item prevItem, bool byForce = false) // 새 아이템을 슬롯에 저장, 슬롯에 저장되어있던 아이템이 있다면 prev 아이템을 통해 배출
+        public bool TryStore(IGameItem item, bool byForce = false)
         {
-            // if (!CanStore(item.GetItemInfo))
-            // {
-            //     prevItem = null; // 저장에 실패했으므로 내부 아이템 반환 x
-            //     return false; // 저장 실패 반환
-            // }
-            //
-            // prevItem = this.Item; // 기존 슬롯 내부 아이템 인스턴스 out 키워드로 반환
-            // this.Item = item; // 슬롯 내부에 새 아이템 인스턴스 저장
-            // return true; // 저장 성공 반환
-
-            prevItem = this.Item;
-            return Store(item, byForce);
-        }
-
-        public virtual bool Store(Item item, bool byForce = false) // 새 아이템을 슬롯에 저장
-        {
-            if (!byForce && !CanStore(item.GetItemInfo)) return false;
+            if (!CanStore(item.GetItemInfo) && !byForce) return false;
 
             this.Item = item;
             return true;
         }
 
-        public virtual bool Clear() // 슬롯에 있는 아이템 제거
+        public bool TryStore(IGameItem item, out IGameItem prevItem, bool byForce = false)
         {
-            this.Item = null;
+            prevItem = this.Item;
+            return TryStore(item, byForce: byForce);
+        }
+
+        public bool Clear(bool byForce = false)
+        {
+            if (!IsAccessible && !byForce) return false; // 접근 불가능한 슬롯이고 강제가 아니라면 실패
+
+            Item = null;
             return true;
+        }
+
+        public bool Clear(out IGameItem stored, bool byForce = false)
+        {
+            stored = this.Item;
+            return Clear(byForce: byForce);
         }
     }
 }

@@ -255,7 +255,6 @@ public class DetailedItemTooltipUI : PopupUI
 
     public override void OnPopupClosed()
     {
-        Logg.Log($"[{gameObject.name} - {nameof(DetailedItemTooltipUI)}] OnPopupClosed() invoked", Logg.LoggingMode.InProgress);
         ClearButtonListeners();
         CloseAllSubItems();
         base.OnPopupClosed();

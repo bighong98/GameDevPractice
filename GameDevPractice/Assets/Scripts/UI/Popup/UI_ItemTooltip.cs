@@ -1,7 +1,6 @@
 using TH.Item;
 using UnityEngine;
 using TH.Utils;
-using ItemSlot = RPG.Item.ItemSlot;
 
 namespace RPG.UI
 {
@@ -36,17 +35,6 @@ namespace RPG.UI
 
         public void ShowTooltip() => gameObject.SetActive(true);
         public void HideTooltip() => gameObject.SetActive(false);
-
-        public void ShowTooltip(ItemSlot item)
-        {
-            if (item == null || item.GetItemInfo == null)
-            {
-                Logg.LogError("itemTooltip: itemData is null");
-                return;
-            }
-            
-            ShowTooltip(item.GetItemInfo.name, item.GetItemInfo.desc);
-        }
         
         public void ShowTooltip(IGameItemSlot item)
         {

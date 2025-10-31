@@ -15,22 +15,7 @@ namespace TH.UI
         public event Action<int> OnSliderValueConfirmed;
         private void Awake()
         {
-            if (slider == null)
-            {
-                //todo: slider 동적 탐색
-            }
-
             slider.wholeNumbers = true;
-            
-            if (button == null)
-            {
-                //todo: button 동적 탐색
-            }
-
-            if (amountText == null)
-            {
-                //todo: ""
-            }
         }
 
         private void OnEnable()

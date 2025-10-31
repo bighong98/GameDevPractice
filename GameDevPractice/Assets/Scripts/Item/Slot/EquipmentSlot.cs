@@ -1,88 +1,34 @@
-using System;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using TH.Utils;
 
-namespace RPG.Item
+namespace TH.Item
 {
-    // 장비 장착 목적의 아이템 슬롯
-    // 특정한 부위의 장비 아이템만 저장 가능
-    // 장착(장비의 능력치 적용)이 필요한 경우가 아니라면 ItemSlot 혹은 파생클래스 사용할 것
-    public class EquipmentSlot : ItemSlot
+    public sealed class EquipmentSlot : ItemSlot
     {
-        public EquipmentSlot(Item item, int index, Enums.ItemType[] validTypes = null, bool accessible = true, 
-            Enums.EquippedItemSlotType validEquipSlotType = Enums.EquippedItemSlotType.Max) 
-            : base(item, index, validTypes, accessible)
+        private readonly Enums.EquippedItemSlotType ValidEquipSlotType;
+        
+        public EquipmentSlot() : base() { }
+
+        public EquipmentSlot(int index, Enums.EquippedItemSlotType slotType, IGameItem item = null, bool accessible = true, bool visible = true) : base(index, item, accessible: accessible, visible: visible)
         {
-            this.validEquipSlotType = validEquipSlotType;
+            base.ValidTypes = new Enums.ItemType[] { Enums.ItemType.Equipment };
+            ValidEquipSlotType = slotType;
         }
 
-        protected Enums.EquippedItemSlotType validEquipSlotType; // 슬롯에 장착 가능한 장비군(무기, 머리, 몸, 손, 발, 등)
-        public Enums.EquippedItemSlotType ValidEquipSlotType => validEquipSlotType;
-        public event EventHandler<EquipmentSlotArgs> OnEquipmentChanged; // 장착, 장착해제 전달용 이벤트핸들러
-        
         public override bool CanStore(ItemTypeSO itemData)
         {
-            if (base.CanStore(itemData))
+            if (!IsAccessible) return false;
+            if (itemData is not EquipmentTypeSO equipmentData) return false;
+
+            var type = equipmentData.itemType;
+            var slotType = equipmentData.slotType;
+
+            foreach (var expected in ValidTypes)
             {
-                if (itemData is EquipmentTypeSO equipmentData)
-                {
-                    return validEquipSlotType == equipmentData.slotType;
-                }
+                if (type == expected) break;
+                return false;
             }
 
-            return false;
-        }
-
-        public override bool Store(Item item, bool byForce = false)
-        {
-            var prevItem = this.Item;
-            
-            if (base.Store(item, byForce))
-            {
-                if (prevItem is { IsValid: true }) // 기존에 슬롯에 장착되었던 아이템이 있었다면
-                {
-                    UnEquip(prevItem); // 기존 장비 장착 해제
-                }
-                // 새 장비 장착 이벤트 전달
-                Logg.Log($"[EquipmentSlot[{Index}]]: New Item Equipped", Logg.LoggingMode.Completed);
-                OnEquipmentChanged?.Invoke(this, new EquipmentSlotArgs(this.Item, EquipmentSlotArgs.EquipEventState.Equip));
-                return true;
-            }
-
-            return false;
-        }
-
-        private void UnEquip(Item item) // 장비 장착해제 (장착해제만 되고, 칸에 있는 아이템은 그대로 유지됨. 장비칸을 비우고 싶다면 Clear() 실행 필요)
-        {
-            // 기존 장비 장착해제 이벤트 전달
-            Logg.Log($"[EquipmentSlot[{Index}]]: Item UnEquipped", Logg.LoggingMode.Completed);
-            OnEquipmentChanged?.Invoke(this, new EquipmentSlotArgs(item, EquipmentSlotArgs.EquipEventState.UnEquip));
-        }
-
-        public override bool Clear()
-        {
-            UnEquip(Item); // 기존 장비 장착해제 처리
-            return base.Clear();
-        }
-    }
-
-    // 장비 장착/장착해제 여부 전달 목적 EventArgs
-    public class EquipmentSlotArgs : EventArgs
-    {
-        public Item Item;
-        public EquipEventState State;
-
-        public EquipmentSlotArgs(Item item, EquipEventState state)
-        {
-            this.Item = item;
-            this.State = state;
-        }
-        public enum EquipEventState
-        {
-            Equip,
-            UnEquip,
+            return ValidEquipSlotType == slotType;
         }
     }
 }
-
