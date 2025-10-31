@@ -9,6 +9,7 @@ using TH.UI;
 using TH.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using TH.Item.Storage;
 
 namespace TH.Item
 {

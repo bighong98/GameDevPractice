@@ -1,8 +1,9 @@
 using UnityEngine;
 using System;
+using TH.Item.Storage;
 
 
-namespace TH.Item
+namespace TH.Item.Storage
 {
     public interface IPlayerStorage : 
         IGameItemStorage, 
@@ -11,7 +12,8 @@ namespace TH.Item
         IRearrangeableStorage,
         IUsableItemStorage,
         ICountableItemStorage,
-        IDividableStorage
+        IDividableStorage,
+        IIntraSwappableStorage
     {
         
     }

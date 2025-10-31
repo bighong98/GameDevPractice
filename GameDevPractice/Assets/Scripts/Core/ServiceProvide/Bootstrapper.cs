@@ -6,6 +6,7 @@ using TH.SceneManagement;
 using TH.UI;
 using TH.Utils;
 using UnityEngine;
+using TH.Item.Storage;
 
 namespace TH.Core.Service
 {

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using RPG.Item;
 using RPG.Saving;
 using TH.Core.Service;
 using TH.Utils;
@@ -8,6 +7,7 @@ using UnityEngine;
 using TH.Resource;
 using TH.SaveLoad;
 using UnityEngine.SceneManagement;
+using TH.Item.Storage;
 
 namespace TH.Item
 {
@@ -358,6 +358,11 @@ namespace TH.Item
             return false;
         }
         
+        public bool TrySwap(IGameItemSlot one, IGameItemSlot another)
+        {
+            throw new NotImplementedException();
+        }
+        
         #endregion
         
         #region Compare
@@ -642,8 +647,6 @@ namespace TH.Item
             };
         }
         #endregion
-
-        
     }
 }
 

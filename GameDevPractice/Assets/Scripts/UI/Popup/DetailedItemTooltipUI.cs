@@ -64,11 +64,6 @@ public class DetailedItemTooltipUI : PopupUI
     }
 
     #endregion
-
-    private const string DefaultConsumeText = "사용";
-    private const string DefaultEquipText = "장착";
-    private const string DefaultUnEquipText = "장착해제";
-    private const string DefaultDivideText = "나누기";
     
     private ISliderUIControllerInteger sliderController;
 
@@ -115,7 +110,7 @@ public class DetailedItemTooltipUI : PopupUI
         SetTooltipButton(Buttons.TooltipUseButton, useButton);
         
         SetDivideAction(item, divideButton.ButtonAction);
-        SetTooltipButton(Buttons.TooltipDivideButton, divideButton.ButtonAction == null ? null : divideAction);
+        SetTooltipButton(Buttons.TooltipDivideButton, divideButton.ButtonAction == null ? null : divideButtonAction);
     }
     
     private void SetTooltipButton(Buttons buttonType, ButtonInfo buttonInfo, Action afterButtonSelectedTask = null)
@@ -144,81 +139,7 @@ public class DetailedItemTooltipUI : PopupUI
             afterButtonSelectedTask?.Invoke();
         });
     }
-
-    private Action divideAction;
-    private Action<int> cachedDivideAction;
-
-    private void SetDivideAction(IGameItem item, Action<int> divideButtonAction)
-    {
-        if (item is not CountableItem {GetAmount: {} max and > 1 } ) return;
-        if (sliderController != null)
-        {
-            if (cachedDivideAction != null)
-                sliderController.OnSliderValueConfirmed -= cachedDivideAction;
-            sliderController.OnSliderValueConfirmed += divideButtonAction;
-            cachedDivideAction = divideButtonAction;
-        }
-        
-        divideAction = () =>
-        {
-            if (sliderController == null) return;
-            if (PopupCTS?.IsCancellationRequested ?? true) return;
-            
-            sliderController.SetMinMax(1, max, Mathf.FloorToInt((1+max)/2.0f));
-            sliderController.Show();
-        };
-    }
-
-    #region Deprecated
-
-    public bool SetTooltip(Item item, ItemSlotBaseUI slotUI, Action removeAction = null, Action useAction = null, Action divideAction = null)
-    {
-        if (item is not { GetAmount: > 0, GetItemInfo: { } itemInfo } ) return false;
-
-        if (GetImage((int)Images.ItemIconImage) is {} iconImage)
-        {
-            iconImage.sprite = itemInfo.sprite;
-        }
-        GetTMPText((int)TMPTexts.ItemNameText)?.SetText(itemInfo.nameString);
-        GetTMPText((int)TMPTexts.ItemDescText)?.SetText(itemInfo.desc);
-
-        SetTooltipButton(Buttons.TooltipRemoveButton, removeAction);
-        SetTooltipButton(Buttons.TooltipUseButton, useAction, buttonSetTask: (button) =>
-        {
-            if (Util.FindChild<TextMeshProUGUI>(button.gameObject, "text") is { } useButtonText)
-            {
-                useButtonText.SetText(GetUseButtonText(slotUI, itemInfo.itemType));
-            }
-        });
-        SetTooltipButton(Buttons.TooltipDivideButton, divideAction);
-        
-        return true;
-    }
     
-    public bool SetTooltip(IGameItem item, ItemSlotBaseUI slotUI, Action removeAction = null, Action useAction = null, Action divideAction = null)
-    {
-        if (item is not { GetAmount: > 0, GetItemInfo: { } itemInfo } ) return false;
-
-        if (GetImage((int)Images.ItemIconImage) is {} iconImage)
-        {
-            iconImage.sprite = itemInfo.sprite;
-        }
-        GetTMPText((int)TMPTexts.ItemNameText)?.SetText(itemInfo.nameString);
-        GetTMPText((int)TMPTexts.ItemDescText)?.SetText(itemInfo.desc);
-
-        SetTooltipButton(Buttons.TooltipRemoveButton, removeAction);
-        SetTooltipButton(Buttons.TooltipUseButton, useAction, buttonSetTask: (button) =>
-        {
-            if (Util.FindChild<TextMeshProUGUI>(button.gameObject, "text") is { } useButtonText)
-            {
-                useButtonText.SetText(GetUseButtonText(slotUI, itemInfo.itemType));
-            }
-        });
-        SetTooltipButton(Buttons.TooltipDivideButton, divideAction);
-        
-        return true;
-    }
-
     // 툴팁 하단 상호작용 버튼 세팅
     // buttonSetTask: 버튼 텍스트 등 상황별로 세팅이 필요한 경우 사용
     // afterButtonSelectedTask: 해당 버튼이 클릭된 후 추가적으로 해야할 작업이 있는 경우 사용
@@ -242,14 +163,27 @@ public class DetailedItemTooltipUI : PopupUI
         }
     }
 
-    #endregion
-    
-    private static string GetUseButtonText(ItemSlotBaseUI slotUI, Enums.ItemType itemType)
+    private Action divideButtonAction;
+    private Action<int> cachedDivideButtonAction;
+
+    private void SetDivideAction(IGameItem item, Action<int> divideButtonAction)
     {
-        return itemType switch
+        if (item is not CountableItem {GetAmount: {} max and > 1 } ) return;
+        if (sliderController != null)
         {
-            Enums.ItemType.Equipment => slotUI is EquipmentSlotUI ? DefaultUnEquipText : DefaultEquipText,
-            _ => DefaultConsumeText
+            if (cachedDivideButtonAction != null)
+                sliderController.OnSliderValueConfirmed -= cachedDivideButtonAction;
+            sliderController.OnSliderValueConfirmed += divideButtonAction;
+            cachedDivideButtonAction = divideButtonAction;
+        }
+        
+        this.divideButtonAction = () =>
+        {
+            if (sliderController == null) return;
+            if (PopupCTS?.IsCancellationRequested ?? true) return;
+            
+            sliderController.SetMinMax(1, max, Mathf.FloorToInt((1+max)/2.0f));
+            sliderController.Show();
         };
     }
 
