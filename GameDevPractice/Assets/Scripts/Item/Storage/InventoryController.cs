@@ -125,6 +125,8 @@ namespace TH.Item
         {
             pInvenUI.OnExitUICalled += OnExitCalled;
             pInvenUI.OnFilterButtonPressed += OnFilterRequested;
+            pInvenUI.OnSortButtonPressed += OnInvenSortRequested;
+            pInvenUI.OnTrimButtonPressed += OnInvenTrimRequested;
         }
         
         private void BindDragDropUIEvents()
@@ -437,7 +439,7 @@ namespace TH.Item
 
             if (fromStorage == toStorage && fromStorage is IRearrangeableStorage rStorage)
             {
-                Logg.Log($"[InventoryController] trying to intra swap ({fromSlot}, {toSlot})", Logg.LoggingMode.InProgress);
+                Logg.Log($"[InventoryController] trying to intra swap ({fromSlot}, {toSlot})", Logg.LoggingMode.Completed);
                 rStorage.TryTransferItem(fromSlot, toSlot);
             }
             else itemTransfer.TransferOrSwap(
@@ -462,6 +464,18 @@ namespace TH.Item
             FilterStorage(pStorage, filter);
             currentFilter = filter;
             pInvenUI.UpdateFilter(filter);
+        }
+
+        private void OnInvenTrimRequested()
+        {
+            pStorage.Trim();
+            RefreshStorageUI(pStorage);
+        }
+
+        private void OnInvenSortRequested()
+        {
+            pStorage.Sort();
+            RefreshStorageUI(pStorage);
         }
 
         #endregion

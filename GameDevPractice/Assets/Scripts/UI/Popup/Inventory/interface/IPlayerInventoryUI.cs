@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace TH.UI
 {
-    public interface IPlayerInventoryUI : IFilterableStorageUI
+    public interface IPlayerInventoryUI : IFilterableStorageUI, IRearrangeableStorageUI
     {
         IPlayerStorageUI StorageUI { get; }
         IEquipmentHolderUI EquipmentUI { get; }

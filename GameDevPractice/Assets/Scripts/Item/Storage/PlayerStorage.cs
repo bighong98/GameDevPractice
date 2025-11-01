@@ -76,29 +76,24 @@ namespace TH.Item
 
         public bool TryStore(IGameItem item)
         {
-            if (EnsureItemInstanceByType(item) is { } modified &&
-                FindEmptySlotIndex(0) is { } index and >= 0)
-            {
-                if (item is CountableItem cItem)
-                    return TryStore(cItem, cItem.GetAmount, out var excess); //todo: 초과분 발생시 처리 추가, 현재는 초과분이 소실
-                return TryStore(modified, index);
-            }
+            if (EnsureItemInstanceByType(item) is not { } modified) return false;
+            if (item is CountableItem cItem)
+                return TryStore(cItem, cItem.GetAmount, out var excess); //todo: 초과분 발생시 처리 추가, 현재는 초과분이 소실 가능성 있음
 
-            return false;
+            if (!FindEmptySlot(0, out var found)) return false;
+            return TryStore(modified, found.Index);
         }
 
         public bool TryStore(IGameItem item, out IGameItemSlot storedSlot)
         {
-            if (EnsureItemInstanceByType(item) is { } modified &&
-                FindEmptySlotIndex(0) is { } index and >= 0)
-            {
-                bool result = TryStore(modified, index);
-                storedSlot = result ? slots[index] : null;
-                return result;
-            }
-
             storedSlot = null;
-            return false;
+            if (EnsureItemInstanceByType(item) is not { } modified) return false;
+            if (!FindEmptySlot(0, out var found)) return false;
+
+            int index = found.Index;
+            bool result = TryStore(modified, index);
+            storedSlot = result ? slots[index] : null;
+            return result;
         }
 
         public bool TryStore(IGameItem item, int index)
@@ -309,15 +304,18 @@ namespace TH.Item
 
         #endregion
         
-        #region Transfer/Swap
+        #region IRearrangeableStorage (Transfer/Swap/Trim/Sort)
         
         // 스토리지 내부 슬롯 간 아이템 이동
+        // Transfer (or Swap)
         public bool TryTransferItem(IGameItemSlot from, IGameItemSlot to)
         {
             if (from is not { IsAccessible: true, HasItem: true,
-                    Index: { } fromIndex, GetItem: { } fromItem } || !IsValidSlotIdx(fromIndex) || 
-                to is not { IsAccessible: true, 
-                    Index: { } toIndex } || !IsValidSlotIdx(toIndex)) 
+                    Index: { } fromIndex, GetItem: { } fromItem } 
+                || !IsValidSlotIdx(fromIndex) 
+                || to is not { IsAccessible: true, 
+                    Index: { } toIndex } 
+                || !IsValidSlotIdx(toIndex)) 
                 return false; // 출발 슬롯과 도착 슬롯 중에 유효하지 않은 슬롯이 존재할 경우 실패
 
             if (to is { HasItem: true, GetItem: { } toItem }) // 도착 슬롯에 기존 아이템이 있는 경우 -> 아이템 자리 교체 (Swap)
@@ -359,6 +357,167 @@ namespace TH.Item
             toSlot.TryStore(toItem, byForce: true);
             return false;
         }
+        
+        // Trim
+
+        public void Trim()
+        {
+            MergeStacks(false);
+            // 1) 가장 앞쪽 빈 슬롯 인덱스부터 시작
+            if (!FindEmptySlot(0, out var found)) return;
+            int write = found.Index;
+
+            // 2) write 이후에서 아이템을 찾아 한 칸씩 앞으로 당김
+            for (int read = write + 1; read < capacity; read++)
+            {
+                if (slots[read] is not { IsAccessible: true, HasItem: true }) continue;
+
+                // 2-a) write는 항상 빈칸이어야 함 (보장 안 될 시 다음 빈칸으로 갱신)
+                if (slots[write] is not { IsAccessible: true, HasItem: false })
+                {
+                    write = FindEmptySlotIndex(write + 1);
+                    if (write < 0) break;
+                }
+
+                // 2-b) 빈 슬롯으로 아이템 이동
+                if (TryTransferItem(read, write))
+                {
+                    write = FindEmptySlotIndex(write + 1); // 다음 빈칸으로 write 갱신
+                    if (write < 0) break; // 더 이상 빈칸 없으면 조기 종료
+                }
+            }
+        }
+        
+        // Sort
+
+        public void Sort()
+        {
+            MergeStacks(false);
+            // 1) 현재 아이템 참조 수집 (앞부분만 사용)
+            var items = new List<(int index, IGameItem item)>(capacity);
+            for (int i = 0; i < capacity; i++)
+            {
+                if (slots[i] is { IsAccessible: true, HasItem: true, GetItem: { } it })
+                    items.Add((i, it));
+            }
+            
+            // 2) 정렬 규칙에 의거하여 정렬 순서 확정
+            items.Sort(CompareItemsForSort);
+
+            // 3) 앞에서부터 목표 순서대로 배치
+            int targetCount = items.Count;
+
+            for (int pos = 0; pos < targetCount; pos++)
+            {
+                var targetItem = items[pos].item;
+
+                // 이미 제자리에 있으면 스킵
+                if (slots[pos] is { HasItem: true, GetItem: { } cur } && ReferenceEquals(cur, targetItem))
+                    continue;
+
+                // 현재 targetItem이 있는 위치를 찾음
+                int curIdx = -1;
+                for (int i = pos; i < capacity; i++)
+                {
+                    if (slots[i] is { HasItem: true, GetItem: { } it } && ReferenceEquals(it, targetItem))
+                    {
+                        curIdx = i;
+                        break;
+                    }
+                }
+                if (curIdx < 0) continue; // 방어
+
+                // pos가 비어있으면 단순 이동, 차있으면 Swap
+                if (slots[pos] is { IsAccessible: true, HasItem: false })
+                    TryTransferItem(curIdx, pos);
+                else TryTransferItem(slots[curIdx], slots[pos]);
+            }
+
+            // 4) 나머지 뒤쪽은 비우기 (병합 없이 깔끔히 뒤를 비워줌)
+            for (int i = targetCount; i < capacity; i++)
+            {
+                if (slots[i] is { IsAccessible: true, HasItem: true })
+                    TryRemoveItem(i);
+            }
+        }
+        
+        private static int CompareItemsForSort((int index, IGameItem item) a, (int index, IGameItem item) b)
+        {
+            var ai = a.item.GetItemInfo;
+            var bi = b.item.GetItemInfo;
+
+            // 1) ItemType 우선
+            int typeCompare = ai.itemType.CompareTo(bi.itemType);
+            if (typeCompare != 0) return typeCompare;
+
+            // 2) 이름 (Null-safe, Ordinal)
+            string an = ai.nameString ?? string.Empty;
+            string bn = bi.nameString ?? string.Empty;
+            int nameCompare = StringComparer.Ordinal.Compare(an, bn);
+            if (nameCompare != 0) return nameCompare;
+
+            // 3) Countable이면 수량 내림차순 (없으면 0)
+            int ac = (a.item is ICountableItem aci) ? aci.GetAmount : 0;
+            int bc = (b.item is ICountableItem bci) ? bci.GetAmount : 0;
+
+            return bc.CompareTo(ac);
+        }
+        
+        // Merge Countables
+        
+        public void MergeStacks(bool trimAfter = false)
+        {
+            int end = GetEndIdx;
+            if (end < 0) return;
+
+            for (int i = 0; i <= end; i++)
+            {
+                // 타깃: 접근 가능 + 아이템 보유 + Countable
+                if (slots[i] is not { IsAccessible: true, HasItem: true, GetItem: {} ti }) continue;
+                if (ti.GetItemInfo.itemType != Enums.ItemType.Countable) continue;
+
+                var target = (ICountableItem)ti;
+                int maxStack = target.GetItemInfo.maxAmount > 0 ? target.GetItemInfo.maxAmount : int.MaxValue;
+
+                // 이미 가득차면 패스
+                int space = maxStack - target.GetAmount;
+                if (space <= 0) continue;
+
+                // 뒤쪽 동일 스택들에서 끌어오기
+                for (int j = i + 1; j <= end && space > 0; j++)
+                {
+                    if (!IsIdenticalCountableItem(ti, j, out var donorSlot)) continue;
+                    if (donorSlot is not { HasItem: true, GetItem: IGameItem dj }) continue;
+
+                    var donor = (ICountableItem)dj;
+                    int donorAmt = donor.GetAmount;
+                    if (donorAmt <= 0) continue;
+
+                    int move = Mathf.Min(space, donorAmt);
+
+                    // 먼저 타깃에 더해보기
+                    int overflow = target.AddAmount(move);   // 구현상 넘어가면 overflow 반환
+                    int actuallyMoved = move - overflow;
+
+                    if (actuallyMoved > 0)
+                    {
+                        donor.SetAmount(donorAmt - actuallyMoved);
+                        space -= actuallyMoved;
+
+                        // 기증자가 0되면 슬롯 비우기
+                        if (donor.GetAmount <= 0)
+                            donorSlot.Clear(); // 개별 Notify 안 함 (나중에 컨트롤러에서 일괄 갱신)
+                    }
+
+                    // overflow가 생겼다면 기증자에게 되돌려주기
+                    if (overflow > 0)
+                        donor.SetAmount(donor.GetAmount + overflow);
+                }
+            }
+
+            if (trimAfter) Trim();
+        }
+
         
         #endregion
         
@@ -462,7 +621,7 @@ namespace TH.Item
             if (!IsValidSlotIdx(start)) return -1;
             int end = GetEndIdx;
             
-            for (int i = start; i < end; i++)
+            for (int i = start; i <= end; i++)
             {
                 if (!IsIdenticalCountableItem(cItem, i, out var v)) continue;
                 return i; // 동일한 Countable 타입 아이템을 찾은 경우, 해당 인덱스 반환
@@ -528,7 +687,13 @@ namespace TH.Item
         {
             for (int i = capacity; i < capa; i++)
             {
-                if (GetSlot(i) is not { } slot) continue;
+                if (GetSlot(i) is not { } slot)
+                {
+                    var newSlot = MakeEmptySlot(i);
+                    slots.Add(newSlot);
+                    slot = newSlot;
+                }
+                
                 slot.SetVisibility(true);
                 slot.SetAccessibility(true);
             }
@@ -538,8 +703,8 @@ namespace TH.Item
 
         #region ISavable(save/load)
 
-        private const string inventoryIdentifier = "playerInventory";
-        public string UniqueIdentifier => inventoryIdentifier;
+        private const string InventoryIdentifier = "playerInventory";
+        public string UniqueIdentifier => InventoryIdentifier;
         
         public object CaptureState()
         {

@@ -18,11 +18,15 @@ namespace TH.UI
         public IPlayerStorageUI StorageUI => storageUI;
         public IEquipmentHolderUI EquipmentUI => equipmentUI;
         
+        // UI events
         public event Action<IDraggableStorageUI, int> OnDragStarted;
         public event Action<DragSlotInfo> OnDragDrop;
         public event Action OnExitUICalled;
         public event Action<InventoryFilterType> OnFilterButtonPressed;
-
+        public event Action OnSortButtonPressed;
+        public event Action OnTrimButtonPressed;
+        
+        // scroll
         private ScrollRect scroll;
         private ICustomScrollRectHandler scrollDragHandler;
 
@@ -49,7 +53,7 @@ namespace TH.UI
         {
             ExitButton,
             SortButton,
-            CompressButton,
+            TrimButton,
             
             AllFilterButton,
             EquipmentFilterButton,
@@ -191,6 +195,9 @@ namespace TH.UI
             BindFilterButtonEvent(GetButton((int)Buttons.EquipmentFilterButton), InventoryFilterType.Equipment);
             BindFilterButtonEvent(GetButton((int)Buttons.ConsumableFilterButton), InventoryFilterType.Consumable);
             BindFilterButtonEvent(GetButton((int)Buttons.ResourceFilterButton), InventoryFilterType.Resource);
+            
+            GetButton((int)Buttons.SortButton).onClick.AddListener(() => { OnSortButtonPressed?.Invoke(); });
+            GetButton((int)Buttons.TrimButton).onClick.AddListener(() => { OnTrimButtonPressed?.Invoke(); });
         }
 
         private void BindFilterButtonEvent(Button button, InventoryFilterType filter)
@@ -270,6 +277,8 @@ namespace TH.UI
             base.OnPopupClosed();
             Clear();
         }
+
+
     }
 }
 

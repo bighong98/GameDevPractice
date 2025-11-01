@@ -10,7 +10,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1017178100996967063, guid: 0b3fbf2f198c88345b47054fbb600b1b, type: 3}
       propertyPath: m_Name
-      value: InventoryButton
+      value: TrimButton
       objectReference: {fileID: 0}
     - target: {fileID: 9187275184116820956, guid: 0b3fbf2f198c88345b47054fbb600b1b, type: 3}
       propertyPath: m_Pivot.x
