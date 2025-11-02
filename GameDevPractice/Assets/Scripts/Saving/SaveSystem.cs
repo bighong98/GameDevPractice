@@ -22,13 +22,15 @@ namespace TH.SaveLoad
         private const int DefaultSceneIndexInCatalog = 0;
 
         private static readonly string SceneCatalogKey = "SceneCatalogSO";
-        
-        public SaveSystem()
+
+        public SaveSystem(ISceneLoader sceneLoader, IResourceLoader resourceLoader)
         {
-            ResourceManager.Instance.ReserveOperation(() =>
+            resourceLoader.NotifyResourceLoad += (label) =>
             {
-                sceneCatalog = ResourceManager.Instance.Load<SceneCatalogSO>(SceneCatalogKey);
-            });
+                if (!string.Equals(label, resourceLoader.PreLoadLabel)) return;
+                if (!resourceLoader.TryLoad(SceneCatalogKey, out sceneCatalog))
+                    Logg.LogError($"[SaveSystem] failed to load scene catalog");
+            }; 
         }
         
         #region Scene

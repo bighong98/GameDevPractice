@@ -53,7 +53,7 @@ namespace RPG.Combat
         {
             equipHolder.OnEquipmentChanged += OnEquipmentChanged;
             
-            if (ServiceLocator.TryGet(out ICombatSystem combat))
+            if (ServiceLocator.Get<ICombatSystem>() is {} combat)
             {
                 combatSystem = combat;
             }

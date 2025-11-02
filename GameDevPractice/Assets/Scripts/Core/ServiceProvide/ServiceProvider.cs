@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 using TH.Utils;
 
 namespace TH.Core.Service
@@ -36,6 +35,16 @@ namespace TH.Core.Service
 
             service = null;
             return false;
+        }
+
+        public object Get(Type type)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool IsRegistered<T>() where T : class
+        {
+            throw new NotImplementedException();
         }
 
         internal void Register<T>(T instance) where T : class

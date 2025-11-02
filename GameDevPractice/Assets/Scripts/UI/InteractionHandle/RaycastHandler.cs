@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.EventSystems;
 using System.Collections.Generic;
+using TH.SceneManagement;
 using TH.Utils;
 
 namespace TH.UI
@@ -11,10 +12,10 @@ namespace TH.UI
         private static Camera _mainCamera;
         private static EventSystem _eventSystem;
 
-        public RaycastHandler()
+        public RaycastHandler(ISceneLoader sceneLoader)
         {
             InitOnce();
-            SceneManager.activeSceneChanged += (prev, curr) => { InitAfterSceneChanged(curr); };
+            sceneLoader.OnSceneChanged += InitAfterSceneChanged;
         }
 
         public void ForceInit() => Init();

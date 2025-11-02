@@ -8,6 +8,7 @@ using TH.Resource;
 using TH.SaveLoad;
 using UnityEngine.SceneManagement;
 using TH.Item.Storage;
+using TH.SceneManagement;
 
 namespace TH.Item
 {
@@ -30,47 +31,53 @@ namespace TH.Item
         public int MaxCapacity => maxCapacity;
         private const int maxCapacity = 256;
         private const int InitialCapacity = 80;
-
-        private CharacterTypeHolder player;
         
         private int GetEndIdx => Mathf.Min(capacity, slots.Count) - 1; // return value -1 means not initialized or cleared 
         private bool IsValidSlotIdx(int index) => index >= 0 && index <= GetEndIdx;
         
-        public PlayerStorage()
+        public PlayerStorage(IResourceLoader resourceLoader, ISaveSystem saveSystem)
+        {
+            Init();
+
+            resourceLoader.NotifyResourceLoad += (label) =>
+            {
+                if (!string.Equals(label, "PreLoad")) return;
+                LoadTestData();
+                saveSystem.Register(this);
+                OnStorageChanged?.Invoke();
+            };
+        }
+        
+        #region Initialization
+
+        private void Init()
         {
             SetCapacity(InitialCapacity);
             FillInventoryWithEmptySlots();
-            
-            ResourceManager.Instance.WaitForPreLoad(() =>
-            {
-                InventoryTestData testData =
-                    ResourceManager.Instance.Load<GameObject>("InventoryTestData.prefab").GetComponent<InventoryTestData>();
-
-                if (testData == null)
-                {
-                    Logg.Log("TestData is null");
-                    return;
-                }
-             
-                foreach (var item in testData.items)
-                { 
-                    Logg.Log($"Trying to add ({item.GetItemInfo.nameString}, {item.GetAmount})", Logg.LoggingMode.Completed);
-                    if (!TryStore(EnsureItemInstanceByType(item.GetItemInfo, item.GetAmount)))
-                    {
-                        Logg.Log($"[PlayerInventory] failed to add test data item '{item}'");
-                    }
-                }
-                
-                ServiceLocator.Get<ISaveSystem>().Register(this);
-            });
-
-            SceneManager.sceneLoaded += (_, _) =>
-            {
-                player = GameObject.FindGameObjectWithTag("Player").GetComponent<CharacterTypeHolder>();
-            };
-            
-            OnStorageChanged?.Invoke();
         }
+
+        private void LoadTestData()
+        {
+            InventoryTestData testData =
+                ResourceManager.Instance.Load<GameObject>("InventoryTestData.prefab").GetComponent<InventoryTestData>();
+
+            if (testData == null)
+            {
+                Logg.LogError("TestData is null");
+                return;
+            }
+             
+            foreach (var item in testData.items)
+            { 
+                Logg.Log($"Trying to add ({item.GetItemInfo.nameString}, {item.GetAmount})", Logg.LoggingMode.Completed);
+                if (!TryStore(EnsureItemInstanceByType(item.GetItemInfo, item.GetAmount)))
+                {
+                    Logg.LogError($"[PlayerInventory] failed to add test data item '{item}'");
+                }
+            }
+        }
+        
+        #endregion
         
         #region Store (Take in)
 

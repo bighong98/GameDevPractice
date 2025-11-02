@@ -8,19 +8,17 @@ using TH.Utils;
 public sealed class CombatSystem : ICombatSystem
 {
     private DamageRuleSO damageRule;
-    private IDamageCalculator damageCalc;
+    private readonly IDamageCalculator damageCalc;
 
-    public CombatSystem()
+    public CombatSystem(IResourceLoader resourceLoader, IDamageCalculator damageCalc)
     {
-        if (ServiceLocator.TryGet(out IDamageCalculator calc))
+        this.damageCalc = damageCalc;
+        resourceLoader.NotifyResourceLoad += (label) =>
         {
-            damageCalc = calc;
-        }
-        
-        ResourceManager.Instance.ReserveOperation(() =>
-        {
-            damageRule = ResourceManager.Instance.Load<DamageRuleSO>("DamageRuleSO");
-        });
+            if (!string.Equals(label, "PreLoad")) return;
+            if (!resourceLoader.TryLoad("DamageRuleSO", out damageRule))
+                Logg.LogError($"[CombatSystem] failed to load DamageRuleSO");
+        };
     }
     
     public void ApplyHit(in HitRequest hitRequest)

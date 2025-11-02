@@ -58,7 +58,7 @@ namespace TH.Core
 
         protected virtual void Start()
         {
-            if (ServiceLocator.TryGet(out ISceneLoader sceneLoader))
+            if (ServiceLocator.Get<ISceneLoader>() is {} sceneLoader)
             {
                 sceneLoader.OnBeforeSceneChanged += this.Clear;
                 sceneLoader.OnSceneChanged += this.OnSceneChanged;

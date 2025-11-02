@@ -33,8 +33,8 @@ namespace TH.Item
         
         private void Awake()
         {
-            pStorage = ServiceLocator.Require<IPlayerStorage>();
-            itemTransfer = ServiceLocator.Require<IGameItemTransfer>();
+            pStorage = ServiceLocator.Get<IPlayerStorage>();
+            itemTransfer = ServiceLocator.Get<IGameItemTransfer>();
             
             if (!TryGetComponent(out pInvenUI))
             {

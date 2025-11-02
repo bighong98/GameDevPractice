@@ -17,6 +17,8 @@ namespace TH.SceneManagement
 {
     public class SceneLoader : ISceneLoader
     {
+        private readonly IResourceLoader resourceLoader;
+        
         private const string LoadingSceneName = "LoadingScene";
         private const float SceneLoadStartPoint = 0.3f;
         private const float SceneActivateStartPoint = 0.6f;
@@ -31,8 +33,9 @@ namespace TH.SceneManagement
         public event Func<UniTask> OnBeforeSceneChanged;
         public event Action<Scene> OnSceneChanged;
         
-        public SceneLoader()
+        public SceneLoader(IResourceLoader resourceLoad)
         {
+            resourceLoader = resourceLoad;
             BindProgress(reporter: null); // 빈 객체로 초기화
             OnBeforeSceneChanged = () => UniTask.CompletedTask; // 빈 객체로 초기화 (NRE 방지)
             Init();
@@ -51,16 +54,13 @@ namespace TH.SceneManagement
         {
             try
             {
-                if (ServiceLocator.TryGet(out IResourceLoader resourceLoader))
+                if (!resourceLoader.IsPreLoadDone())
                 {
-                    if (!resourceLoader.IsPreLoadDone())
+                    Logg.Log($"[SceneLoader] WaitForPreLoad", Logg.LoggingMode.Completed);
+                    resourceLoader.NotifyResourceLoad += OnPreloadDone;
+                    while (!(cts?.IsCancellationRequested ?? true))
                     {
-                        Logg.Log($"[SceneLoader] WaitForPreLoad", Logg.LoggingMode.Completed);
-                        resourceLoader.NotifyResourceLoad += OnPreloadDone;
-                        while (!(cts?.IsCancellationRequested ?? true))
-                        {
-                            await UniTask.NextFrame();
-                        }
+                        await UniTask.NextFrame();
                     }
                 }
             }
@@ -90,7 +90,6 @@ namespace TH.SceneManagement
                 return;
             
             var op = SceneManager.LoadSceneAsync(LoadingSceneName, LoadSceneMode.Single);
-
             
             await UniTask.WhenAll(
                 op.ToUniTask(cancellationToken: token),

@@ -20,29 +20,31 @@ namespace TH.Utils
 
         private IObjectPool<IPoolObject> damageTextPool;
         private GameObject damageTextPrefab;
+
+        private const string damageTextPrefabKey = "DamageText";
         
-        public FloatingTextSpawner()
+        public FloatingTextSpawner(IResourceLoader resourceLoader)
         {
             AddBinders();
             
-            //todo: 생성자 파라미터로 오브젝트 풀 주입
-            ResourceManager.Instance.WaitForPreLoad(() =>
+            resourceLoader.NotifyResourceLoad += (label) =>
             {
-                if (ResourceManager.Instance.Load<GameObject>("DamageText") is not {} prefab)
+                if (!string.Equals(label, resourceLoader.PreLoadLabel)) return;
+                if (!resourceLoader.TryLoad(damageTextPrefabKey, out damageTextPrefab))
                 {
                     Logg.LogError($"[{nameof(FloatingTextSpawner)}] failed to get damage text prefab");
                     return;
                 }
-                
-                if (PoolManager.Instance.GetPool(prefab) is not { } result)
+                // todo: PoolManager 대신 ServiceProvider/BootStrapper에서 초기화하는 서비스 사용 고려
+                // todo: 혹은 오브젝트 풀 자체를 생성자에서 주입 고려
+                if (PoolManager.Instance.GetPool(damageTextPrefab) is not { } result)
                 {
                     Logg.LogError($"[{nameof(FloatingTextSpawner)}] failed to get damage text pool");
                     return;
                 }
                 
-                damageTextPrefab = prefab;
                 damageTextPool = result;
-            });
+            };
         }
 
         private void AddBinders()

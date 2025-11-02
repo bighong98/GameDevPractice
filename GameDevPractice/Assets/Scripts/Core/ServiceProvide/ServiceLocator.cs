@@ -1,59 +1,125 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
+using TH.Utils;
 
 namespace TH.Core.Service
 {
     public static class ServiceLocator
     {
-        private static IServiceProvider _provider = new ServiceProvider();
-        public static IServiceProvider Provider => _provider;
+        private static readonly Dictionary<Type, Func<IServiceProvider, object>> _factories = new();
+        private static readonly Dictionary<Type, object> _instances = new();
+        private static readonly object _gate = new();
 
-        public static void SetProvider(IServiceProvider provider)
+        [ThreadStatic] private static HashSet<Type> _resolving;
+
+        public static void Register<TService>(TService instance) where TService : class
         {
-            _provider = provider ?? throw new ArgumentNullException(nameof(provider));
+            if (instance == null) throw new ArgumentNullException(nameof(instance));
+            var t = typeof(TService);
+
+            lock (_gate)
+            {
+                if (_instances.ContainsKey(t) || _factories.ContainsKey(t))
+                {
+                    Logg.LogError($"[ServiceLocator] service '{t.Name}' is already registered");
+                    return;
+                }
+
+                _instances[t] = instance;
+            }
         }
 
-        public static T Require<T>() where T : class
+        public static void Register<TService>(Func<IServiceProvider, TService> factory) where TService : class
         {
-            if (_provider == null)
+            if (factory == null) throw new ArgumentNullException(nameof(factory));
+            var t = typeof(TService);
+
+            lock (_gate)
             {
-                throw new InvalidOperationException($"[{nameof(ServiceLocator)}.{nameof(Require)}] Provider is null");
+                if (_instances.ContainsKey(t) || _factories.ContainsKey(t))
+                {
+                    Logg.LogError($"[ServiceLocator] service '{t.Name}' is already registered");
+                    return;
+                }
             }
 
-            return _provider.Get<T>();
+            _factories[t] = factory;
         }
 
-        public static T Get<T>() where T : class => Require<T>();
+        public static TService Get<TService>() where TService : class
+            => (TService)Get(typeof(TService));
 
-        public static bool TryGet<T>(out T service) where T : class
+        public static bool IsRegistered<TService>() where TService : class
         {
-            service = null;
-            return _provider != null && _provider.TryGet(out service);
+            var t = typeof(TService);
+            lock (_gate)
+                return _instances.ContainsKey(t) || _factories.ContainsKey(t);
         }
 
-        public static void Register<T>(T instance) where T : class
+        public static object Get(Type type)
         {
-            if (_provider is ServiceProvider sp) { sp.Register(instance); return; } // 현시점 최상위 IServiceProvider 구현 클래스 타입을 사용
-            throw new InvalidOperationException("Current provider not support registration");
+            if (type == null) throw new ArgumentNullException(nameof(type));
+
+            lock (_gate)
+            {
+                if (_instances.TryGetValue(type, out var cached))
+                    return cached;
+            }
+
+            Func<IServiceProvider, object> factory;
+
+            lock (_gate)
+            {
+                if (!_factories.TryGetValue(type, out factory))
+                {
+                    Logg.LogError($"[ServiceLocator] service '{type.Name} is not registered'");
+                    return null;
+                }
+            }
+
+            _resolving ??= new HashSet<Type>();
+            if (!_resolving.Add(type))
+                throw new InvalidOperationException($"Circular dependency detected while resolving {type.Name}.");
+
+            object created = null;
+            try
+            {
+                created = factory(InternalProvider.Instance);
+                
+                if (created == null)
+                    throw new InvalidOperationException($"Factory for {type.Name} failed.");
+
+                lock (_gate)
+                {
+                    if (_instances.TryGetValue(type, out var existing))
+                        return existing;
+
+                    _instances[type] = created;
+                }
+            }
+            finally { _resolving.Remove(type); }
+
+            return created;
         }
         
-        public static void Replace<T>(T instance) where T : class
+        private sealed class InternalProvider : IServiceProvider
         {
-            if (_provider is ServiceProvider sp) { sp.Replace(instance); return; } // 현시점 최상위 IServiceProvider 구현 클래스 타입을 사용
-            throw new InvalidOperationException("Current provider not support replacement");
-        }
-        
-        public static void UnRegister<T>() where T : class
-        {
-            if (_provider is ServiceProvider sp) { sp.UnRegister<T>(); return; } // 현시점 최상위 IServiceProvider 구현 클래스 타입을 사용
-            throw new InvalidOperationException("Current provider not support replacement");
+            public static readonly InternalProvider Instance = new();
+
+            public T Get<T>() where T : class => ServiceLocator.Get<T>();
+            public object Get(Type type) => ServiceLocator.Get(type);
+            public bool IsRegistered<T>() where T : class => ServiceLocator.IsRegistered<T>();
         }
 
-        public static void ClearAll()
+        // 필요시 테스트/리셋용
+        public static void ResetForTests()
         {
-            if (_provider is ServiceProvider sp) { sp.Clear(); return; } // 현시점 최상위 IServiceProvider 구현 클래스 타입을 사용
-            throw new InvalidOperationException("Current provider not support replacement");
+            lock (_gate)
+            {
+                _instances.Clear();
+                _factories.Clear();
+            }
+            _resolving = null;
         }
     }
 }

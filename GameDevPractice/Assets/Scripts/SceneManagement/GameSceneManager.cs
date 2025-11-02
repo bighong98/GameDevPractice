@@ -21,7 +21,7 @@ namespace TH.SceneManagement
         {
             base.Awake();
             if (IsInvalidInstance()) return;
-            sceneLoader = ServiceLocator.Require<ISceneLoader>();
+            sceneLoader = ServiceLocator.Get<ISceneLoader>();
             
             SceneManager.sceneLoaded += ((scene, mode) =>
             {

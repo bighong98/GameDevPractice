@@ -22,7 +22,7 @@ public class SimpleLoadingUI : BaseUI, ILoadingUI
 
     private void OnEnable()
     {
-        if (ServiceLocator.TryGet(out ISceneLoader sceneLoader))
+        if (ServiceLocator.Get<ISceneLoader>() is { } sceneLoader)
         {
             sceneLoader.BindProgress(SetProgress);
         }

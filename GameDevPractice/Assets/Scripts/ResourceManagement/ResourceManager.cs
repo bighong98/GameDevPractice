@@ -27,7 +27,7 @@ namespace TH.Resource
         {
             base.Awake();
             if (IsInvalidInstance()) return;
-            resourceLoader = ServiceLocator.Require<IResourceLoader>();
+            resourceLoader = ServiceLocator.Get<IResourceLoader>();
         }
 
         #region Initialization

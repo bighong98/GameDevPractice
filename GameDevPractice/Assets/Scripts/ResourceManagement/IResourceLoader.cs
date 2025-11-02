@@ -17,6 +17,8 @@ namespace TH.Resource
         bool TryLoad<T>(AssetReference assetRef, out T resource) where T : Object;
         bool IsLoadedAll(string label);
         bool IsPreLoadDone(); // 임시 매서드
+
+        string PreLoadLabel { get; }
     }
 }
 

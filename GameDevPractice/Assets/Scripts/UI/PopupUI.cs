@@ -70,7 +70,7 @@ namespace RPG.UI
         protected override void Awake()
         {
             base.Awake();
-            raycastHandler = ServiceLocator.Require<IRaycastHandler>(); // todo: UIManager에서 주입 고려
+            raycastHandler = ServiceLocator.Get<IRaycastHandler>(); // todo: UIManager에서 주입 고려
         }
         
         public override bool Init()

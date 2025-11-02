@@ -17,7 +17,7 @@ namespace TH.Control
 
         private void Awake()
         {
-            playerStorage = ServiceLocator.Require<IPlayerStorage>();
+            playerStorage = ServiceLocator.Get<IPlayerStorage>();
         }
 
         private void OnTriggerEnter(Collider other)

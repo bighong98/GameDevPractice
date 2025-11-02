@@ -24,14 +24,26 @@ namespace TH.Core.Service
         private static void RegisterServices()
         {
             ServiceLocator.Register<IResourceLoader>(new ResourceLoader());
-            ServiceLocator.Register<ISceneLoader>(new SceneLoader());
-            ServiceLocator.Register<ISaveSystem>(new SaveSystem());
-            ServiceLocator.Register<IRaycastHandler>(new RaycastHandler());
+            ServiceLocator.Register<ISceneLoader>( sp => 
+                new SceneLoader(sp.Get<IResourceLoader>()));
+            ServiceLocator.Register<ISaveSystem>(sp => 
+                new SaveSystem(
+                    sp.Get<ISceneLoader>(),
+                    sp.Get<IResourceLoader>()));
+            ServiceLocator.Register<IRaycastHandler>( sp =>
+                new RaycastHandler(sp.Get<ISceneLoader>()));
             ServiceLocator.Register<IDamageCalculator>(new DamageCalculator());
-            ServiceLocator.Register<ICombatSystem>(new CombatSystem());
-            ServiceLocator.Register<IPlayerStorage>(new PlayerStorage());
+            ServiceLocator.Register<ICombatSystem>( sp => 
+                new CombatSystem(
+                    sp.Get<IResourceLoader>(),
+                    sp.Get<IDamageCalculator>()));
+            ServiceLocator.Register<IPlayerStorage>(sp => 
+                new PlayerStorage(
+                    sp.Get<IResourceLoader>(),
+                    sp.Get<ISaveSystem>()));
             ServiceLocator.Register<IGameItemTransfer>(new GameItemTransfer());
-            ServiceLocator.Register<IFloatingTextSpawner>(new FloatingTextSpawner());
+            ServiceLocator.Register<IFloatingTextSpawner>(sp => 
+                new FloatingTextSpawner(sp.Get<IResourceLoader>()));
         }
     }
 }

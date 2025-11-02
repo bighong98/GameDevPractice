@@ -19,7 +19,7 @@ namespace TH.SaveLoad
         {
             // saveSystem = GetComponent<SaveSystem>();
             saveSystem = ServiceLocator.Get<ISaveSystem>();
-            if (ServiceLocator.TryGet(out IResourceLoader resourceLoader))
+            if (ServiceLocator.Get<IResourceLoader>() is {} resourceLoader)
             {
                 if (resourceLoader.IsPreLoadDone())
                     Init(preloadLabel);

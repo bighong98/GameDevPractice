@@ -23,7 +23,7 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
     protected override void Start()
     {
         base.Start();
-        ServiceLocator.TryGet(out combatSystem);
+        combatSystem = ServiceLocator.Get<ICombatSystem>();
     }
     
     public void InitializeProjectileSpawner(Fighter owner, WeaponTypeSO weaponTypeSO)

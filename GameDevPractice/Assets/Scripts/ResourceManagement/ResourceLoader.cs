@@ -37,10 +37,8 @@ namespace TH.Resource
 
         #endregion
 
-        
-        
-
-        private const string PreLoadLabel = "PreLoad";
+        private const string preloadLabel = "PreLoad";
+        public string PreLoadLabel => preloadLabel;
         private const string SpriteAtlasSuffix = "(Clone)"; // 스프라이트 아틀라스 내부 리소스 접근용 문자열
         private int atlasSuffixLength; // 캐싱된 "(Clone)" 문자열 길이
 
@@ -353,8 +351,6 @@ namespace TH.Resource
         }
 
         public bool IsPreLoadDone() => IsLoadedAll(PreLoadLabel);
-
-
     }
 }
 
