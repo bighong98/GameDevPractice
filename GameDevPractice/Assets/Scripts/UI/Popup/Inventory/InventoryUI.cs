@@ -9,7 +9,7 @@ using UnityEngine.UI;
 
 namespace TH.UI
 {
-    public class InventoryUI : PopupUI, IPlayerInventoryUI
+    public sealed class InventoryUI : PopupUI, IPlayerInventoryUI
     {
         [Header("InventoryUI")]
         [SerializeField] private PlayerStorageUI storageUI;

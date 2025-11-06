@@ -1,6 +1,6 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
+using TH.Core.Service;
 using TH.SaveLoad;
 using UnityEngine;
 using UnityEditor;
@@ -14,22 +14,31 @@ namespace RPG.Saving
         [SerializeField] private bool isGlobal = false;
         public bool IsGlobal => isGlobal;
         
-        static Dictionary<string, SavableEntity> globalLookup = new Dictionary<string, SavableEntity>();
-        static Dictionary<string, string> savedTypeLookup = new Dictionary<string, string>(); // (ISavable 구현 클래스 이름, 세이브 데이터 저장 객체 이름) -> RestoreState()에서 사용 목적
-        private bool hasCaptured = false;
+        private static readonly Dictionary<string, SavableEntity> GlobalLookup = new Dictionary<string, SavableEntity>();
+        private static readonly Dictionary<string, string> SavedTypeLookup = new Dictionary<string, string>(); // (ISavable 구현 클래스 이름, 세이브 데이터 저장 객체 이름) -> RestoreState()에서 사용 목적
 
+        private readonly List<ISavable> savables = new();
+        
         private static readonly string UniqueIdentifierPropertyName = "uniqueIdentifier";
-        
         public string UniqueIdentifier => uniqueIdentifier;
+
+        private void Awake()
+        {
+            RebuildSavableList();
+        }
         
-        
+        private void OnDestroy()
+        {
+            savables.Clear();
+        }
+
         public Dictionary<string, object> CaptureState()
         {
             var state = new Dictionary<string, object>();
-
-            foreach (var savable in GetComponents<ISavable>())
+            
+            foreach (var savable in savables)
             {
-                if (savable == null) continue; // ISavable 구현 컴포넌트가 null이면 취소
+                if (savable == null) continue; // NRE 방어
                 
                 var objState = savable.CaptureState();
                 if (objState == null) continue; // ISavable 구현 컴포넌트로부터 세이브 데이터 생성에 실패하면 취소
@@ -40,32 +49,28 @@ namespace RPG.Saving
                 state[savedTypeName] = objState; // 현재 상태 등록
                 TryCacheSavedTypeName(savedTypeName, savable);
             }
-
-            if (!hasCaptured) hasCaptured = true; // flag 갱신
             
             return state;
         }
         
         public void RestoreState(Dictionary<string, object> state)
         {
-            foreach (var savable in GetComponents<ISavable>())
+            foreach (var savable in savables)
             {
                 if (savable == null) continue;
                 
                 var typeName = savable.GetType().AssemblyQualifiedName;
                 if (string.IsNullOrEmpty(typeName)) continue;
-                if (savedTypeLookup.TryGetValue(typeName, out var savedTypeName))
+                
+                if (SavedTypeLookup.TryGetValue(typeName, out var savedTypeName))
                 {
-                    if (state.TryGetValue(savedTypeName, out var saved))
+                    if (!state.TryGetValue(savedTypeName, out var saved)) continue;
+                    
+                    try { savable.RestoreState(saved); }
+                    catch (Exception e)
                     {
-                        try
-                        {
-                            savable.RestoreState(saved);
-                        }
-                        catch (Exception e)
-                        {
-                            Debug.LogError($"[SavableEntity] RestoreState() failed for {typeName} with known mapping {e}");
-                        }
+                        Debug.LogError($"[SavableEntity] RestoreState() failed for {typeName} " +
+                                       $"with known mapping {e}");
                     }
                 }
                 else // 캐싱된 savedType이 없는 경우
@@ -80,13 +85,14 @@ namespace RPG.Saving
                         {
                             if (savable.RestoreState(value)) // RestoreState 성공 여부 확인
                             {
-                                savedTypeLookup[typeName] = key; // 적합한 타입인 경우 타입 저장
+                                SavedTypeLookup[typeName] = key; // 적합한 타입인 경우 타입 저장
                                 break;
                             }
                         }
-                        catch (System.Exception e)
+                        catch (Exception e)
                         {
-                            Debug.LogError($"[SavableEntity] Failed to restore state. Type: {kvp.Key}, Exception: {e}");
+                            Debug.LogError($"[SavableEntity] Failed to restore state. " +
+                                           $"Type: {kvp.Key}, Exception: {e}");
                         }
                     }
                 }
@@ -107,25 +113,25 @@ namespace RPG.Saving
                 serializedObject.ApplyModifiedProperties(); // 고유식별자 적용
             }
 
-            globalLookup[property.stringValue] = this; // 글로벌 룩업 딕셔너리에 자기자신을 등록
+            GlobalLookup[property.stringValue] = this; // 글로벌 룩업 딕셔너리에 자기자신을 등록
         }
 #endif
         
         private bool IsUnique(string candidate)
         {
-            if (!globalLookup.ContainsKey(candidate)) return true;
+            if (!GlobalLookup.ContainsKey(candidate)) return true;
 
-            if (globalLookup[candidate] == this) return true;
+            if (GlobalLookup[candidate] == this) return true;
 
-            if (globalLookup[candidate] == null)
+            if (GlobalLookup[candidate] == null)
             {
-                globalLookup.Remove(candidate);
+                GlobalLookup.Remove(candidate);
                 return true;
             }
 
-            if (globalLookup[candidate].UniqueIdentifier != candidate)
+            if (GlobalLookup[candidate].UniqueIdentifier != candidate)
             {
-                globalLookup.Remove(candidate);
+                GlobalLookup.Remove(candidate);
                 return true;
             }
 
@@ -134,13 +140,16 @@ namespace RPG.Saving
 
         private void TryCacheSavedTypeName(string savedTypeName, ISavable instance)
         {
-            // if (hasCaptured) return; // 한번 TryCacheSavedTypeName()이 호출된 적이 있다면 취소
-
             var typeName = instance.GetType().AssemblyQualifiedName;
             if (string.IsNullOrEmpty(typeName)) return; // 리플렉션 타입 이름 생성에 실패했다면 취소
-            savedTypeLookup.TryAdd(typeName, savedTypeName); // 중복 등록x
+            SavedTypeLookup.TryAdd(typeName, savedTypeName); // 중복 등록x
         }
-        
+
+        private void RebuildSavableList()
+        {
+            savables.Clear();
+            GetComponents(savables);
+        }
     }
 }
 

@@ -69,6 +69,8 @@ namespace RPG.Movement
             animator.SetFloat(ForwardSpeed, speed);
         }
 
+        #region ISavable
+        
         public object CaptureState()
         {
             MoverSaveData data = new MoverSaveData
@@ -93,5 +95,8 @@ namespace RPG.Movement
             nav.enabled = true;
             return true;
         }
+
+        #endregion
+        
     }
 }

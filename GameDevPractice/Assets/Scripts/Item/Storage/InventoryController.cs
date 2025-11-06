@@ -38,7 +38,8 @@ namespace TH.Item
             
             if (!TryGetComponent(out pInvenUI))
             {
-                Logg.LogError($"[{nameof(InventoryController)}] failed to GetComponent<{nameof(IPlayerInventoryUI)}>. disable inventory controller");
+                Logg.LogError($"[{nameof(InventoryController)}] " +
+                              $"failed to GetComponent<{nameof(IPlayerInventoryUI)}>. disable inventory controller");
                 this.enabled = false;
                 return;
             }
@@ -63,7 +64,8 @@ namespace TH.Item
         {
             if (pInvenUI is not { StorageUI: { } storageUI, EquipmentUI: { } equipmentUI })
             {
-                Logg.LogError($"[{nameof(InventoryController)}] failed to get {nameof(IPlayerStorageUI)}, {nameof(IEquipmentHolderUI)} from {nameof(IPlayerInventoryUI)}");
+                Logg.LogError($"[{nameof(InventoryController)}] failed to get {nameof(IPlayerStorageUI)}, " +
+                              $"{nameof(IEquipmentHolderUI)} from {nameof(IPlayerInventoryUI)}");
                 return;
             }
 
@@ -420,7 +422,8 @@ namespace TH.Item
 
         private void OnDragDrop(DragSlotInfo dragSlotInfo)
         {
-            Logg.Log($"[InventoryController] DragDrop occured ({dragSlotInfo.From}, {dragSlotInfo.To})", Logg.LoggingMode.Completed);
+            Logg.Log($"[InventoryController] DragDrop occured ({dragSlotInfo.From}, {dragSlotInfo.To})", 
+                Logg.LoggingMode.Completed);
             
             var from = dragSlotInfo.From;
             var fromSource = from.source;
@@ -439,7 +442,8 @@ namespace TH.Item
 
             if (fromStorage == toStorage && fromStorage is IRearrangeableStorage rStorage)
             {
-                Logg.Log($"[InventoryController] trying to intra swap ({fromSlot}, {toSlot})", Logg.LoggingMode.Completed);
+                Logg.Log($"[InventoryController] trying to intra swap ({fromSlot}, {toSlot})", 
+                    Logg.LoggingMode.Completed);
                 rStorage.TryTransferItem(fromSlot, toSlot);
             }
             else itemTransfer.TransferOrSwap(
@@ -454,7 +458,7 @@ namespace TH.Item
 
         private void OnExitCalled()
         {
-            UIManager.Instance.ClosePopupUI((PopupUI)pInvenUI); // todo: 타입 캐스팅/체크 UIManager에서 처리하도록 변경
+            UIManager.Instance.ClosePopupUI((PopupUI)pInvenUI);
         }
 
         private void OnFilterRequested(InventoryFilterType filter)

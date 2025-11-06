@@ -10,6 +10,7 @@ using TH.Core.Service;
 using TH.Item;
 using TH.Utils;
 using UnityEngine;
+using TH.Resource;
 
 namespace TH.Combat
 {

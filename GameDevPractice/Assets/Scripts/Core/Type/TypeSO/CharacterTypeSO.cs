@@ -4,13 +4,17 @@ using RPG.Stats;
 using UnityEngine.Serialization;
 using TH.Attribute.Stat;
 
-public abstract class CharacterTypeSO : BaseTypeSO
+namespace TH.Resource
 {
-    [Header("Character")] 
-    public CharacterType characterType;
-    public BaseStatListSO characterBaseStats;
-    public float height;
-    public int startingLevel;
+    public abstract class CharacterTypeSO : BaseTypeSO
+    {
+        [Header("Character")] 
+        public CharacterType characterType;
+        public BaseStatListSO characterBaseStats;
+        public float height;
+        public int startingLevel;
 
-    [SerializeField] public List<EquipmentTypeSO> defaultEquipments;
+        [SerializeField] public List<EquipmentTypeSO> defaultEquipments;
+    }
 }
+

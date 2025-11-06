@@ -10,9 +10,7 @@ namespace TH.SaveLoad
     public class SavingWrapper : MonoBehaviour
     {
         private const string defaultSaveFile = "save";
-        private const string preloadLabel = "PreLoad";
         private ISaveSystem saveSystem;
-        
 
         [SerializeField] private float fadeInTime = 0.2f;
         private void Awake()
@@ -22,7 +20,7 @@ namespace TH.SaveLoad
             if (ServiceLocator.Get<IResourceLoader>() is {} resourceLoader)
             {
                 if (resourceLoader.IsPreLoadDone())
-                    Init(preloadLabel);
+                    Init(Constants.PreLoadLabel);
                 else
                     resourceLoader.NotifyResourceLoad += Init;
             }
@@ -30,7 +28,7 @@ namespace TH.SaveLoad
 
         private void Init(string label)
         {
-            if (label == preloadLabel)
+            if (label == Constants.PreLoadLabel)
             {
                 Logg.Log($"[SavingWrapper] Init() invoked");
                 LoadLastScene().Forget();

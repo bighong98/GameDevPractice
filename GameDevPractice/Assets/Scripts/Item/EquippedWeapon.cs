@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using TH.Resource;
 
 namespace RPG.Item
 {

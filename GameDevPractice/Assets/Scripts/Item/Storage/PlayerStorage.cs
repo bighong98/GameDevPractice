@@ -1,14 +1,12 @@
 using System;
 using System.Collections.Generic;
 using RPG.Saving;
-using TH.Core.Service;
 using TH.Utils;
 using UnityEngine;
 using TH.Resource;
 using TH.SaveLoad;
-using UnityEngine.SceneManagement;
 using TH.Item.Storage;
-using TH.SceneManagement;
+
 
 namespace TH.Item
 {
@@ -79,7 +77,7 @@ namespace TH.Item
         
         #endregion
         
-        #region Store (Take in)
+        #region Store
 
         public bool TryStore(IGameItem item)
         {
@@ -708,7 +706,7 @@ namespace TH.Item
 
         #endregion
 
-        #region ISavable(save/load)
+        #region ISavable (save/load)
 
         private const string InventoryIdentifier = "playerInventory";
         public string UniqueIdentifier => InventoryIdentifier;

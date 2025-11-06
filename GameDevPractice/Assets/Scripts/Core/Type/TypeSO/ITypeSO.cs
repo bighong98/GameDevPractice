@@ -1,6 +1,10 @@
 using UnityEngine;
 
-public interface ITypeSO
+namespace TH.Resource
 {
-    
+    public interface ITypeSO
+    {
+        
+    }
 }
+

@@ -15,12 +15,17 @@ namespace TH.Core.Service
     // 추후 Scene 개별 ServiceProvider 도입 시 확장 및 수정 필요
     public static class Bootstrapper
     {
+        // RuntimeInitializeOnLoadMethod()로 씬 로드 전 실행을 보장
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Init()
         {
             RegisterServices();
         }
-
+        
+        // 씬 로드 전 초기화가 필요한 서비스 등록
+        // 등록 시 반드시 인터페이스 타입으로 등록할 것
+        // MonoBehaviour 상속 클래스는 자신의 Awake()에서 개별 등록 필요 (인터페이스 사용 제약은 동일)
+        // 1개 이상의 파라미터를 갖는 생성자는 지연 생성됨 (-> 즉시 초기화가 필요할 경우 추가 호출 필요)
         private static void RegisterServices()
         {
             ServiceLocator.Register<IResourceLoader>(new ResourceLoader());

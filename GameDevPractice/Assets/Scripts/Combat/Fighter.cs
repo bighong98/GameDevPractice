@@ -8,6 +8,7 @@ using TH.Attribute.Stat;
 using TH.Combat;
 using TH.Core.Service;
 using TH.Item;
+using TH.Resource;
 
 namespace RPG.Combat
 {

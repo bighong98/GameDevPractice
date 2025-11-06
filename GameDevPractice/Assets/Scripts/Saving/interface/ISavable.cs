@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -13,6 +14,16 @@ namespace RPG.Saving
     public interface ISavableWithId : ISavable
     {
         string UniqueIdentifier { get; }
+    }
+
+    public interface ISavableDirtySignal
+    {
+        event Action OnDirty;
+    }
+
+    public interface ISavableDeleteSignal
+    {
+        event Action OnDeleted;
     }
 }
 

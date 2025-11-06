@@ -3,7 +3,7 @@ using TH.Combat;
 using TH.Core.Pool;
 using UnityEngine;
 using UnityEngine.Pool;
-
+using TH.Resource;
 
 namespace TH.Item
 {

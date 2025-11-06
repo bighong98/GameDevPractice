@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using RPG.Saving;
 using TH.Utils;
 using UnityEngine;
+using TH.Resource;
 
 namespace TH.Item
 {
-    public class EquipmentHolder : MonoBehaviour, IEquipmentHolder, ITypeDependent
+    public sealed class EquipmentHolder : MonoBehaviour, IEquipmentHolder, ITypeDependent
     {
         public event EventHandler<EquipArgs> OnEquipmentChanged;
         public event Action<IGameItemSlot> OnSlotChanged;
@@ -21,7 +22,6 @@ namespace TH.Item
         private void Awake()
         {
             FillEquipmentSlots();
-            //todo: 저장된 착용 장비가 있다면 장착 -> ISavable
         }
 
         private void Start()
@@ -33,7 +33,6 @@ namespace TH.Item
 
         private void FillEquipmentSlots()
         {
-            //todo: 테이블로 슬롯별 타입 지정
             var slotTypes = Enum.GetValues(typeof(Enums.EquippedItemSlotType));
             for (int i = 0; i < Mathf.Min(equipments.Length, slotTypes.Length); i++)
             {
@@ -245,7 +244,9 @@ namespace TH.Item
         }
 
         #endregion
-        
+
+        #region ITypeDependent
+
         public void ReceiveType(ScriptableObject typeInfo)
         {
             if (typeInfo is not CharacterTypeSO charInfo) return;
@@ -255,6 +256,9 @@ namespace TH.Item
                 TryStore(new EquipmentItem(equipmentData));
             }
         }
+
+        #endregion
+        
     }
 }
 

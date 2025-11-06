@@ -1,5 +1,6 @@
 using TH.Core;
 using UnityEngine;
+using TH.Resource;
 
 namespace TH.Animate
 {

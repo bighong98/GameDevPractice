@@ -2,7 +2,7 @@ using System;
 using TH.Control;
 using TH.Utils;
 using UnityEngine;
-
+using TH.Resource;
 
 namespace TH.Control
 {

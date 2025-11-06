@@ -201,7 +201,8 @@ namespace TH.UI
             Logg.Log($"[PlayerStorageUI] OnPointerClick '{eventData.pointerEnter}'", Logg.LoggingMode.Completed);
             if (eventData.dragging)
             {
-                Logg.Log($"[PlayerStorageUI] OnPointerClick '{eventData.pointerEnter}' canceled because dragging is true", Logg.LoggingMode.Completed);
+                Logg.Log($"[PlayerStorageUI] OnPointerClick '{eventData.pointerEnter}' " +
+                         $"canceled because dragging is true", Logg.LoggingMode.Completed);
                 return;
             }
             if (eventData.pointerEnter is { } target &&
@@ -228,7 +229,8 @@ namespace TH.UI
             if (eventData.pointerEnter is { } target
                 && target.TryGetComponent(out ISlotUI slotUI))
             {
-                Logg.Log($"[PlayerStorageUI] OnBeginDrag trying to call OnSlotDragged.Invoke({slotUI})", Logg.LoggingMode.Completed);
+                Logg.Log($"[PlayerStorageUI] OnBeginDrag trying to call OnSlotDragged.Invoke({slotUI})", 
+                    Logg.LoggingMode.Completed);
                 OnSlotDragged?.Invoke(slotUI.Index);
             }
         }
@@ -289,7 +291,6 @@ namespace TH.UI
                     HideSlot(i); // capacity 범위 밖 슬롯UI 비활성화
                 }
             }
-            
         }
     }
 }

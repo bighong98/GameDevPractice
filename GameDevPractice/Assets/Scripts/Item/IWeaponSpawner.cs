@@ -1,5 +1,6 @@
 using TH.Combat;
 using UnityEngine;
+using TH.Resource;
 
 namespace TH.Item
 {

@@ -1,8 +1,12 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "ArmorTypeSO", menuName = "Scriptable Objects/Type/Item/ArmorTypeSO")]
-public class ArmorTypeSO : EquipmentTypeSO
+namespace TH.Resource
 {
-    [Header("Armor")] 
-    public Enums.ArmorType armorType;
+    [CreateAssetMenu(fileName = "ArmorTypeSO", menuName = "Scriptable Objects/Type/Item/ArmorTypeSO")]
+    public class ArmorTypeSO : EquipmentTypeSO
+    {
+        [Header("Armor")] 
+        public Enums.ArmorType armorType;
+    }
 }
+

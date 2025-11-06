@@ -41,7 +41,8 @@ namespace TH.Core.Service
         // 즉시 인스턴스를 생성하는 대신 인스턴스 생성자 델리게이트를 등록함 (lazy initialization)
         // 서비스 최초 사용(Get) 시점에서 실제 서비스 인스턴스가 생성/등록됨
         // -> 등록 시점에 즉시 초기화 필요한 경우 추가 호출이 필요
-        public static void Register<TService>(Func<IServiceProvider, TService> factory) where TService : class
+        public static void Register<TService>(Func<IServiceProvider, TService> factory) 
+            where TService : class
         {
             if (factory == null) throw new ArgumentNullException(nameof(factory));
             var t = typeof(TService);
@@ -68,6 +69,7 @@ namespace TH.Core.Service
         // 등록된 서비스 접근용 public 메서드 (+ 제네릭)
         public static TService Get<TService>() where TService : class
             => (TService)Get(typeof(TService));
+        
         // 등록된 서비스 접근용 public 메서드
         // 추후 리플렉션 기반 서비스 생성 등 비제네릭 조회 메서드가 필요해질 경우 public으로 전환
         private static object Get(Type type)
@@ -87,13 +89,15 @@ namespace TH.Core.Service
             {
                 // 2-a) 타입에 대응하는 델리게이트 목록 조회
                 if (!factories.TryGetValue(type, out factory))
-                    throw new KeyNotFoundException($"[ServiceLocator] service '{type.Name}' is not registered");
+                    throw new KeyNotFoundException(
+                        $"[ServiceLocator] service '{type.Name}' is not registered");
             }
             // 2-b) 현재 처리 중인(resolving) 서비스 타입 등록
             // 이미 동일 타입에 대한 인스턴스 생성이 진행 중인 경우 -> 순환 참조로 간주하고 throw
             _resolving ??= new HashSet<Type>();
             if (!_resolving.Add(type)) 
-                throw new InvalidOperationException($"Circular dependency detected while resolving {type.Name}.");
+                throw new InvalidOperationException(
+                    $"Circular dependency detected while resolving {type.Name}.");
 
             object service = null;
             try
@@ -118,6 +122,7 @@ namespace TH.Core.Service
             return service; // 서비스 인스턴스 반환
         }
         
+        // 서비스 내부 의존성 Resolving 처리용 Service Provider
         private sealed class InternalProvider : IServiceProvider
         {
             public static readonly InternalProvider Instance = new();

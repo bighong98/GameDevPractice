@@ -8,6 +8,7 @@ using TH.Core.Pool;
 using TH.Core.Service;
 using TH.Utils;
 using Fighter = RPG.Combat.Fighter;
+using TH.Resource;
 
 public class ProjectileSpawner : Spawner<AttackProjectile>
 {

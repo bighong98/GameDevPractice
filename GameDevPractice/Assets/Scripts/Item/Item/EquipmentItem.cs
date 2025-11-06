@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using TH.Attribute.Stat;
 using UnityEngine;
+using TH.Resource;
 
 namespace TH.Item
 {

@@ -3,7 +3,11 @@ using RPG.Stats;
 using TH.Core.Pool;
 using UnityEngine;
 
-public class CharacterTypeHolder : TypeHolder<CharacterTypeSO>
+namespace TH.Resource
 {
+    public class CharacterTypeHolder : TypeHolder<CharacterTypeSO>
+    {
     
+    }
 }
+

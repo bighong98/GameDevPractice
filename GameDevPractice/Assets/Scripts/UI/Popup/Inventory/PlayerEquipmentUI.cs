@@ -193,7 +193,9 @@ namespace TH.UI
         }
 
         #endregion
-        
+
+        #region Drag&Drop
+
         public void OnDrop(PointerEventData eventData)
         {
             Logg.Log($"[PlayerEquipmentUI] OnEndDrag invoked", Logg.LoggingMode.Completed);
@@ -207,7 +209,7 @@ namespace TH.UI
             else
                 OffSlotDragged?.Invoke(-1); // -1 means drop failed
         }
-                
+
         public void OnDrag(PointerEventData eventData) { }
 
         private GameObject lastPointerDown;
@@ -222,6 +224,8 @@ namespace TH.UI
             
             OnPointerClick(eventData);
         }
+
+        #endregion
     }
 }
 

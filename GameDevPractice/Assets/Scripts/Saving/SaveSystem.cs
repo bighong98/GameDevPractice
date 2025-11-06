@@ -58,7 +58,7 @@ namespace TH.SaveLoad
 
         #endregion
         
-        #region Save/Load/Delete Async (public)
+        #region Save/Load/Delete (Async + public)
 
         public async UniTask SaveAsync(string saveFile, SceneEntry sceneEntry = null)
         {
@@ -88,19 +88,16 @@ namespace TH.SaveLoad
 
         private void Save(string saveFile, SceneEntry sceneEntry = null)
         {
-            // var buildIndex = SceneManager.GetActiveScene().buildIndex;
             var sceneName = SceneManager.GetActiveScene().name;
 
             SaveFileData data = LoadFile(saveFile);
 
             data.lastSceneEntry = sceneEntry;
-            // data.lastSceneBuildIndex = buildIndex;
             
             List<SavableEntry> sceneEntries = new List<SavableEntry>();
             List<SavableEntry> globalEntries = new List<SavableEntry>();
             CaptureState(sceneEntries, globalEntries);
             
-            // data.sceneData[buildIndex] = sceneEntries;
             data.sceneData[sceneName] = sceneEntries;
             data.globalData = globalEntries;
             data.lastSceneEntry = sceneCatalog.GetCurrentSceneEntry();
@@ -293,7 +290,9 @@ namespace TH.SaveLoad
             var tmp = path + ".tmp"; // 임시 파일명
             var bak = path + ".bak"; // 백업 파일명
             
-            string json = JsonSerialization.ToJson(data, new JsonSerializationParameters
+            string json = JsonSerialization.ToJson(
+                data, 
+                new JsonSerializationParameters
             {
                 DisableSerializedReferences = true
             });
