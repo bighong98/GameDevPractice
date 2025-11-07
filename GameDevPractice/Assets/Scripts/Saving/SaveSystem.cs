@@ -2,9 +2,9 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using Unity.Serialization.Json;
 using TH.SceneManagement;
 using RPG.Saving;
@@ -17,43 +17,66 @@ namespace TH.SaveLoad
     {
         private static readonly Dictionary<Type, MethodInfo> CachedMethodInfos = new Dictionary<Type, MethodInfo>();
         private static readonly Dictionary<string, Type> CachedTypes = new Dictionary<string, Type>();
-        
-        private SceneCatalogSO sceneCatalog;
-        private const int DefaultSceneIndexInCatalog = 0;
 
+        private readonly IResourceLoader resourceLoader;
+        private SceneCatalogSO sceneCatalog;
         private static readonly string SceneCatalogKey = "SceneCatalogSO";
+        private const int DefaultSceneIndexInCatalog = 0;
+        
+        private readonly SemaphoreSlim ioSemaphore = new SemaphoreSlim(1, 1);
+        
+        private bool isLoading;
+        private bool saveRequested;
+        private string requestedSaveFile;
+        private SceneEntry requestedSceneEntry;
 
         public SaveSystem(ISceneLoader sceneLoader, IResourceLoader resourceLoader)
         {
-            resourceLoader.NotifyResourceLoad += (label) =>
-            {
-                if (!string.Equals(label, resourceLoader.PreLoadLabel)) return;
-                if (!resourceLoader.TryLoad(SceneCatalogKey, out sceneCatalog))
-                    Logg.LogError($"[SaveSystem] failed to load scene catalog");
-            }; 
+            this.resourceLoader = resourceLoader;
+            resourceLoader.NotifyResourceLoad += LoadSceneCatalog;
         }
         
-        #region Scene
+        private void LoadSceneCatalog(string label)
+        {
+            if (!string.Equals(label, resourceLoader.PreLoadLabel)) return;
+            if (!resourceLoader.TryLoad(SceneCatalogKey, out sceneCatalog))
+                Logg.LogError($"[SaveSystem] failed to load scene catalog");
+        }
+
+        private async UniTask WaitForCatalog()
+        {
+            await UniTask.WaitUntil(resourceLoader.IsPreLoadDone);
+            resourceLoader.TryLoad(SceneCatalogKey, out sceneCatalog);
+        }
+        
+        #region Load Last Scene
 
         public async UniTask LoadLastScene(string saveFile)
         {
-            if (LoadFile(saveFile) is not { } data) return;
-            
-            await UniTask.SwitchToMainThread();
-            await UniTask.Yield(); // 1프레임 지연
-            
-            if (sceneCatalog == null)
+            await RunExclusive(async () =>
             {
-                sceneCatalog = ResourceManager.Instance.Load<SceneCatalogSO>(SceneCatalogKey);
-            }
-            if (data.lastSceneEntry is not { key: { } key } || string.IsNullOrEmpty(key))
-            {
-                key = sceneCatalog.entries[DefaultSceneIndexInCatalog].key; // 저장된 씬이 없다면 디폴트 씬으로 이동
-            }
-            await GameSceneManager.Instance.LoadSceneAsync(key);
-            await UniTask.Yield(); // 1프레임 지연
-            
-            RestoreState(data);
+                if (isLoading) return;
+                isLoading = true;
+                try
+                {
+                    if (LoadFile(saveFile) is not { } data) return;
+
+                    await UniTask.SwitchToMainThread();
+                    await UniTask.Yield(); // 1프레임 지연
+
+                    if (sceneCatalog == null)
+                        await WaitForCatalog();
+
+                    if (data.lastSceneEntry is not { sceneRef: { } key })
+                        key = sceneCatalog.entries[DefaultSceneIndexInCatalog].sceneRef; // 저장된 씬이 없다면 디폴트 씬으로 이동
+
+                    await GameSceneManager.Instance.LoadSceneAsync(key);
+                    await UniTask.Yield(); // 1프레임 지연
+
+                    RestoreState(data);
+                }
+                finally { isLoading = false; }
+            });
         }
 
         #endregion
@@ -62,24 +85,106 @@ namespace TH.SaveLoad
 
         public async UniTask SaveAsync(string saveFile, SceneEntry sceneEntry = null)
         {
-            await UniTask.SwitchToMainThread();
-            try { Save(saveFile, sceneEntry); }
-            catch (Exception e) { Logg.LogError($"[SaveSystem] SaveAsync() failed: {e.Message}"); }
-            await UniTask.Yield();
+            if (isLoading)
+            {
+                CoalesceSave(saveFile, sceneEntry);
+                return;
+            }
+
+            if (sceneCatalog == null)
+                await WaitForCatalog();
+            
+            await RunExclusive(async () => {
+                
+                if (saveRequested)
+                {
+                    saveFile = requestedSaveFile ?? saveFile;
+                    sceneEntry = requestedSceneEntry ?? sceneEntry;
+                    ResetSaveRequest();
+                }
+                
+                try
+                {
+                    await UniTask.SwitchToMainThread();
+                    Save(saveFile, sceneEntry);
+                    await UniTask.Yield();
+
+                    while (TryDequeueCoalescedSave(out var nextSaveFile, out var nextSaveEntry))
+                    {
+                        await UniTask.SwitchToMainThread();
+                        Save(nextSaveFile, nextSaveEntry);
+                        await UniTask.Yield();
+                    }
+                }
+                catch (Exception e) { Logg.LogError($"[SaveSystem] SaveAsync() failed: {e.Message}"); }
+            });
+        }
+
+        private void ResetSaveRequest()
+        {
+            saveRequested = false;
+            requestedSaveFile = null;
+            requestedSceneEntry = null;
         }
 
         public async UniTask DeleteAsync(string saveFile)
         {
-            Delete(saveFile);
-            await UniTask.Yield();
+            await RunExclusive(async () =>
+            {
+                Delete(saveFile);
+                await UniTask.Yield();
+            });
         }
 
         public async UniTask LoadAsync(string saveFile)
         {
-            await UniTask.SwitchToMainThread();
-            try { Load(saveFile); }
-            catch (Exception e) { Logg.LogError($"[SaveSystem] LoadAsync() failed: {e.Message}"); }
-            await UniTask.Yield();
+            await RunExclusive(async () =>
+            {
+                if (isLoading) return;
+                isLoading = true;
+                try
+                {
+                    await UniTask.SwitchToMainThread();
+                    Load(saveFile);
+                    await UniTask.Yield();
+                }
+                catch (Exception e) { Logg.LogError($"[SaveSystem] LoadAsync() failed: {e.Message}"); }
+                finally { isLoading = false; }
+            });
+        }
+        
+        private async UniTask RunExclusive(Func<UniTask> func)
+        {
+            await ioSemaphore.WaitAsync();
+            try { await func(); }
+            finally { ioSemaphore.Release(); }
+        }
+        
+        private void CoalesceSave(string saveFile, SceneEntry sceneEntry)
+        {
+            saveRequested = true;
+            requestedSaveFile = saveFile;
+            requestedSceneEntry = sceneEntry;
+            Logg.Log("[SaveSystem] Save queued (coalesced to latest)", Logg.LoggingMode.InProgress);
+        }
+
+        private bool TryDequeueCoalescedSave(out string file, out SceneEntry entry)
+        {
+            if (!saveRequested)
+            {
+                file = null; 
+                entry = null; 
+                return false;
+            }
+            
+            file = requestedSaveFile; 
+            entry = requestedSceneEntry;
+            
+            saveRequested = false; 
+            requestedSaveFile = null; 
+            requestedSceneEntry = null;
+            
+            return true;
         }
 
         #endregion
@@ -88,8 +193,6 @@ namespace TH.SaveLoad
 
         private void Save(string saveFile, SceneEntry sceneEntry = null)
         {
-            var sceneName = SceneManager.GetActiveScene().name;
-
             SaveFileData data = LoadFile(saveFile);
 
             data.lastSceneEntry = sceneEntry;
@@ -98,7 +201,7 @@ namespace TH.SaveLoad
             List<SavableEntry> globalEntries = new List<SavableEntry>();
             CaptureState(sceneEntries, globalEntries);
             
-            data.sceneData[sceneName] = sceneEntries;
+            data.sceneData[sceneCatalog.GetCurrentSceneEntry().sceneId] = sceneEntries;
             data.globalData = globalEntries;
             data.lastSceneEntry = sceneCatalog.GetCurrentSceneEntry();
 
@@ -178,14 +281,15 @@ namespace TH.SaveLoad
         // SavableEntity 에 상태 복원
         private void RestoreState(SaveFileData data)
         {
-            var sceneName = SceneManager.GetActiveScene().name;
+            // var sceneName = SceneManager.GetActiveScene().name;
             var sceneEntries = data.sceneData;
             List<SavableEntry> entries = new(); // 세이브 데이터 리스트 생성
             
             // 현재 씬 세이브 데이터 검색
-            if (sceneEntries.TryGetValue(sceneName, out var targetSceneEntries))
+            var currentSceneEntry = sceneCatalog.GetCurrentSceneEntry();
+            if (sceneEntries.TryGetValue(currentSceneEntry.sceneId, out var targetSceneEntries))
                 entries.AddRange(targetSceneEntries); // 세이브 데이터 리스트에 추가
-            else Logg.Log($"[SaveSystem] No saved data for scene '{sceneName}'", Logg.LoggingMode.InProgress);
+            else Logg.Log($"[SaveSystem] No saved data for scene '{currentSceneEntry.key}'", Logg.LoggingMode.InProgress);
             
             if (data.globalData is { Count: > 0 } globEntries)
                 entries.AddRange(globEntries); // 글로벌(특정 씬에 종속되지 않는) 세이브 데이터 리스트에 추가
@@ -265,7 +369,7 @@ namespace TH.SaveLoad
 
         #endregion
         
-        #region File (LoadFile, SaveFile)
+        #region File I/O (LoadFile, SaveFile)
 
         private SaveFileData LoadFile(string saveFile)
         {
@@ -274,11 +378,13 @@ namespace TH.SaveLoad
 
             try
             {
+                // json -> 런타임 데이터로 파싱 시도
                 string json = File.ReadAllText(path);
-                return JsonSerialization.FromJson<SaveFileData>(json);
+                return JsonSerialization.FromJson<SaveFileData>(json); 
             }
             catch (Exception e)
             {
+                // 세이브파일 파싱 실패 시 빈 세이브 파일 생성 및 반환
                 Debug.LogError($"[SaveSystem] Failed to load file {path}: {e.Message}");
                 return new SaveFileData();
             }
@@ -287,34 +393,76 @@ namespace TH.SaveLoad
         private void SaveFile(string saveFile, SaveFileData data)
         {
             string path = GetPathFromSaveFile(saveFile);
-            var tmp = path + ".tmp"; // 임시 파일명
-            var bak = path + ".bak"; // 백업 파일명
+            // 디렉토리 확보
+            var dir  = Path.GetDirectoryName(path);
+            if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+                Directory.CreateDirectory(dir);
             
-            string json = JsonSerialization.ToJson(
-                data, 
-                new JsonSerializationParameters
-            {
-                DisableSerializedReferences = true
-            });
+            // var tmp = path + "." + Guid.NewGuid().ToString("N") + ".tmp"; // 임시 파일명
+            // var bak = path + ".bak"; // 백업 파일명
+            
+            var tmp = Path.Combine(dir ?? "", $".{Path.GetFileName(path)}.{Guid.NewGuid():N}.tmp");
+            var bak = path + ".bak";
 
+            string json;
             try
             {
-                File.WriteAllText(tmp, json);
+                // json 직렬화 시도
+                json = JsonSerialization.ToJson(
+                    data,
+                    new JsonSerializationParameters
+                    {
+                        DisableSerializedReferences = true
+                    });
             }
             catch (Exception e)
             {
-                Logg.LogError($"[{nameof(SaveSystem)}.{nameof(SaveFile)}()] Failed to write new save file. {tmp}: {e.Message}");
-                return; // 세이브 파일 생성 실패 시 중지
+                Logg.LogError($"[{nameof(SaveSystem)}.{nameof(SaveFile)}()] JsonSerialization failed {e}");
+                return; // 데이터 직렬화 실패 시 중지
+            }
+            
+            try
+            {
+                using var fs = new FileStream(tmp, FileMode.Create, FileAccess.Write, FileShare.None);
+                using var sw = new StreamWriter(fs);
+                sw.Write(json);
+                sw.Flush();
+                fs.Flush(true);
+            }
+            catch (Exception e)
+            {
+                Logg.LogError($"[{nameof(SaveSystem)}.{nameof(SaveFile)}()] Writing tmp failed: {tmp}, {e}");
+                return; // tmp 파일 생성 실패 시 중지
             }
 
-            
-            if (File.Exists(path)) // 기존 세이브가 존재하는 경우
-                File.Replace(tmp, path, bak);
-            else // 신규 세이브
-                File.Move(tmp, path);
-            
+            // 3) Replace 시도 (path = tmp)
+            try
+            {
+                if (File.Exists(path)) // 성공 시: bak = path, path = tmp 으로 교체
+                    File.Replace(tmp, path, bak);   
+                else File.Move(tmp, path); // 실패 시 : path에 저장
+            }
+            catch (Exception e)
+            {
+                Logg.Log($"[SaveSystem.SaveFile] Replace fallback: {e.Message}", Logg.LoggingMode.InProgress);
+                try
+                {
+                    // 백업 시도
+                    if (File.Exists(path))
+                    {
+                        // 백업 실패 시 throw 하지 않고 그대로 overwrite 시도
+                        try { File.Copy(path, bak, overwrite: true); } catch { }
+                        try { File.Delete(path); } catch { }
+                    }
+
+                    // Move가 막히면 Copy(overwrite)
+                    try { File.Move(tmp, path); }
+                    catch { File.Copy(tmp, path, overwrite: true); File.Delete(tmp); }
+                }
+                catch (Exception fbEx) { Logg.LogError($"[SaveSystem.SaveFile] Fallback failed: {fbEx}"); }
+            }
         }
-        
+
         // 경로 생성 (임시)
         private string GetPathFromSaveFile(string saveFile)
         {

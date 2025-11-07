@@ -46,4 +46,32 @@ public class SceneCatalogSO : ScriptableObject
 
         return null;
     }
+
+    public SceneEntry FindByGuid(string guid)
+    {
+        if (string.IsNullOrEmpty(guid) || entries == null || entries.Count == 0) return null;
+
+        foreach (var entry in entries)
+        {
+            if (entry == null) continue;
+            if (entry.sceneId != guid) continue;
+            return entry;
+        }
+
+        return null;
+    }
+    
+    public SceneEntry FindBySceneName(string sceneName)
+    {
+        if (string.IsNullOrEmpty(sceneName) || entries == null || entries.Count == 0) return null;
+
+        foreach (var entry in entries)
+        {
+            if (entry == null) continue;
+            if (entry.key != sceneName) continue;
+            return entry;
+        }
+
+        return null;
+    }
 }

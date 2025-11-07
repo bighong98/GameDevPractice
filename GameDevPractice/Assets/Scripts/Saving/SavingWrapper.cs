@@ -15,7 +15,6 @@ namespace TH.SaveLoad
         [SerializeField] private float fadeInTime = 0.2f;
         private void Awake()
         {
-            // saveSystem = GetComponent<SaveSystem>();
             saveSystem = ServiceLocator.Get<ISaveSystem>();
             if (ServiceLocator.Get<IResourceLoader>() is {} resourceLoader)
             {

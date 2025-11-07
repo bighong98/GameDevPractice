@@ -29,14 +29,12 @@ namespace TH.SceneManagement
         private bool inFlight;
         private CancellationTokenSource cts = new CancellationTokenSource();
         
-        public IProgress<float> Progress { get; private set; }
         public event Func<UniTask> OnBeforeSceneChanged;
         public event Action<Scene> OnSceneChanged;
         
         public SceneLoader(IResourceLoader resourceLoad)
         {
             resourceLoader = resourceLoad;
-            BindProgress(reporter: null); // 빈 객체로 초기화
             OnBeforeSceneChanged = () => UniTask.CompletedTask; // 빈 객체로 초기화 (NRE 방지)
             Init();
         }
@@ -70,12 +68,10 @@ namespace TH.SceneManagement
 
         private void OnPreloadDone(string label)
         {
-            if (label != "PreLoad") return; // todo: fix hard code 
+            if (label != Constants.PreLoadLabel) return; 
             
             if (!(cts?.IsCancellationRequested ?? true))
-            {
                 cts.Cancel();
-            }
             cts?.Dispose();
         }
 
@@ -107,15 +103,21 @@ namespace TH.SceneManagement
         public async UniTask LoadSceneAsync(object key, IEnumerable<Func<CancellationToken, UniTask>> preTasks = null,
             Action<float> onProgress = null, CancellationToken token = default)
         {
-            if (key is string strKey)
+            switch (key)
             {
-                if (string.IsNullOrWhiteSpace(strKey))
+                case string strKey when string.IsNullOrWhiteSpace(strKey):
                     throw new ArgumentException($"[{nameof(SceneLoader)}] {nameof(LoadSceneAsync)} empty key");
-            }
-            else if (key is AssetReference refKey)
-            {
-                if (!refKey.IsValid() || !refKey.RuntimeKeyIsValid())
-                    throw new ArgumentException($"[{nameof(SceneLoader)}] {nameof(LoadSceneAsync)} invalid AssetReferenceScene key '{refKey}'");
+                case AssetReference refKey:
+                {
+                    if (!refKey.IsValid() || !refKey.RuntimeKeyIsValid())
+                    {
+                        key = new AssetReference(refKey.AssetGUID);
+                        if (key == null)
+                            throw new ArgumentException($"[{nameof(SceneLoader)}] {nameof(LoadSceneAsync)} invalid Asset Reference for scene");
+                    }
+
+                    break;
+                }
             }
 
             if (inFlight) return;
@@ -140,13 +142,13 @@ namespace TH.SceneManagement
         
         private async UniTask RunPreTasks(IEnumerable<Func<CancellationToken, UniTask>> preTasks, CancellationToken token)
         {
-            if (preTasks != null) // 씬 로드 전 사전 작업 실행
+            if (preTasks == null) return;
+            
+            // 씬 로드 전 사전 작업 실행
+            foreach (var task in preTasks)
             {
-                foreach (var task in preTasks)
-                {
-                    token.ThrowIfCancellationRequested();
-                    await (task?.Invoke(token) ?? UniTask.CompletedTask);
-                }
+                token.ThrowIfCancellationRequested();
+                await (task?.Invoke(token) ?? UniTask.CompletedTask);
             }
         }
 
@@ -173,23 +175,23 @@ namespace TH.SceneManagement
             catch
             {
                 Logg.Log($"[SceneLoader] exception occured while load scene with addressables '{handle.DebugName}'");
-                if (handle.IsValid())
+                if (!handle.IsValid())
                 {
-                    try
-                    {
-                        if (handle.IsDone)
-                            await Addressables.UnloadSceneAsync(handle, true).ToUniTask(cancellationToken: token);
-                        else
-                            Addressables.Release(handle);
-                    }
-                    catch (Exception e)
-                    {
-                        throw new Exception($"[{nameof(SceneLoader)}]{e.Message}");
-                    }
+                    Logg.LogError($"[{nameof(SceneLoader)}] scene handle is invalid: {key}");
+                    throw;
                 }
-
-                Logg.LogError($"[{nameof(SceneLoader)}] load scene failed: {key}");
-                throw;
+                
+                try
+                {
+                    if (handle.IsDone)
+                        await Addressables.UnloadSceneAsync(handle, true).
+                            ToUniTask(cancellationToken: token);
+                    else Addressables.Release(handle);
+                }
+                catch (Exception e) { 
+                    throw new Exception($"[{nameof(SceneLoader)}] " +
+                                                          $"failed to load scene - {e.Message}"); 
+                }
             }
             
             await UniTask.NextFrame(token); // 1 프레임 대기
@@ -198,54 +200,47 @@ namespace TH.SceneManagement
 
         private async UniTask UnloadPreviousSceneAsync(CancellationToken token)
         {
-            if (prevSceneHandle.IsValid())
+            if (!prevSceneHandle.IsValid()) return;
+            
+            try
             {
-                try
-                {
-                    // OnBeforeSceneChanged?.Invoke(); // 기존 씬 언로드 전에 정리작업 실행
-                    var prev = prevSceneHandle.Result;
-                    await Addressables.UnloadSceneAsync(prev, autoReleaseHandle: true)
-                        .ToUniTask(cancellationToken: token);
-                    Logg.Log($"[SceneLoader] scene '{prev.Scene.name}' is unloaded");
-                }
-                catch (Exception e) { Logg.LogError($"[{nameof(SceneLoader)}] {nameof(UnloadPreviousSceneAsync)}: exception occured while unload scene '{prevSceneHandle.DebugName}' - {e}"); }
-                finally { prevSceneHandle = default; }
+                // OnBeforeSceneChanged?.Invoke(); // 기존 씬 언로드 전에 정리작업 실행
+                var prev = prevSceneHandle.Result;
+                await Addressables.UnloadSceneAsync(prev, autoReleaseHandle: true)
+                    .ToUniTask(cancellationToken: token);
+                Logg.Log($"[SceneLoader] scene '{prev.Scene.name}' is unloaded");
+            }
+            catch (Exception e)
+            {
+                Logg.LogError(
+                    $"[{nameof(SceneLoader)}] {nameof(UnloadPreviousSceneAsync)}: exception occured while unload scene '{prevSceneHandle.DebugName}' - {e}");
+            }
+            finally
+            {
+                prevSceneHandle = default; 
+                Progress.Clear();
             }
         }
 
         #endregion
 
         #region Progress handle
+        
+        public IProgressBroadcaster Progress { get; } = new ProgressBroadcaster();
 
-        public void BindProgress(IProgress<float> reporter)
+        public IProgressSubscription SubscribeProgress(Action<float> onProgress)
         {
-            Progress = reporter ?? new Progress<float>(_ => { });
-        }
-
-        public void BindProgress(Action<float> onProgress)
-        {
-            Progress = new Progress<float>(onProgress ?? (_ => { }));
+            return Progress.Subscribe(onProgress);
         }
         
         private void ReportProgress(float p, Action<float> additive = null)
         {
-            Progress.Report(p);
+            Progress?.Report(p);
             additive?.Invoke(p);
-            Logg.Log($"[SceneLoader] progress: {p}", Logg.LoggingMode.Completed);
+            Logg.Log($"[SceneLoader] progress: {p}", Logg.LoggingMode.InProgress);
         }
 
         #endregion
-
-        public bool TryGetCurrentSceneEntry(out SceneEntry entry)
-        {
-            if (currentSceneHandle.IsValid())
-            {
-                
-            }
-
-            entry = null;
-            return false;
-        }
     }
 }
 

@@ -3,29 +3,29 @@ using Cysharp.Threading.Tasks;
 using RPG.UI;
 using TH.Core.Service;
 using TH.SceneManagement;
+using TH.Utils;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class SimpleLoadingUI : BaseUI, ILoadingUI
+public class SimpleLoadingUI : MonoBehaviour, ILoadingUI
 {
-    #region Enums
-
-    enum GameObjects
-    {
-        progressBar,
-    }
-
-    #endregion
-
     [SerializeField] private Slider slider;
     private float targetRatio;
+
+    private IProgressSubscription sub;
 
     private void OnEnable()
     {
         if (ServiceLocator.Get<ISceneLoader>() is { } sceneLoader)
         {
-            sceneLoader.BindProgress(SetProgress);
+            sub = sceneLoader.SubscribeProgress(SetProgress);
         }
+    }
+
+    private void OnDisable()
+    {
+        sub?.Dispose();
+        sub = null;
     }
 
     public void SetProgress(float ratio)
@@ -35,6 +35,11 @@ public class SimpleLoadingUI : BaseUI, ILoadingUI
 
     private void SetBar(float ratio)
     {
+        if (slider == null)
+        {
+            Logg.LogError($"[SimpleLoadingUI] slider is null but invoked");
+            return;
+        }
         slider.value = Mathf.Clamp01(ratio);
     }
 
