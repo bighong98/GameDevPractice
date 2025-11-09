@@ -16,5 +16,3 @@ namespace RPG.Saving
         [NonSerialized] public object RuntimeState;
     }
 }
-
-

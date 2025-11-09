@@ -10,7 +10,7 @@ using TH.Item.Storage;
 
 namespace TH.Item
 {
-    public sealed class PlayerStorage : IPlayerStorage, ISavableWithId
+    public sealed class PlayerStorage : IPlayerStorage, ISavableWithId, ISavableTesting
     {
         public event Action<IGameItemSlot> OnSlotChanged; //직접 .Invoke() 호출하지 말고 NotifySlotChanged(index) 사용할 것
         public event Action OnStorageChanged;
@@ -710,7 +710,8 @@ namespace TH.Item
 
         private const string InventoryIdentifier = "playerInventory";
         public string UniqueIdentifier => InventoryIdentifier;
-        
+        public bool IsGlobal { get; } = true;
+
         public object CaptureState()
         {
             List<IGameItem> items = new();

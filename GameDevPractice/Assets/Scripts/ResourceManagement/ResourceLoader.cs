@@ -109,7 +109,7 @@ namespace TH.Resource
         }
         // key 기반 비동기 리소스 로드
         // 완료 후 <key, operationHandle>을 캐싱 후 콜백 실행
-        private void LoadAsync<T>(string key, Action<T> callback = null) where T : UnityEngine.Object
+        private void LoadAsync<T>(string key, Action<T> callback) where T : UnityEngine.Object
         {
             string loadKey = key;
             if (key.EndsWith(".sprite"))
@@ -123,6 +123,7 @@ namespace TH.Resource
                 // 로딩이 완료된 후 callback 실행
                 if (resourceKeys.TryGetValue(key, out AsyncOperationHandle resource)) // 중복 key를 사용하는 리소스가 있는 경우
                 {
+                    //todo: 중복 핸들(op) 처리해야하는지 확인
                     callback?.Invoke(op.Result); // 콜백만 실행하고 저장x
                     return;
                 }
@@ -299,6 +300,25 @@ namespace TH.Resource
             //         callback?.Invoke(null);
             //     }
             // };
+        }
+
+        public UniTask<T> LoadAsync<T>(string key) where T : UnityEngine.Object
+        {
+            string loadKey = key;
+            if (key.EndsWith(".sprite"))
+            {
+                loadKey = $"{key}[{key.Replace(".sprite", "")}]";
+            }
+
+            if (resourceKeys.TryGetValue(key, out AsyncOperationHandle cachedHandle))
+            {
+                return UniTask.FromResult((T)cachedHandle.Result);
+            }
+
+            var op = Addressables.LoadAssetAsync<T>(loadKey);
+            resourceKeys[key] = op;
+
+            return op.ToUniTask();
         }
 
         // AssetReference로 단일 리소스를 비동기 로드

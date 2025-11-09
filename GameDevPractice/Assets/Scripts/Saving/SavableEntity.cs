@@ -7,8 +7,7 @@ using UnityEditor;
 
 namespace RPG.Saving
 {
-    [ExecuteAlways]
-    public class SavableEntity : MonoBehaviour, ISavableEntity
+    public class SavableEntity : MonoBehaviour, ISavableEntity, ISavableTesting
     {
         [SerializeField] private string uniqueIdentifier = "";
         [SerializeField] private bool isGlobal = false;
@@ -16,20 +15,37 @@ namespace RPG.Saving
         
         private static readonly Dictionary<string, SavableEntity> GlobalLookup = new Dictionary<string, SavableEntity>();
         private static readonly Dictionary<string, string> SavedTypeLookup = new Dictionary<string, string>(); // (ISavable 구현 클래스 이름, 세이브 데이터 저장 객체 이름) -> RestoreState()에서 사용 목적
-
+        private static ISaveSystem saveSystem;
+        
         private readonly List<ISavable> savables = new();
         
         private static readonly string UniqueIdentifierPropertyName = "uniqueIdentifier";
+        object ISavableTesting.CaptureState()
+        {
+            return CaptureState();
+        }
+
+        public bool RestoreState(object state)
+        {
+            if (state is not Dictionary<string, object> states) return false;
+            RestoreState(states);
+            return true;
+        }
+
         public string UniqueIdentifier => uniqueIdentifier;
 
         private void Awake()
         {
             RebuildSavableList();
+            
+            saveSystem ??= ServiceLocator.Get<ISaveSystem>();
+            saveSystem.RegisterTesting(this);
         }
         
         private void OnDestroy()
         {
             savables.Clear();
+            saveSystem?.UnRegisterTesting(this);
         }
 
         public Dictionary<string, object> CaptureState()
@@ -100,10 +116,16 @@ namespace RPG.Saving
         }
         
 #if UNITY_EDITOR
-        private void Update() {
+        private void OnValidate()
+        {
             if (Application.IsPlaying(gameObject)) return; // 에디터 모드가 아닌 경우 return
             if (string.IsNullOrEmpty(gameObject.scene.path)) return; // 프리팹 내부의 GO인 경우 return
 
+            TryGetUniqueIdAndRegisterSelf();
+        }
+
+        private void TryGetUniqueIdAndRegisterSelf()
+        {
             SerializedObject serializedObject = new SerializedObject(this);
             SerializedProperty property = serializedObject.FindProperty(UniqueIdentifierPropertyName);
             

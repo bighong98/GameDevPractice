@@ -1,3 +1,4 @@
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using RPG.Saving;
 using UnityEngine;
@@ -14,6 +15,9 @@ namespace TH.SaveLoad
 
         void Register(ISavableWithId savable);
         void UnRegister(ISavableWithId savable);
+
+        void RegisterTesting(ISavableTesting savable, CancellationToken token = default);
+        void UnRegisterTesting(ISavableTesting savable, CancellationToken token = default);
     }
 }
 
