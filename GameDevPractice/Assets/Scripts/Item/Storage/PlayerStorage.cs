@@ -10,7 +10,7 @@ using TH.Item.Storage;
 
 namespace TH.Item
 {
-    public sealed class PlayerStorage : IPlayerStorage, ISavableWithId, ISavableTesting
+    public sealed class PlayerStorage : IPlayerStorage, ISavableEntity
     {
         public event Action<IGameItemSlot> OnSlotChanged; //직접 .Invoke() 호출하지 말고 NotifySlotChanged(index) 사용할 것
         public event Action OnStorageChanged;
@@ -40,10 +40,10 @@ namespace TH.Item
             resourceLoader.NotifyResourceLoad += (label) =>
             {
                 if (!string.Equals(label, "PreLoad")) return;
-                LoadTestData();
-                saveSystem.Register(this);
-                OnStorageChanged?.Invoke();
+                saveSystem.RegisterEntity(this);
             };
+            
+            
         }
         
         #region Initialization
@@ -54,8 +54,11 @@ namespace TH.Item
             FillInventoryWithEmptySlots();
         }
 
+        private bool isTestDataLoaded = false;
         private void LoadTestData()
         {
+            if (isTestDataLoaded) return;
+            
             InventoryTestData testData =
                 ResourceManager.Instance.Load<GameObject>("InventoryTestData.prefab").GetComponent<InventoryTestData>();
 
@@ -73,6 +76,8 @@ namespace TH.Item
                     Logg.LogError($"[PlayerInventory] failed to add test data item '{item}'");
                 }
             }
+
+            isTestDataLoaded = true;
         }
         
         #endregion
@@ -727,45 +732,36 @@ namespace TH.Item
 
         public bool RestoreState(object state)
         {
-            //todo: 아이템 목록 비우기
-            Logg.Log($"[PlayerStorage] RestoreState invoked", Logg.LoggingMode.InProgress);
+            slots.Clear();
             
-            List<IGameItem> items = new();
-
-            switch (state)
-            {
-                case List<IGameItem> l:
-                    items = l;
-                    break;
-                case Dictionary<string, object> stateDict:
-                {
-                    foreach (var s in stateDict.Values)
-                        if (s is List<IGameItem> { } dl)
-                        {
-                            Logg.Log($"[PlayerStorage] RestoreState - start restore by state data in dictionary", Logg.LoggingMode.InProgress);
-                            items = dl;
-                        }
-
-                    break;
-                }
-            }
-            
-            // if (state is not List<IGameItem> items)
-            // {
-            //     Logg.Log($"[PlayerStorage] RestoreState failed - state: {state}", Logg.LoggingMode.InProgress);
-            //     return false;
-            // }
-
+            List<IGameItem> items = ExtractSaveData(state);
             foreach (var item in items)
             {
                 TryStore(itemBuilder.GetItemFromData(item.GetItemInfo, item.GetAmount));
             }
-
-            Logg.Log($"[PlayerStorage] RestoreState ended", Logg.LoggingMode.InProgress);
+            
+            LoadTestData();
+            OnStorageChanged?.Invoke();
+            
             return true;
         }
 
-        
+        private static List<IGameItem> ExtractSaveData(object state)
+        {
+            switch (state)
+            {
+                case List<IGameItem> l: return l;
+                case Dictionary<string, object> stateDict:
+                {
+                    foreach (var s in stateDict.Values)
+                        if (s is List<IGameItem> { } dl)
+                            return dl;
+                    break;
+                }
+            }
+            return null;
+        }
+
         #endregion
         
         #region Type Validation

@@ -16,11 +16,12 @@ namespace TH.SaveLoad
 {
     public class SaveSystem : ISaveSystem
     {
-        private static readonly Dictionary<Type, MethodInfo> CachedMethodInfos = new Dictionary<Type, MethodInfo>();
-        private static readonly Dictionary<string, Type> CachedTypes = new Dictionary<string, Type>();
+        private static readonly Dictionary<Type, MethodInfo> CachedMethodInfos = new();
+        private static readonly Dictionary<string, Type> CachedTypes = new();
+        private static readonly Dictionary<string, Dictionary<string, object>> LoadedStateCache = new(); // Non-MB 클래스 데이터
 
-        private static readonly Dictionary<SceneEntry, Dictionary<string, ISavableTesting>> ActiveMonoSceneSavables = new();
-        private static readonly Dictionary<string, ISavableTesting> ActiveMonoGlobalSavables = new();
+        private static readonly Dictionary<SceneEntry, Dictionary<string, ISavableEntity>> SceneEntities = new();
+        private static readonly Dictionary<string, ISavableEntity> GlobalEntities = new();
         
         private readonly IResourceLoader resourceLoader;
         private readonly ISceneLoader sceneLoader;
@@ -44,7 +45,6 @@ namespace TH.SaveLoad
         {
             this.sceneLoader = sceneLoader;
             this.resourceLoader = resourceLoader;
-            // resourceLoader.NotifyResourceLoad += LoadSceneCatalog;
 
             catalogResolved = catalogResolveTCS.Task.Preserve();
             LoadSceneCatalogAsync().Forget();
@@ -58,26 +58,27 @@ namespace TH.SaveLoad
             {
                 sceneCatalog = await resourceLoader.LoadAsync<SceneCatalogSO>(SceneCatalogKey);
                 catalogResolveTCS.TrySetResult(sceneCatalog);
-                RunPendingJobs();
+                await RunPendingJobsAsync();
             }
             catch (Exception e)
             {
                 catalogResolveTCS.TrySetException(e);
-                Logg.LogError($"[SavSystem] Load Scene Catalog failed - {e}");
+                Logg.LogError($"[SaveSystem] Load Scene Catalog failed - {e}");
 #if UNITY_EDITOR
                 throw;
 #endif
             }
         }
         
-        private void RunPendingJobs()
+        private async UniTask RunPendingJobsAsync()
         {
             if (sceneCatalog == null)
             {
-                Logg.LogError($"[SaveSystem] {nameof(RunPendingJobs)} invoked before sceneCatalog is ready");
+                Logg.LogError($"[SaveSystem] {nameof(RunPendingJobsAsync)} invoked before sceneCatalog is ready");
                 return;
             }
-            
+
+            await UniTask.SwitchToMainThread();
             var entry = sceneCatalog.GetCurrentSceneEntry();
             while (catalogPending.TryDequeue(out var job))
             {
@@ -87,8 +88,7 @@ namespace TH.SaveLoad
 
         private async UniTask WaitForCatalog(CancellationToken token = default)
         {
-            // await UniTask.WaitUntil(resourceLoader.IsPreLoadDone);
-            // resourceLoader.TryLoad(SceneCatalogKey, out sceneCatalog);
+            if (sceneCatalog != null) return; // sceneCatalog가 이미 세팅되어 있다면 await 없이 즉시 종료
             await catalogResolved.AttachExternalCancellation(token);
         }
 
@@ -104,20 +104,17 @@ namespace TH.SaveLoad
                 isLoading = true;
                 try
                 {
+                    await UniTask.SwitchToThreadPool();
                     if (LoadFile(saveFile) is not { } data) return;
 
                     await UniTask.SwitchToMainThread();
-                    await UniTask.Yield(); // 1프레임 지연
-
-                    if (sceneCatalog == null)
-                        await WaitForCatalog();
+                    await WaitForCatalog(); // scene catalog 보장
 
                     if (data.lastSceneEntry is not { sceneRef: { } key })
                         key = sceneCatalog.entries[DefaultSceneIndexInCatalog].sceneRef; // 저장된 씬이 없다면 디폴트 씬으로 이동
 
                     await GameSceneManager.Instance.LoadSceneAsync(key);
-                    await UniTask.Yield(); // 1프레임 지연
-
+                    await UniTask.Yield();
                     RestoreState(data);
                 }
                 finally { isLoading = false; }
@@ -137,9 +134,7 @@ namespace TH.SaveLoad
                 return;
             }
 
-            if (sceneCatalog == null)
-                await WaitForCatalog();
-            
+            await WaitForCatalog(); // scene catalog 보장
             await RunExclusive(async () => {
                 
                 if (saveRequested)
@@ -149,22 +144,14 @@ namespace TH.SaveLoad
                     ResetSaveRequest();
                 }
                 
-                try
-                {
-                    await UniTask.SwitchToMainThread();
-                    Save(saveFile, sceneEntry);
-                    await UniTask.Yield();
-                }
+                try { await SaveCoreAsync(saveFile, sceneEntry); }
                 catch (Exception e) { Logg.LogError($"[SaveSystem] SaveAsync() failed: {e.Message}"); }
 
                 try
                 {
-                    while (TryDequeueCoalescedSave(out var nextSaveFile, out var nextSaveEntry)
-                           && !string.IsNullOrEmpty(nextSaveFile) && nextSaveEntry != null)
+                    while (TryDequeueCoalescedSave(out var nextSaveFile, out var nextSaveEntry))
                     {
-                        await UniTask.SwitchToMainThread();
-                        Save(nextSaveFile, nextSaveEntry);
-                        await UniTask.Yield();
+                        await SaveCoreAsync(nextSaveFile, nextSaveEntry);
                     }
                 }
                 catch (Exception e) { Logg.LogError($"[SaveSystem] SaveAsync() failed: + loop {e.Message}"); }
@@ -175,8 +162,9 @@ namespace TH.SaveLoad
         {
             await RunExclusive(async () =>
             {
-                Delete(saveFile);
-                await UniTask.Yield();
+                await UniTask.SwitchToThreadPool();
+                try {Delete(saveFile);}
+                catch (Exception e) { Logg.LogError($"[SaveSystem] Delete failed - {e}");}
             });
         }
 
@@ -186,11 +174,12 @@ namespace TH.SaveLoad
             {
                 if (isLoading) return;
                 isLoading = true;
+
                 try
                 {
                     await UniTask.SwitchToMainThread();
-                    Load(saveFile);
-                    await UniTask.Yield();
+                    await WaitForCatalog();
+                    await LoadCoreAsync(saveFile);
                 }
                 catch (Exception e) { Logg.LogError($"[SaveSystem] LoadAsync() failed: {e.Message}"); }
                 finally { isLoading = false; }
@@ -221,7 +210,7 @@ namespace TH.SaveLoad
 
         private bool TryDequeueCoalescedSave(out string file, out SceneEntry entry)
         {
-            if (!saveRequested)
+            if (!saveRequested || string.IsNullOrEmpty(requestedSaveFile))
             {
                 file = null; 
                 entry = null; 
@@ -239,32 +228,34 @@ namespace TH.SaveLoad
 
         #region Save/Load/Delete (private)
 
-        private void Save(string saveFile, SceneEntry sceneEntry = null)
+        private async UniTask SaveCoreAsync(string saveFile, SceneEntry sceneEntry = null)
         {
-            Logg.Log($"[SaveSystem] Save Started", Logg.LoggingMode.InProgress);
+            await UniTask.SwitchToThreadPool();
             SaveFileData data = LoadFile(saveFile);
             
             List<SavableEntry> sceneEntries = new List<SavableEntry>();
             List<SavableEntry> globalEntries = new List<SavableEntry>();
+            
+            await UniTask.SwitchToMainThread();
             CaptureState(sceneEntries, globalEntries);
             
             sceneEntry ??= sceneCatalog.GetCurrentSceneEntry();
             data.sceneData[sceneEntry.sceneId] = sceneEntries;
             data.globalData = globalEntries;
             data.lastSceneEntry = sceneEntry;
-
+            
+            await UniTask.SwitchToThreadPool();
             SaveFile(saveFile, data);
-            Logg.Log($"[SaveSystem] Save Ended", Logg.LoggingMode.InProgress);
         }
         
-        private void Load(string saveFile)
+        private async UniTask LoadCoreAsync(string saveFile)
         {
+            await UniTask.SwitchToThreadPool();
             var data = LoadFile(saveFile);
             if (data == null) return;
 
-            Logg.Log($"[SaveSystem] Load Started", Logg.LoggingMode.InProgress);
+            await UniTask.SwitchToMainThread();
             RestoreState(data);
-            Logg.Log($"[SaveSystem] Load Ended", Logg.LoggingMode.InProgress);
         }
         
         private void Delete(string saveFile)
@@ -279,16 +270,15 @@ namespace TH.SaveLoad
         // 씬에 존재하는 모든 SavableEntity의 상태 수집, 저장데이터에 반영
         private void CaptureState(List<SavableEntry> sceneEntries, List<SavableEntry> globalEntries)
         {
-            AddEntries(globalEntries, ActiveMonoGlobalSavables.Values);
-            AddEntries(globalEntries, ActiveSavables.Values);
+            AddEntries(globalEntries, GlobalEntities.Values);
             if (GetCurrentSceneSavables(out var sceneSavableCollection))
                 AddEntries(sceneEntries, sceneSavableCollection);
         }
 
-        private bool GetCurrentSceneSavables(out ICollection<ISavableTesting> savables)
+        private bool GetCurrentSceneSavables(out ICollection<ISavableEntity> savables)
         {
             if (sceneCatalog.GetCurrentSceneEntry() is { } currentSceneEntry
-                && ActiveMonoSceneSavables.TryGetValue(currentSceneEntry,
+                && SceneEntities.TryGetValue(currentSceneEntry,
                     out var sceneSavables))
             {
                 savables = sceneSavables.Values;
@@ -297,69 +287,38 @@ namespace TH.SaveLoad
             savables = null;
             return false;
         } 
-        
-        private void AddEntries(ICollection<SavableEntry> collection, ICollection<ISavableWithId> savables)
-        {
-            foreach (var savable in savables)
-            {
-                if (!savable.IsAlive()) continue;
-                if (savable.CaptureState() is not { } captured) continue;
-                
-                if (captured is Dictionary<string, object> captures)
-                {
-                    foreach (var (typeName, capture) in captures)
-                    {
-                        AddNewEntry(collection, typeName, capture, savable);
-                    }
-                }
-                else
-                {
-                    var typeName = captured.GetType().AssemblyQualifiedName;
-                    AddNewEntry(collection, typeName, captured, savable);
-                }
-            }
-        }
 
-        private void AddEntries(ICollection<SavableEntry> collection, ICollection<ISavableTesting> savables)
+        private void AddEntries(ICollection<SavableEntry> collection, ICollection<ISavableEntity> savables)
         {
             if (collection == null || savables == null) return;
             
             foreach (var savable in savables)
             {
-                Logg.Log($"[SaveSystem.AddEntries] {savable.UniqueIdentifier}", Logg.LoggingMode.InProgress);
-                if (!savable.IsAlive()) continue;
-                if (savable.CaptureState() is not { } captured) continue;
-                
-                if (captured is Dictionary<string, object> captures)
+                try
                 {
-                    foreach (var (typeName, capture) in captures)
+                    if (!savable.IsAlive()) continue;
+                    if (savable.CaptureState() is not { } captured) continue;
+
+                    if (captured is Dictionary<string, object> captures)
                     {
-                        AddNewEntry(collection, typeName, capture, savable);
+                        foreach (var (typeName, capture) in captures)
+                        {
+                            AddNewEntry(collection, typeName, capture, savable);
+                        }
+                    }
+                    else
+                    {
+                        var typeName = captured.GetType().AssemblyQualifiedName;
+                        AddNewEntry(collection, typeName, captured, savable);
                     }
                 }
-                else
-                {
-                    var typeName = captured.GetType().AssemblyQualifiedName;
-                    AddNewEntry(collection, typeName, captured, savable);
-                }
+                catch (Exception e) { Debug.LogError($"[SaveSystem] error occured while AddEntries() - {e}");}
             }
         }
 
-        private void AddNewEntry(ICollection<SavableEntry> collection, string typeName, object stateObj, ISavableTesting entity)
+        private void AddNewEntry(ICollection<SavableEntry> collection, string typeName, object stateObj, ISavableEntity entity)
         {
-            Logg.Log($"[SaveSystem.AddNewEntry] - {typeName}, {stateObj}, {entity}", Logg.LoggingMode.InProgress);
-
-            var type = GetTypeByName(typeName);
-            if (type == null) return;
-            RegisterEntries(stateObj, type, collection, entity.UniqueIdentifier, typeName);
-        }
-        
-        private void AddNewEntry(ICollection<SavableEntry> collection, string typeName, object stateObj, ISavableWithId entity)
-        {
-            Logg.Log($"[SaveSystem.AddNewEntry] - {typeName}, {stateObj}, {entity}", Logg.LoggingMode.InProgress);
-
-            var type = GetTypeByName(typeName);
-            if (type == null) return;
+            if (GetTypeByName(typeName) is not { } type) return;
             RegisterEntries(stateObj, type, collection, entity.UniqueIdentifier, typeName);
         }
 
@@ -380,78 +339,31 @@ namespace TH.SaveLoad
                     jsonPayload = json
                 });
             }
-            catch (Exception e)
-            {
-                Debug.LogError($"[SaveSystem] Failed to serialize {typeName}: {e.Message}");
-            }
+            catch (Exception e) { Debug.LogError($"[SaveSystem] Failed to serialize {typeName}: {e.Message}"); }
         }
 
         // SavableEntity 에 상태 복원
         private void RestoreState(SaveFileData data)
         {
             List<SavableEntry> entries = new(); // 세이브 데이터 리스트 생성
+            var currentSceneEntry = sceneCatalog.GetCurrentSceneEntry(); // 현재 씬 정보 캡처
             
-            var currentSceneEntry = sceneCatalog.GetCurrentSceneEntry();
+            // entries에 세이브 엔트리 목록 반영
             GetEntryFromSave(data, entries, currentSceneEntry);
-
-            // <고유 식별자, 고유 객체의 <타입, 타입 데이터>> 딕셔너리 생성
+            // <고유 식별자, 고유 객체의 <타입, 세이브 데이터>> 딕셔너리 생성 (grouped)
             var grouped = new Dictionary<string, Dictionary<string, object>>(entries.Count); 
-
+            // json to runtime data 파싱 -> grouped에 등록
             ExtractSaveData(entries, grouped);
             
-            RestoreState(ActiveMonoGlobalSavables.Values, grouped);
-            RestoreState(ActiveSavables.Values, grouped);
-            
-            if (ActiveMonoSceneSavables.TryGetValue(currentSceneEntry, out var sceneSavables))
+            // 파싱된 런타임 데이터 반영 (글로벌)
+            RestoreState(GlobalEntities.Values, grouped);
+            // 파싱된 런타임 데이터 반영 (현재 씬)
+            if (SceneEntities.TryGetValue(currentSceneEntry, out var sceneSavables))
                 RestoreState(sceneSavables.Values, grouped);
-            
-            // // 1.1 글로벌 MonoBehaviour 처리 (직접 순회)
-            // foreach (var savable in ActiveMonoGlobalSavables.Values)
-            // {
-            //     // var savable = kvp.Value;
-            //     if (!savable.IsAlive()) continue; 
-            //
-            //     if (grouped.TryGetValue(savable.UniqueIdentifier, out var stateDict))
-            //     {
-            //         savable.RestoreState(stateDict);
-            //     }
-            // }
-            //
-            // // 1.2 현재 씬 MonoBehaviour 처리 (직접 순회 - 로직 중복)
-            // if (ActiveMonoSceneSavables.TryGetValue(currentSceneEntry, out var sceneSavables))
-            // {
-            //     foreach (var savable in sceneSavables.Values) // <-- 1.1과 거의 동일한 로직
-            //     {
-            //         // var savable = kvp.Value;
-            //         if (!savable.IsAlive()) continue;
-            //         
-            //         if (grouped.TryGetValue(savable.UniqueIdentifier, out var stateDict))
-            //         {
-            //             savable.RestoreState(stateDict);
-            //         }
-            //     }
-            // }
-            
-            // Non-Mono(일반 C#) ISavable 클래스 세이브 데이터 적용
-            // foreach (var savable in ActiveSavables.Values)
-            // {
-            //     if (!grouped.TryGetValue(savable.UniqueIdentifier, out var stateDict)) continue;
-            //
-            //     foreach (var entry in stateDict)
-            //     {
-            //         var savedTypeName = entry.Key;
-            //         var savedData = entry.Value;
-            //         if (savedData == null) continue;
-            //
-            //         try { savable.RestoreState(savedData); }
-            //         catch (Exception e) {Logg.LogError($"[SaveSystem] Restore failed. ({savedTypeName}, {savedData}): {e}");}
-            //     }
-            // }
             
             foreach (var (id, stateDict) in grouped)
             {
-                if (ActiveSavables.ContainsKey(id)) continue;
-                LoadedStateCache[id] = stateDict;
+                LoadedStateCache.TryAdd(id, stateDict);
             }
         }
 
@@ -511,28 +423,15 @@ namespace TH.SaveLoad
             }
         }
 
-        private void RestoreState(IEnumerable<ISavableTesting> savables,
+        private void RestoreState(IEnumerable<ISavableEntity> entities,
             IReadOnlyDictionary<string, Dictionary<string, object>> stateGroup)
         {
-            foreach (var savable in savables)
+            foreach (var entity in entities)
             {
-                if (!savable.IsAlive()) continue;
-                if (!stateGroup.TryGetValue(savable.UniqueIdentifier,
+                if (!entity.IsAlive()) continue;
+                if (!stateGroup.TryGetValue(entity.UniqueIdentifier,
                         out var states)) continue;
-                savable.RestoreState(states);
-            }
-        }
-        
-        private void RestoreState(IEnumerable<ISavableWithId> savables,
-            IReadOnlyDictionary<string, Dictionary<string, object>> stateGroup)
-        {
-            foreach (var savable in savables)
-            {
-                if (!savable.IsAlive()) continue;
-                if (!stateGroup.TryGetValue(savable.UniqueIdentifier,
-                        out var states)) continue;
-
-                savable.RestoreState(states);
+                entity.RestoreState(states);
             }
         }
 
@@ -721,79 +620,60 @@ namespace TH.SaveLoad
         
         #endregion
 
-        private void RegisterMonoSceneSavable(SceneEntry sceneEntry, ISavableTesting savable, CancellationToken token)
+        #region Register/UnRegister Entity
+
+        public void RegisterEntity(ISavableEntity entity, CancellationToken token = default)
         {
-            if (token.IsCancellationRequested || !savable.IsAlive()) return;
+            var id = entity.UniqueIdentifier;
 
-            if (!ActiveMonoSceneSavables.TryGetValue(sceneEntry, out var dict))
+            if (entity.IsGlobal)
             {
-                dict = new Dictionary<string, ISavableTesting>();
-                ActiveMonoSceneSavables[sceneEntry] = dict;
-            }
-
-            dict.TryAdd(savable.UniqueIdentifier, savable);
-        }
-
-        public void RegisterTesting(ISavableTesting savable, CancellationToken token = default)
-        {
-            var id = savable.UniqueIdentifier;
-
-            if (savable.IsGlobal)
-            {
-                ActiveMonoGlobalSavables.TryAdd(id, savable);
+                GlobalEntities.TryAdd(id, entity);
                 return;
             }
 
             if (sceneCatalog == null)
-                catalogPending.Enqueue(entry => RegisterMonoSceneSavable(entry, savable, token));
-            else RegisterMonoSceneSavable(sceneCatalog.GetCurrentSceneEntry(), savable, token);
+                catalogPending.Enqueue(entry => AddSceneSavableEntity(entry, entity, token));
+            else AddSceneSavableEntity(sceneCatalog.GetCurrentSceneEntry(), entity, token);
         }
 
-        public void UnRegisterTesting(ISavableTesting savable, CancellationToken token = default)
+        public void UnRegisterEntity(ISavableEntity savable, CancellationToken token = default)
         {
             var id = savable.UniqueIdentifier;
 
             if (savable.IsGlobal)
             {
-                ActiveMonoGlobalSavables.Remove(id);
+                GlobalEntities.Remove(id);
                 return;
             }
 
             if (sceneCatalog == null) return;
-            UnRegisterMonoSavable(id);
-        }
-
-        private void UnRegisterMonoSavable(string id)
-        {
             var currSceneEntry = sceneCatalog.GetCurrentSceneEntry();
-            if (!ActiveMonoSceneSavables.TryGetValue(currSceneEntry, out var dict))
+            if (!SceneEntities.TryGetValue(currSceneEntry, out var dict))
                 return;
 
             dict.Remove(id);
         }
-
-        private static readonly Dictionary<string, Dictionary<string, object>> LoadedStateCache = new(); // Non-MB 클래스 데이터
-        private static readonly Dictionary<string, ISavableWithId> ActiveSavables = new(); // Non-MB 클래스
-        public void Register(ISavableWithId savable)
+        
+        private static void AddSceneSavableEntity(SceneEntry sceneEntry, ISavableEntity entity, CancellationToken token)
         {
-            ActiveSavables[savable.UniqueIdentifier] = savable;
+            if (token.IsCancellationRequested || !entity.IsAlive()) return;
 
-            if (!LoadedStateCache.TryGetValue(savable.UniqueIdentifier, out var saved)) return;
-            try
+            if (!SceneEntities.TryGetValue(sceneEntry, out var dict))
             {
-                foreach (var s in saved.Values)
-                {
-                    if (s == null) continue;
-                    savable.RestoreState(s);
-                }
+                dict = new Dictionary<string, ISavableEntity>();
+                SceneEntities[sceneEntry] = dict;
             }
-            catch (Exception e) {Logg.LogError($"[SaveSystem] Register.Restore failed {e}");}
+
+            dict.TryAdd(entity.UniqueIdentifier, entity);
+
+            if (LoadedStateCache.TryGetValue(entity.UniqueIdentifier, out var stateDict))
+            {
+                entity.RestoreState(stateDict);
+            }
         }
 
-        public void UnRegister(ISavableWithId savable)
-        {
-            if (savable == null || string.IsNullOrEmpty(savable.UniqueIdentifier)) return;
-            ActiveSavables.Remove(savable.UniqueIdentifier);
-        }
+        #endregion
+        
     }
 }

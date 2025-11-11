@@ -8,7 +8,7 @@ using UnityEditor;
 
 namespace RPG.Saving
 {
-    public class SavableEntity : MonoBehaviour, ISavableEntity, ISavableTesting
+    public class SavableEntity : MonoBehaviour, ISavableEntity
     {
         [SerializeField] private string uniqueIdentifier = "";
         [SerializeField] private bool isGlobal = false;
@@ -21,8 +21,24 @@ namespace RPG.Saving
         private readonly List<ISavable> savables = new();
         
         private static readonly string UniqueIdentifierPropertyName = "uniqueIdentifier";
+
+        public string UniqueIdentifier => uniqueIdentifier;
+
+        private void Awake()
+        {
+            RebuildSavableList();
+            
+            saveSystem ??= ServiceLocator.Get<ISaveSystem>();
+            saveSystem.RegisterEntity(this, destroyCancellationToken);
+        }
         
-        object ISavableTesting.CaptureState()
+        private void OnDestroy()
+        {
+            savables.Clear();
+            saveSystem?.UnRegisterEntity(this);
+        }
+        
+        object ISavable.CaptureState()
         {
             return CaptureState();
         }
@@ -32,22 +48,6 @@ namespace RPG.Saving
             if (state is not Dictionary<string, object> states) return false;
             RestoreState(states);
             return true;
-        }
-
-        public string UniqueIdentifier => uniqueIdentifier;
-
-        private void Awake()
-        {
-            RebuildSavableList();
-            
-            saveSystem ??= ServiceLocator.Get<ISaveSystem>();
-            saveSystem.RegisterTesting(this, destroyCancellationToken);
-        }
-        
-        private void OnDestroy()
-        {
-            savables.Clear();
-            saveSystem?.UnRegisterTesting(this);
         }
 
         public Dictionary<string, object> CaptureState()
@@ -175,6 +175,7 @@ namespace RPG.Saving
         {
             savables.Clear();
             GetComponents(savables);
+            savables.Remove(this);
         }
     }
 }

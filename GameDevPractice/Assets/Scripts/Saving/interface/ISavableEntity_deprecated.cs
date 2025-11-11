@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace TH.SaveLoad
 {
-    public interface ISavableEntity
+    public interface ISavableEntity_deprecated
     {
         bool IsGlobal { get; }
         string UniqueIdentifier { get; }
