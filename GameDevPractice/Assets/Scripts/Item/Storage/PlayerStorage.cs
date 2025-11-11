@@ -727,13 +727,41 @@ namespace TH.Item
 
         public bool RestoreState(object state)
         {
-            if (state is not List<IGameItem> items) return false;
+            //todo: 아이템 목록 비우기
+            Logg.Log($"[PlayerStorage] RestoreState invoked", Logg.LoggingMode.InProgress);
+            
+            List<IGameItem> items = new();
+
+            switch (state)
+            {
+                case List<IGameItem> l:
+                    items = l;
+                    break;
+                case Dictionary<string, object> stateDict:
+                {
+                    foreach (var s in stateDict.Values)
+                        if (s is List<IGameItem> { } dl)
+                        {
+                            Logg.Log($"[PlayerStorage] RestoreState - start restore by state data in dictionary", Logg.LoggingMode.InProgress);
+                            items = dl;
+                        }
+
+                    break;
+                }
+            }
+            
+            // if (state is not List<IGameItem> items)
+            // {
+            //     Logg.Log($"[PlayerStorage] RestoreState failed - state: {state}", Logg.LoggingMode.InProgress);
+            //     return false;
+            // }
 
             foreach (var item in items)
             {
                 TryStore(itemBuilder.GetItemFromData(item.GetItemInfo, item.GetAmount));
             }
 
+            Logg.Log($"[PlayerStorage] RestoreState ended", Logg.LoggingMode.InProgress);
             return true;
         }
 

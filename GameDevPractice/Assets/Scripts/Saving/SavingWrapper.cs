@@ -54,6 +54,7 @@ namespace TH.SaveLoad
 
             if (Input.GetKeyDown(KeyCode.S))
             {
+                Logg.Log($"[SavingWrapper] Trying to call Save()", Logg.LoggingMode.InProgress);
                 Save().Forget();
             }
 
