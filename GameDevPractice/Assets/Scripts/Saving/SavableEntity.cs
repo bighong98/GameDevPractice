@@ -14,10 +14,12 @@ namespace RPG.Saving
         [SerializeField] private bool isGlobal = false;
         public bool IsGlobal => isGlobal;
         
-        private static readonly Dictionary<string, SavableEntity> GlobalLookup = new Dictionary<string, SavableEntity>();
-        private static readonly Dictionary<string, string> SavedTypeLookup = new Dictionary<string, string>(); // (ISavable 구현 클래스 이름, 세이브 데이터 저장 객체 이름) -> RestoreState()에서 사용 목적
+        // GlobalEntityLookup: 고유 ID - SavableEntity 목록
+        // SavedTypeLookup: (ISavable 구현 클래스 이름, 세이브 데이터 저장 객체 이름) -> RestoreState()에서 사용 목적
+        private static readonly Dictionary<string, SavableEntity> GlobalEntityLookup = new();
+        private static readonly Dictionary<string, string> SavedTypeLookup = new(); 
         private static ISaveSystem saveSystem;
-        
+        // ISavable 구현 컴포넌트 목록
         private readonly List<ISavable> savables = new();
         
         private static readonly string UniqueIdentifierPropertyName = "uniqueIdentifier";
@@ -132,32 +134,32 @@ namespace RPG.Saving
         {
             SerializedObject serializedObject = new SerializedObject(this);
             SerializedProperty property = serializedObject.FindProperty(UniqueIdentifierPropertyName);
-            
-            if (string.IsNullOrEmpty(property.stringValue) || !IsUnique(property.stringValue)) // 고유식별자가 비어있거나, 유일한 고유식별자가 아닌 경우
+            // 고유식별자가 비어있거나, 유일한 고유식별자가 아닌 경우
+            if (string.IsNullOrEmpty(property.stringValue) || !IsUnique(property.stringValue)) 
             {
                 property.stringValue = System.Guid.NewGuid().ToString(); // 고유식별자 생성
                 serializedObject.ApplyModifiedProperties(); // 고유식별자 적용
             }
 
-            GlobalLookup[property.stringValue] = this; // 글로벌 룩업 딕셔너리에 자기자신을 등록
+            GlobalEntityLookup[property.stringValue] = this; // 글로벌 룩업 딕셔너리에 자기자신을 등록
         }
 #endif
         
         private bool IsUnique(string candidate)
         {
-            if (!GlobalLookup.ContainsKey(candidate)) return true;
+            if (!GlobalEntityLookup.ContainsKey(candidate)) return true;
 
-            if (GlobalLookup[candidate] == this) return true;
+            if (GlobalEntityLookup[candidate] == this) return true;
 
-            if (GlobalLookup[candidate] == null)
+            if (GlobalEntityLookup[candidate] == null)
             {
-                GlobalLookup.Remove(candidate);
+                GlobalEntityLookup.Remove(candidate);
                 return true;
             }
 
-            if (GlobalLookup[candidate].UniqueIdentifier != candidate)
+            if (GlobalEntityLookup[candidate].UniqueIdentifier != candidate)
             {
-                GlobalLookup.Remove(candidate);
+                GlobalEntityLookup.Remove(candidate);
                 return true;
             }
 

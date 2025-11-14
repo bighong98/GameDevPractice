@@ -6,7 +6,6 @@ using UnityEngine.Pool;
 using UnityEngine.UI;
 using TH.Core.Pool;
 using TH.Resource;
-using UnityEngine.SceneManagement;
 using TH.Core;
 using TH.Utils;
 
