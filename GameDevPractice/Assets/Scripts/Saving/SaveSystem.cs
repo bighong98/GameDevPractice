@@ -104,7 +104,6 @@ namespace TH.SaveLoad
                 isLoading = true;
                 try
                 {
-                    await UniTask.SwitchToThreadPool();
                     if (LoadFile(saveFile) is not { } data) return;
 
                     await UniTask.SwitchToMainThread();
@@ -162,7 +161,7 @@ namespace TH.SaveLoad
         {
             await RunExclusive(async () =>
             {
-                await UniTask.SwitchToThreadPool();
+                await UniTask.SwitchToMainThread();
                 try {Delete(saveFile);}
                 catch (Exception e) { Logg.LogError($"[SaveSystem] Delete failed - {e}");}
             });
@@ -230,7 +229,6 @@ namespace TH.SaveLoad
 
         private async UniTask SaveCoreAsync(string saveFile, SceneEntry sceneEntry = null)
         {
-            await UniTask.SwitchToThreadPool();
             SaveFileData data = LoadFile(saveFile);
             
             List<SavableEntry> sceneEntries = new List<SavableEntry>();
@@ -243,14 +241,12 @@ namespace TH.SaveLoad
             data.sceneData[sceneEntry.sceneId] = sceneEntries;
             data.globalData = globalEntries;
             data.lastSceneEntry = sceneEntry;
-            
-            await UniTask.SwitchToThreadPool();
+
             SaveFile(saveFile, data);
         }
         
         private async UniTask LoadCoreAsync(string saveFile)
         {
-            await UniTask.SwitchToThreadPool();
             var data = LoadFile(saveFile);
             if (data == null) return;
 

@@ -39,11 +39,10 @@ namespace TH.Item
 
             resourceLoader.NotifyResourceLoad += (label) =>
             {
-                if (!string.Equals(label, "PreLoad")) return;
+                if (!string.Equals(label, Constants.PreLoadLabel)) return;
                 saveSystem.RegisterEntity(this);
+                LoadTestData();
             };
-            
-            
         }
         
         #region Initialization
@@ -70,10 +69,10 @@ namespace TH.Item
              
             foreach (var item in testData.items)
             { 
-                Logg.Log($"Trying to add ({item.GetItemInfo.nameString}, {item.GetAmount})", Logg.LoggingMode.Completed);
+                Logg.Log($"Trying to add ({item.GetItemInfo.nameString}, {item.GetAmount})", Logg.LoggingMode.InProgress);
                 if (!TryStore(EnsureItemInstanceByType(item.GetItemInfo, item.GetAmount)))
                 {
-                    Logg.LogError($"[PlayerInventory] failed to add test data item '{item}'");
+                    Logg.LogError($"[PlayerInventory] failed to add test data item '{item.GetItemInfo.nameString}'");
                 }
             }
 
@@ -733,14 +732,15 @@ namespace TH.Item
         public bool RestoreState(object state)
         {
             slots.Clear();
+            FillInventoryWithEmptySlots();
             
             List<IGameItem> items = ExtractSaveData(state);
             foreach (var item in items)
             {
+                Logg.Log($"[PlayerStorage] RestoreState() - Trying to add ({item.GetItemInfo.nameString}, {item.GetAmount})", Logg.LoggingMode.InProgress);
                 TryStore(itemBuilder.GetItemFromData(item.GetItemInfo, item.GetAmount));
             }
             
-            LoadTestData();
             OnStorageChanged?.Invoke();
             
             return true;
@@ -782,7 +782,7 @@ namespace TH.Item
         {
             if (slots.Count > 0)
             {
-                Logg.Log($"[{nameof(PlayerStorage)}] item slot list has something before initialization", Logg.LoggingMode.InProgress);
+                Logg.Log($"[{nameof(PlayerStorage)}] item slot list has something before initialization", Logg.LoggingMode.Completed);
                 slots.Clear();
             }
             for (int i = 0; i < InitialCapacity; i++)
