@@ -42,6 +42,8 @@ namespace TH.Item
                 if (!string.Equals(label, "PreLoad")) return;
                 saveSystem.RegisterEntity(this);
             };
+            
+            
         }
         
         #region Initialization

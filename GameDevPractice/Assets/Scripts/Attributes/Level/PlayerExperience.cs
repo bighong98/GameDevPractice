@@ -179,6 +179,7 @@ namespace TH.Attribute
             {
                 return new PlayerLevelXpData(level, xp);
             }
+
             return null;
         }
 

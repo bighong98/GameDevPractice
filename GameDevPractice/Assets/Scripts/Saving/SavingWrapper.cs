@@ -7,8 +7,6 @@ using TH.Utils;
 
 namespace TH.SaveLoad
 {
-    // ISaveSystem 외부 접근용 Facade
-    // Portal 등에서 사용
     public class SavingWrapper : MonoBehaviour
     {
         private const string defaultSaveFile = "save";

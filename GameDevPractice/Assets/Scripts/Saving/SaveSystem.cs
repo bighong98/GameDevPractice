@@ -16,46 +16,36 @@ namespace TH.SaveLoad
 {
     public class SaveSystem : ISaveSystem
     {
-        // CachedTypes: 캐싱된 런타임 저장 데이터 타입 정보
-        // CachedMethodInfos: 캐싱된 타입 매서드 정보
-        // LoadedStateCache: 캐싱된 런타임 인스턴스 세이브 데이터
-        private static readonly Dictionary<string, Type> CachedTypes = new();
         private static readonly Dictionary<Type, MethodInfo> CachedMethodInfos = new();
+        private static readonly Dictionary<string, Type> CachedTypes = new();
         private static readonly Dictionary<string, Dictionary<string, object>> LoadedStateCache = new(); // Non-MB 클래스 데이터
-        // SceneEntities: 씬별 세이브 객체, GlobalEntities: 씬 무관 글로벌 세이브 객체
+
         private static readonly Dictionary<SceneEntry, Dictionary<string, ISavableEntity>> SceneEntities = new();
         private static readonly Dictionary<string, ISavableEntity> GlobalEntities = new();
         
-        // 외부 서비스 의존 (from ServiceLocator)
         private readonly IResourceLoader resourceLoader;
         private readonly ISceneLoader sceneLoader;
         
-        // catalogPending: 씬 카탈로그 로드 완료 전 등록/해제 요청 대기 큐
-        // catalogResolveTCS: 씬 카탈로드 로드 비동기 대기 TCS
-        // catalogResolved: 다중 waiter 대응 객체
         private readonly ConcurrentQueue<Action<SceneEntry>> catalogPending = new();
         private readonly UniTaskCompletionSource<SceneCatalogSO> catalogResolveTCS = new();
         private readonly UniTask<SceneCatalogSO> catalogResolved;
         private SceneCatalogSO sceneCatalog;
-        // 씬 카탈로그 로드 키
-        private const string SceneCatalogKey = "SceneCatalogSO"; 
+        
+        private const string SceneCatalogKey = "SceneCatalogSO";
         private const int DefaultSceneIndexInCatalog = 0;
         
-        // 중복 Save/Load 요청 플래그, 임시 캐시
+        private readonly SemaphoreSlim ioSemaphore = new (1, 1);
+        
         private bool isLoading;
         private bool saveRequested;
         private string requestedSaveFile;
         private SceneEntry requestedSceneEntry;
-        
-        // SaveFile(), LoadFile() - I/O 동기화 세마포어 (반드시 사용 전 유니티 메인 스레드 환경 보장 필요)
-        private readonly SemaphoreSlim ioSemaphore = new (1, 1);
-        
+
         public SaveSystem(ISceneLoader sceneLoader, IResourceLoader resourceLoader)
         {
-            // 외부 서비스 의존 주입
             this.sceneLoader = sceneLoader;
             this.resourceLoader = resourceLoader;
-            // 씬 카탈로그 대기용 UniTask TCS 초기화, 카탈로그 비동기 로드 시작
+
             catalogResolved = catalogResolveTCS.Task.Preserve();
             LoadSceneCatalogAsync().Forget();
         }
@@ -66,11 +56,8 @@ namespace TH.SaveLoad
         {
             try
             {
-                // IResourceLoader로부터 Addressables 기반 카탈로그 비동기 로드
                 sceneCatalog = await resourceLoader.LoadAsync<SceneCatalogSO>(SceneCatalogKey);
-                // 카탈로그 로딩 waiter들 대기 해제
                 catalogResolveTCS.TrySetResult(sceneCatalog);
-                // 로드 전 요청된 등록/해제 요청 처리
                 await RunPendingJobsAsync();
             }
             catch (Exception e)
@@ -83,8 +70,6 @@ namespace TH.SaveLoad
             }
         }
         
-        // 씬 카탈로그 로드 전 ISavableEntity 자가 등록/해제 요청 일괄 처리
-        // CancellationToken으로 유효성 검사하여 씬 이동 전 들어온 요청은 실행x
         private async UniTask RunPendingJobsAsync()
         {
             if (sceneCatalog == null)
@@ -101,7 +86,6 @@ namespace TH.SaveLoad
             }
         }
 
-        // SceneCatalogSO 비동기 대기
         private async UniTask WaitForCatalog(CancellationToken token = default)
         {
             if (sceneCatalog != null) return; // sceneCatalog가 이미 세팅되어 있다면 await 없이 즉시 종료
@@ -112,8 +96,6 @@ namespace TH.SaveLoad
         
         #region Load Last Scene
 
-        // 저장 시점 씬 불러오기 (기본 세팅: 게임 시작 후 자동으로 호출)
-        // 해당 씬 관련 세이브 데이터 + 글로벌 데이터 자동 적용
         public async UniTask LoadLastScene(string saveFile)
         {
             await RunExclusive(async () =>
@@ -122,23 +104,20 @@ namespace TH.SaveLoad
                 isLoading = true;
                 try
                 {
-                    // 파일 I/O 접근은 풀 스레드에서 처리
                     await UniTask.SwitchToThreadPool();
                     if (LoadFile(saveFile) is not { } data) return;
-                    // 씬 카탈로그(ScriptableObject) 접근은 메인 스레드에서 처리
+
                     await UniTask.SwitchToMainThread();
                     await WaitForCatalog(); // scene catalog 보장
 
-                    // 저장된 씬이 없다면 디폴트 씬으로 이동
                     if (data.lastSceneEntry is not { sceneRef: { } key })
-                        key = sceneCatalog.entries[DefaultSceneIndexInCatalog].sceneRef; 
-                    // 씬 이동
+                        key = sceneCatalog.entries[DefaultSceneIndexInCatalog].sceneRef; // 저장된 씬이 없다면 디폴트 씬으로 이동
+
                     await GameSceneManager.Instance.LoadSceneAsync(key);
                     await UniTask.Yield();
-                    // 해당 씬 관련 + 글로벌 세이브 데이터 적용
                     RestoreState(data);
                 }
-                finally { isLoading = false; } // 로딩 종료 알림
+                finally { isLoading = false; }
             });
         }
 
@@ -146,11 +125,8 @@ namespace TH.SaveLoad
         
         #region Save/Load/Delete (Async + public)
 
-        // 비동기 세이브 
         public async UniTask SaveAsync(string saveFile, SceneEntry sceneEntry = null)
         {
-            // 이미 로딩 중인 경우 실행x
-            // isLoading, SemaphoreSlim.CurrentCount 둘다 thread-safe 하지 않음에 주의 (SaveAsync() 호출 전 메인 스레드 보장 필요)
             if (isLoading || ioSemaphore.CurrentCount == 0)
             {
                 Logg.Log($"[SaveSystem] ioSemaphore.CurrentCount: {ioSemaphore.CurrentCount}", Logg.LoggingMode.InProgress);
@@ -160,17 +136,17 @@ namespace TH.SaveLoad
 
             await WaitForCatalog(); // scene catalog 보장
             await RunExclusive(async () => {
-                // 병합된 요청이 있다면 우선 처리
+                
                 if (saveRequested)
                 {
                     saveFile = requestedSaveFile ?? saveFile;
                     sceneEntry = requestedSceneEntry ?? sceneEntry;
                     ResetSaveRequest();
                 }
-                // 세이브 프로세스 실행
+                
                 try { await SaveCoreAsync(saveFile, sceneEntry); }
                 catch (Exception e) { Logg.LogError($"[SaveSystem] SaveAsync() failed: {e.Message}"); }
-                // 세이브 중 들어온 추가 세이브 요청들 처리
+
                 try
                 {
                     while (TryDequeueCoalescedSave(out var nextSaveFile, out var nextSaveEntry))
@@ -182,7 +158,6 @@ namespace TH.SaveLoad
             });
         }
         
-        // 비동기 세이브 삭제
         public async UniTask DeleteAsync(string saveFile)
         {
             await RunExclusive(async () =>
@@ -193,7 +168,6 @@ namespace TH.SaveLoad
             });
         }
 
-        // 비동기 로드
         public async UniTask LoadAsync(string saveFile)
         {
             await RunExclusive(async () =>
@@ -203,9 +177,9 @@ namespace TH.SaveLoad
 
                 try
                 {
-                    await UniTask.SwitchToMainThread(); // 메인 스레드 환경 보장
-                    await WaitForCatalog(); // SceneCatalogSO 로드 보장
-                    await LoadCoreAsync(saveFile); // 로드 프로세스 실행
+                    await UniTask.SwitchToMainThread();
+                    await WaitForCatalog();
+                    await LoadCoreAsync(saveFile);
                 }
                 catch (Exception e) { Logg.LogError($"[SaveSystem] LoadAsync() failed: {e.Message}"); }
                 finally { isLoading = false; }
@@ -219,7 +193,6 @@ namespace TH.SaveLoad
             requestedSceneEntry = null;
         }
         
-        // Save/Load/Delete가 공유하는 동기화 객체
         private async UniTask RunExclusive(Func<UniTask> func)
         {
             await ioSemaphore.WaitAsync();
@@ -227,7 +200,6 @@ namespace TH.SaveLoad
             finally { ioSemaphore.Release(); }
         }
         
-        // 복수의 세이브 요청 병합 (마지막 요청만 남김)
         private void CoalesceSave(string saveFile, SceneEntry sceneEntry)
         {
             saveRequested = true;
@@ -254,7 +226,7 @@ namespace TH.SaveLoad
 
         #endregion
 
-        #region Save/Load/Delete Core (private)
+        #region Save/Load/Delete (private)
 
         private async UniTask SaveCoreAsync(string saveFile, SceneEntry sceneEntry = null)
         {
@@ -263,15 +235,15 @@ namespace TH.SaveLoad
             
             List<SavableEntry> sceneEntries = new List<SavableEntry>();
             List<SavableEntry> globalEntries = new List<SavableEntry>();
-            // 현재 씬 + 글로벌 런타임 데이터 수집
+            
             await UniTask.SwitchToMainThread();
             CaptureState(sceneEntries, globalEntries);
-            // 현재 씬 정보 갱신
+            
             sceneEntry ??= sceneCatalog.GetCurrentSceneEntry();
             data.sceneData[sceneEntry.sceneId] = sceneEntries;
             data.globalData = globalEntries;
             data.lastSceneEntry = sceneEntry;
-            // 세이브 파일 저장
+            
             await UniTask.SwitchToThreadPool();
             SaveFile(saveFile, data);
         }
@@ -316,8 +288,6 @@ namespace TH.SaveLoad
             return false;
         } 
 
-        // 개별 ISavableEntity의 CaptureState() 호출
-        // ISavableEntity는 MonoBehaviour일 수도 있으므로 메인 스레드 환경 보장 필요
         private void AddEntries(ICollection<SavableEntry> collection, ICollection<ISavableEntity> savables)
         {
             if (collection == null || savables == null) return;
@@ -328,7 +298,7 @@ namespace TH.SaveLoad
                 {
                     if (!savable.IsAlive()) continue;
                     if (savable.CaptureState() is not { } captured) continue;
-                    // 복수 ISavable 대응
+
                     if (captured is Dictionary<string, object> captures)
                     {
                         foreach (var (typeName, capture) in captures)
@@ -336,7 +306,7 @@ namespace TH.SaveLoad
                             AddNewEntry(collection, typeName, capture, savable);
                         }
                     }
-                    else // 1:1 ISavableEntity:ISavable
+                    else
                     {
                         var typeName = captured.GetType().AssemblyQualifiedName;
                         AddNewEntry(collection, typeName, captured, savable);
@@ -351,7 +321,7 @@ namespace TH.SaveLoad
             if (GetTypeByName(typeName) is not { } type) return;
             RegisterEntries(stateObj, type, collection, entity.UniqueIdentifier, typeName);
         }
-        // 런타임 데이터 -> json 직렬화 수행
+
         private static void RegisterEntries(object stateObj, Type type, ICollection<SavableEntry> targetEntryCollection, 
             string identifier, string typeName)
         {
@@ -496,6 +466,9 @@ namespace TH.SaveLoad
             if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
                 Directory.CreateDirectory(dir);
             
+            // var tmp = path + "." + Guid.NewGuid().ToString("N") + ".tmp"; // 임시 파일명
+            // var bak = path + ".bak"; // 백업 파일명
+            
             var tmp = Path.Combine(dir ?? "", $".{Path.GetFileName(path)}.{Guid.NewGuid():N}.tmp");
             var bak = path + ".bak";
 
@@ -567,7 +540,7 @@ namespace TH.SaveLoad
         #endregion
         
         #region Method Info
-        
+
         private static readonly Dictionary<string, Type> BuiltinAliasTypes = new(StringComparer.Ordinal)
         {
             ["bool"] = typeof(bool),
