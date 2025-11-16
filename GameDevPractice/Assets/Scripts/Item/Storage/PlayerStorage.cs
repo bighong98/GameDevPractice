@@ -69,7 +69,7 @@ namespace TH.Item
              
             foreach (var item in testData.items)
             { 
-                Logg.Log($"Trying to add ({item.GetItemInfo.nameString}, {item.GetAmount})", Logg.LoggingMode.InProgress);
+                Logg.Log($"Trying to add ({item.GetItemInfo.nameString}, {item.GetAmount})", Logg.LoggingMode.Completed);
                 if (!TryStore(EnsureItemInstanceByType(item.GetItemInfo, item.GetAmount)))
                 {
                     Logg.LogError($"[PlayerInventory] failed to add test data item '{item.GetItemInfo.nameString}'");
@@ -737,7 +737,6 @@ namespace TH.Item
             List<IGameItem> items = ExtractSaveData(state);
             foreach (var item in items)
             {
-                Logg.Log($"[PlayerStorage] RestoreState() - Trying to add ({item.GetItemInfo.nameString}, {item.GetAmount})", Logg.LoggingMode.InProgress);
                 TryStore(itemBuilder.GetItemFromData(item.GetItemInfo, item.GetAmount));
             }
             

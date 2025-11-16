@@ -1,18 +1,14 @@
 using System;
 using RPG.Attribute;
 using RPG.Control;
-using RPG.Stats;
-using RPG.UI;
 using UnityEngine;
 using UnityEngine.UI;
 using TH.Attribute;
 using TH.Attribute.Stat;
-using TH.Resource;
 using TH.UI;
 using TH.Utils;
-using Debug = System.Diagnostics.Debug;
 
-public class GameSceneUI : BaseUI
+public class GameSceneUI : SceneUI
 {
     #region Enums
 

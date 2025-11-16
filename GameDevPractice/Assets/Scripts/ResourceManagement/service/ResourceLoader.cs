@@ -17,11 +17,9 @@ namespace TH.Resource
     public class ResourceLoader : IResourceLoader
     {
         // Addressables.LoadAssetAsync 결과 핸들 캐시 (키 기반)
-        private readonly Dictionary<string, AsyncOperationHandle> resourceKeys 
-            = new Dictionary<string, AsyncOperationHandle>();
+        private readonly Dictionary<string, AsyncOperationHandle> resourceKeys = new();
         // Addressables.LoadAssetAsync 결과 핸들 캐시 (AssetReference 기반)
-        private readonly Dictionary<AssetReference, AsyncOperationHandle> resourceAssetRefs 
-            = new Dictionary<AssetReference, AsyncOperationHandle>();
+        private readonly Dictionary<string, AsyncOperationHandle> resourceGuids = new ();
         // 라벨 일괄 로드 상태 추적
         private readonly Dictionary<string, LoadStatus> loadStatus = new Dictionary<string, LoadStatus>();
         
@@ -339,13 +337,13 @@ namespace TH.Resource
             }
             
             // case: AssetReference에 대응하는 핸들이 딕셔너리에 존재하고, 유효한 핸들인 경우
-            if (resourceAssetRefs.TryGetValue(assetRef, out var cachedHandle) && cachedHandle.IsValid())
+            if (resourceGuids.TryGetValue(assetRef.AssetGUID, out var cachedHandle) && cachedHandle.IsValid())
             { 
                 return cachedHandle.Result as T; // 즉시 핸들과 연결된 리소스를 반환
             }
 
             // case: 캐싱된 핸들이 없는 경우
-            var handle = assetRef.OperationHandle.IsValid() // 핸들을 추가로 생성 및 유효성 검사 (todo: 추가 유효성 검사 필요한지 확인 필요)
+            var handle = assetRef.OperationHandle.IsValid() // 핸들을 추가로 생성 및 유효성 검사
                 ? assetRef.OperationHandle
                 : assetRef.LoadAssetAsync<T>();
 
@@ -357,7 +355,7 @@ namespace TH.Resource
                 return null;
             }
             // AssetReference로부터 리소스 로드에 성공했다면 핸들을 캐싱 및 리소스 반환
-            resourceAssetRefs[assetRef] = handle;
+            resourceGuids[assetRef.AssetGUID] = handle;
             return handle.Result as T;
         }
         // 로딩 완료된 리소스 목록에 접근 (key 기반)
@@ -375,13 +373,13 @@ namespace TH.Resource
         // 로딩 완료된 리소스 목록에 접근 (AssetReference 기반)
         public bool TryLoad<T>(AssetReference assetRef, out T resource) where T : UnityEngine.Object
         {
-            if (resourceAssetRefs.TryGetValue(assetRef, out var result)
+            if (resourceGuids.TryGetValue(assetRef.AssetGUID, out var result)
                 && result.Result is T cachedResource)
             {
                 resource = cachedResource;
                 return true;
             }
-
+            
             resource = null;
             return false;
         }

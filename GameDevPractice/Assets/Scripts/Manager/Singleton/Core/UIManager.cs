@@ -8,7 +8,10 @@ using TH.Core.Pool;
 using TH.Resource;
 using UnityEngine.SceneManagement;
 using TH.Core;
+using TH.Core.Service;
+using TH.UI;
 using TH.Utils;
+using UnityEngine.AddressableAssets;
 
 namespace RPG.UI
 {
@@ -29,7 +32,11 @@ namespace RPG.UI
         [SerializeField] private Transform root;
         [SerializeField] private List<GameObject> canvases;
 
-        private BaseUI sceneUI;
+        [SerializeField]private SceneUI sceneUI;
+        [SerializeField]private SceneCatalogSO sceneCatalogSO;
+        [SerializeField]private SceneUIListSO sceneUIListSO;
+        private IResourceLoader resourceLoader;
+        
         private GraphicRaycaster sceneUIGraphicRaycaster;
         public GraphicRaycaster SceneUIGraphicRaycaster { get { return sceneUIGraphicRaycaster; } }
         // public event Action<int> OnTimeScaleChanged; // 현재 미사용
@@ -42,6 +49,9 @@ namespace RPG.UI
         public TooltipUI Tooltip; 
         
         #endregion
+
+        private const string SceneCatalogSOKey = "SceneCatalogSO";
+        private const string SceneUIListSOKey = "SceneUIListSO";
         
         protected override void InitOnce()
         {
@@ -54,16 +64,19 @@ namespace RPG.UI
 
         protected override void InitOnceAfterPreLoad()
         {
-            // todo: 씬별 씬UI 생성 로직 추가 후 제거 (InitAfterPreLoad()에서 실행)
-            SetSceneUI();
+            resourceLoader = ServiceLocator.Get<IResourceLoader>();
+            if (!resourceLoader.TryLoad(SceneCatalogSOKey, out sceneCatalogSO)
+                ||!resourceLoader.TryLoad(SceneUIListSOKey, out sceneUIListSO))
+            {
+                Logg.LogError($"[UIManager] failed to load sceneUIListSO or sceneUIListSO");
+                return;
+            }
+            
             SetTooltip();
         }
 
         protected override void Init()
         {
-            // SetSceneUI();
-            // SetTooltip();
-            
             InputManager.Instance.OnEscaped += OnEscapeCalled;
             
             InputManager.Instance.OnSingleClicked -= OnPopupOutSideSelected; // 중복 구독 방지
@@ -90,9 +103,7 @@ namespace RPG.UI
 
         protected override void InitAfterPreLoad()
         {
-            // 중복 생성 문제로 임시로 InitOnceAfterPreLoad()에서 실행
-            // SetSceneUI();
-            // SetTooltip();
+            SetSceneUIAsync().Forget();
         }
 
         private void OnEscapeCalled()
@@ -106,18 +117,26 @@ namespace RPG.UI
 
         #region Scene UI Method
 
-        private void SetSceneUI()
+        private async UniTask SetSceneUIAsync()
         {
-            //todo: 현재 활성화된 씬 타입 받아서 씬에 적합한 씬UI 호출
-            ResourceManager.Instance.ReserveOperation(() =>
+            if (sceneCatalogSO == null || sceneUIListSO == null)
             {
-                if (ResourceManager.Instance.Instantiate("GameSceneUI.prefab", GetUIParent(UICanvas.Scene)) is { } loadedPrefab
-                    && loadedPrefab.GetComponent<GameSceneUI>() is { } loadedSceneUI)
-                {
-                    SetCanvas(loadedPrefab, isInteractable: true);
-                    sceneUI = loadedSceneUI;
-                }
-            });
+                Logg.LogError($"[UIManager] sceneCatalogSO: {sceneCatalogSO}, sceneUIListSO: {sceneUIListSO}");
+                return;
+            }
+            
+            var currentSceneEntry = sceneCatalogSO.GetCurrentSceneEntry();
+            if (currentSceneEntry == null) return;
+            var targetSceneUIRef = sceneUIListSO.GetSceneUIByScene(currentSceneEntry.sceneRef);
+            if (targetSceneUIRef == null) return;
+            var loadedSceneUI = await resourceLoader.LoadAsync<GameObject>(targetSceneUIRef); // todo: add token
+            // 현재 SceneUI와 동일한 경우 변경x
+            if (loadedSceneUI == null || (sceneUI != null && loadedSceneUI == sceneUI.Origin)) return;
+            
+            if (sceneUI != null)
+                PoolManager.Instance.ReleaseFromPool(sceneUI);
+            sceneUI = PoolManager.Instance.GetFromPool<SceneUI>(loadedSceneUI, canvases[(int)UICanvas.Scene].transform);
+            SetCanvas(sceneUI.gameObject); // todo: apply sceneUI canvas setting
         }
 
         #endregion

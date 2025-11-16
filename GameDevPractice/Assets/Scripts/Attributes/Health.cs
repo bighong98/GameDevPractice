@@ -125,7 +125,7 @@ namespace RPG.Attribute
             
             if (maxHp.Value is not ({ } max and > 0))
             {
-                Logg.Log($"[{gameObject.name}.{nameof(SetCurrentHp)}]Max Hp is less or equal to 0. failed to set HP", Logg.LoggingMode.Focussed);
+                Logg.Log($"[{gameObject.name}.{nameof(SetCurrentHp)}]Max Hp is less or equal to 0. failed to set HP", Logg.LoggingMode.Completed);
                 Die(); // 최대 체력이 세팅되어있지 않다면 사망 처리
                 return;
             }
