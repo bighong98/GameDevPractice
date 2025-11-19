@@ -22,6 +22,13 @@ MonoBehaviour:
     - PreLoad
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 400ea88918460cb4b9b2378b2eda7018
+    m_Address: UICanvasSettingSO
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 62995c9fc2d3e694c88ffa854f08dcc4
     m_Address: ProgressionSO.asset
     m_ReadOnly: 0

@@ -37,7 +37,7 @@ namespace TH.Item
         {
             Init();
 
-            resourceLoader.NotifyResourceLoad += (label) =>
+            resourceLoader.OnLabelResourcesLoadedAll += (label) =>
             {
                 if (!string.Equals(label, Constants.PreLoadLabel)) return;
                 saveSystem.RegisterEntity(this);

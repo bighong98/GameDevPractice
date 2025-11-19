@@ -40,7 +40,6 @@ public class GameSceneUI : SceneUI
 
     #endregion
 
-    // private readonly Slider[] sliders = new Slider[(int)Sliders.max];
     private readonly ISliderUIHandler[] sliderHandlers = new ISliderUIHandler[(int)Sliders.max];
     
     private IStatHolder statHolder;
@@ -76,6 +75,12 @@ public class GameSceneUI : SceneUI
         }
         
         return true;
+    }
+
+    public override void RefreshUI()
+    {
+        base.RefreshUI();
+        ConnectComponents();
     }
 
     private void OnEnable()

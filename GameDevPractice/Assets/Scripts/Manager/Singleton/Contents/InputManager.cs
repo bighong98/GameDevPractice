@@ -10,7 +10,6 @@ using TH.Utils;
 
 public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, UserInput.IGlobalActions, UserInput.IUIActions
 {
-    //todo: Drag 및 Hold 간섭 방지 로직 추가
     // 외부 접근용 프로퍼티
     private UserInput userInput; // input action asset 자동생성 클래스
     public UserInput UserInput => userInput;
@@ -40,36 +39,21 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
 
     #endregion 
     
+    public Vector2 PointerPos => currentPointerPos;
+    
     // 캐싱 좌표
     private Vector2 currentPointerPos = Vector2.zero; // update by OnPoint()
     private Vector2 dragStartPosition = Vector2.zero; // update by OnDrag()
-    
-    public Vector2 PointerPos { get { return currentPointerPos; } }
 
     private bool isDragging = false;
     private bool wasDraggingOneFrameAgo = false;
     private CancellationTokenSource clickCTS;
-    
-    protected override void Awake()
-    {
-        base.Awake();
-        // if (IsInvalidInstance()) return;
-        // // todo: 초기화 작업/마무리 작업 OnSceneLoaded(), GameSceneManger.Instance.RegisterCleanupTask()로 이전
-        // userInput = new UserInput();
-        //
-        // userInput.Player.SetCallbacks(this);
-        // userInput.Global.SetCallbacks(this);
-        // userInput.UI.SetCallbacks(this);
-        //
-        // // default: GlobalActions, PlayerActions 활성화
-        // userInput.Global.Enable();
-        // userInput.Player.Enable(); 
-    }
 
     #region Initialization
 
     protected override void InitOnce()
     {
+        base.InitOnce();
         userInput = new UserInput();
         
         userInput.Player.SetCallbacks(this);
@@ -77,21 +61,13 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
         userInput.UI.SetCallbacks(this);
     }
 
-    protected override void InitOnceAfterPreLoad()
-    {
-        
-    }
-
     protected override void Init()
     {
+        base.Init();
         // default: GlobalActions, PlayerActions 활성화
+
         userInput.Global.Enable();
         userInput.Player.Enable(); 
-    }
-
-    protected override void InitAfterPreLoad()
-    {
-        
     }
 
     protected override UniTask Clear()
@@ -118,14 +94,9 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
     {
         if (Input.GetKeyDown(KeyCode.I))
         {
-            // UIManager.Instance.ShowPopupUI<InventoryUI>("InventoryUI.prefab");
-            // UIManager.Instance.ShowPopupUI<PlayerInventoryUI>("PlayerInventoryUI.prefab");
             UIManager.Instance.ShowPopupUI<TH.UI.InventoryUI>("InventoryUI.prefab");
-
         }
     }
-
-
 
     #region Player Input Handle // 플레이어 캐릭터 조작에 사용하는 입력
 
@@ -138,13 +109,14 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
     {
         if (context.phase == InputActionPhase.Performed)
         {
+            Logg.Log($"[InputManager] OnSelect Invoked ({currentPointerPos})", Logg.LoggingMode.Completed);
             OnSelected?.Invoke(currentPointerPos);
         }
     }
 
     #endregion
 
-    #region Global Input Handle // 전역적 입력 
+    #region Global Input Handle // 전역 입력 
 
     public void OnEscape(InputAction.CallbackContext context) // ESC 등
     {

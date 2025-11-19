@@ -9,8 +9,14 @@ namespace TH.Resource
     [CreateAssetMenu(fileName = "SceneUIListSO", menuName = "Scriptable Objects/TypeList/SceneUIListSO")]
     public class SceneUIListSO : ScriptableObject
     {
-        [SerializeField] public List<SceneUIPair> list;
-        public IReadOnlyCollection<SceneUIPair> SceneUIs => list;
+        [SerializeField] private List<SceneUIPair> list;
+        private IReadOnlyCollection<SceneUIPair> capturedList;
+        public IReadOnlyCollection<SceneUIPair> SceneUIs { get {
+            if (capturedList == null || capturedList.Count == 0)
+                capturedList = list.AsReadOnly();
+            return capturedList; } 
+        }
+        
         private readonly Dictionary<string, AssetReferenceSceneUI> SceneUIDict = new();
         
         public AssetReferenceSceneUI GetSceneUIByScene(AssetReferenceScene scene)

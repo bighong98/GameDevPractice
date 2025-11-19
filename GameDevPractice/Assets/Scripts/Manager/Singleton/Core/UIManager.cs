@@ -6,105 +6,123 @@ using UnityEngine.Pool;
 using UnityEngine.UI;
 using TH.Core.Pool;
 using TH.Resource;
-using UnityEngine.SceneManagement;
 using TH.Core;
 using TH.Core.Service;
 using TH.UI;
 using TH.Utils;
-using UnityEngine.AddressableAssets;
 
 namespace RPG.UI
 {
     public enum UICanvas
     {
-        Scene, // 씬UI 캔버스, Sorting Order: 0~99
-        AnchoredOverlay, // 게임 오브젝트와 함께 움직이는 UI요소, Sorting Order: 100~199 
-        Popup, // 팝업UI 최상단 캔버스, Sorting Order: 200~
+        Scene, // 씬UI 캔버스
+        AnchoredOverlay, // 게임 오브젝트와 함께 움직이는 UI용 캔버스
+        Popup, // 팝업UI 캔버스
     }
     public class UIManager : Singleton<UIManager>
     {
         private int _order = 10; // 10 is magic number
-        private readonly Stack<PopupUI> popupStacks = new Stack<PopupUI>();
-        private readonly Dictionary<string, Type> keyTypeDictionary = new Dictionary<string, Type>();
-        // private readonly Dictionary<Type, ObjectPool<PopupUI>> popupPools = new Dictionary<Type, ObjectPool<PopupUI>>();
-        private readonly Dictionary<Type, ObjectPool<IPoolObject>> popupPools = new Dictionary<Type, ObjectPool<IPoolObject>>();
+        private readonly Stack<PopupUI> popupStacks = new();
+        
+        private readonly Dictionary<string, Type> keyTypeDictionary = new();
+        private readonly Dictionary<Type, ObjectPool<IPoolObject>> popupPools = new();
         
         [SerializeField] private Transform root;
         [SerializeField] private List<GameObject> canvases;
-
-        [SerializeField]private SceneUI sceneUI;
-        [SerializeField]private SceneCatalogSO sceneCatalogSO;
-        [SerializeField]private SceneUIListSO sceneUIListSO;
-        private IResourceLoader resourceLoader;
+        private readonly int[] sortOrders = new int[3];
         
-        private GraphicRaycaster sceneUIGraphicRaycaster;
-        public GraphicRaycaster SceneUIGraphicRaycaster { get { return sceneUIGraphicRaycaster; } }
-        // public event Action<int> OnTimeScaleChanged; // 현재 미사용
+        private SceneUI sceneUI;
         
-        private const float popupOpenThreshold = 0.05f;
+        private const float PopupOpenThreshold = 0.05f;
         private float lastPopupOpenTime;
         
-        #region Frequently Used UI
-        
+        // Frequently Used UI
         public TooltipUI Tooltip; 
         
-        #endregion
-
+        // scriptable object
+        private SceneCatalogSO sceneCatalogSO;
+        private SceneUIListSO sceneUIListSO;
+        private UICanvasSettingSO uiCanvasSettingSO;
+        
+        // resource key (Addressables)
         private const string SceneCatalogSOKey = "SceneCatalogSO";
         private const string SceneUIListSOKey = "SceneUIListSO";
-        
-        protected override void InitOnce()
-        {
-            // GameSceneManager.Instance.RegisterCleanupTask(async () =>
-            // {
-            //     await Clear();
-            // });
-            SetUIContainer();
-        }
+        private const string UICanvasSettingSOKey = "UICanvasSettingSO";
+
+        #region Singleton
 
         protected override void InitOnceAfterPreLoad()
         {
+            base.InitOnceAfterPreLoad();
             resourceLoader = ServiceLocator.Get<IResourceLoader>();
-            if (!resourceLoader.TryLoad(SceneCatalogSOKey, out sceneCatalogSO)
-                ||!resourceLoader.TryLoad(SceneUIListSOKey, out sceneUIListSO))
+
+            if (!resourceLoader.TryLoad(SceneCatalogSOKey, out sceneCatalogSO))
             {
-                Logg.LogError($"[UIManager] failed to load sceneUIListSO or sceneUIListSO");
+                Logg.LogError($"[UIManager] failed to load sceneCatalogSO");
                 return;
             }
             
+            if (!resourceLoader.TryLoad(SceneUIListSOKey, out sceneUIListSO))
+            {
+                Logg.LogError($"[UIManager] failed to load sceneUIListSO");
+                return;
+            }
+            
+            if (!resourceLoader.TryLoad(UICanvasSettingSOKey, out uiCanvasSettingSO))
+            {
+                Logg.LogError($"[UIManager] failed to load sceneUIListSO");
+                return;
+            }
+            
+            SetUIContainer();
             SetTooltip();
         }
 
         protected override void Init()
         {
+            base.Init();
             InputManager.Instance.OnEscaped += OnEscapeCalled;
             
             InputManager.Instance.OnSingleClicked -= OnPopupOutSideSelected; // 중복 구독 방지
             InputManager.Instance.OnSingleClicked += OnPopupOutSideSelected;
         }
+        
+        protected override void InitAfterPreLoad()
+        {
+            SetSceneUIAsync().ContinueWith(() =>
+            {
+                base.InitAfterPreLoad();
+            });
+        }
 
+        #endregion
+
+        #region Initialization
+
+        private const string UIRootName = "UI_Root";
         private void SetUIContainer()
         {
-            var rootGo = new GameObject("UI_Root");
+            var rootGo = new GameObject(name: UIRootName);
             DontDestroyOnLoad(rootGo);
             root = rootGo.transform;
             canvases = new();
             
             var t = typeof(UICanvas);
-            foreach (var canvasType in Enum.GetValues(t))
+            foreach (var canvasType in (UICanvas[])Enum.GetValues(typeof(UICanvas)))
             {
+                if (uiCanvasSettingSO != null 
+                    && uiCanvasSettingSO.GetCanvasSetting(canvasType)?.defaultSortingOrder 
+                        is { } resultSortingOrder)
+                    sortOrders[(int)canvasType] = resultSortingOrder;
+                
                 var go = new GameObject(Enum.GetName(t, canvasType));
                 go.transform.SetParent(root);
-                // todo: 타입별 캔버스 세팅 설정 로직 추가 (Canvas 데이터 관리용 Scriptable Object 사용 고려) 
-                SetCanvas(go);
+                SetCanvas(go, canvasType);
                 canvases.Add(go);
             }
         }
 
-        protected override void InitAfterPreLoad()
-        {
-            SetSceneUIAsync().Forget();
-        }
+        #endregion
 
         private void OnEscapeCalled()
         {
@@ -130,13 +148,19 @@ namespace RPG.UI
             var targetSceneUIRef = sceneUIListSO.GetSceneUIByScene(currentSceneEntry.sceneRef);
             if (targetSceneUIRef == null) return;
             var loadedSceneUI = await resourceLoader.LoadAsync<GameObject>(targetSceneUIRef); // todo: add token
-            // 현재 SceneUI와 동일한 경우 변경x
-            if (loadedSceneUI == null || (sceneUI != null && loadedSceneUI == sceneUI.Origin)) return;
+            if (loadedSceneUI == null) return;
+            
+            // 현재 SceneUI와 동일한 경우 변경 없이 갱신만 요청
+            if (sceneUI != null && loadedSceneUI == sceneUI.Origin)
+            {
+                sceneUI.RefreshUI();
+                return;
+            }
             
             if (sceneUI != null)
                 PoolManager.Instance.ReleaseFromPool(sceneUI);
             sceneUI = PoolManager.Instance.GetFromPool<SceneUI>(loadedSceneUI, canvases[(int)UICanvas.Scene].transform);
-            SetCanvas(sceneUI.gameObject); // todo: apply sceneUI canvas setting
+            SetCanvas(sceneUI.gameObject, UICanvas.Scene); 
         }
 
         #endregion
@@ -145,7 +169,6 @@ namespace RPG.UI
 
         public T GetUIFromPool<T>(GameObject prefab, UICanvas canvasType) where T : BaseUI, IPoolObject
         {
-            // return PoolingManager.Instance.GetFromPool<T>(prefab, canvases[(int)canvasType]?.transform);
             return PoolManager.Instance.GetFromPool<T>(prefab, canvases[(int)canvasType]?.transform);
         }
 
@@ -159,8 +182,8 @@ namespace RPG.UI
         // isToast는 현재 미사용 (추후 삭제 혹은 ToastUI 기능 추가 고려)
         // PopupUI 인스턴스의 OnCreateFromPool()에서 호출
         // renderWorldSpace: Canvas의 render mode 결정: true: world space, false: overlay (현재 구현x. 사용x)
-        public void SetCanvas(GameObject go, bool sort = true, int sortOrder = 0, bool isInteractable = true,  bool renderWorldSpace = false)
-        { 
+        public void SetCanvas(GameObject go, UICanvas canvasType, int sortOrder = 0, bool isInteractable = true,  bool renderWorldSpace = false)
+        {
             Canvas canvas = go.GetOrAddComponent<Canvas>();
             if (canvas != null)
             {
@@ -178,7 +201,8 @@ namespace RPG.UI
             if (isInteractable)
                 go.GetOrAddComponent<GraphicRaycaster>();
             
-            SortCanvas(canvas, sort, sortOrder);
+            if (sortOrder > 0) SortCanvas(canvas, sortOrder);
+            else SortCanvas(canvas, canvasType);
         }
 
         public void SetCanvas(PopupUI popup, bool sort = true, int sortOrder = 0, bool isInteractable = true)
@@ -197,39 +221,42 @@ namespace RPG.UI
 
             CanvasGroup cg = popup.gameObject.GetOrAddComponent<CanvasGroup>();
             if (cg != null)
-            {
                 cg.alpha = 0f; // UI 애니메이션, 애니메이션 전처리를 위해 투명화 -> PopupUI.OnGetFromPool()에서 투명도 제거처리
-            }
             
             // CanvasScaler cs = popup.gameObject.GetOrAddComponent<CanvasScaler>();
             // if (cs != null)
-            // {
             //     cs.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            // }
             
             if (isInteractable)
                 popup.gameObject.GetOrAddComponent<GraphicRaycaster>();
             
-            SortCanvas(canvas, sort, sortOrder);
+            // SortCanvas(canvas, sort, sortOrder);
+            SortCanvas(canvas, UICanvas.Popup);
         }
 
-        public void SortCanvas(Canvas canvas, bool autoSort = true, int sortOrder = 0)
+        public void SortCanvas(Canvas canvas, int sortOrder = 0)
         { // 캔버스 렌더링 순서 정렬
-            if (autoSort)
-            {
-                canvas.sortingOrder = _order;
-                canvas.overrideSorting = true;
-                _order++;
-            }
-            else
-            {
-                canvas.sortingOrder = sortOrder;
-            }
+            // if (autoSort)
+            // {
+            //     canvas.sortingOrder = _order;
+            //     canvas.overrideSorting = true;
+            //     _order++;
+            // }
+            // else
+            // {
+            //     canvas.sortingOrder = sortOrder;
+            // }
+            canvas.sortingOrder = sortOrder;
+            canvas.overrideSorting = true;
         }
 
-        private void EnsureUIParent()
+        public void SortCanvas(Canvas canvas, UICanvas canvasType)
         {
+            if (uiCanvasSettingSO == null) return;
             
+            int order = sortOrders[(int)canvasType] += 1;
+            canvas.sortingOrder = order;
+            canvas.overrideSorting = true;
         }
         
         private Transform GetUIParent(UICanvas type)
@@ -262,13 +289,6 @@ namespace RPG.UI
                 if (ResourceManager.Instance.Load<UnityEngine.Object>(key) is not GameObject loadedUI)
                     return null;
                 
-                // var uiPool = PoolingManager.Instance.GetPool<PopupUI>(
-                //         loadedUI, GetUIContainer(loadedUI.GetComponent<PopupUI>().UiRenderType), capacity: 2, maxSize: 10, registerPool: false); // 2, 10 is magic number
-                // var uiPool = PoolingManager.Instance.GetPool<PopupUI>(
-                //     loadedUI,
-                //     parent: GetUIParent(UICanvas.Popup),
-                //     capacity: 2, maxSize: 10, registerPool: false
-                //     ); // 2, 10 is magic number
                 var uiPool = PoolManager.Instance.GetPool(
                     loadedUI,
                     parent: GetUIParent(UICanvas.Popup),
@@ -300,10 +320,7 @@ namespace RPG.UI
             popupStacks.Push(popup);
             
             if (popup.PauseRequired)
-            {
-                // GameManager.Instance.PauseGame();
                 InputManager.Instance.PauseGame();
-            }
 
             lastPopupOpenTime = Time.unscaledTime; // 팝업 닫기 지연 시간
             
@@ -348,14 +365,8 @@ namespace RPG.UI
                 {
                     popup.OnPopupClosedAsync().ContinueWith(() =>
                     {
-                        try
-                        {
-                            HandleTimePauseAndReleasePopup();
-                        }
-                        catch (Exception e)
-                        {
-                            Logg.LogError($"[{nameof(UIManager)}] Error during popup closing: {e}");
-                        }
+                        try { HandleTimePauseAndReleasePopup(); }
+                        catch (Exception e) { Logg.LogError($"[{nameof(UIManager)}] Error during popup closing: {e}"); }
                     }).Forget();
                 }
                 else
@@ -377,7 +388,6 @@ namespace RPG.UI
             {
                 if (!IsPausedRequired()) // 일시정지가 필요한 팝업이 없다면
                 {
-                    // GameManager.Instance.ResumeGame(); // 게임 일시정지 해제
                     InputManager.Instance.ResumeGame(); // 게임 일시정지 해제
                 }
 
@@ -415,17 +425,6 @@ namespace RPG.UI
             return false;
         }
 
-        private Transform GetUIContainer(Enums.UIRenderType type)
-        {
-            return type switch
-            {
-                Enums.UIRenderType.ScreenOverlay => root,
-                Enums.UIRenderType.ScreenCamera => root,
-                Enums.UIRenderType.WorldSpace => root,
-                _ =>  null
-            };
-        }
-
         private void OnPopupOutSideSelected(Vector2 selectedPos)
         {
             if (IsBeforePopupThreshold()) return;
@@ -447,14 +446,10 @@ namespace RPG.UI
 
         private bool IsBeforePopupThreshold()
         {
-            bool rValue = Time.unscaledTime - lastPopupOpenTime < popupOpenThreshold;
-            if (rValue)
-            {
-                Logg.Log($"{nameof(IsBeforePopupThreshold)}: ClosePopupUI Guarded");
-                return rValue;
-            }
+            bool rValue = Time.unscaledTime - lastPopupOpenTime < PopupOpenThreshold;
+            if (rValue) Logg.Log($"{nameof(IsBeforePopupThreshold)}: ClosePopupUI Guarded");
 
-            return false;
+            return rValue;
         }
         
         #endregion
@@ -469,10 +464,7 @@ namespace RPG.UI
                 {
                     Tooltip = loadedTooltip;
                 }
-                else
-                {
-                    Logg.Log($"Tooltip is null");
-                }
+                else { Logg.Log($"Tooltip is null"); }
             });
         }
 
@@ -525,9 +517,11 @@ namespace RPG.UI
 
         #endregion
 
-        protected override UniTask Clear()
+        protected override void OnDestroy()
         {
-            base.Clear();
+            if (Util.IsQuitting) return;
+            base.OnDestroy();
+            
             keyTypeDictionary.Clear();
 
             foreach (var pool in popupPools.Values)
@@ -538,6 +532,13 @@ namespace RPG.UI
             popupStacks.Clear();
             
             ClearValue();
+        }
+
+        protected override UniTask Clear()
+        {
+            base.Clear();
+            CloseAllPopupUI();
+            
             return UniTask.CompletedTask;
         }
 

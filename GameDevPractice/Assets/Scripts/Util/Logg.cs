@@ -45,6 +45,12 @@ namespace TH.Utils
         {
             if (ShouldLog(mode)) Debug.Log(msg);
         }
+        
+        [System.Diagnostics.Conditional("UNITY_EDITOR")]
+        public static void LogWarning(object msg)
+        {
+            if (CurrLogLevel != LogLevel.None) Debug.LogWarning(msg);
+        }
 
         [System.Diagnostics.Conditional("UNITY_EDITOR")]
         public static void LogError(object msg) => Debug.LogError(msg);

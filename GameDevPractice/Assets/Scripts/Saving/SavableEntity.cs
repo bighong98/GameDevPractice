@@ -64,7 +64,7 @@ namespace RPG.Saving
                 var savedTypeName = objState.GetType().AssemblyQualifiedName;
                 if (string.IsNullOrEmpty(savedTypeName)) continue; // 저장 데이터 타입 이름 검출에 실패하면 취소
                 
-                Logg.Log($"[SavableEntity] ({savedTypeName}, {objState})", Logg.LoggingMode.InProgress);
+                Logg.Log($"[SavableEntity] ({savedTypeName}, {objState})", Logg.LoggingMode.Completed);
                 
                 state[savedTypeName] = objState; // 현재 상태 등록
                 TryCacheSavedTypeName(savedTypeName, savable);

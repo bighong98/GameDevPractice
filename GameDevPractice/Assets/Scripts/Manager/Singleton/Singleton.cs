@@ -36,9 +36,9 @@ namespace TH.Core
                 return _instance;
             }
         }
-        
-        private bool hasInitializedOnce; // 최초 인스턴스 생성 직후에만 초기화 필요한 작업 관리 플래그
-        private bool isInitialized; // 씬마다 초기화 필요한 작업 관리 플래그
+
+        protected ISceneLoader sceneLoader;
+        protected IResourceLoader resourceLoader;
         
         private readonly Queue<Action> reservedOperations = new(); // 초기화 전 외부에서 예약된 작업 목록
 
@@ -58,26 +58,54 @@ namespace TH.Core
 
         protected virtual void Start()
         {
-            if (ServiceLocator.Get<ISceneLoader>() is {} sceneLoader)
-            {
-                sceneLoader.OnBeforeSceneChanged += this.Clear;
-                sceneLoader.OnSceneChanged += this.OnSceneChanged;
-            }
+            resourceLoader = ServiceLocator.Get<IResourceLoader>();
+            sceneLoader = ServiceLocator.Get<ISceneLoader>();
+
+            sceneLoader.OnBeforeSceneChanged += this.Clear;
+            sceneLoader.OnSceneChanged += this.OnSceneChanged;
             
-            OnSceneChanged(SceneManager.GetActiveScene());
+            OnSceneChanged(default);
+        }
+
+        public bool IsInitOnce { get; private set; }
+        public bool IsInitOnceAfterPreLoad { get; private set; }
+        public bool IsInit { get; private set; }
+        public bool IsInitAfterPreLoad { get; private set; }
+
+        // 인스턴스 생성 후 최초 1회만 실행, OnSceneChanged에서 실행
+        protected virtual void InitOnce()
+        {
+            IsInitOnce = true;
+            Logg.Log($"[{GetType().Name}] InitOnce() invoked", Logg.LoggingMode.Completed);
         }
         
-        protected abstract void InitOnce(); // 인스턴스 생성 후 최초 1회만 실행, OnSceneChanged에서 실행
-        protected abstract void InitOnceAfterPreLoad(); // 인스턴스 생성 후, 초기 리소스 준비 여부 확인하고 최초 1회만 실행, OnSceneChanged에서 실행
-        protected abstract void Init(); // 인스턴스 생성 및 씬 로드 직후마다 실행
-        protected abstract void InitAfterPreLoad(); // 인스턴스 생성 및 씬 로드 직후마다, 초기 리소스 준비 여부 확인하고 실행
+        // 인스턴스 생성 후, 초기 리소스 준비 여부 확인하고 최초 1회만 실행, OnSceneChanged에서 실행
+        protected virtual void InitOnceAfterPreLoad()
+        {
+            IsInitOnceAfterPreLoad = true;
+            Logg.Log($"[{GetType().Name}] InitOnceAfterPreLoad() invoked", Logg.LoggingMode.Completed);
+        }
+        // 인스턴스 생성 및 씬 로드 직후마다 실행
+        protected virtual void Init()
+        {
+            IsInit = true;
+            Logg.Log($"[{GetType().Name}] Init() invoked", Logg.LoggingMode.InProgress);
+        } 
+        protected virtual void InitAfterPreLoad()// 인스턴스 생성 및 씬 로드 직후마다, 초기 리소스 준비 여부 확인하고 실행
+        {
+            Logg.Log($"[{GetType().Name}] InitAfterPreLoad() invoked", Logg.LoggingMode.InProgress);
+            RunReservedOperations();
+            IsInitAfterPreLoad = true;
+        } 
 
         // 씬 이동마다 필요한 정리 작업
         // 오버라이드해서 사용 및 base.Clear() 호출 필요
         protected virtual UniTask Clear() 
         {
-            Logg.Log($"[{GetType().Name}] Clear() invoked", Logg.LoggingMode.Completed);
-            isInitialized = false; // 플래그 초기화
+            Logg.Log($"[{GetType().Name}] Clear() invoked", Logg.LoggingMode.InProgress);
+            // 플래그 초기화
+            IsInit = false;
+            IsInitAfterPreLoad = false;
             return UniTask.CompletedTask;
         }
         
@@ -85,34 +113,14 @@ namespace TH.Core
         // 씬 로드가 완료된 후 싱글톤 초기화가 진행됨
         protected virtual void OnSceneChanged(Scene scene)
         {
-            Logg.Log($"[{GetType().Name}] OnSceneChanged invoked in scene '{scene.name}'",Logg.LoggingMode.Completed);
-            
-            if (!hasInitializedOnce) // 인스턴스 생성 후 최초 1회만 초기화가 필요한 작업 처리
-            {
-                Logg.Log($"[{typeof(T).Name}] InitOnce invoked in scene '{scene.name}'", Logg.LoggingMode.Completed);
-                InitOnce();
-                
-                if (_instance is not Singleton<ResourceManager>) // 본인이 ResourceManager면 실행x
-                    ResourceManager.Instance.WaitForPreLoadOnlyOnce(() =>
-                    {
-                        Logg.Log($"[{typeof(T).Name}] InitOnceAfterPreLoad()", Logg.LoggingMode.Completed);
-                        InitOnceAfterPreLoad();
-                    });
+            Logg.Log($"[{GetType().Name}] OnSceneChanged invoked in scene '{scene.name}'",Logg.LoggingMode.InProgress);
 
-                hasInitializedOnce = true;
-            }
-
-            if (!isInitialized)
-            {
-                Logg.Log($"[{GetType().Name}] Init() in scene '{scene.name}'", Logg.LoggingMode.Completed);
-                Init();
-
-                if (_instance is not Singleton<ResourceManager>) // 본인이 ResourceManager면 실행x
-                    ResourceManager.Instance.WaitForPreLoad(InitAfterPreLoad);
-
-                RunReservedOperations();
-                isInitialized = true;
-            }
+            if (!IsInitOnce) InitOnce();
+            if (!IsInit) Init();
+            if (!IsInitOnceAfterPreLoad)
+                resourceLoader.WaitForPreLoad(Constants.PreLoadLabel, InitOnceAfterPreLoad);
+            if (!IsInitAfterPreLoad)
+                resourceLoader.WaitForPreLoad(Constants.PreLoadLabel, InitAfterPreLoad);
         }
         
         protected bool IsInvalidInstance()
@@ -134,7 +142,6 @@ namespace TH.Core
         public void ReserveOperation(Action action)
         {
             if (_instance is not Singleton<T> singleton) return;
-            // if (singleton is Singleton<TH.SceneManagement.GameSceneManager>) return;
             
             if (singleton.IsInvalidInstance())
             {
@@ -142,15 +149,8 @@ namespace TH.Core
                 return;
             }
 
-            if (singleton.isInitialized)
-            {
-                Logg.Log($"[{typeof(T).Name}] trying to do reserved action: {action.Target}", Logg.LoggingMode.Completed);
-                action?.Invoke();
-            }
-            else
-            {
-                singleton.reservedOperations.Enqueue(action);
-            }
+            if (singleton.IsInitAfterPreLoad) action?.Invoke();
+            else singleton.reservedOperations.Enqueue(action);
         }
         
         protected virtual void OnDestroy()

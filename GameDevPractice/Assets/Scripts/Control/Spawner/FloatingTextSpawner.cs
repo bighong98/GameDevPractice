@@ -27,9 +27,9 @@ namespace TH.Utils
         {
             AddBinders();
             
-            resourceLoader.NotifyResourceLoad += (label) =>
+            resourceLoader.OnLabelResourcesLoadedAll += (label) =>
             {
-                if (!string.Equals(label, resourceLoader.PreLoadLabel)) return;
+                if (!string.Equals(label, Constants.PreLoadLabel)) return;
                 if (!resourceLoader.TryLoad(damageTextPrefabKey, out damageTextPrefab))
                 {
                     Logg.LogError($"[{nameof(FloatingTextSpawner)}] failed to get damage text prefab");

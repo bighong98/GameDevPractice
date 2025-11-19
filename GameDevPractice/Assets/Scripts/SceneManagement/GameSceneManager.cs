@@ -11,7 +11,6 @@ namespace TH.SceneManagement
 {
     public class GameSceneManager : Singleton<GameSceneManager>
     {
-        private ISceneLoader sceneLoader;
         private Action<bool> initializationTasks;
         private readonly Queue<Func<UniTask>> cleanupTasks = new();
     
@@ -39,15 +38,6 @@ namespace TH.SceneManagement
             initializationTasks?.SafeInvoke(true);
             currentSceneLoaded = true;
         }
-
-        #region Initialization
-
-        protected override void InitOnce() { }
-        protected override void InitOnceAfterPreLoad() {}
-        protected override void Init() {}
-        protected override void InitAfterPreLoad() {}
-
-        #endregion
 
         #region LoadScene
 

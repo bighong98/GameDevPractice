@@ -18,10 +18,10 @@ namespace TH.SaveLoad
             saveSystem = ServiceLocator.Get<ISaveSystem>();
             if (ServiceLocator.Get<IResourceLoader>() is {} resourceLoader)
             {
-                if (resourceLoader.IsPreLoadDone())
+                if (resourceLoader.IsLoadedAll(Constants.PreLoadLabel))
                     Init(Constants.PreLoadLabel);
                 else
-                    resourceLoader.NotifyResourceLoad += Init;
+                    resourceLoader.OnLabelResourcesLoadedAll += Init;
             }
         }
 

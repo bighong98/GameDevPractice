@@ -23,8 +23,9 @@ namespace TH.Resource
         // 라벨 일괄 로드 상태 추적
         private readonly Dictionary<string, LoadStatus> loadStatus = new Dictionary<string, LoadStatus>();
         
-        public event Action<string> NotifyResourceLoad; // 라벨 단위로 일괄 리소스 로드 완료 알림 이벤트
-
+        public event Action<string> OnLabelResourcesLoadedAll; // 라벨 단위로 일괄 리소스 로드 완료 알림 이벤트
+        private readonly Dictionary<string, Queue<Action>> reservedPreLoadTasks = new();
+        
         #region Enums
         // 내부 프리로드 라벨 (실제 어드레서블 라벨 이름과 동일해야함)
         enum PreLoadLabels
@@ -43,9 +44,7 @@ namespace TH.Resource
         }
 
         #endregion
-
-        private const string preloadLabel = "PreLoad";
-        public string PreLoadLabel => preloadLabel;
+        
         private const string SpriteAtlasSuffix = "(Clone)"; // 스프라이트 아틀라스 내부 리소스 접근용 문자열
         private int atlasSuffixLength; // 캐싱된 "(Clone)" 문자열 길이
 
@@ -59,26 +58,36 @@ namespace TH.Resource
         {
             foreach (var label in Enum.GetNames(typeof(PreLoadLabels)))
             {
-                loadStatus[label] = LoadStatus.NotInitialized;
+                InitForLabel(label);
             }
+            InitForLabel(Constants.PreLoadLabel);
         }
+
+        private void InitForLabel(string label)
+        {
+            loadStatus[label] = LoadStatus.NotInitialized;
+            reservedPreLoadTasks[label] = new Queue<Action>();
+        }
+
+        #region PreLoad
+
         // 어플리케이션 시작 시점에 라벨 단위로 구분된 에셋 번들 로드
         // 라벨별로 로드 완료 시 이벤트 전달
         private void PreLoad()
         {
             PreLoadAsync().ContinueWith(() =>
             {
-                LoadAllAsync<UnityEngine.Object>(PreLoadLabel, 
+                LoadAllAsync<UnityEngine.Object>(Constants.PreLoadLabel, 
                     (key, count, totalCount) =>
                     {
-                        Logg.Log($"[{PreLoadLabel} - {key}] {count} / {totalCount}", 
+                        Logg.Log($"[{Constants.PreLoadLabel} - {key}] {count} / {totalCount}", 
                             Logg.LoggingMode.Completed); // 디버깅용 로그
                         if (count == totalCount)
                         {
-                            Logg.Log($"[ResourceLoader] finished loading label '{PreLoadLabel}' assets", 
+                            Logg.Log($"[ResourceLoader] finished loading label '{Constants.PreLoadLabel}' assets", 
                                 Logg.LoggingMode.InProgress);
-                            NotifyResourceLoad?.Invoke(PreLoadLabel);// 리소스 로딩 대기중인 클래스들에게 로딩 완료 이벤트 전달
-                            loadStatus[PreLoadLabel] = LoadStatus.Done;
+                            NotifyPreLoadDone(Constants.PreLoadLabel);// 리소스 로딩 대기중인 클래스들에게 로딩 완료 이벤트 전달
+                            loadStatus[Constants.PreLoadLabel] = LoadStatus.Done;
                         }
                     });
             });
@@ -99,12 +108,49 @@ namespace TH.Resource
                         Logg.Log($"[ResourceLoader] finished loading label '{label}' assets", 
                             Logg.LoggingMode.InProgress);
 
-                        NotifyResourceLoad?.Invoke(label);// 리소스 로딩 대기중인 클래스들에게 로딩 완료 이벤트 전달
+                        NotifyPreLoadDone(label);// 리소스 로딩 대기중인 클래스들에게 로딩 완료 이벤트 전달
                         loadStatus[label] = LoadStatus.Done;
                     }
                 });
             }
         }
+
+        private void NotifyPreLoadDone(string label)
+        {
+            RunReserved(label);
+            OnLabelResourcesLoadedAll?.Invoke(label);
+        }
+
+        private void RunReserved(string label)
+        {
+            if (!reservedPreLoadTasks.TryGetValue(label, out var queue) || queue.Count <= 0) return;
+            while (queue.TryDequeue(out var task))
+            {
+                task?.Invoke();
+            }
+        }
+
+        public void WaitForPreLoad(string label, Action callback)
+        {
+            if (IsLoadedAll(label))
+            {
+                callback?.Invoke();
+                return;
+            }
+            
+            if (!reservedPreLoadTasks.TryGetValue(label, out var queue))
+            {
+                Logg.LogWarning($"[ResourceLoader] invalid preload label accepted");
+                return;
+            }
+            
+            queue.Enqueue(callback);
+        }
+
+        #endregion
+
+        #region Load (Async)
+
         // key 기반 비동기 리소스 로드
         // 완료 후 <key, operationHandle>을 캐싱 후 콜백 실행
         private void LoadAsync<T>(string key, Action<T> callback) where T : UnityEngine.Object
@@ -358,6 +404,11 @@ namespace TH.Resource
             resourceGuids[assetRef.AssetGUID] = handle;
             return handle.Result as T;
         }
+
+        #endregion
+
+        #region Load (Sync)
+
         // 로딩 완료된 리소스 목록에 접근 (key 기반)
         public bool TryLoad<T>(string key, out T resource) where T : UnityEngine.Object
         {
@@ -383,13 +434,14 @@ namespace TH.Resource
             resource = null;
             return false;
         }
+
+        #endregion
+        
         // 특정 라벨 로드 상태 확인
         public bool IsLoadedAll(string label)
         {
             return loadStatus.TryGetValue(label, out var status) && (int)status == (int)LoadStatus.Done;
         }
-
-        public bool IsPreLoadDone() => IsLoadedAll(PreLoadLabel);
     }
 }
 

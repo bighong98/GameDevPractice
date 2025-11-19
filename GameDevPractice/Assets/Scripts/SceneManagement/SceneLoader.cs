@@ -52,10 +52,10 @@ namespace TH.SceneManagement
         {
             try
             {
-                if (!resourceLoader.IsPreLoadDone())
+                if (!resourceLoader.IsLoadedAll(Constants.PreLoadLabel))
                 {
                     Logg.Log($"[SceneLoader] WaitForPreLoad", Logg.LoggingMode.Completed);
-                    resourceLoader.NotifyResourceLoad += OnPreloadDone;
+                    resourceLoader.OnLabelResourcesLoadedAll += OnPreloadDone;
                     while (!(cts?.IsCancellationRequested ?? true))
                     {
                         await UniTask.NextFrame();

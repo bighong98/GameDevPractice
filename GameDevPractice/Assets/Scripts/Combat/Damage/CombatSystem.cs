@@ -13,7 +13,7 @@ public sealed class CombatSystem : ICombatSystem
     public CombatSystem(IResourceLoader resourceLoader, IDamageCalculator damageCalc)
     {
         this.damageCalc = damageCalc;
-        resourceLoader.NotifyResourceLoad += (label) =>
+        resourceLoader.OnLabelResourcesLoadedAll += (label) =>
         {
             if (!string.Equals(label, "PreLoad")) return;
             if (!resourceLoader.TryLoad("DamageRuleSO", out damageRule))

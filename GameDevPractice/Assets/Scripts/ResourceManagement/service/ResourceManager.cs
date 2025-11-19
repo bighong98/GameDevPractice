@@ -7,6 +7,7 @@ using TH.Core.Service;
 using UnityEngine.AddressableAssets;
 using Object = UnityEngine.Object;
 using TH.Core;
+using TH.SceneManagement;
 using TH.Utils;
 
 namespace TH.Resource
@@ -15,50 +16,45 @@ namespace TH.Resource
     // ServiceLocator/Bootstrapper 이외 클래스에서는 ResourceManager 사용 권장 (직접 ServiceLocator.Get() x)
     public sealed class ResourceManager : Singleton<ResourceManager>
     {
-        private IResourceLoader resourceLoader; // 실제 어드레서블 기반 비동 리소스 로딩 기능을 구현한 서비스 인스턴스
+        // private IResourceLoader resourceLoader; // 실제 어드레서블 기반 비동 리소스 로딩 기능을 구현한 서비스 인스턴스
+        // private ISceneLoader sceneLoader;
         
         // PreLoad
+        private bool preLoadState = false;
         public event Action NotifyPreLoad; // 초기 리소스 로딩 완료 이벤트 (from IResourceLoader)
         private readonly Queue<Action> reservedPreLoadTasks = new(); // 리소스 로드 완료 후 처리 필요한 콜백 큐
-        
-        private bool preLoadState = false;
-        public bool PreLoadState => preLoadState;
-        
-        private const string PreLoadLabel = "PreLoad";
 
         protected override void Awake()
         {
             base.Awake();
             if (IsInvalidInstance()) return; // 현재 싱글톤 인스턴스가 유효하지 않을 경우 초기화 중단
+            
             resourceLoader = ServiceLocator.Get<IResourceLoader>(); // 리소스로더 인스턴스 받아오기
+            sceneLoader = ServiceLocator.Get<ISceneLoader>();
         }
 
-        #region Initialization (Singleton<T>)
-
-        protected override void InitOnce() { }
-
-        protected override void InitOnceAfterPreLoad() { }
+        #region Singleton<T>
 
         protected override void Init()
         {
-            if (resourceLoader.IsLoadedAll(PreLoadLabel))
+            base.Init();
+            if (resourceLoader.IsLoadedAll(Constants.PreLoadLabel))
             {
                 OnPreLoadDone();
             }
             else
             {
-                resourceLoader.NotifyResourceLoad -= OnPreLoadDone; // 중복 델리게이트 누적 방지
-                resourceLoader.NotifyResourceLoad += OnPreLoadDone;
+                resourceLoader.OnLabelResourcesLoadedAll -= OnPreLoadDone; // 중복 델리게이트 누적 방지
+                resourceLoader.OnLabelResourcesLoadedAll += OnPreLoadDone;
             }
         }
-        protected override void InitAfterPreLoad() { }
 
         #endregion
 
         protected override UniTask Clear()
         {
             if (resourceLoader != null)
-                resourceLoader.NotifyResourceLoad -= OnPreLoadDone;
+                resourceLoader.OnLabelResourcesLoadedAll -= OnPreLoadDone;
             return base.Clear();
         }
 
@@ -92,7 +88,7 @@ namespace TH.Resource
 
         private void OnPreLoadDone(string label)
         {
-            if (string.Equals(label, PreLoadLabel))
+            if (string.Equals(label, Constants.PreLoadLabel))
             {
                 OnPreLoadDone();
             }

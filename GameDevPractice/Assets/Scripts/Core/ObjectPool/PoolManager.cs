@@ -23,12 +23,9 @@ namespace TH.Core.Pool
 
         protected override void InitOnce()
         {
+            base.InitOnce();
             poolContainer?.Init(transform);
         }
-
-        protected override void InitOnceAfterPreLoad() { }
-        protected override void Init() { }
-        protected override void InitAfterPreLoad() { }
 
         #endregion
 

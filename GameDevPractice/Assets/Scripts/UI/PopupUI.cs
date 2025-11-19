@@ -26,11 +26,7 @@ namespace RPG.UI
         [SerializeField] [Tooltip("동일 타입 중복 팝업UI 호출시 처리 방식")] 
         protected DuplicatedPopupHandle duplicatedPopupHandle;
         protected bool IsPooledObject = false; // 오브젝트 풀링 적용 여부
-        
-        [Header("Deprecated/Developing")]
-        [SerializeField] [Tooltip("미개발 기능. 사용하지 말것")]
-        protected bool blurBackground = false; // UI 영역 바깥을 흐리게 처리할지 (구현x. 사용x)
-        [SerializeField] [Tooltip("미개발 기능. 사용하지 말것")]
+        [SerializeField] [Tooltip("개발 중인 기능. 사용x")]
         protected bool anchorWorldObject = false; // 특정 오브젝트에 붙어있어야할지
 
         [Header("Popup Animation")] 
@@ -225,7 +221,6 @@ namespace RPG.UI
         #region Object Pool
 
         public GameObject Origin { get; set; }
-        // public PoolKey PoolKey { get; set; }
 
         public void OnCreateFromPool()
         {
@@ -243,12 +238,10 @@ namespace RPG.UI
 
         public virtual void OnGetFromPool()
         {
-            UIManager.Instance.SortCanvas(canvas);
+            UIManager.Instance.SortCanvas(canvas, UICanvas.Popup);
 
             if (placePointerPosition)
             {
-                // if (Util.GetMouseScreenPosition(parentRect, InputManager.Instance.PointerPos, out var pointerPosition))
-                // if (Util.GetMouseScreenPosition(parentRect, Input.mousePosition, out var pointerPosition))
                 if (raycastHandler.GetMouseScreenPosition(parentRect, Input.mousePosition, out var pointerPosition))
                 {
                     Rect.anchoredPosition = pointerPosition;
