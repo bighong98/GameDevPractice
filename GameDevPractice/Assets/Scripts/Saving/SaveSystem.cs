@@ -112,7 +112,7 @@ namespace TH.SaveLoad
                     if (data.lastSceneEntry is not { sceneRef: { } key })
                         key = sceneCatalog.entries[DefaultSceneIndexInCatalog].sceneRef; // 저장된 씬이 없다면 디폴트 씬으로 이동
 
-                    await GameSceneManager.Instance.LoadSceneAsync(key);
+                    await sceneLoader.LoadSceneAsync(key);
                     await UniTask.Yield();
                     RestoreState(data);
                 }

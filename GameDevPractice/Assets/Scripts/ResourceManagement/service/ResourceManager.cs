@@ -16,9 +16,6 @@ namespace TH.Resource
     // ServiceLocator/Bootstrapper 이외 클래스에서는 ResourceManager 사용 권장 (직접 ServiceLocator.Get() x)
     public sealed class ResourceManager : Singleton<ResourceManager>
     {
-        // private IResourceLoader resourceLoader; // 실제 어드레서블 기반 비동 리소스 로딩 기능을 구현한 서비스 인스턴스
-        // private ISceneLoader sceneLoader;
-        
         // PreLoad
         private bool preLoadState = false;
         public event Action NotifyPreLoad; // 초기 리소스 로딩 완료 이벤트 (from IResourceLoader)

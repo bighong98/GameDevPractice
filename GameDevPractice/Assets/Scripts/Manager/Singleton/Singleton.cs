@@ -89,11 +89,11 @@ namespace TH.Core
         protected virtual void Init()
         {
             IsInit = true;
-            Logg.Log($"[{GetType().Name}] Init() invoked", Logg.LoggingMode.InProgress);
+            Logg.Log($"[{GetType().Name}] Init() invoked", Logg.LoggingMode.Completed);
         } 
         protected virtual void InitAfterPreLoad()// 인스턴스 생성 및 씬 로드 직후마다, 초기 리소스 준비 여부 확인하고 실행
         {
-            Logg.Log($"[{GetType().Name}] InitAfterPreLoad() invoked", Logg.LoggingMode.InProgress);
+            Logg.Log($"[{GetType().Name}] InitAfterPreLoad() invoked", Logg.LoggingMode.Completed);
             RunReservedOperations();
             IsInitAfterPreLoad = true;
         } 
@@ -102,7 +102,7 @@ namespace TH.Core
         // 오버라이드해서 사용 및 base.Clear() 호출 필요
         protected virtual UniTask Clear() 
         {
-            Logg.Log($"[{GetType().Name}] Clear() invoked", Logg.LoggingMode.InProgress);
+            Logg.Log($"[{GetType().Name}] Clear() invoked", Logg.LoggingMode.Completed);
             // 플래그 초기화
             IsInit = false;
             IsInitAfterPreLoad = false;
@@ -113,7 +113,7 @@ namespace TH.Core
         // 씬 로드가 완료된 후 싱글톤 초기화가 진행됨
         protected virtual void OnSceneChanged(Scene scene)
         {
-            Logg.Log($"[{GetType().Name}] OnSceneChanged invoked in scene '{scene.name}'",Logg.LoggingMode.InProgress);
+            Logg.Log($"[{GetType().Name}] OnSceneChanged invoked in scene '{scene.name}'",Logg.LoggingMode.Completed);
 
             if (!IsInitOnce) InitOnce();
             if (!IsInit) Init();

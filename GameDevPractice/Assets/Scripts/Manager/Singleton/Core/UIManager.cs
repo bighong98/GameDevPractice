@@ -21,7 +21,7 @@ namespace RPG.UI
     }
     public class UIManager : Singleton<UIManager>
     {
-        private int _order = 10; // 10 is magic number
+        // private int _order = 10; // 10 is magic number
         private readonly Stack<PopupUI> popupStacks = new();
         
         private readonly Dictionary<string, Type> keyTypeDictionary = new();
@@ -110,16 +110,21 @@ namespace RPG.UI
             var t = typeof(UICanvas);
             foreach (var canvasType in (UICanvas[])Enum.GetValues(typeof(UICanvas)))
             {
-                if (uiCanvasSettingSO != null 
-                    && uiCanvasSettingSO.GetCanvasSetting(canvasType)?.defaultSortingOrder 
-                        is { } resultSortingOrder)
-                    sortOrders[(int)canvasType] = resultSortingOrder;
+                ResetCanvasOrder(canvasType);
                 
                 var go = new GameObject(Enum.GetName(t, canvasType));
                 go.transform.SetParent(root);
                 SetCanvas(go, canvasType);
                 canvases.Add(go);
             }
+        }
+
+        private void ResetCanvasOrder(UICanvas canvasType)
+        {
+            if (uiCanvasSettingSO != null 
+                && uiCanvasSettingSO.GetCanvasSetting(canvasType)?.defaultSortingOrder 
+                    is { } resultSortingOrder)
+                sortOrders[(int)canvasType] = resultSortingOrder;
         }
 
         #endregion
@@ -230,22 +235,12 @@ namespace RPG.UI
             if (isInteractable)
                 popup.gameObject.GetOrAddComponent<GraphicRaycaster>();
             
-            // SortCanvas(canvas, sort, sortOrder);
             SortCanvas(canvas, UICanvas.Popup);
         }
 
         public void SortCanvas(Canvas canvas, int sortOrder = 0)
-        { // 캔버스 렌더링 순서 정렬
-            // if (autoSort)
-            // {
-            //     canvas.sortingOrder = _order;
-            //     canvas.overrideSorting = true;
-            //     _order++;
-            // }
-            // else
-            // {
-            //     canvas.sortingOrder = sortOrder;
-            // }
+        { 
+            // 캔버스 렌더링 순서 정렬
             canvas.sortingOrder = sortOrder;
             canvas.overrideSorting = true;
         }
@@ -292,8 +287,8 @@ namespace RPG.UI
                 var uiPool = PoolManager.Instance.GetPool(
                     loadedUI,
                     parent: GetUIParent(UICanvas.Popup),
-                    capacity: 2, maxSize: 10, registerPool: false
-                ); // 2, 10 is magic number
+                    capacity: 1, maxSize: 10, registerPool: false
+                ); // 1, 10 is magic number
                 
                 popupPools[type] = uiPool;
                 popup = popupPools[type].Get() as T;
@@ -392,7 +387,8 @@ namespace RPG.UI
                 }
 
                 popupPool.Release(popup); // 팝업 닫기 (풀에 반환)
-                _order--;
+                // _order--;
+                sortOrders[(int)UICanvas.Popup]--;
             }
         }
 
@@ -471,13 +467,15 @@ namespace RPG.UI
         public void ShowTooltip(int errorType, bool hideAfterDelay = false, float delayDuration = 2.0f) // 3.0f is magic number
         {
             if (errorType == (int)Enums.TooltipErrorType.Empty) return;
-            Tooltip.tooltipCanvas.sortingOrder = _order; // 언제나 최상단 팝업 UI보다 한단계 더 위로
+            int order = ++sortOrders[(int)UICanvas.Popup];
+            Tooltip.tooltipCanvas.sortingOrder = order; // 언제나 최상단 팝업 UI보다 한단계 더 위로
             Tooltip.Show(errorType, hideAfterDelay, delayDuration);
         }
 
         public void ShowTooltip(string tooltipString, bool hideAfterDelay = false, float delayDuration = 3.0f)
         {
-            Tooltip.tooltipCanvas.sortingOrder = _order + 1; // 언제나 최상단 팝업 UI보다 한단계 더 위로
+            int order = ++sortOrders[(int)UICanvas.Popup];
+            Tooltip.tooltipCanvas.sortingOrder = order + 1; // 언제나 최상단 팝업 UI보다 한단계 더 위로
             Tooltip.Show(tooltipString, hideAfterDelay, delayDuration);
         }
 
@@ -544,7 +542,11 @@ namespace RPG.UI
 
         private void ClearValue()
         {
-            _order = 10; // 10 is magic number
+            // _order = 10; // 10 is magic number
+            foreach (var canvasType in (UICanvas[])Enum.GetValues(typeof(UICanvas)))
+            {
+                ResetCanvasOrder(canvasType);
+            }
         }
     }
 }
