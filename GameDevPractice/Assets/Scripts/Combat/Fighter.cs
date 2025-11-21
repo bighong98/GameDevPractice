@@ -47,6 +47,13 @@ namespace TH.Combat
             equipHolder = GetComponent<IEquipmentHolder>();
 
             currentWeapon = new LazyValue<WeaponTypeSO>(SetDefaultWeapon);
+            // combatSystem = ServiceLocator.Get<ICombatSystem>();
+        }
+
+        void OnEnable()
+        {
+            // equipHolder.OnEquipmentChanged -= OnEquipmentChanged;
+            // equipHolder.OnEquipmentChanged += OnEquipmentChanged;
         }
 
         private void Start()
@@ -98,7 +105,7 @@ namespace TH.Combat
 
         private AttackSource currAttackSource;
 
-private void ChangeAttackSource()
+        private void ChangeAttackSource()
         {
             if (statHolder?.GetStat(statType: GameStats.AD) is { } result)
             {
@@ -193,6 +200,7 @@ private void ChangeAttackSource()
 
         private void OnEquipmentChanged(object sender, EquipArgs args)
         {
+            Logg.Log($"[{gameObject.name}.Fighter] OnEquipmentChanged called {args.Item.GetItemInfo.nameString}", Logg.LoggingMode.InProgress);
             if (args.Item is not { GetItemInfo: WeaponTypeSO weaponData }) return;
             if (args.State == EquipArgs.EquipEventState.Equip)
             {

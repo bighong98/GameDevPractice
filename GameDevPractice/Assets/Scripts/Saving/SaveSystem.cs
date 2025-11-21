@@ -653,7 +653,7 @@ namespace TH.SaveLoad
         
         private static void AddSceneSavableEntity(SceneEntry sceneEntry, ISavableEntity entity, CancellationToken token)
         {
-            if (token.IsCancellationRequested || !entity.IsAlive()) return;
+            if (token.IsCancellationRequested || sceneEntry == null || !entity.IsAlive()) return;
 
             if (!SceneEntities.TryGetValue(sceneEntry, out var dict))
             {

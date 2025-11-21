@@ -75,15 +75,11 @@ namespace TH.Attribute
             });
         }
 
-        private void Start()
+private void Start()
         {
             UIManager.Instance.ReserveOperation(() =>
             {
-                if (this == null)
-                {
-                    Logg.LogError($"[{gameObject.name}.Health] failed to create hp bar");
-                    return;
-                }
+                if (!this.IsAlive()) return;
                 UIManager.Instance.GetUIFromPool<HPBar>(HPBarPrefab, UICanvas.AnchoredOverlay).SetOwner(this);
             });
         }

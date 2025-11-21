@@ -253,7 +253,9 @@ namespace TH.Item
 
             foreach (var equipmentData in charInfo.defaultEquipments)
             {
-                TryStore(new EquipmentItem(equipmentData));
+                Logg.Log($"[EquipmentHolder] ReceiveType - Trying to equip: {equipmentData.nameString}", Logg.LoggingMode.InProgress);
+                bool result = TryStore(new EquipmentItem(equipmentData));
+                Logg.Log($"[EquipmentHolder] ReceiveType - equipping: {equipmentData.nameString} is {result}", Logg.LoggingMode.InProgress);
             }
         }
 
