@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using TH.Utils;
 using UnityEngine;
 
-namespace RPG.Saving
+namespace TH.SaveLoad
 {
     public interface ISavable
     {

@@ -5,7 +5,7 @@ using UnityEngine.Serialization;
 using TH.Attribute.Stat;
 using TH.Utils;
 
-namespace RPG.Stats
+namespace TH.Stats
 {
     [CreateAssetMenu(fileName = "ProgressionSO", menuName = "Scriptable Objects/ProgressionSO")]
     public class ProgressionSO : ScriptableObject

@@ -3,14 +3,14 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
-using RPG.Attribute;
+using TH.Attribute;
 using TH.Core.Pool;
 using TH.Core.Service;
 using TH.UI;
 using TH.Utils;
 
 // HP Bar Controller using UI Component Image, Slider
-namespace RPG.UI
+namespace TH.UI
 {
     public class HPBar : BaseUI, IPoolObject
     {

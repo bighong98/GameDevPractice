@@ -5,7 +5,7 @@ using Cysharp.Threading.Tasks;
 using UnityEngine.InputSystem;
 using TH.Utils;
 
-namespace RPG.UI
+namespace TH.UI
 {
     public class TooltipUI : BaseUI
     {

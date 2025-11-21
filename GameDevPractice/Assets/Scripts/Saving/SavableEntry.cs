@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine.Serialization;
 using UnityEngine;
 
-namespace RPG.Saving
+namespace TH.SaveLoad
 {
     [Serializable]
     public class SavableEntry

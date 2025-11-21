@@ -16,17 +16,17 @@ namespace TH.UI
 
         public Vector2 ReferenceResolution => referenceResolution.ToVector();
         
-        [SerializeField] private List<SerializablePair<RPG.UI.UICanvas, CanvasSetting>> list;
-        private IReadOnlyCollection<SerializablePair<RPG.UI.UICanvas, CanvasSetting>> capturedList;
-        public IReadOnlyCollection<SerializablePair<RPG.UI.UICanvas, CanvasSetting>> UISettings { get {
+        [SerializeField] private List<SerializablePair<TH.UI.UICanvas, CanvasSetting>> list;
+        private IReadOnlyCollection<SerializablePair<TH.UI.UICanvas, CanvasSetting>> capturedList;
+        public IReadOnlyCollection<SerializablePair<TH.UI.UICanvas, CanvasSetting>> UISettings { get {
             if (capturedList == null || capturedList.Count == 0)
                 capturedList = list.AsReadOnly();
             return capturedList; }
         }
 
-        private readonly Dictionary<RPG.UI.UICanvas, CanvasSetting> canvasSettingDict = new();
+        private readonly Dictionary<TH.UI.UICanvas, CanvasSetting> canvasSettingDict = new();
 
-        public CanvasSetting GetCanvasSetting(RPG.UI.UICanvas canvasType)
+        public CanvasSetting GetCanvasSetting(TH.UI.UICanvas canvasType)
         {
             if (canvasSettingDict.Count == 0) ForceInitDict();
             return canvasSettingDict.GetValueOrDefault(canvasType);
@@ -52,7 +52,7 @@ namespace TH.UI
 #if UNITY_EDITOR
         public void OnBeforeSerialize()
         {
-            SerializablePair<RPG.UI.UICanvas, CanvasSetting>.ValidateUnitySerializable();
+            SerializablePair<TH.UI.UICanvas, CanvasSetting>.ValidateUnitySerializable();
         }
         
         public void OnAfterDeserialize() {}

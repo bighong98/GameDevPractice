@@ -1,9 +1,8 @@
 using System;
-using RPG.Attribute;
-using RPG.Control;
+using TH.Attribute;
+using TH.Control;
 using UnityEngine;
 using UnityEngine.UI;
-using TH.Attribute;
 using TH.Attribute.Stat;
 using TH.UI;
 using TH.Utils;

@@ -11,7 +11,7 @@ using TH.Core.Service;
 using TH.UI;
 using TH.Utils;
 
-namespace RPG.UI
+namespace TH.UI
 {
     public enum UICanvas
     {

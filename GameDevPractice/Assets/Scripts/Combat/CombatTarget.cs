@@ -1,11 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
-using RPG.Control;
+using TH.Control;
 using UnityEngine;
 
-namespace RPG.Combat
+namespace TH.Combat
 {
-    [RequireComponent(typeof(RPG.Attribute.Health))]
+    [RequireComponent(typeof(TH.Attribute.Health))]
     public class CombatTarget : MonoBehaviour, IRaycastable
     {
         public bool HandleRaycast(PlayerController caller)

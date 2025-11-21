@@ -3,7 +3,7 @@ using TH.SaveLoad;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-namespace RPG.Saving
+namespace TH.SaveLoad
 {
     [System.Serializable]
     public class SaveFileData

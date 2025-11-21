@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using DG.Tweening;
-using RPG.UI;
+using TH.UI;
 using TH.Item;
 using TH.Utils;
 using UnityEngine;

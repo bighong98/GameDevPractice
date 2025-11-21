@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
-using RPG.Stats;
+using TH.Stats;
 using UnityEngine.Serialization;
 using TH.Attribute.Stat;
 

@@ -6,7 +6,7 @@ using TH.Utils;
 using UnityEngine;
 using UnityEditor;
 
-namespace RPG.Saving
+namespace TH.SaveLoad
 {
     public class SavableEntity : MonoBehaviour, ISavableEntity
     {

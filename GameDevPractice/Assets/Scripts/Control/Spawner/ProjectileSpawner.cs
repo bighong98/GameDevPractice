@@ -1,13 +1,11 @@
 using System;
-using RPG.Combat;
-using RPG.Attribute;
-using TH.Attribute.Stat;
 using TH.Combat;
+using TH.Attribute;
+using TH.Attribute.Stat;
 using UnityEngine;
 using TH.Core.Pool;
 using TH.Core.Service;
 using TH.Utils;
-using Fighter = RPG.Combat.Fighter;
 using TH.Resource;
 
 public class ProjectileSpawner : Spawner<AttackProjectile>

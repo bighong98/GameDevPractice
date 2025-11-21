@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using RPG.UI;
+using TH.UI;
 using TH.Utils;
 
 // 확장 메소드 구현 목적의 static 클래스

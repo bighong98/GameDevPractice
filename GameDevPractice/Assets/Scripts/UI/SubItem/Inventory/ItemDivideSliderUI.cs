@@ -1,5 +1,5 @@
 using System;
-using RPG.UI;
+using TH.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;

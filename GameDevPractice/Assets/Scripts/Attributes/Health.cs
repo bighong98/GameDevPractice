@@ -1,17 +1,17 @@
 using System;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
-using RPG.Core;
-using RPG.Saving;
-using RPG.Stats;
+using TH.Core;
+using TH.SaveLoad;
+using TH.Stats;
 using TH.Utils;
-using RPG.UI;
+using TH.UI;
 using TH.Attribute;
 using TH.Attribute.Stat;
 using TH.Combat;
 using TH.Core.Service;
 
-namespace RPG.Attribute
+namespace TH.Attribute
 {
     [Serializable]
     public struct HealthSaveData
@@ -66,11 +66,11 @@ namespace RPG.Attribute
             hp = new LazyValue<float>(GetInitialHealth);
             rewardXp = new LazyValue<float>(() =>
             {
-                if (statHolder != null && statHolder.GetStat(GameStats.ExperienceReward) is {} result)
+                if (statHolder?.GetStat(GameStats.ExperienceReward) is { } result)
                 {
                     return result.Value;
                 }
-                Logg.LogError($"[{gameObject.name}.{nameof(Health)}] failed to initialize rewardXp field");
+                Logg.LogError($"[{gameObject.name}.Health] Failed to initialize rewardXp field. Stat 'ExperienceReward' not found.");
                 return 0;
             });
         }
@@ -102,10 +102,19 @@ namespace RPG.Attribute
             levelHolder.OnLevelChanged -= this.OnLevelUp;
         }
 
-        private float GetInitialHealth()
+private float GetInitialHealth()
         {
-            if (statHolder?.GetStat(GameStats.Health) is not { } stat) return 0;
-            stat.OnStatChanged += () => { hp.Value = stat.Value; Logg.Log($"[{gameObject.name}.{nameof(Health)}] hp stat changed. trying to invoke SetHp({stat.Value})", Logg.LoggingMode.Completed); };
+            if (statHolder?.GetStat(GameStats.Health) is not { } stat)
+            {
+                Logg.LogError($"[{gameObject.name}.Health] Failed to initialize health stat");
+                return 0;
+            }
+            
+            stat.OnStatChanged += () => 
+            { 
+                hp.Value = stat.Value; 
+                Logg.Log($"[{gameObject.name}.Health] HP stat changed. Setting HP to {stat.Value}", Logg.LoggingMode.Completed); 
+            };
             return stat.Value;
         }
 

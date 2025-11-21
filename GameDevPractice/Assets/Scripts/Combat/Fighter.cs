@@ -1,16 +1,15 @@
 using System;
-using GameDevTV.Utils;
 using UnityEngine;
-using RPG.Movement;
-using RPG.Core;
-using RPG.Attribute;
+using TH.Movement;
+using TH.Core;
+using TH.Attribute;
 using TH.Attribute.Stat;
-using TH.Combat;
 using TH.Core.Service;
 using TH.Item;
 using TH.Resource;
+using TH.Utils;
 
-namespace RPG.Combat
+namespace TH.Combat
 {
     public class Fighter : MonoBehaviour, IAction, IAttackable
     {
@@ -37,7 +36,7 @@ namespace RPG.Combat
         public event Action<Health> OnTargetChanged; // 공격 타겟(target) 변경 시
         
         public bool IsEquippingWeapon => currentWeapon != null;
-        public (WeaponTypeSO weapon, Animator animator) GetWeaponEquipperInfo => (this.currentWeapon.value, this.animator);
+        public (WeaponTypeSO weapon, Animator animator) GetWeaponEquipperInfo => (this.currentWeapon.Value, this.animator);
 
         private void Awake()
         {
@@ -76,7 +75,7 @@ namespace RPG.Combat
             }
         }
 
-        private bool IsInRange => Vector3.Distance(transform.position, target.transform.position) < currentWeapon.value.GetRange;
+        private bool IsInRange => Vector3.Distance(transform.position, target.transform.position) < currentWeapon.Value.GetRange;
         
         private void AttackBehaviour()
         {
@@ -99,16 +98,16 @@ namespace RPG.Combat
 
         private AttackSource currAttackSource;
 
-        private void ChangeAttackSource()
+private void ChangeAttackSource()
         {
-            if (statHolder.GetStat(statType: GameStats.AD) is { } result)
+            if (statHolder?.GetStat(statType: GameStats.AD) is { } result)
             {
                 currAttackSource = new AttackSource(this, result.Value);
             }
-            // if (currentWeapon is { value: { } weaponData })
-            // {
-            //     currAttackSource = new AttackSource(this, weaponData.GetDamage);
-            // }
+            else
+            {
+                Logg.LogError($"[{gameObject.name}.Fighter] Failed to get AD stat for attack source");
+            }
         }
 
         #endregion
@@ -212,7 +211,7 @@ namespace RPG.Combat
         
         public void EquipWeapon(WeaponTypeSO weaponTypeSO)
         {
-            this.currentWeapon.value = weaponTypeSO;
+            this.currentWeapon.Value = weaponTypeSO;
             ChangeAttackSource();
             OnEquipWeapon?.Invoke(weaponTypeSO, animator);
         }
@@ -221,7 +220,7 @@ namespace RPG.Combat
         {
             if (defaultWeapon != null)
             {
-                currentWeapon.value = defaultWeapon;
+                currentWeapon.Value = defaultWeapon;
                 OnEquipWeapon?.Invoke(defaultWeapon, animator);
             }
         }

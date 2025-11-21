@@ -3,12 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using GameDevTV.Utils;
 using UnityEngine;
-using RPG.Core;
-using RPG.Attribute;
-using RPG.Combat;
-using RPG.Movement;
+using TH.Core;
+using TH.Attribute;
+using TH.Combat;
+using TH.Movement;
 
-namespace RPG.Control
+namespace TH.Control
 {
     public class AIController : MonoBehaviour
     {

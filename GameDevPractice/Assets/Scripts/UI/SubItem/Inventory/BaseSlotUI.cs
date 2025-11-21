@@ -1,8 +1,7 @@
-using RPG.UI;
-using TH.Core.Pool;using TH.UI;
+using TH.UI;
+using TH.Core.Pool;
 using TH.Utils;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public abstract class BaseSlotUI : BaseUI, ISlotUI, IPoolObject

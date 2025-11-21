@@ -35,27 +35,37 @@ namespace TH.Core.Pool
         // registerPool: false -> 풀 딕셔너리에 등록하지 않고 생성된 풀 반납 (풀 요청 측에서 직접 관리)
         // parent: null -> PoolContainer로 컨테이너 자동 생성
         // create/get/release: 풀 이벤트에 콜백 등록 가능
-        public ObjectPool<IPoolObject> GetPool(GameObject prefab, Transform parent = null,
+public ObjectPool<IPoolObject> GetPool(GameObject prefab, Transform parent = null,
             Action<IPoolObject> createAction = null, Action<IPoolObject> getAction = null, Action<IPoolObject> releaseAction = null,
             int capacity = DefaultCapacity, int maxSize = DefaultMaxSize, bool registerPool = true)
         {
-            if (prefab.GetComponent<IPoolObject>() is not { } instance) return null;
+            if (prefab == null)
+            {
+                Logg.LogError($"[{nameof(PoolManager)}.{nameof(GetPool)}] Prefab is null");
+                return null;
+            }
             
-            capacity = (capacity == 0) ? DefaultCapacity : capacity; // capacity가 0이면 대신 디폴트 값 적용
-            maxSize = (maxSize == 0) ? DefaultMaxSize : maxSize; // maxSize가 0이면 대신 디폴트 값 적용
+            if (prefab.GetComponent<IPoolObject>() is not { } instance)
+            {
+                Logg.LogError($"[{nameof(PoolManager)}.{nameof(GetPool)}] Prefab '{prefab.name}' does not have IPoolObject component");
+                return null;
+            }
+            
+            capacity = (capacity == 0) ? DefaultCapacity : capacity;
+            maxSize = (maxSize == 0) ? DefaultMaxSize : maxSize;
             
             if (parent == null)
-                parent = poolContainer.GetPoolContainer(prefab, CacheAndGetType(prefab));
+                parent = poolContainer?.GetPoolContainer(prefab, CacheAndGetType(prefab));
             
             if (registerPool == false)
                 return CreatePool(prefab, parent, createAction, getAction, releaseAction, capacity, maxSize);
 
-            if (!pools.TryGetValue(prefab, out var pool)) // 기존 오브젝트 풀이 존재하는지 확인
+            if (!pools.TryGetValue(prefab, out var pool))
             {
                 if (CreatePool(prefab, parent, createAction, getAction, releaseAction, capacity, maxSize)
-                    is not { } newPool) return null; // 신규 풀 생성 시도, 실패 시 null 반환
-                pool = newPool; 
-                pools[prefab] = newPool; // 풀 생성 성공 시 풀 목록에 반영 
+                    is not { } newPool) return null;
+                pool = newPool;
+                pools[prefab] = newPool;
             }
 
             return pool;
@@ -170,17 +180,27 @@ namespace TH.Core.Pool
         // 오브젝트를 풀에 반납
         // IPoolObject.Origin을 기준으로 소속 풀을 탐색
         // Origin은 반드시 prefab 게임 오브젝트여야 함
-        public void ReleaseFromPool(IPoolObject obj)
+public void ReleaseFromPool(IPoolObject obj)
         {
-            if (obj == null || obj.Origin == null)
+            if (obj == null)
             {
-                Logg.LogError($"[{nameof(PoolManager)}.{nameof(ReleaseFromPool)}()] invalid object for pool");
+                Logg.LogError($"[{nameof(PoolManager)}.{nameof(ReleaseFromPool)}] Object is null");
+                return;
+            }
+            
+            if (obj.Origin == null)
+            {
+                Logg.LogError($"[{nameof(PoolManager)}.{nameof(ReleaseFromPool)}] Object.Origin is null. Object: {(obj as UnityEngine.Object)?.name ?? "Unknown"}");
                 return;
             }
 
             if (pools.TryGetValue(obj.Origin, out var pool))
             {
                 pool.Release(obj);
+            }
+            else
+            {
+                Logg.LogWarning($"[{nameof(PoolManager)}.{nameof(ReleaseFromPool)}] Pool not found for origin: {obj.Origin.name}");
             }
         }
 

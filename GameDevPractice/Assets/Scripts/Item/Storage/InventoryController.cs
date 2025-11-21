@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using RPG.Control;
-using RPG.UI;
+using TH.Control;
+using TH.UI;
 using TH.Core.Service;
 using TH.Resource;
-using TH.UI;
 using TH.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;

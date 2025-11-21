@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using TH.Resource;
 
-namespace RPG.Item
+namespace TH.Item
 {
     [Serializable] // Serializable for Save/Load
     public class Item

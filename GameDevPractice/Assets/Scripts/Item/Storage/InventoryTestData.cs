@@ -3,5 +3,5 @@ using UnityEngine;
 
 public class InventoryTestData : MonoBehaviour
 {
-    public RPG.Item.Item[] items;
+    public TH.Item.Item[] items;
 }

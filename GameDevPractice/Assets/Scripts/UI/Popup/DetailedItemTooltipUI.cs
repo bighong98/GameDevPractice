@@ -1,10 +1,8 @@
 using System;
 using UnityEngine;
 using UnityEngine.UI;
-using RPG.UI;
-using RPG.Item;
-using TH.Item;
 using TH.UI;
+using TH.Item;
 using TH.Utils;
 using TMPro;
 using CountableItem = TH.Item.CountableItem;

@@ -2,7 +2,7 @@ using TH.Item;
 using UnityEngine;
 using TH.Utils;
 
-namespace RPG.UI
+namespace TH.UI
 {
     //인벤토리 아이템 설명 툴팁용 스크립트
     public class UI_ItemTooltip : BaseUI

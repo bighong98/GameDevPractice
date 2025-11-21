@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using RPG.Stats;
+using TH.Stats;
 using TH.Item;
 using UnityEngine;
 using TH.Utils;
@@ -119,35 +119,24 @@ namespace TH.Attribute.Stat
 
         #region Get Stat
 
-        public GameStat GetStat(GameStats statType)
+#nullable enable
+        public GameStat? GetStat(GameStats statType)
         {
-            // return progression.GetProgressionStat(statType, characterType, startingLevel);
             if (stats.TryGetValue(statType, out var stat))
             {
                 return stat;
             }
             
-            Logg.LogError($"[{gameObject.name}] trying to get invalid stat type: {statType}");
+            Logg.LogError($"[{gameObject.name}] Invalid stat type requested: {statType}. Available stats: {string.Join(", ", stats.Keys)}");
             return null;
         }
-        
-        // public float GetStat(GameStats statType)
-        // {
-        //     // return progression.GetProgressionStat(statType, characterType, startingLevel);
-        //     if (stats.TryGetValue(statType, out var stat))
-        //     {
-        //         return stat.Value;
-        //     }
-        //     
-        //     Util.LogError($"[{gameObject.name}] trying to get invalid stat type: {statType}");
-        //     return 0;
-        // }
 
         public float GetStat(GameStats statType, int lv)
         {
             Logg.Log($"[from '{gameObject.name}'] GetStat({statType}, {characterType}, {lv})", Logg.LoggingMode.Completed);
             return progression.GetProgressionStat(statType, characterType, lv);
         }
+#nullable restore
 
         #endregion
 

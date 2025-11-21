@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace RPG.Control
+namespace TH.Control
 {
     public enum CursorType
     {

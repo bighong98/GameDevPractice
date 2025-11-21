@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using TH.SceneManagement;
 
-namespace RPG.UI
+namespace TH.UI
 {
     public class MainMenuUI : BaseUI
     {

@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using RPG.Combat;
+using TH.Combat;
 using UnityEngine;
 using UnityEngine.Pool;
 using TH.Core.Pool;
@@ -11,7 +11,7 @@ using TH.Resource;
 // 무기 장착/장착해제 시 무기 오브젝트 생성/생성해제(오브젝트 풀 기반)
 // 풀링된 장착무기 오브젝트의 참조를 추적
 
-namespace RPG.Item
+namespace TH.Item
 {
     [RequireComponent(typeof(Fighter))]
     [RequireComponent(typeof(IEquipmentHolder))]
@@ -78,31 +78,43 @@ namespace RPG.Item
             }
         }
 
-        private void OnEquipWeapon(WeaponTypeSO weaponType, Animator animator)
+private void OnEquipWeapon(WeaponTypeSO weaponType, Animator animator)
         {
-            if (!isInit) return;
-            if (animator == null) return;
-
-            if (currentWeapon is { Type: { } currWeaponType }) // 기존에 사용 중인 무기가 있었다면
+            if (!isInit)
             {
-                if (currWeaponType == weaponType) return; // 현재 장착중인 무기와 동일한 무기라면 즉시 실행 중지 (중복 무기 생성 방지)
-                
-                DeSpawnWeapon(); // 다른 무기라면 기존 무기 비활성화
+                Logg.LogWarning($"[{gameObject.name}.Equipper] OnEquipWeapon called before initialization");
+                return;
             }
-
-            if (!SpawnWeapon(weaponType)) return; // 새로 장착한 무기 생성(활성화)에 실패했다면 즉시 실행 중지
             
-            if (weaponType.weaponAnimatorOverride is {} newWeaponAnimatorOverride) // 새로 장착한 무기의 weaponAnimatorOverride가 비어있지 않다면 (!= null)
+            if (animator == null)
             {
-                animator.runtimeAnimatorController = newWeaponAnimatorOverride; // 해당 무기의 애니메이션 오버라이드 적용
+                Logg.LogError($"[{gameObject.name}.Equipper] Animator is null");
+                return;
             }
-            else if (animator.runtimeAnimatorController is AnimatorOverrideController { } overrideController) 
-                // 새로 장착한 무기의 weaponAnimatorOverride가 비어있다면 (== null)
-                // 또한 현재 runtimeAnimatorController가 override 된 적이 있다면    
+
+            if (currentWeapon?.Type is { } currWeaponType)
             {
-                // AnimatorOverrideController.runtimeAnimatorController : 원본 AnimatorController의 참조를 가지고 있음
-                // 해당 참조를 통해 Override 되기 전으로 원복
-                animator.runtimeAnimatorController = overrideController.runtimeAnimatorController; 
+                if (currWeaponType == weaponType)
+                {
+                    return; // 현재 장착중인 무기와 동일한 무기라면 중복 방지
+                }
+                
+                DeSpawnWeapon();
+            }
+
+            if (!SpawnWeapon(weaponType))
+            {
+                Logg.LogError($"[{gameObject.name}.Equipper] Failed to spawn weapon: {weaponType?.name ?? "null"}");
+                return;
+            }
+            
+            if (weaponType.weaponAnimatorOverride is { } newWeaponAnimatorOverride)
+            {
+                animator.runtimeAnimatorController = newWeaponAnimatorOverride;
+            }
+            else if (animator.runtimeAnimatorController is AnimatorOverrideController overrideController)
+            {
+                animator.runtimeAnimatorController = overrideController.runtimeAnimatorController;
             }
         }
 

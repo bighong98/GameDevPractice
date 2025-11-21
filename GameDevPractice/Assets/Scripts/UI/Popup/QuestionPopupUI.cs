@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
 
-namespace RPG.UI
+namespace TH.UI
 {
     public class QuestionPopupUI : PopupUI
     {

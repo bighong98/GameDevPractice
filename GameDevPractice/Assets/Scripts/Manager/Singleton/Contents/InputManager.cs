@@ -3,7 +3,7 @@ using System.Threading;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Cysharp.Threading.Tasks;
-using RPG.UI;
+using TH.UI;
 using TH.Core;
 using TH.Item;
 using TH.Utils;

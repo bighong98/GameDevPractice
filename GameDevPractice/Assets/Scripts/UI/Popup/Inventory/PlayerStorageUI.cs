@@ -2,7 +2,7 @@ using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using RPG.UI;
+using TH.UI;
 using TH.Core.Pool;
 using TH.Item;
 using TH.Resource;

@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using RPG.Attribute;
+using TH.Attribute;
 using TH.Combat;
 using UnityEngine;
 using TH.Core.Pool;

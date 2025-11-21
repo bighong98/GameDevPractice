@@ -1,4 +1,4 @@
-using RPG.Combat;
+using TH.Combat;
 using UnityEngine;
 
 namespace TH.Resource

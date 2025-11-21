@@ -5,7 +5,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
-namespace RPG.SceneManagement
+namespace TH.SceneManagement
 {
     [RequireComponent(typeof(CanvasGroup))]
     public class Fader : MonoBehaviour

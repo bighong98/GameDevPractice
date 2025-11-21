@@ -1,6 +1,6 @@
 using System;
 using UnityEngine;
-using RPG.Item;
+using TH.Item;
 using TH.Core.Pool;
 
 namespace TH.Resource

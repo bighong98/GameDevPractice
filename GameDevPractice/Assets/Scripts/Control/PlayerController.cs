@@ -1,11 +1,11 @@
 using UnityEngine;
-using RPG.Attribute;
-using RPG.Movement;
-using RPG.Combat;
+using TH.Attribute;
+using TH.Movement;
+using TH.Combat;
 using UnityEngine.AI;
 using TH.Utils;
 
-namespace RPG.Control
+namespace TH.Control
 {
     public class PlayerController : MonoBehaviour
     {
@@ -41,15 +41,26 @@ namespace RPG.Control
             InputManager.Instance.OnSelected -= OnPointerPressed;
         }
 
-        private void OnPointerPressed(Vector2 pos)
+private void OnPointerPressed(Vector2 pos)
         {
             Logg.Log($"[{nameof(PlayerController)}.{nameof(OnPointerPressed)}()] triggered", Logg.LoggingMode.Completed);
-            if (Time.timeScale <= float.Epsilon || health is {IsDead: true} ) return; // 게임이 일시정지 중인 경우 반응x //todo: 게임 일시정지 여부 확인 로직 수정
-            // if (fightEnabled && TryCombat(pos)) return; // 우선순위: 전투 > 이동
-            if (fightEnabled && TryInteractWithComponent(pos)) return; // 우선순위: 전투 > 이동
-            if (TryMoveTo(pos)) return;
             
-            SetCursor(CursorType.None); // 현재 커서 관련 로직은 강의 영상과 다르게 작동함 (강의: Update() 실행 + 마우스 포인터가 움직일 때마다 갱신, 현재 코드: InputSystem 콜백 기반 실행 + 마우스 클릭마다 갱신)
+            if (Time.timeScale <= float.Epsilon || health?.IsDead == true)
+            {
+                return; // 게임이 일시정지 중이거나 플레이어가 사망한 경우 반응 없음
+            }
+            
+            if (fightEnabled && TryInteractWithComponent(pos))
+            {
+                return; // 우선순위: 전투 > 이동
+            }
+            
+            if (TryMoveTo(pos))
+            {
+                return;
+            }
+            
+            SetCursor(CursorType.None);
         }
 
         private const int MaxRaycastHitNum = 100;

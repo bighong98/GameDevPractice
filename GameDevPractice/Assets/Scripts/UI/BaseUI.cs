@@ -8,7 +8,7 @@ using TMPro;
 using UnityEngine.EventSystems;
 using TH.Utils;
 
-namespace RPG.UI
+namespace TH.UI
 {
     public class BaseUI : MonoBehaviour
     {

@@ -1,6 +1,6 @@
 using System;
 using Cysharp.Threading.Tasks;
-using RPG.UI;
+using TH.UI;
 using TH.Core.Service;
 using TH.SceneManagement;
 using TH.Utils;

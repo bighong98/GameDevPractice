@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Playables;
 
-namespace RPG.Cinematic
+namespace TH.Cinematic
 {
     [RequireComponent(typeof(PlayableDirector))]
     public class CinematicHandler : MonoBehaviour
@@ -48,13 +48,13 @@ namespace RPG.Cinematic
 
         private void PausePlayer()
         {
-            player.GetComponent<RPG.Core.ActoinScheduler>()?.CancelCurrentAction();
-            player.GetComponent<RPG.Control.PlayerController>().enabled = false;
+            player.GetComponent<TH.Core.ActoinScheduler>()?.CancelCurrentAction();
+            player.GetComponent<TH.Control.PlayerController>().enabled = false;
         }
 
         private void ResumePlayer()
         {
-            player.GetComponent<RPG.Control.PlayerController>().enabled = true;
+            player.GetComponent<TH.Control.PlayerController>().enabled = true;
         }
     }
 }
