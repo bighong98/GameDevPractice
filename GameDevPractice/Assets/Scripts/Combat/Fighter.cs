@@ -47,24 +47,50 @@ namespace TH.Combat
             equipHolder = GetComponent<IEquipmentHolder>();
 
             currentWeapon = new LazyValue<WeaponTypeSO>(SetDefaultWeapon);
-            // combatSystem = ServiceLocator.Get<ICombatSystem>();
         }
 
-        void OnEnable()
-        {
-            // equipHolder.OnEquipmentChanged -= OnEquipmentChanged;
-            // equipHolder.OnEquipmentChanged += OnEquipmentChanged;
-        }
+
 
         private void Start()
         {
-            equipHolder.OnEquipmentChanged += OnEquipmentChanged;
+            combatSystem = ServiceLocator.Get<ICombatSystem>();
             
-            if (ServiceLocator.Get<ICombatSystem>() is {} combat)
+            if (equipHolder == null)
             {
-                combatSystem = combat;
+                Debug.LogError($"[{gameObject.name}.Fighter] failed to get {equipHolder.GetType()}");
+                return;
+            }
+
+            // 장비 장착/장착해제 이벤트 구독
+            equipHolder.OnEquipmentChanged += OnEquipmentChanged;
+            // 이미 장착된 장비가 있다면 초기화 (이벤트 구독 전에 장착된 경우 대응)
+
+            var equipSlots = equipHolder.ItemSlots;
+            if (equipSlots.Count == 0)
+            {
+                EquipWeapon(defaultWeapon);
+                return;
+            }
+
+            foreach (var slot in equipSlots)
+            {
+                if (slot?.GetItem is { GetItemInfo: WeaponTypeSO weaponData })
+                {
+                    EquipWeapon(weaponData);
+                    break;
+                }
+            }
+            
+        }
+
+        private void OnDisable()
+        {
+            if (equipHolder != null)
+            {
+                equipHolder.OnEquipmentChanged -= OnEquipmentChanged;
             }
         }
+
 
         private void Update()
         {
@@ -123,10 +149,10 @@ namespace TH.Combat
 
         void Hit() // Animation Event Method
         {
-            if (target == null) return;
+            if (!target.IsAlive()) return;
+
             OnAttack?.Invoke();
             combatSystem.ApplyHit(currAttackSource.ToRequest(target));
-            // target.TakeDamage(currentWeapon.value.GetDamage);
         }
 
         void Shoot()
@@ -141,7 +167,8 @@ namespace TH.Combat
         private void ChangeTarget(Health newTarget)
         {
             // if (target is { } prevTarget && prevTarget == newTarget) return;
-            
+            if (!newTarget.IsAlive() || (target.IsAlive() && target == newTarget)) return;
+
             target = newTarget;
             OnTargetChanged?.Invoke(target);
         }
