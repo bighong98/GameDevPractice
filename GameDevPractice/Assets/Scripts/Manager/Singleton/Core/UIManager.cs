@@ -8,7 +8,6 @@ using TH.Core.Pool;
 using TH.Resource;
 using TH.Core;
 using TH.Core.Service;
-using TH.UI;
 using TH.Utils;
 
 namespace TH.UI
@@ -21,7 +20,6 @@ namespace TH.UI
     }
     public class UIManager : Singleton<UIManager>
     {
-        // private int _order = 10; // 10 is magic number
         private readonly Stack<PopupUI> popupStacks = new();
         
         private readonly Dictionary<string, Type> keyTypeDictionary = new();
@@ -29,7 +27,7 @@ namespace TH.UI
         
         [SerializeField] private Transform root;
         [SerializeField] private List<GameObject> canvases;
-        private readonly int[] sortOrders = new int[3];
+        private readonly int[] sortOrders = new int[Enum.GetValues(typeof(UICanvas)).Length];
         
         private SceneUI sceneUI;
         
@@ -39,7 +37,7 @@ namespace TH.UI
         // Frequently Used UI
         public TooltipUI Tooltip; 
         
-        // scriptable object
+        // scriptable objects
         private SceneCatalogSO sceneCatalogSO;
         private SceneUIListSO sceneUIListSO;
         private UICanvasSettingSO uiCanvasSettingSO;
@@ -48,6 +46,10 @@ namespace TH.UI
         private const string SceneCatalogSOKey = "SceneCatalogSO";
         private const string SceneUIListSOKey = "SceneUIListSO";
         private const string UICanvasSettingSOKey = "UICanvasSettingSO";
+
+        // default value
+        private const int DefaultReadyMadePopupCount = 1; // 팝업용 오브젝트 풀 생성 시 초기 생성 개수
+        private const int MaxDuplicatePopupCount = 10; // 팝업용 오브젝트 풀에서 생성 가능한 동일 팝업 최대 개수
 
         #region Singleton
 
@@ -81,12 +83,9 @@ namespace TH.UI
         protected override void Init()
         {
             base.Init();
-            InputManager.Instance.OnEscaped += OnEscapeCalled;
-            
-            InputManager.Instance.OnSingleClicked -= OnPopupOutSideSelected; // 중복 구독 방지
-            InputManager.Instance.OnSingleClicked += OnPopupOutSideSelected;
+            ConnectInputEvents();
         }
-        
+
         protected override void InitAfterPreLoad()
         {
             SetSceneUIAsync().ContinueWith(() =>
@@ -98,6 +97,14 @@ namespace TH.UI
         #endregion
 
         #region Initialization
+
+        private void ConnectInputEvents()
+        {
+            InputManager.Instance.OnEscaped += OnEscapeCalled;
+
+            InputManager.Instance.OnSingleClicked -= OnPopupOutSideSelected; // 중복 구독 방지
+            InputManager.Instance.OnSingleClicked += OnPopupOutSideSelected;
+        }
 
         private const string UIRootName = "UI_Root";
         private void SetUIContainer()
@@ -187,7 +194,7 @@ namespace TH.UI
         // isToast는 현재 미사용 (추후 삭제 혹은 ToastUI 기능 추가 고려)
         // PopupUI 인스턴스의 OnCreateFromPool()에서 호출
         // renderWorldSpace: Canvas의 render mode 결정: true: world space, false: overlay (현재 구현x. 사용x)
-        public void SetCanvas(GameObject go, UICanvas canvasType, int sortOrder = 0, bool isInteractable = true,  bool renderWorldSpace = false)
+        public void SetCanvas(GameObject go, UICanvas canvasType, bool isInteractable = true,  bool renderWorldSpace = false)
         {
             Canvas canvas = go.GetOrAddComponent<Canvas>();
             if (canvas != null)
@@ -206,11 +213,10 @@ namespace TH.UI
             if (isInteractable)
                 go.GetOrAddComponent<GraphicRaycaster>();
             
-            if (sortOrder > 0) SortCanvas(canvas, sortOrder);
-            else SortCanvas(canvas, canvasType);
+            SortCanvas(canvas, canvasType);
         }
 
-        public void SetCanvas(PopupUI popup, bool sort = true, int sortOrder = 0, bool isInteractable = true)
+        public void SetCanvas(PopupUI popup, bool isInteractable = true)
         {
             Canvas canvas = popup.gameObject.GetOrAddComponent<Canvas>();
             if (canvas != null)
@@ -228,14 +234,8 @@ namespace TH.UI
             if (cg != null)
                 cg.alpha = 0f; // UI 애니메이션, 애니메이션 전처리를 위해 투명화 -> PopupUI.OnGetFromPool()에서 투명도 제거처리
             
-            // CanvasScaler cs = popup.gameObject.GetOrAddComponent<CanvasScaler>();
-            // if (cs != null)
-            //     cs.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            
             if (isInteractable)
                 popup.gameObject.GetOrAddComponent<GraphicRaycaster>();
-            
-            SortCanvas(canvas, UICanvas.Popup);
         }
 
         public void SortCanvas(Canvas canvas, int sortOrder = 0)
@@ -269,60 +269,149 @@ namespace TH.UI
         // uiName: key값으로 사용해 어드레서블에서 팝업 프리팹을 불러오고, 풀링 적용하여 화면에 띄움
         // allowDuplicatePopup: 중복 팝업 허용 여부
         // uiName 입력하지 않으면 "클래스명.prefab"으로 탐색함 -> 팝업 프리팹 어드레서블 key값을 클래스명과 동일하게 설정하는 것을 권장
+        // public T ShowPopupUI<T>(string uiName = null) where T : PopupUI
+        // {
+        //     Type type = typeof(T);
+            
+        //     // Toggle 모드인 경우, pool.Get() 전에 먼저 중복 확인
+        //     if (popupPools.TryGetValue(type, out var existingPool))
+        //     {
+        //         // 이미 풀이 존재한다면, 중복 팝업이 있는지 먼저 확인
+        //         if (IsPopupInStack<T>())
+        //         {
+        //             // Toggle: 기존 팝업만 닫고 새로 생성하지 않음
+        //             if (CloseDuplicatePopup<T>())
+        //             {
+        //                 Logg.Log($"[{nameof(UIManager)}.{nameof(ShowPopupUI)}()] Toggle mode: closed existing popup without creating new one", Logg.LoggingMode.Completed);
+        //                 return null;
+        //             }
+        //         }
+        //     }
+            
+        //     T popup;
+            
+        //     if (popupPools.TryGetValue(type, out var pool))
+        //     {
+        //         popup = pool.Get() as T;
+        //     }
+        //     else
+        //     {
+        //         string key = uiName ?? $"{type.Name}.prefab";
+        //         if (ResourceManager.Instance.Load<UnityEngine.Object>(key) is not GameObject loadedUI)
+        //             return null;
+                
+        //         var uiPool = PoolManager.Instance.GetPool(
+        //             loadedUI,
+        //             parent: GetUIParent(UICanvas.Popup),
+        //             capacity: 1, maxSize: 10, registerPool: false
+        //         );
+                
+        //         popupPools[type] = uiPool;
+        //         popup = popupPools[type].Get() as T;
+        //         keyTypeDictionary.TryAdd(key, type);
+        //     }
+
+        //     if (popup == null) return null;
+
+        //     switch (popup.DuplicatedPopupHandling)
+        //     {
+        //         case PopupUI.DuplicatedPopupHandle.Replace:
+        //             CloseDuplicatePopup<T>();
+        //             break;
+        //         case PopupUI.DuplicatedPopupHandle.Toggle:
+        //             if (CloseDuplicatePopup<T>()) {
+        //                 popup.ReleaseSelf();
+        //                 return null;
+        //             }
+        //             break;
+        //         default:
+        //             break;
+        //     }
+            
+        //     popupStacks.Push(popup);
+            
+        //     if (popup.PauseRequired)
+        //         InputManager.Instance.PauseGame();
+
+        //     lastPopupOpenTime = Time.unscaledTime;
+            
+        //     InputManager.Instance.EnableUIActionMap();
+            
+        //     Logg.Log($"[{nameof(UIManager)}.{nameof(ShowPopupUI)}()] new Popup. name: {popup.name} popupStack.Count: {popupStacks.Count}", Logg.LoggingMode.Completed);
+        //     return popup;
+        // }
+
         public T ShowPopupUI<T>(string uiName = null) where T : PopupUI
         {
-            T popup;
-            Type type = typeof(T);
-            
-            if (popupPools.TryGetValue(type, out var pool))
+            var type = typeof(T);
+
+            if (popupStacks.Count > 0 && IsPopupInStack<T>(out var inStackPopup))
             {
-                popup = pool.Get() as T;
-            }
-            else
-            {
-                string key = uiName ?? $"{type.Name}.prefab"; // 어드레서블 key를 임의로 지정하지 않으면 "팝업UI 클래스명}.prefab" 자동 사용
-                if (ResourceManager.Instance.Load<UnityEngine.Object>(key) is not GameObject loadedUI)
-                    return null;
-                
-                var uiPool = PoolManager.Instance.GetPool(
-                    loadedUI,
-                    parent: GetUIParent(UICanvas.Popup),
-                    capacity: 1, maxSize: 10, registerPool: false
-                ); // 1, 10 is magic number
-                
-                popupPools[type] = uiPool;
-                popup = popupPools[type].Get() as T;
-                keyTypeDictionary.TryAdd(key, type); // 임시로 key-type 매칭용 딕셔너리에 저장 (현재 미사용. 추후 제거 고려)
+                switch (inStackPopup.DuplicatedPopupHandling)
+                {
+                    case PopupUI.DuplicatedPopupHandle.Replace:
+                        Logg.Log($"[{nameof(UIManager)}.{nameof(ShowPopupUI)}()] Replace mode: close existing popup and creat new one", Logg.LoggingMode.InProgress);
+                        CloseDuplicatePopup<T>();
+                        break;
+                    case PopupUI.DuplicatedPopupHandle.Toggle:
+                        if (CloseDuplicatePopup<T>())
+                        {
+                            Logg.Log($"[{nameof(UIManager)}.{nameof(ShowPopupUI)}()] Toggle mode: close existing popup without creating new one", Logg.LoggingMode.InProgress);
+                            return null;
+                        }
+                        break;
+                    case PopupUI.DuplicatedPopupHandle.Allow:
+                    default:
+                        break;
+                }
             }
 
+            // if (IsPopupInStack<T>(out var inStackPopup) 
+            //     && inStackPopup.DuplicatedPopupHandling == PopupUI.DuplicatedPopupHandle.Toggle
+            //     && CloseDuplicatePopup<T>())
+            // {
+            //     Logg.Log($"[{nameof(UIManager)}.{nameof(ShowPopupUI)}()] Toggle mode: closed existing popup without creating new one", Logg.LoggingMode.InProgress);
+            //     return null;
+            // }
+
+            var popup = GetPopupInstance<T>(type, uiName);
             if (popup == null) return null;
 
-            switch (popup.DuplicatedPopupHandling)
-            {
-                case PopupUI.DuplicatedPopupHandle.Replace:
-                    CloseDuplicatePopup<T>(); // 중복 팝업 닫기 시도
-                    break;
-                case PopupUI.DuplicatedPopupHandle.Toggle:
-                    if (CloseDuplicatePopup<T>()) {
-                        popup.ReleaseSelf(); // 띄우려 시도한 팝업을 즉시 풀에 반환(팝업 닫기 연출x)
-                        return null; // 중복 팝업이 있다면 닫고 즉시 함수 호출 종료 (null 리턴)
-                    }
-                    break;
-                default:
-                    break;
-            }
-            
             popupStacks.Push(popup);
             
             if (popup.PauseRequired)
                 InputManager.Instance.PauseGame();
 
-            lastPopupOpenTime = Time.unscaledTime; // 팝업 닫기 지연 시간
+            lastPopupOpenTime = Time.unscaledTime;
             
             InputManager.Instance.EnableUIActionMap();
             
-            Logg.Log($"[{nameof(UIManager)}.{nameof(ShowPopupUI)}()] new Popup. name: {popup.name} popupStack.Count: {popupStacks.Count}", Logg.LoggingMode.Completed);
+            Logg.Log($"[{nameof(UIManager)}.{nameof(ShowPopupUI)}()] new Popup. name: {popup.name} popupStack.Count: {popupStacks.Count}", Logg.LoggingMode.InProgress);
             return popup;
+        }
+
+        private T GetPopupInstance<T>(Type type, string uiName) where T : PopupUI
+        {
+            if (popupPools.TryGetValue(type, out var pool))
+            {
+                return pool.Get() as T;
+            }
+
+            string key = uiName ?? $"{type.Name}.prefab";
+            if (ResourceManager.Instance.Load<UnityEngine.Object>(key) is not GameObject loadedUI)
+                return null;
+            
+            var uiPool = PoolManager.Instance.GetPool(
+                loadedUI,
+                parent: GetUIParent(UICanvas.Popup),
+                capacity: DefaultReadyMadePopupCount, // 1
+                maxSize: MaxDuplicatePopupCount, // 10
+                registerPool: false
+            );
+            
+            popupPools[type] = uiPool;
+            keyTypeDictionary.TryAdd(key, type);
+            return popupPools[type].Get() as T;
         }
 
         public bool ClosePopupUI(PopupUI popup, bool escapableCheck = true, bool ignoreOpenThreshold = true, bool waitForAnimation = true)
@@ -373,11 +462,10 @@ namespace TH.UI
 
             if (popupStacks.Count == 0)
             {
-                // if (Util.IsQuitting) return;
                 InputManager.Instance.DisableUIActionMap();
             }
             
-            return false; // separator for local method HandleTimePauseAndReleasePopup()
+            return true; // separator for local method HandleTimePauseAndReleasePopup()
             
             void HandleTimePauseAndReleasePopup()
             {
@@ -387,7 +475,6 @@ namespace TH.UI
                 }
 
                 popupPool.Release(popup); // 팝업 닫기 (풀에 반환)
-                // _order--;
                 sortOrders[(int)UICanvas.Popup]--;
             }
         }
@@ -467,14 +554,14 @@ namespace TH.UI
         public void ShowTooltip(int errorType, bool hideAfterDelay = false, float delayDuration = 2.0f) // 3.0f is magic number
         {
             if (errorType == (int)Enums.TooltipErrorType.Empty) return;
-            int order = ++sortOrders[(int)UICanvas.Popup];
+            int order = sortOrders[(int)UICanvas.Popup];
             Tooltip.tooltipCanvas.sortingOrder = order; // 언제나 최상단 팝업 UI보다 한단계 더 위로
             Tooltip.Show(errorType, hideAfterDelay, delayDuration);
         }
 
         public void ShowTooltip(string tooltipString, bool hideAfterDelay = false, float delayDuration = 3.0f)
         {
-            int order = ++sortOrders[(int)UICanvas.Popup];
+            int order = sortOrders[(int)UICanvas.Popup];
             Tooltip.tooltipCanvas.sortingOrder = order + 1; // 언제나 최상단 팝업 UI보다 한단계 더 위로
             Tooltip.Show(tooltipString, hideAfterDelay, delayDuration);
         }
@@ -503,15 +590,39 @@ namespace TH.UI
             if (popupStacks.Count != 0 && popupStacks.Peek() is T duplicatePopup)
             {
                 ClosePopupUI(duplicatePopup as PopupUI);
-                Logg.Log($"duplicate popup closed: {duplicatePopup}", Logg.LoggingMode.Completed);
+                Logg.Log($"duplicate popup closed: {duplicatePopup}", Logg.LoggingMode.InProgress);
                 return true;
             }
             else
             {
-                Logg.Log("There is no duplicate popup", Logg.LoggingMode.Completed);
+                Logg.Log("There is no duplicate popup", Logg.LoggingMode.InProgress);
                 return false;
             }
         }
+
+        private bool IsPopupInStack<T>()
+        {
+            foreach (var popup in popupStacks)
+            {
+                if (popup is T) return true;
+            }
+            return false;
+        }
+
+        private bool IsPopupInStack<T>(out T inStackPopup) where T : PopupUI
+        {
+            foreach (var popup in popupStacks)
+            {
+                if (popup is not T p) continue;  
+                
+                inStackPopup = p;
+                return true;
+            }
+
+            inStackPopup = default;
+            return false;
+        }
+
 
         #endregion
 
@@ -529,20 +640,29 @@ namespace TH.UI
             popupPools.Clear();
             popupStacks.Clear();
             
-            ClearValue();
+            ClearValues();
         }
 
         protected override UniTask Clear()
         {
             base.Clear();
+
             CloseAllPopupUI();
+            DisConnectInputEvents();
             
             return UniTask.CompletedTask;
         }
 
-        private void ClearValue()
+        private void DisConnectInputEvents()
         {
-            // _order = 10; // 10 is magic number
+            if (Util.IsQuitting || InputManager.Instance == null) return;
+
+            InputManager.Instance.OnEscaped -= OnEscapeCalled;
+            InputManager.Instance.OnSingleClicked -= OnPopupOutSideSelected; // 중복 구독 방지
+        }
+
+        private void ClearValues()
+        {
             foreach (var canvasType in (UICanvas[])Enum.GetValues(typeof(UICanvas)))
             {
                 ResetCanvasOrder(canvasType);

@@ -3,7 +3,6 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using TH.Core.Pool;
 using TH.Core.Service;
-using TH.UI;
 using TH.Utils;
 
 namespace TH.UI
@@ -26,7 +25,7 @@ namespace TH.UI
         [SerializeField] [Tooltip("동일 타입 중복 팝업UI 호출시 처리 방식")] 
         protected DuplicatedPopupHandle duplicatedPopupHandle;
         protected bool IsPooledObject = false; // 오브젝트 풀링 적용 여부
-        [SerializeField] [Tooltip("개발 중인 기능. 사용x")]
+        [SerializeField] [Tooltip("씬에 배치된 오브젝트에 UI를 고정")]
         protected bool anchorWorldObject = false; // 특정 오브젝트에 붙어있어야할지
 
         [Header("Popup Animation")] 
@@ -39,7 +38,7 @@ namespace TH.UI
         public bool PauseRequired { get { return pauseRequired; } }
         public bool CloseOnOuterBackgroundClick { get { return closeOnOuterBackgroundClick; } }
         public RectTransform ContentArea { get { return contentArea != null ? contentArea : Rect; } }
-        // public bool BlurBackground { get { return blurBackground; } }
+        
         public bool PlacePointerPosition { get { return placePointerPosition; } }
         public Enums.UIRenderType UiRenderType { get { return uiRenderType; } }
         public bool AnchorWorldObject { get { return anchorWorldObject; } }
@@ -85,6 +84,7 @@ namespace TH.UI
             }
             
             if (gameObject.activeSelf) return null;
+
             gameObject.SetActive(true);
             OnGetFromPool();
             return (T)this;
@@ -95,7 +95,7 @@ namespace TH.UI
             if (Util.IsQuitting) return;
             // 오브젝트 풀에서 관리하고, 풀 반환에 성공했다면 개별 비활성화 취소
             if (IsPooledObject && UIManager.Instance.ClosePopupUI(this)) return; 
-            if (gameObject.activeSelf) return; // 이미 비활성화되었다면 취소
+            if (!gameObject.activeSelf) return; // 이미 비활성화되었다면 취소
             
             if (playExitAnimation)
             {
@@ -173,7 +173,7 @@ namespace TH.UI
 
         #endregion
         
-        #region Deprecated 미사용/개발중
+        #region AnchorWorldObject
 
         private async UniTaskVoid TrackPopupPosition()
         {
@@ -194,9 +194,6 @@ namespace TH.UI
         private const float lerpSpeed = 10f;    // 부드럽게 따라오는 속도 (Lerp 계수)
         private void UpdatePopupPosition()
         {
-            // Vector3 screenPosition = Util.GetWorldScreenPosition(cachedPosition, false);
-            // Util.GetMouseScreenPosition(parentRect, screenPosition, out var anchoredPos);
-            
             Vector3 screenPosition = raycastHandler.GetWorldScreenPosition(cachedPosition, false);
             raycastHandler.GetMouseScreenPosition(parentRect, screenPosition, out var anchoredPos);
             
@@ -218,7 +215,7 @@ namespace TH.UI
 
         #endregion
 
-        #region Object Pool
+        #region IPoolObject (PoolManager)
 
         public GameObject Origin { get; set; }
 
@@ -257,14 +254,14 @@ namespace TH.UI
                 canvasGroup.alpha = 1f;
             }
             
-            // if (anchorWorldObject)
-            // {
-            //     if (trackingPositionCTS?.IsCancellationRequested ?? true)
-            //         trackingPositionCTS = new CancellationTokenSource();
-            //     
-            //     cachedPosition = Util.GetMouseWorldPosition();
-            //     TrackPopupPosition().Forget();
-            // }
+            if (anchorWorldObject)
+            {
+                if (trackingPositionCTS?.IsCancellationRequested ?? true)
+                    trackingPositionCTS = new CancellationTokenSource();
+                
+                cachedPosition = raycastHandler.GetMouseWorldPosition();
+                TrackPopupPosition().Forget();
+            }
         }
 
         public virtual void OnReleaseFromPool()

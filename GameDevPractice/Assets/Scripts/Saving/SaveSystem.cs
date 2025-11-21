@@ -369,11 +369,11 @@ namespace TH.SaveLoad
             // 현재 씬 세이브 데이터 추가
             if (sceneEntries.TryGetValue(currentSceneEntry.sceneId, out var targetSceneEntries))
                 entries.AddRange(targetSceneEntries); // 세이브 데이터 리스트에 추가
-            else Logg.Log($"[SaveSystem] No saved data for scene '{currentSceneEntry.key}'", Logg.LoggingMode.InProgress);
+            else Logg.Log($"[SaveSystem] No saved data for scene '{currentSceneEntry.key}'", Logg.LoggingMode.Completed);
             // 글로벌(특정 씬에 종속되지 않는) 세이브 데이터 추가
             if (data.globalData is { Count: > 0 } globEntries)
                 entries.AddRange(globEntries); 
-            else Logg.Log("[SaveSystem] No saved global data", Logg.LoggingMode.InProgress);
+            else Logg.Log("[SaveSystem] No saved global data", Logg.LoggingMode.Completed);
         }
 
         private void ExtractSaveData(List<SavableEntry> entries, Dictionary<string, Dictionary<string, object>> grouped)

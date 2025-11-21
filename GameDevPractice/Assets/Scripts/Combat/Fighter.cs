@@ -227,7 +227,7 @@ namespace TH.Combat
 
         private void OnEquipmentChanged(object sender, EquipArgs args)
         {
-            Logg.Log($"[{gameObject.name}.Fighter] OnEquipmentChanged called {args.Item.GetItemInfo.nameString}", Logg.LoggingMode.InProgress);
+            Logg.Log($"[{gameObject.name}.Fighter] OnEquipmentChanged called {args.Item.GetItemInfo.nameString}", Logg.LoggingMode.Completed);
             if (args.Item is not { GetItemInfo: WeaponTypeSO weaponData }) return;
             if (args.State == EquipArgs.EquipEventState.Equip)
             {

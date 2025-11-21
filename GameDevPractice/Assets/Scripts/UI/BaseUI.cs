@@ -102,7 +102,7 @@ namespace TH.UI
         {
             if (go == null || asyncAction == null)
             {
-                Logg.Log($"BindAsyncEvent(): go or asyncAction is null: {go.name}");
+                Logg.Log($"BindAsyncEvent(): go or asyncAction is null: {(go.IsAlive() ? go.name : string.Empty)}");
                 return;
             }
             UI_EventHandler eventHandler = go.GetOrAddComponent<UI_EventHandler>();
