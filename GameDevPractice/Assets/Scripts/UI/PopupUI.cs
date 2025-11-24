@@ -87,7 +87,7 @@ namespace TH.UI
 
             gameObject.SetActive(true);
             OnGetFromPool();
-            return (T)this;
+            return this as T;
         }
 
         public virtual void ClosePopupUI()

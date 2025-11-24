@@ -97,7 +97,7 @@ namespace TH.UI
         }
         // UI 상호작용을 통해 비동기 함수를 실행시켜야할 때에 사용
         // 현재 클릭 이벤트에만 등록 가능함
-        // cancelOnDestroy = true이면 UI 파괴시 비동기 작업이 취소됨
+        // cancelOnDestroy: true -> UI 오브젝트 파괴시 비동기 작업이 취소됨
         public static void BindAsyncEvent(GameObject go, Func<UniTask> asyncAction = null, bool cancelOnDestroy = false)
         {
             if (go == null || asyncAction == null)
@@ -105,21 +105,15 @@ namespace TH.UI
                 Logg.Log($"BindAsyncEvent(): go or asyncAction is null: {(go.IsAlive() ? go.name : string.Empty)}");
                 return;
             }
+
             UI_EventHandler eventHandler = go.GetOrAddComponent<UI_EventHandler>();
 
-            // eventHandler.OnClickAsyncHandler -= asyncAction;
-            // eventHandler.OnClickAsyncHandler += asyncAction;
             // 비동기 작업은 한 종류만 등록 가능함 (멀티 캐스트 불가능)
             eventHandler.OnClickAsyncHandler = async () =>
             {
                 if (cancelOnDestroy)
-                {
                     await asyncAction().AttachExternalCancellation(eventHandler.GetCancellationTokenOnDestroy());
-                }
-                else
-                {
-                    await asyncAction();
-                }
+                else await asyncAction();
             };
         }
         
@@ -213,7 +207,7 @@ namespace TH.UI
 
         #endregion
 
-        protected virtual void Clear() { } // 정리 작업. PopupUI의 경우 UIManager에 의해 
+        protected virtual void Clear() { } // 정리 작업. PopupUI의 경우 UIManager에 의해 호출
     }
 }
 

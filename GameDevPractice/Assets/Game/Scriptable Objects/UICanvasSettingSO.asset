@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: UICanvasSettingSO
   m_EditorClassIdentifier: Assembly-CSharp::TH.UI.UICanvasSettingSO
   referenceResolution:
-    x: 0
-    y: 0
+    x: 1920
+    y: 1080
   list:
   - first: 0
     second:

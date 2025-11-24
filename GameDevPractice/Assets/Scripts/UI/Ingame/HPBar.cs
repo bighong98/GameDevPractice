@@ -111,7 +111,7 @@ namespace TH.UI
             {
                 try
                 {
-                    await UniTask.NextFrame(PlayerLoopTiming.LastUpdate, barAnimToken).SuppressCancellationThrow();
+                    await UniTask.NextFrame(PlayerLoopTiming.LastUpdate, barAnimToken);//.SuppressCancellationThrow();
                     curr = Mathf.MoveTowards(curr, to, speed * Time.deltaTime);
                     slider.value = curr;
                 }
