@@ -689,6 +689,7 @@ namespace TH.Item
             return newCTS;
         }
         
+        // 변동이 발생한 슬롯과 연결된 작업 및 팝업 취소
         private void CancelModifiedSlotProgress(IGameItemSlot slot)
         {
             if (slot == null) return;
@@ -698,6 +699,7 @@ namespace TH.Item
             progressingSlots.Remove(slot);
         }
 
+        // 모든 개별 슬롯과 연결된 작업 및 팝업 취소
         private void CancelAllSlotProgress()
         {
             if (progressingSlots.Count == 0) return;

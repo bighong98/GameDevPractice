@@ -961,16 +961,15 @@ MonoBehaviour:
   uiRenderType: 0
   escapable: 1
   pauseRequired: 1
-  closeOnOuterBackgroundClick: 0
+  closeOnOuterBackgroundClick: 1
   contentArea: {fileID: 8647987515432156695}
   placePointerPosition: 0
   duplicatedPopupHandle: 1
-  blurBackground: 0
   anchorWorldObject: 0
-  playEnterAnimation: 0
+  playEnterAnimation: 1
   enterAnimation: 0
-  playExitAnimation: 0
-  exitAnimation: 0
+  playExitAnimation: 1
+  exitAnimation: 1
   storageUI: {fileID: 3806894848871151956}
   equipmentUI: {fileID: 2740406102695703382}
   dragDropGhost: {fileID: 4114237946749066217}
