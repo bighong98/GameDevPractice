@@ -12,7 +12,6 @@ namespace TH.UI
     
     public sealed class PopupStack : IEnumerable<PopupUI>
     {
-        
         private readonly List<PopupUI> list = new();
         public int Count => list.Count;
 
