@@ -111,17 +111,21 @@ namespace TH.UI
             {
                 try
                 {
-                    await UniTask.NextFrame(PlayerLoopTiming.LastUpdate, barAnimToken);//.SuppressCancellationThrow();
-                    curr = Mathf.MoveTowards(curr, to, speed * Time.deltaTime);
-                    slider.value = curr;
+                    await UniTask.NextFrame(PlayerLoopTiming.LastUpdate, barAnimToken).SuppressCancellationThrow();
+                    // curr = Mathf.MoveTowards(curr, to, speed * Time.deltaTime);
+                    // slider.value = curr;
                 }
                 catch (Exception e)
                 {
                     Logg.LogError($"[{nameof(HPBar)}] error occurred while {nameof(ChangeFillSlowly)}(). {e}");
+                    break;
                 }
+                curr = Mathf.MoveTowards(curr, to, speed * Time.deltaTime);
+                slider.value = curr;
             }
             
-            slider.value = to;
+            if (slider.IsAlive())
+                slider.value = to;
             easing = false;
         }
 
@@ -139,7 +143,8 @@ namespace TH.UI
         {
             if (!barAnimToken.CanBeCanceled || barAnimToken.IsCancellationRequested)
             {
-                barAnimCTS = new CancellationTokenSource();
+                // barAnimCTS = new CancellationTokenSource();
+                barAnimCTS = CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken);
                 barAnimToken = barAnimCTS.Token;
             }
         }

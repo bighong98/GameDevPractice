@@ -14,9 +14,6 @@ namespace TH.Item
         // 다른 저장소 특정 슬롯으로 아이템 이동 + 양쪽 다 빈 슬롯이 아니면 스왑
         void TransferOrSwap(IGameItemStorage source, IGameItemSlot sourceSlot,
             IGameItemStorage other, IGameItemSlot otherSlot);
-        
-        
-        void Consume(IGameItemStorage source, object destination, IGameItemSlot slot, int amount = 1);
     }
 }
 

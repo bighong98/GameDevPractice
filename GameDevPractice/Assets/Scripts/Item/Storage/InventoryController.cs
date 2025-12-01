@@ -9,6 +9,8 @@ using TH.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using TH.Item.Storage;
+using TH.Combat;
+using TH.Attribute;
 
 namespace TH.Item
 {
@@ -21,19 +23,20 @@ namespace TH.Item
         private IPlayerInventoryUI pInvenUI;
         // sub popup
         private UI_ItemTooltip itemTooltip;
-        private QuestionPopupUI removeConfirmPopup;
 
         private SlotUIInfo<IHoverableStorageUI> lastHovered;
         private InventoryFilterType currentFilter = InventoryFilterType.All;
         
         // outer service
         private IGameItemTransfer itemTransfer;
+        private IGameItemConsumer itemConsumer;
 
         
         private void Awake()
         {
             pStorage = ServiceLocator.Get<IPlayerStorage>();
             itemTransfer = ServiceLocator.Get<IGameItemTransfer>();
+            itemConsumer = ServiceLocator.Get<IGameItemConsumer>();
             
             if (!TryGetComponent(out pInvenUI))
             {
@@ -163,6 +166,7 @@ namespace TH.Item
         }
         
         
+        private Health playerHealth;
         private void RenewPlayerReference(Scene s, LoadSceneMode m) { RenewPlayerReference(); } // on
         private void RenewPlayerReference()
         {
@@ -172,6 +176,7 @@ namespace TH.Item
             if (FindFirstObjectByType<PlayerController>() is {} player 
                 && player.TryGetComponent(out IEquipmentHolder newEquipHolder))
             {
+                player.TryGetComponent<Health>(out playerHealth);
                 newer = newEquipHolder;
             }
             
@@ -341,7 +346,7 @@ namespace TH.Item
             switch (item.Type)
             {
                 case Enums.ItemType.Countable:
-                    itemTransfer.Consume(storage, dest, slot); // todo: 개수 적용
+                    itemConsumer.TryConsume(storage, slot, playerHealth, 1);
                     break;
                 case Enums.ItemType.Equipment:
                     itemTransfer.TransferOrSwap(storage, slot, dest);

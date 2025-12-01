@@ -10,5 +10,11 @@ namespace TH.Item
         bool TryStoreAndUse(IGameItem item, object user = null); // 저장과 동시에 아이템 사용 시도
         bool TryStoreAndUse(IGameItem item, int index, object user = null); // + 저장할 슬롯 특정
     }
+
+    public interface IConsumableItemStorage
+    {
+        bool TryConsume(IGameItemSlot slot, int amount);
+        bool TryConsume(int index, int amount);
+    }
 }
 

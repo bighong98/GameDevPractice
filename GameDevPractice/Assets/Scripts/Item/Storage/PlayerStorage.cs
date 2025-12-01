@@ -136,6 +136,36 @@ namespace TH.Item
         
         #endregion
 
+        #region IConsumableItemStorage
+
+        public bool TryConsume(IGameItemSlot slot, int amount)
+        {
+            if (slot is not { IsAccessible: true, HasItem: true, GetItem: {} item }) return false;
+            if (item.GetItemInfo is not {} itemInfo || !itemInfo.IsAlive() || !itemInfo.isUsable ) return false;
+
+            switch (item.Type)
+            {
+                case Enums.ItemType.Countable:
+                    if (item is not ICountableItem cItem) return false;
+                    if (!cItem.TrySetAmount(cItem.GetAmount - amount)) return false;
+                    NotifySlotChanged(slot);
+                    break;
+                case Enums.ItemType.Special:
+                    break;
+                default: return TryRemoveItem(slot.Index);
+            }
+            
+            return true;
+        }
+
+        public bool TryConsume(int index, int amount)
+        {
+            if (!IsValidSlotIdx(index)) return false;
+            return TryConsume(slots[index], amount);
+        }
+
+        #endregion
+
         #region ICountableItemStorage
 
         public bool TryStore(ICountableItem countableItem, int amount, out int excess)
@@ -529,7 +559,7 @@ namespace TH.Item
         
         #endregion
         
-        #region Compare
+        #region Compare (deprecated)
 
         private static bool IsSameItem(IGameItem a, IGameItem b) // 정확히 동일한 아이템인지 검사 (ItemTypeSO 기준)
         {
@@ -837,7 +867,10 @@ namespace TH.Item
                 _ => false
             };
         }
+
         #endregion
+
+
     }
 }
 

@@ -47,6 +47,7 @@ namespace TH.Core.Service
                     sp.Get<IResourceLoader>(),
                     sp.Get<ISaveSystem>()));
             ServiceLocator.Register<IGameItemTransfer>(new GameItemTransfer());
+            ServiceLocator.Register<IGameItemConsumer>(new GameItemConsumer());
             ServiceLocator.Register<IFloatingTextSpawner>(sp => 
                 new FloatingTextSpawner(sp.Get<IResourceLoader>()));
         }

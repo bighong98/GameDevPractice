@@ -15,7 +15,7 @@ namespace TH.Attribute
     {
         public float hp;
     }
-    public class Health : MonoBehaviour, IDamageable, ISavable
+    public class Health : MonoBehaviour, IDamageable, IHealable, ISavable
     {
         private LazyValue<float> maxHp;
         private LazyValue<float> hp;
@@ -95,7 +95,7 @@ private void Start()
             levelHolder.OnLevelChanged -= this.OnLevelUp;
         }
 
-private float GetInitialHealth()
+        private float GetInitialHealth()
         {
             if (statHolder?.GetStat(GameStats.Health) is not { } stat)
             {
@@ -201,6 +201,9 @@ private float GetInitialHealth()
             Logg.Log($"OnLevelUp: hp: {hp.Value}", Logg.LoggingMode.Completed);
         }
 
+
+
+        #region ISavable
         public object CaptureState()
         {
             #region For Debug
@@ -228,5 +231,24 @@ private float GetInitialHealth()
 
             return true;
         }
+
+        #endregion
+
+        #region IHealable
+
+        public bool Heal(int amount)
+        {
+            SetCurrentHp(hp.Value + amount, false);
+            return true;
+        }
+
+        public bool HealRatio(float ratio)
+        {
+            if (maxHp is not {Initialized: true, Value: {} maxHpValue}) return false;
+            SetCurrentHp(maxHpValue * ratio);
+            return true;
+        }
+
+        #endregion
     }
 }

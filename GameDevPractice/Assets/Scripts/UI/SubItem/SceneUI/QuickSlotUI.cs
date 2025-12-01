@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class QuickSlotUI : BaseSlotUI
 {
-        #region Enums
+    #region Enums
 
     enum TMPTexts
     {

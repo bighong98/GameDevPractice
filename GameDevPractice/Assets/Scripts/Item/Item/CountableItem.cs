@@ -29,6 +29,19 @@ namespace TH.Item
             return (total > max) ? (total - max) : 0;
         }
 
+        // 개수 변경 시도 + 실패 시 원복
+        public bool TrySetAmount(int num)
+        {
+            int originAmount = amount;
+            SetAmount(num);
+            if (amount == num) return true;
+            else
+            {
+                SetAmount(originAmount);
+                return false;
+            }
+        }
+
         public T SeparateAndClone<T>(int expected) where T : ICountableItem
         {
             if (amount <= 1) return default;

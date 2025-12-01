@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using TH.Item;
 using UnityEngine;
 
 namespace TH.Resource
@@ -9,7 +11,8 @@ namespace TH.Resource
         public Enums.ItemType itemType;
         public int maxAmount = 1; // default: 1
         public string desc;
-        public bool isUsable; // Usable = Consumable(소비 가능) + Equipable(장착 가능)
+        public bool isUsable => itemType == Enums.ItemType.Equipment || itemUseEffects.Count > 0; // Usable = Consumable(소비 가능) + Equipable(장착 가능)
+        public List<ItemEffectBase> itemUseEffects;
     }
 }
 
