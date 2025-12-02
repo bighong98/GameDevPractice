@@ -4,8 +4,10 @@ namespace TH.Item
 {
     public interface ICountableItemStorage
     {
-        bool TryStore(ICountableItem countableItem, int amount, out int excess);
-        bool TryAdd(ICountableItem countableItem, int amount, int index, out int excess);
+        bool TryStoreCountable(ICountableItem countableItem, int amount, out int excess);
+        bool TryStoreCountable(ICountableItem countableItem, int amount, int index, out int excess);
+        bool TryAddCountable(ICountableItem countableItem, int amount, int index, out int excess);
+        bool TryMergeStacks(int fromIndex, int toIndex);
     }
 }
 
