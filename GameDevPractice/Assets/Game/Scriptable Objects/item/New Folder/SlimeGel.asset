@@ -15,10 +15,7 @@ MonoBehaviour:
   prefab: {fileID: 0}
   nameString: Test Item Gel
   sprite: {fileID: 21300000, guid: d1f94eb541d98c94c9e0a776707e9c7c, type: 3}
-  showInMinimap: 0
-  minimapSprite: {fileID: 0}
-  minimapSpriteColor: {r: 1, g: 1, b: 1, a: 1}
   itemType: 2
-  maxAmount: 50
+  maxAmount: 20
   desc: Test Item Slime Gel Desc
-  isUsable: 0
+  itemUseEffects: []

@@ -49,7 +49,7 @@ namespace TH.Item
         private void Init()
         {
             SetCapacity(InitialCapacity);
-            FillInventoryWithEmptySlots();
+            Clear();
         }
 
         private bool isTestDataLoaded = false;
@@ -88,7 +88,11 @@ namespace TH.Item
             if (slots[index] is not { IsAccessible: true, HasItem: false } slot) return false;
 
             var result = slot.TryStore(item);
-            if (result) NotifySlotChanged(index);
+            if (result) 
+            {
+                CacheAdd(item, index);
+                NotifySlotChanged(index);
+            }
             return result;
         } 
 
@@ -542,6 +546,8 @@ namespace TH.Item
                     UpdateCountableDict(data, -amount);
             }
 
+            CacheRemove(item, index);
+
             var result = slot.Clear();
             if (result) NotifySlotChanged(index);
             
@@ -566,6 +572,7 @@ namespace TH.Item
                     UpdateCountableDict(cItem.GetItemInfo, -amount);
             }
 
+            CacheRemove(item, index);
             NotifySlotChanged(index);
             return true;
         }
@@ -605,8 +612,15 @@ namespace TH.Item
         private bool TransferItem(IGameItemSlot fromSlot, IGameItem fromItem, IGameItemSlot toSlot)
         {
             if (toSlot.TryStore(fromItem) && fromSlot.Clear()) {
-                NotifySlotChanged(fromSlot.Index);
-                NotifySlotChanged(toSlot.Index);
+                
+                int fromIndex = fromSlot.Index;
+                int toIndex = toSlot.Index;
+                // 아이템 위치 캐시 갱신
+                CacheRemove(fromItem, fromIndex);
+                CacheAdd(fromItem, toIndex);
+                // 아이템 변동 이벤트 호출
+                NotifySlotChanged(fromIndex);
+                NotifySlotChanged(toIndex);
                 return true; // 도착 슬롯에 아이템 저장 + 출발 슬롯 아이템 제거
             }
 
@@ -619,8 +633,17 @@ namespace TH.Item
         private bool SwapItem(IGameItemSlot fromSlot, IGameItem fromItem, IGameItemSlot toSlot, IGameItem toItem)
         {
             if (toSlot.TryStore(fromItem) && fromSlot.TryStore(toItem)) {
-                NotifySlotChanged(fromSlot.Index);
-                NotifySlotChanged(toSlot.Index);
+                int fromIndex = fromSlot.Index;
+                int toIndex   = toSlot.Index;
+                
+                CacheRemove(fromItem, fromIndex);
+                CacheRemove(toItem, toIndex);
+
+                CacheAdd(fromItem, toIndex);
+                CacheAdd(toItem, fromIndex);
+
+                NotifySlotChanged(fromIndex);
+                NotifySlotChanged(toIndex);
                 return true; // 아이템 슬롯 간 아이템 교환 시도
             }
 
@@ -658,6 +681,8 @@ namespace TH.Item
                     if (write < 0) break; // 더 이상 빈칸 없으면 조기 종료
                 }
             }
+
+            RebuildItemIndexCache();
         }
         
         // Sort
@@ -711,6 +736,8 @@ namespace TH.Item
                 if (slots[i] is { IsAccessible: true, HasItem: true })
                     TryRemoveItem(i);
             }
+
+            RebuildItemIndexCache();
         }
         
         private static int CompareItemsForSort((int index, IGameItem item) a, (int index, IGameItem item) b)
@@ -788,6 +815,7 @@ namespace TH.Item
             }
 
             if (trimAfter) Trim();
+            // RebuildItemIndexCache(); //todo: rebuild 시점 고려
         }
 
         
@@ -888,35 +916,82 @@ namespace TH.Item
             return -1; // 빈칸이 없으면 -1 반환
         }
 
-        private int FindIdenticalCountable(ICountableItem cItem, int start = 0)
-        {
-            if (!IsValidSlotIdx(start)) return -1;
-            int end = GetEndIdx;
+        // private bool FindIdenticalCountable(ICountableItem cItem, int start, out IGameItemSlot slot)
+        // {
+        //     slot = null;
+        //     if (!IsValidSlotIdx(start)) return false;
+        //     int end = GetEndIdx;
             
-            for (int i = start; i <= end; i++)
-            {
-                if (!IsIdenticalCountableItem(cItem, i, out var v)) continue;
-                return i; // 동일한 Countable 타입 아이템을 찾은 경우, 해당 인덱스 반환
-            }
-
-            return -1;
-        }
+        //     for (int i = start; i <= end; i++)
+        //     {
+        //         if (!IsIdenticalCountableItem(cItem, i, out var found)) continue;
+        //         slot = found; // 동일한 Countable 타입 아이템을 찾은 경우, 해당 인덱스 반환
+        //         return true;
+        //     }
+            
+        //     return false;
+        // }
 
         private bool FindIdenticalCountable(ICountableItem cItem, int start, out IGameItemSlot slot)
         {
             slot = null;
             if (!IsValidSlotIdx(start)) return false;
+
+            // 0) 캐시 먼저 확인 (lazy clean 포함)
+            if (cItem?.GetItemInfo is ItemTypeSO data &&
+                itemIndexCache.TryGetValue(data, out var cachedList))
+            {
+                for (int i = cachedList.Count - 1; i >= 0; i--)
+                {
+                    int idx = cachedList[i];
+
+                    // 시작 인덱스보다 앞이면 스킵 (캐시에서 지우지는 않음)
+                    if (idx < start) continue;
+
+                    // 인덱스 자체가 유효하지 않으면 캐시에서 제거
+                    if (!IsValidSlotIdx(idx))
+                    {
+                        cachedList.RemoveAt(i);
+                        continue;
+                    }
+
+                    var s = slots[idx];
+                    if (s is { IsAccessible: true, HasItem: true, GetItem: { } item } &&
+                        item.GetItemInfo is ItemTypeSO slotData &&
+                        slotData == data)
+                    {
+                        slot = s;
+                        return true; 
+                    }
+
+                    // 내용이 바뀐 경우 캐시에서 제거
+                    cachedList.RemoveAt(i);
+                }
+
+                if (cachedList.Count == 0)
+                    itemIndexCache.Remove(data);
+            }
+
+            // 1) 캐시에서 못 찾았으면 기존 버전 그대로
             int end = GetEndIdx;
-            
+
             for (int i = start; i <= end; i++)
             {
                 if (!IsIdenticalCountableItem(cItem, i, out var found)) continue;
                 slot = found; // 동일한 Countable 타입 아이템을 찾은 경우, 해당 인덱스 반환
+
+                // 찾은 결과를 캐시에 기록 (다음 호출 최적화)
+                if (found is { HasItem: true, GetItemInfo: ItemTypeSO foundData })
+                {
+                    CacheAdd(foundData, i);
+                }
+
                 return true;
             }
-            
+
             return false;
         }
+
 
         private bool IsIdenticalCountableItem(IGameItem cItem, int index, out IGameItemSlot slot)
         {
@@ -994,10 +1069,7 @@ namespace TH.Item
 
         public bool RestoreState(object state)
         {
-            slots.Clear();
-            FillInventoryWithEmptySlots();
-
-            countableDict.Clear();
+            Clear();
             
             List<IGameItem> items = ExtractSaveData(state);
             foreach (var item in items)
@@ -1108,7 +1180,112 @@ namespace TH.Item
 
         #endregion
 
+        #region Item index cahce
+        private readonly Dictionary<ItemTypeSO, List<int>> itemIndexCache = new();
 
+        private void CacheAdd(ItemTypeSO itemInfo, int index)
+        {
+            if (!IsValidSlotIdx(index)) return;
+            if (!itemIndexCache.TryGetValue(itemInfo, out var list))
+            {
+                list = new List<int>();
+                itemIndexCache[itemInfo] = list;
+            }
+
+            if (!list.Contains(index))
+                list.Add(index);
+        }
+
+        private void CacheAdd(IGameItem item, int index)
+        {
+            if (item?.GetItemInfo is not ItemTypeSO data) return;
+            CacheAdd(data, index);
+        }
+
+        private void CacheRemove(IGameItem item, int index)
+        {
+            if (item?.GetItemInfo is not ItemTypeSO data) return;
+            if (!itemIndexCache.TryGetValue(data, out var list)) return;
+
+            list.Remove(index);
+            if (list.Count == 0)
+                itemIndexCache.Remove(data);
+        }
+
+        // 슬롯 하나를 통째로 비울 때 사용하면 편한 래퍼
+        private void CacheClearSlot(IGameItemSlot slot)
+        {
+            if (slot is { HasItem: true, GetItem: { } item })
+            {
+                CacheRemove(item, slot.Index);
+            }
+        }
+
+        // “해당 ItemTypeSO를 가진 슬롯이 있는지” 캐시에서 먼저 찾기
+        private bool TryGetCachedIndex(ItemTypeSO data, int minIndex, out int index)
+        {
+            index = -1;
+            if (data == null) return false;
+            if (!itemIndexCache.TryGetValue(data, out var list)) return false;
+
+            for (int i = list.Count - 1; i >= 0; i--)
+            {
+                int idx = list[i];
+
+                // 시작 인덱스보다 앞이면 스킵
+                if (idx < minIndex) continue;
+
+                // 슬롯 인덱스 자체가 유효하지 않으면 캐시에서 제거
+                if (!IsValidSlotIdx(idx))
+                {
+                    list.RemoveAt(i);
+                    continue;
+                }
+
+                // 실제 슬롯 내용과 데이터 일치 여부 lazy 검증
+                if (slots[idx] is { HasItem: true, GetItemInfo: ItemTypeSO slotData } && slotData == data)
+                {
+                    index = idx;
+                    return true;
+                }
+
+                // 내용이 바뀌었으면 캐시에서 제거
+                list.RemoveAt(i);
+            }
+
+            if (list.Count == 0)
+                itemIndexCache.Remove(data);
+
+            return false;
+        }
+
+        private void RebuildItemIndexCache()
+        {
+            itemIndexCache.Clear();
+
+            int end = GetEndIdx;
+            if (end < 0) return;
+
+            for (int i = 0; i <= end; i++)
+            {
+                if (slots[i] is { IsAccessible: true, HasItem: true, GetItem: { } item })
+                {
+                    CacheAdd(item, i);
+                }
+            }
+        }
+
+
+        #endregion
+
+        private void Clear()
+        {
+            slots.Clear();
+            FillInventoryWithEmptySlots();
+
+            countableDict.Clear();
+            itemIndexCache.Clear();
+        }
     }
 }
 

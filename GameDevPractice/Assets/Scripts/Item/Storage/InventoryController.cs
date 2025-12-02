@@ -9,7 +9,6 @@ using TH.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using TH.Item.Storage;
-using TH.Combat;
 using TH.Attribute;
 
 namespace TH.Item
@@ -723,6 +722,7 @@ namespace TH.Item
         
         #endregion
 
+        
         private void Clear()
         {
             if (itemTooltip != null)

@@ -289,8 +289,12 @@ namespace TH.UI
         // Canvas 정렬, 위치 설정, 애니메이션 재생, 월드 오브젝트 추적 시작
         public virtual void OnGetFromPool()
         {
+            Logg.Log($"[PopupUI.OnGetFromPool] START - Current scale: {Rect.localScale}");
+            
             // Canvas sorting order를 최상단으로 설정
             UIManager.Instance.SortCanvas(canvas, UICanvas.Popup);
+            
+            Logg.Log($"[PopupUI.OnGetFromPool] After SortCanvas - Current scale: {Rect.localScale}");
 
             // 포인터 위치에 팝업 배치
             if (placePointerPosition)
@@ -311,6 +315,8 @@ namespace TH.UI
                 canvasGroup.alpha = 1f; // 애니메이션 없으면 즉시 표시
             }
             
+            Logg.Log($"[PopupUI.OnGetFromPool] After animation - Current scale: {Rect.localScale}");
+            
             // 월드 오브젝트 추적 시작
             if (anchorWorldObject)
             {
@@ -322,6 +328,8 @@ namespace TH.UI
                 cachedPosition = raycastHandler.GetMouseWorldPosition();
                 TrackPopupPosition().Forget(); // 비동기 추적 루프 시작
             }
+            
+            Logg.Log($"[PopupUI.OnGetFromPool] END - Current scale: {Rect.localScale}");
         }
 
         // IPoolObject.OnReleaseFromPool() 구현

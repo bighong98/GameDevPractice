@@ -35,7 +35,7 @@ namespace TH.Core.Pool
         // registerPool: false -> 풀 딕셔너리에 등록하지 않고 생성된 풀 반납 (풀 요청 측에서 직접 관리)
         // parent: null -> PoolContainer로 컨테이너 자동 생성
         // create/get/release: 풀 이벤트에 콜백 등록 가능
-public ObjectPool<IPoolObject> GetPool(GameObject prefab, Transform parent = null,
+        public ObjectPool<IPoolObject> GetPool(GameObject prefab, Transform parent = null,
             Action<IPoolObject> createAction = null, Action<IPoolObject> getAction = null, Action<IPoolObject> releaseAction = null,
             int capacity = DefaultCapacity, int maxSize = DefaultMaxSize, bool registerPool = true)
         {
@@ -135,12 +135,12 @@ public ObjectPool<IPoolObject> GetPool(GameObject prefab, Transform parent = nul
         }
         // 제네릭 버전 
         // parent: not null -> 꺼낸 뒤 임의로 상위 오브젝트(parent) 지정
-        public T GetFromPool<T>(GameObject prefab, Transform parent = null) where T : Component, IPoolObject
+        public T GetFromPool<T>(GameObject prefab, Transform parent = null, bool worldPositionStays = true) where T : Component, IPoolObject
         {
             if (GetPool(prefab, parent) is not { } pool || pool.Get() is not T t) return null;
             
             if (parent != null)
-                t.transform.SetParent(parent, worldPositionStays: true); // parent로 상위 오브젝트 변경 및 기존 worldPosition 유지
+                t.transform.SetParent(parent, worldPositionStays: worldPositionStays); // parent로 상위 오브젝트 변경 및 기존 worldPosition 유지
 
             return t;
         }

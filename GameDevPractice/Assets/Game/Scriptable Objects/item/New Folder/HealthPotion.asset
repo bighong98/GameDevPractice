@@ -16,7 +16,7 @@ MonoBehaviour:
   nameString: Health Potion
   sprite: {fileID: 21300000, guid: 44dc65116207f4b46aa85443dae5ad96, type: 3}
   itemType: 2
-  maxAmount: 20
+  maxAmount: 10
   desc: A crimson elixir that restores vitality. Recovers 50 HP when consumed.
   itemUseEffects:
   - {fileID: 11400000, guid: 389108454022f9a45b3516705342d06c, type: 2}
