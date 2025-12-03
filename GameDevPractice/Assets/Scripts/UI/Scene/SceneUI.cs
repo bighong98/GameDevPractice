@@ -10,6 +10,12 @@ namespace TH.UI
         {
             
         }
+
+        public virtual bool GetQuickSlotPanelUI(out QuickSlotPanelUI quickSlotPanelUI)
+        {
+            quickSlotPanelUI = default;
+            return false;
+        }
         
         #region IPoolObject
 

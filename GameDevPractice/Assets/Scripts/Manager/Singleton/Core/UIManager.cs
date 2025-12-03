@@ -270,6 +270,18 @@ namespace TH.UI
             SetCanvas(sceneUI.gameObject, UICanvas.Scene); 
         }
 
+        public bool TryGetSceneUI(out SceneUI ui)
+        {
+            if (!sceneUI.IsAlive())
+            {
+                ui = default;
+                return false;
+            }
+
+            ui = sceneUI;
+            return true;
+        }
+
         #endregion
 
         #region Overlay UI Method (Not Popup)

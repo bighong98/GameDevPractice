@@ -85,6 +85,25 @@ namespace TH.UI
             SubscribeDragEvents();
         }
 
+        IDraggableStorageUI quickSlotPanelUI;
+        void OnEnable()
+        {
+            if (UIManager.Instance.TryGetSceneUI(out var sceneUI) && sceneUI.IsAlive()
+                && sceneUI.GetQuickSlotPanelUI(out var quickSlotPanelUI))
+            {
+                this.quickSlotPanelUI = quickSlotPanelUI;
+                SubscribeDragEndEvent(quickSlotPanelUI);
+            }
+        }
+
+        void OnDisable()
+        {
+            if (quickSlotPanelUI.IsAlive())
+            {
+                UnSubscribeDragEndEvent(quickSlotPanelUI);
+            }
+        }
+
         private void LateUpdate()
         {
             if (!isDragging) return;
@@ -118,6 +137,9 @@ namespace TH.UI
         
         #region Handle Drag
 
+        private readonly Dictionary<IDraggableStorageUI, Action<int>> _dragBeginHandlers = new();
+        private readonly Dictionary<IDraggableStorageUI, Action<int>> _dragEndHandlers = new();
+
         private void SubscribeDragEvents()
         {
             SubscribeDragBeginEvent(storageUI);
@@ -126,14 +148,42 @@ namespace TH.UI
             SubscribeDragEndEvent(equipmentUI);
         }
 
+        // private void SubscribeDragBeginEvent(IDraggableStorageUI sourceUI)
+        // {
+        //     sourceUI.OnSlotDragged += (index) => { OnDragBegin(sourceUI, index); };
+        // }
+        
+        // private void SubscribeDragEndEvent(IDraggableStorageUI sourceUI)
+        // {
+        //     sourceUI.OffSlotDragged += (index) => { OnDragEnd(sourceUI, index); };
+        // }
+
         private void SubscribeDragBeginEvent(IDraggableStorageUI sourceUI)
         {
-            sourceUI.OnSlotDragged += (index) => { OnDragBegin(sourceUI, index); };
+            UnSubscribeDragBeginEvent(sourceUI);
+            Action<int> e = (index) => OnDragBegin(sourceUI, index);
+            _dragBeginHandlers[sourceUI] = e;
+            sourceUI.OnSlotDragged += e;
         }
-        
+
+        private void UnSubscribeDragBeginEvent(IDraggableStorageUI sourceUI)
+        {
+            if (_dragBeginHandlers.Remove(sourceUI, out var e))
+                sourceUI.OnSlotDragged -= e;
+        }
+
         private void SubscribeDragEndEvent(IDraggableStorageUI sourceUI)
         {
-            sourceUI.OffSlotDragged += (index) => { OnDragEnd(sourceUI, index); };
+            UnSubscribeDragEndEvent(sourceUI);
+            Action<int> e = (index) => OnDragEnd(sourceUI, index);
+            _dragEndHandlers[sourceUI] = e;
+            sourceUI.OffSlotDragged += e;
+        }
+
+        private void UnSubscribeDragEndEvent(IDraggableStorageUI sourceUI)
+        {
+            if (_dragEndHandlers.Remove(sourceUI, out var e))
+                sourceUI.OffSlotDragged -= e;
         }
         
         private void OnDragBegin(IDraggableStorageUI sourceUI, int index)
@@ -148,7 +198,8 @@ namespace TH.UI
         {
             if (!isDragging) return; // 드래그 중이 아닐 경우 무시
             if (beginDragSourceUI == null) return; // 드래그 시작 슬롯 데이터가 유효하지 않으면 중지
-            
+
+            Logg.Log($"[InventoryUI] OnDragEnd - ({beginDragSourceUI}, {beginDragIdx}, {sourceUI}, {index})", Logg.LoggingMode.Completed);
             OnDragDrop?.Invoke(new DragSlotInfo(beginDragSourceUI, beginDragIdx, sourceUI, index)); // 드래그 발생 이벤트 호출
             ResetDragState(); // 드래그 플래그 갱신
         }

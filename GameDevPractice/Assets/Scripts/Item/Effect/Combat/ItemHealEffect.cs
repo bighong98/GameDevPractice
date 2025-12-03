@@ -11,9 +11,7 @@ public class ItemHealEffect : ItemEffectBase
 
     public override bool TryApply(in ItemUseContext context)
     {
-        if (context.User is not IHealable target || !target.IsAlive()
-            || context.Item is not { IsValid: true, IsEmpty: false } item
-            || context.Slot == null || context.Storage == null)
+        if (context.User is not IHealable target || !target.IsAlive())
         {
             return false;
         }

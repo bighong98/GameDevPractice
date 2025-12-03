@@ -82,8 +82,7 @@ namespace TH.UI
             Enums.UIEvent type = Enums.UIEvent.Click)
         {
             // UI_EventHandler 컴포넌트 추가 또는 가져오기
-            if (eventHandler == null)
-                eventHandler = go.AddComponent<UI_EventHandler>();
+            eventHandler = go.GetOrAddComponent<UI_EventHandler>();
             
             // 이벤트 타입에 따라 핸들러 등록 (중복 방지를 위해 먼저 해제 후 등록)
             switch ((int)type)

@@ -1,7 +1,7 @@
+using TH.UI;
 using TH.Utils;
-using UnityEngine;
 
-public class QuickSlotUI : BaseSlotUI
+public class QuickSlotUI : BaseSlotUI, IHighlightableSlotUI
 {
     #region Enums
 
@@ -22,13 +22,7 @@ public class QuickSlotUI : BaseSlotUI
     {
         if (GetTMPText((int)TMPTexts.ItemAmountText) is not {} t)
         {
-            Logg.LogError($"[{gameObject.name}] InvenSlotUI failed to find {TMPTexts.ItemAmountText.ToString()}");
-            return;
-        }
-
-        if (amount <= 1)
-        {
-            t.enabled = false;
+            Logg.LogError($"[{gameObject.name}] InvenSlotUI failed to find {TMPTexts.ItemAmountText}");
             return;
         }
         
@@ -36,10 +30,19 @@ public class QuickSlotUI : BaseSlotUI
         t.enabled = true;
     }
 
-    protected override void HideIcon()
+    new public void HideIcon()
     {
         base.HideIcon();
-        GetTMPText((int)TMPTexts.ItemAmountText).enabled = false;
+        if (GetTMPText((int)TMPTexts.ItemAmountText) is {} t)
+            t.enabled = false;
+    }
+
+    public override void Clear()
+    {
+        base.Clear();
+        if (GetTMPText((int)TMPTexts.ItemAmountText) is {} t)
+            t.enabled = false;
+        UnHighlight();
     }
 
     public void Highlight(int type)

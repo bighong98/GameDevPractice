@@ -16,6 +16,7 @@ public class GameSceneUI : SceneUI
         HPBar,
         MPBar,
         PlayerExpBar,
+        QuickSlotPanel,
     }
 
     enum TMPTexts
@@ -204,5 +205,18 @@ public class GameSceneUI : SceneUI
         {
             s.OffHighlight();
         }
+    }
+
+
+    public override bool GetQuickSlotPanelUI(out QuickSlotPanelUI quickSlotPanelUI)
+    {
+        if (GetObject((int)GameObjects.QuickSlotPanel) is {} go && go.IsAlive()
+            && go.TryGetComponent<QuickSlotPanelUI>(out quickSlotPanelUI))
+        {
+            return true;
+        }
+
+        quickSlotPanelUI = default;
+        return false;
     }
 }

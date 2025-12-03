@@ -17,6 +17,7 @@ namespace TH.Item
     {
         // model
         private IPlayerStorage pStorage;
+        private IQuickStorage pQuickStorage;
         private IEquipmentHolder pEquipHolder;
         // view
         private IPlayerInventoryUI pInvenUI;
@@ -33,10 +34,14 @@ namespace TH.Item
         
         private void Awake()
         {
+            // EventHandlerRegistry 초기화
+            InitializeEventRegistries();
+            // 외부 서비스 참조 받아오기
             pStorage = ServiceLocator.Get<IPlayerStorage>();
+            pQuickStorage = ServiceLocator.Get<IQuickStorage>();
             itemTransfer = ServiceLocator.Get<IGameItemTransfer>();
             itemConsumer = ServiceLocator.Get<IGameItemConsumer>();
-            
+            // InventoryUI 참조 받기 -> 없는 경우 InventoryController 비활성화 및 중단
             if (!TryGetComponent(out pInvenUI))
             {
                 Logg.LogError($"[{nameof(InventoryController)}] " +
@@ -44,16 +49,11 @@ namespace TH.Item
                 this.enabled = false;
                 return;
             }
-            
+
             RenewPlayerReference();
             SceneManager.sceneLoaded += RenewPlayerReference;
             
-            // 아이템 툴팁 UI 로드
-            if (ResourceManager.Instance.Instantiate("UI_ItemTooltip.prefab", transform) is { } tooltipObj)
-            {
-                itemTooltip = tooltipObj.GetComponent<UI_ItemTooltip>();
-                itemTooltip.HideTooltip();
-            }
+            LoadItemTooltipUI();
         }
 
         private void OnEnable()
@@ -89,26 +89,69 @@ namespace TH.Item
         
         private void OnDisable()
         {
-            Clear();
+            Refresh();
         }
 
         private void OnDestroy()
         {
-            Clear();
-            
-            UnBindStorageEvents(pStorage);
-            UnBindStorageEvents(pEquipHolder);
-            
+            Refresh();
+
+            // UnBindStorageEvents(pStorage);
+            // UnBindStorageEvents(pEquipHolder);
+            ClearStorageModifiedEvent();
+            _storageChangedHandlers.Clear();
+            _slotChangedRegistry.Clear();
+            _capacityRegistry.Clear();
+            _tryUsedRegistry.Clear();
+
+            _hoverEnterRegistry.Clear();
+            _hoverExitRegistry.Clear();
+            _clickRegistry.Clear();
+            _subClickRegistry.Clear();
+
             if (itemTooltip != null && itemTooltip.gameObject != null)
                 Destroy(itemTooltip.gameObject);
-            
+
             SceneManager.sceneLoaded -= RenewPlayerReference;
         }
 
+
         #region Initialization
 
-        // View(UI) Event Bind
+        // EventHandlerRegistry<> 인스턴스 초기화
+        private void InitializeEventRegistries()
+        {
+            _hoverEnterRegistry = new EventHandlerRegistry<IHoverableStorageUI, int>(
+                adder: (ui, handler) => ui.OnSlotHovered += handler,
+                remover: (ui, handler) => ui.OnSlotHovered -= handler
+            );
+            _hoverExitRegistry = new EventHandlerRegistry<IHoverableStorageUI, int>(
+                adder: (ui, handler) => ui.OffSlotHovered += handler,
+                remover: (ui, handler) => ui.OffSlotHovered -= handler
+            );
+            _clickRegistry = new EventHandlerRegistry<IClickableStorageUI, int>(
+                adder: (ui, handler) => ui.OnSlotClicked += handler,
+                remover: (ui, handler) => ui.OnSlotClicked -= handler
+            );
+            _subClickRegistry = new EventHandlerRegistry<ISubClickableStorageUI, int>(
+                adder: (ui, handler) => ui.OnSlotSubClicked += handler,
+                remover: (ui, handler) => ui.OnSlotSubClicked -= handler
+            );
+            _slotChangedRegistry = new EventHandlerRegistry<IGameItemStorage, IGameItemSlot>(
+                adder: (storage, handler) => storage.OnSlotChanged += handler,
+                remover: (storage, handler) => storage.OnSlotChanged -= handler
+            );
+            _tryUsedRegistry = new EventHandlerRegistry<IUsableItemStorage, IGameItemSlot>(
+                adder: (storage, handler) => storage.OnItemTryUsed += handler,
+                remover: (storage, handler) => storage.OnItemTryUsed -= handler
+            );
+            _capacityRegistry = new EventHandlerRegistry<IMutableCapacity, int>(
+                adder: (storage, handler) => storage.OnCapacityChanged += handler,
+                remover: (storage, handler) => storage.OnCapacityChanged -= handler
+            );
+        }
 
+        // View(UI) Event Bind
         private void BindStorageUIEvents(IGameItemStorage storage)
         {
             if (GetUIFromStorage(storage) is not { } storageUI) return;
@@ -143,7 +186,8 @@ namespace TH.Item
         {
             if (storage == null) return;
          
-            // 개별 Subscribe 계열 매서드들이 반드시 UnSubscribe 이후 구독하도록 할 것 (이벤트 누적 방지)
+            // 개별 Subscribe 계열 매서드들이 반드시 UnSubscribe 이후 구독하도록 할 것 (이벤트 핸들러 누적 방지)
+            // EventHandlerRegistry<> 로 관리되는 경우 Register() 호출 시 내부에서 UnRegister() 자동 호출됨
             SubscribeStorageModifiedEvent(storage);
             SubscribeSlotModifiedEvent(storage);
             if (storage is IMutableCapacity cStorage)
@@ -157,11 +201,12 @@ namespace TH.Item
             if (storage == null) return;
             
             UnSubscribeStorageModifiedEvent(storage);
-            UnSubscribeSlotModifiedEvent(storage);
+            _slotChangedRegistry.UnRegister(storage);
             if (storage is IMutableCapacity cStorage)
-                UnSubscribeStorageCapacityEvent(cStorage);
+                _capacityRegistry.UnRegister(cStorage);
             if (storage is IUsableItemStorage uStorage)
-                UnSubscribeStorageUsageEvent(uStorage);
+                _tryUsedRegistry.UnRegister(uStorage);
+
         }
         
         
@@ -186,135 +231,91 @@ namespace TH.Item
             BindStorageEvents(pEquipHolder);
         }
 
+        private void LoadItemTooltipUI()
+        {
+            // 아이템 툴팁 UI 로드
+            if (ResourceManager.Instance.Instantiate("UI_ItemTooltip.prefab", transform) is { } tooltipObj)
+            {
+                itemTooltip = tooltipObj.GetComponent<UI_ItemTooltip>();
+                itemTooltip.HideTooltip();
+            }
+        }
+
         #endregion
 
         #region Un/Subscribe Event
 
         // Input Events (UI - View)
-        private readonly Dictionary<IHoverableStorageUI, Action<int>> _hoverEnterHandlers = new();
-        private readonly Dictionary<IHoverableStorageUI, Action<int>> _hoverExitHandlers = new();
-        private readonly Dictionary<IClickableStorageUI, Action<int>> _clickHandlers = new();
-        private readonly Dictionary<ISubClickableStorageUI, Action<int>> _subClickHandlers = new();
+        private EventHandlerRegistry<IHoverableStorageUI, int> _hoverEnterRegistry;
+        private EventHandlerRegistry<IHoverableStorageUI, int> _hoverExitRegistry;
+        private EventHandlerRegistry<IClickableStorageUI, int> _clickRegistry;
+        private EventHandlerRegistry<ISubClickableStorageUI, int> _subClickRegistry;
         
         private void SubscribeHoverEnterEvent(IHoverableStorageUI sourceUI)
         {
-            UnSubscribeHoverEnterEvent(sourceUI);
-            Action<int> e = (index) => OnSlotHovered(sourceUI, index);
-            _hoverEnterHandlers[sourceUI] = e;
-            sourceUI.OnSlotHovered += e;
+            _hoverEnterRegistry.Register(sourceUI, (index) => OnSlotHovered(sourceUI, index));
         }
 
         private void SubscribeHoverExitEvent(IHoverableStorageUI sourceUI)
         {
-            UnSubscribeHoverExitEvent(sourceUI);
-            Action<int> e = (index) => OffSlotHovered(sourceUI, index);
-            _hoverExitHandlers[sourceUI] = e;
-            sourceUI.OffSlotHovered += e;
+            _hoverExitRegistry.Register(sourceUI, (index) => OffSlotHovered(sourceUI, index));
         }
 
         private void SubscribeClickEvent(IClickableStorageUI sourceUI)
         {
-            UnSubscribeClickEvent(sourceUI);
-            Action<int> e = (index) => OnSlotClicked(sourceUI, index);
-            _clickHandlers[sourceUI] = e;
-            sourceUI.OnSlotClicked += e;
+            _clickRegistry.Register(sourceUI, (index) => OnSlotClicked(sourceUI, index));
         }
         
         private void SubscribeSubClickEvent(ISubClickableStorageUI sourceUI)
         {
-            UnSubscribeSubClickEvent(sourceUI);
-            Action<int> e = (index) => OnSlotSubClicked(sourceUI, index);
-            _subClickHandlers[sourceUI] = e;
-            sourceUI.OnSlotSubClicked += e;
-        }
-
-        private void UnSubscribeHoverEnterEvent(IHoverableStorageUI sourceUI)
-        {
-            if (_hoverEnterHandlers.Remove(sourceUI, out var e))
-                sourceUI.OnSlotHovered -= e;
-        }
-        private void UnSubscribeHoverExitEvent(IHoverableStorageUI sourceUI)
-        {
-            if (_hoverExitHandlers.Remove(sourceUI, out var e))
-                sourceUI.OffSlotHovered -= e;
-        }
-
-        private void UnSubscribeClickEvent(IClickableStorageUI sourceUI)
-        {
-            if (_clickHandlers.Remove(sourceUI, out var e))
-                sourceUI.OnSlotClicked -= e;
-        }
-
-        private void UnSubscribeSubClickEvent(ISubClickableStorageUI sourceUI)
-        {
-            if (_subClickHandlers.Remove(sourceUI, out var e))
-                sourceUI.OnSlotSubClicked -= e;
+            _subClickRegistry.Register(sourceUI, (index) => OnSlotSubClicked(sourceUI, index));
         }
         
         // Storage Events (Model)
-        private readonly Dictionary<IGameItemStorage, Action> _storageChangedHandlers = new();
-        private readonly Dictionary<IGameItemStorage, Action<IGameItemSlot>> _slotChangedHandlers = new();
-        private readonly Dictionary<IUsableItemStorage, Action<IGameItemSlot>> _tryUsedHandlers = new();
-        private readonly Dictionary<IMutableCapacity, Action<int>> _capacityHandlers = new();
-
-        private void SubscribeStorageModifiedEvent(IGameItemStorage storage)
-        {
-            UnSubscribeStorageModifiedEvent(storage); // 중복 구독 방어
-            Action e = () => RefreshStorageUI(storage);
-            _storageChangedHandlers[storage] = e;
-            storage.OnStorageChanged += e;
-        }
+        private EventHandlerRegistry<IGameItemStorage, IGameItemSlot> _slotChangedRegistry = null;
+        private EventHandlerRegistry<IUsableItemStorage, IGameItemSlot> _tryUsedRegistry = null;
+        private EventHandlerRegistry<IMutableCapacity, int> _capacityRegistry = null;
         
         private void SubscribeSlotModifiedEvent(IGameItemStorage storage)
         {
-            UnSubscribeSlotModifiedEvent(storage); // 기존 이벤트가 있다면 정리
-            Action<IGameItemSlot> e = (slot) =>
-            {
-                OnSlotItemChanged(storage, slot);
-            };
-            _slotChangedHandlers[storage] = e;
-            storage.OnSlotChanged += e;
+            _slotChangedRegistry.Register(storage, (slot) => OnSlotItemChanged(storage, slot));
         }
 
         private void SubscribeStorageCapacityEvent(IMutableCapacity storage)
         {
-            UnSubscribeStorageCapacityEvent(storage); // 기존 이벤트가 있다면 정리
-            Action<int> e = (capacity) => OnStorageCapacityChanged(storage, capacity);
-            _capacityHandlers[storage] = e;
-            storage.OnCapacityChanged += e;
+            _capacityRegistry.Register(storage, (capacity) => OnStorageCapacityChanged(storage, capacity));
         }
 
         private void SubscribeStorageUsageEvent(IUsableItemStorage storage)
         {
-            UnSubscribeStorageUsageEvent(storage); // 기존 이벤트가 있다면 정리
-            Action<IGameItemSlot> e = (slot) => OnSlotItemTryUsed(storage, slot);
-            _tryUsedHandlers[storage] = e;
-            storage.OnItemTryUsed += e;
+            _tryUsedRegistry.Register(storage, (slot) => OnSlotItemTryUsed(storage, slot));
         }
+
+        private readonly Dictionary<IGameItemStorage, Action> _storageChangedHandlers = new();
         
+        private void SubscribeStorageModifiedEvent(IGameItemStorage storage)
+        {
+            UnSubscribeStorageModifiedEvent(storage);
+            Action handler = () => RefreshStorageUI(storage);
+            _storageChangedHandlers[storage] = handler;
+            storage.OnStorageChanged += handler;
+        }
+
         private void UnSubscribeStorageModifiedEvent(IGameItemStorage storage)
         {
-            if (_storageChangedHandlers.Remove(storage, out var e))
-                storage.OnStorageChanged -= e;
+            if (_storageChangedHandlers.Remove(storage, out var handler))
+                storage.OnStorageChanged -= handler;
         }
         
-        private void UnSubscribeSlotModifiedEvent(IGameItemStorage storage)
+        private void ClearStorageModifiedEvent()
         {
-            if (_slotChangedHandlers.Remove(storage, out var e))
-                storage.OnSlotChanged -= e;
+            foreach (var (storage, handler) in _storageChangedHandlers)
+            {
+                if (storage != null)
+                    storage.OnStorageChanged -= handler;
+            }
         }
-
-        private void UnSubscribeStorageCapacityEvent(IMutableCapacity storage)
-        {
-            if (_capacityHandlers.Remove(storage, out var e))
-                storage.OnCapacityChanged -= e;
-        }
-
-        private void UnSubscribeStorageUsageEvent(IUsableItemStorage storage)
-        {
-            if (_tryUsedHandlers.Remove(storage, out var e))
-                storage.OnItemTryUsed -= e;
-        }
+        
         
         #endregion
 
@@ -373,7 +374,7 @@ namespace TH.Item
                 result.TryGetItemSlot(index, out var slot) &&
                 slot is {HasItem: true, IsAccessible: true})
             {
-                itemTooltip.MoveTooltip(InputManager.Instance.PointerPos); //todo: 가능하면 UI에서 직접 받아오기
+                itemTooltip.MoveTooltip(InputManager.Instance.PointerPos); 
                 itemTooltip.ShowTooltip(slot);
             }
             else itemTooltip.HideTooltip(); // 아이템이 없는 슬롯일 경우 툴팁 비활성화
@@ -437,11 +438,19 @@ namespace TH.Item
                 || !fromStorage.TryGetItemSlot(from.index, out var fromSlot))
                 return;
             
+            pInvenUI.CancelDrag();
+
+            // 퀵슬롯으로의 드래그 앤 드롭 처리 (타입 체크)
+            if (toSource is QuickSlotPanelUI)
+            {
+                HandleQuickSlotDrop(fromStorage, fromSlot, to.index);
+                return;
+            }
+            
+            // 기존 로직: toStorage 확인 후 동일 스토리지 내부 정렬 또는 일반 전송/교환
             if (GetStorageFromUI(toSource) is not { } toStorage
                 || !toStorage.TryGetItemSlot(to.index, out var toSlot))
                 return;
-            
-            pInvenUI.CancelDrag();
 
             if (fromStorage == toStorage && fromStorage is IRearrangeableStorage rStorage)
             {
@@ -452,6 +461,45 @@ namespace TH.Item
             else itemTransfer.TransferOrSwap(
                 fromStorage, fromSlot, toStorage, toSlot);
         }
+
+        private void HandleQuickSlotDrop(IGameItemStorage fromStorage, IGameItemSlot fromSlot, int quickSlotIndex)
+        {
+            if (pQuickStorage == null)
+            {
+                Logg.LogWarning("[InventoryController] QuickStorage not available");
+                return;
+            }
+
+            // 비어있는 슬롯이거나 접근 불가한 슬롯은 무시
+            if (fromSlot is not { HasItem: true, IsAccessible: true, GetItem: { } item, GetItemInfo: { } itemInfo })
+                return;
+
+            // 퀵슬롯에 등록 가능한 아이템 타입인지 검증
+            if (itemInfo.itemType != Enums.ItemType.Countable && itemInfo.itemType != Enums.ItemType.Single)
+            {
+                Logg.LogWarning($"[InventoryController] Item type {itemInfo.itemType} cannot be registered to QuickSlot");
+                return;
+            }
+
+            // ItemTypeSO 참조 저장 목적 더미 아이템 객체 생성
+            // 실제 개수 관리는 PlayerStorage에서 처리
+            // 해당 인덱스의 퀵슬롯에 등록 (덮어쓰기)
+            if (!pQuickStorage.TryStore(CreateDummyItemForQuickSlot(itemInfo), quickSlotIndex))
+                return;
+
+            Logg.Log($"[InventoryController] Successfully registered {itemInfo.name} to QuickSlot {quickSlotIndex}", 
+                Logg.LoggingMode.Completed);
+        }
+
+        private IGameItem CreateDummyItemForQuickSlot(ItemTypeSO itemInfo)
+        {
+            if (itemInfo == null) return null;
+            
+            // ItemTypeSO 참조만 필요한 더미 아이템 생성
+            return new GameItem(itemInfo);
+        }
+
+
         
         
 
@@ -723,7 +771,7 @@ namespace TH.Item
         #endregion
 
         
-        private void Clear()
+        private void Refresh()
         {
             if (itemTooltip != null)
                 itemTooltip.HideTooltip();

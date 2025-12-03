@@ -56,8 +56,11 @@ namespace TH.Core
             }
         }
 
-        protected virtual void Start()
+        protected virtual void OnEnable()
         {
+            if (IsInvalidInstance()) return;
+            if (IsInitOnce) return;
+
             resourceLoader = ServiceLocator.Get<IResourceLoader>();
             sceneLoader = ServiceLocator.Get<ISceneLoader>();
 
@@ -66,6 +69,8 @@ namespace TH.Core
             
             OnSceneChanged(default);
         }
+
+        protected virtual void Start() {}
 
         public bool IsInitOnce { get; private set; }
         public bool IsInitOnceAfterPreLoad { get; private set; }

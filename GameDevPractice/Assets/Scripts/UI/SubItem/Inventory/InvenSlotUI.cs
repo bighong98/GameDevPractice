@@ -53,4 +53,11 @@ public class InvenSlotUI : BaseSlotUI, IInvenSlotUI
     {
         base.UnHighlight();
     }
+
+    public override void Clear()
+    {
+        base.Clear();
+        if (GetTMPText((int)TMPTexts.ItemAmountText) is {} t)
+            t.enabled = false;
+    }
 }

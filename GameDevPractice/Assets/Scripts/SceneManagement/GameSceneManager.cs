@@ -42,7 +42,7 @@ namespace TH.SceneManagement
         
         public async UniTask LoadSceneAsync(object key, bool reload = false)
         {
-            if (!reload && (key is string strKey && SceneManager.GetActiveScene().name == strKey)
+            if (!reload && key is string strKey && SceneManager.GetActiveScene().name == strKey
                 || (key is AssetReferenceScene sceneRef && SceneManager.GetActiveScene().name == sceneRef.SceneName))
             {
                 return; // reload 목적이 아니라면, 동일 씬으로의 이동x

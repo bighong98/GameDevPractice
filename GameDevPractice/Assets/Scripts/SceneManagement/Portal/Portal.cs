@@ -2,8 +2,8 @@ using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
-using TH.SceneManagement;
 using TH.SaveLoad;
+using TH.Utils;
 
 namespace TH.SceneManagement
 {
@@ -26,6 +26,7 @@ namespace TH.SceneManagement
 
         private void OnTriggerEnter(Collider other)
         {
+            if (NotTransitionWithoutDestination()) return;
             if (other.CompareTag("Player"))
             {
                 Transition().Forget();
@@ -87,13 +88,14 @@ namespace TH.SceneManagement
 
         private bool NotTransitionWithoutDestination()
         {
-            if (info is not { destinationScene: { } dest })
+            if (info is not { destinationScene: { } dest, destinationPortal: {} destPortalData } 
+                || !dest.IsAlive()
+                || !destPortalData.IsAlive())
             {
                 if (TryGetComponent(out Collider coll))
-                {
                     coll.enabled = false;
-                    return true;
-                }
+
+                return true;
             }
 
             return false;

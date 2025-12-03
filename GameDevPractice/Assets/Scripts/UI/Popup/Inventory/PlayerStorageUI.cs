@@ -85,12 +85,14 @@ namespace TH.UI
 
         public void DrawSlot(int index, IGameItem instance)
         {
+            // 슬롯UI, 아이템 객체 유효성 검사
             if (!TryGetSlot(index, out var slotUI)) return;
-            if (instance is not { GetItemInfo: { } itemInfo } item)
+            if (instance is not { IsValid: true, GetItemInfo: { } itemInfo } )
             {
                 slotUI.Clear();
                 return;
             }
+            // 슬롯UI 그리기
             slotUI.SetIcon(itemInfo.sprite);
             slotUI.SetAmount(instance.GetAmount);
         }

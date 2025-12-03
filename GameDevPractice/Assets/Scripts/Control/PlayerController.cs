@@ -4,6 +4,8 @@ using TH.Movement;
 using TH.Combat;
 using UnityEngine.AI;
 using TH.Utils;
+using System;
+using TH.Core.Service;
 
 namespace TH.Control
 {
@@ -22,6 +24,8 @@ namespace TH.Control
             mover = GetComponent<Mover>();
             fighter = GetComponent<Fighter>();
             health = GetComponent<Health>();
+
+            ServiceLocator.Get<IPlayerHolder>().SetPlayer(this);
         }
 
         private void OnEnable()
@@ -41,7 +45,7 @@ namespace TH.Control
             InputManager.Instance.OnSelected -= OnPointerPressed;
         }
 
-private void OnPointerPressed(Vector2 pos)
+        private void OnPointerPressed(Vector2 pos)
         {
             Logg.Log($"[{nameof(PlayerController)}.{nameof(OnPointerPressed)}()] triggered", Logg.LoggingMode.Completed);
             

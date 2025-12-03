@@ -50,8 +50,11 @@ public abstract class BaseSlotUI : BaseUI, ISlotUI, IPoolObject
     {
         if (sprite != null)
         {
-            GetImage((int)Images.ItemImage).sprite = sprite;
-            ShowIcon();
+            if (GetImage((int)Images.ItemImage) is {} img)
+            {
+                img.sprite = sprite;
+                ShowIcon();
+            }
         }
         else
         {
@@ -60,10 +63,13 @@ public abstract class BaseSlotUI : BaseUI, ISlotUI, IPoolObject
         }
     }
     
-    protected virtual void RemoveIcon() // 슬롯 아이템 제거
+    protected virtual void RemoveIcon()
     {
-        GetImage((int)Images.ItemImage).sprite = null;
-        HideIcon();
+        if (GetImage((int)Images.ItemImage) is {} img)
+        {
+            img.sprite = null;
+            HideIcon();
+        }
     }
 
     public new virtual void Clear()
@@ -72,18 +78,41 @@ public abstract class BaseSlotUI : BaseUI, ISlotUI, IPoolObject
         RemoveIcon();
     }
     
-    protected virtual void ShowIcon() => GetImage((int)Images.ItemImage).enabled = true;
-    protected virtual void HideIcon() => GetImage((int)Images.ItemImage).enabled = false;
+    protected virtual void ShowIcon()
+    {
+        if (GetImage((int)Images.ItemImage) is {} img)
+            img.enabled = true;
+    }
+    protected virtual void HideIcon()
+    {
+        if (GetImage((int)Images.ItemImage) is {} img)
+            img.enabled = false;
+    }
     
-    public virtual void Highlight() => GetImage((int)Images.HighLightImage).enabled = true;
-    public virtual void UnHighlight() => GetImage((int)Images.HighLightImage).enabled = false;
+    public virtual void Highlight()
+    {
+        if (GetImage((int)Images.HighLightImage) is {} img)
+            img.enabled = true;
+    }
+    public virtual void UnHighlight()
+    {
+        if (GetImage((int)Images.HighLightImage) is {} img)
+            img.enabled = false;
+    }
 
 
     #region Object Pool Method/Property (IPoolObject)
 
     public GameObject Origin { get; set; }
     public void OnCreateFromPool() { }
-    public void OnGetFromPool() { }
+    public void OnGetFromPool()
+    {
+        // 오브젝트 풀에서 재사용될 때 UI 컴포넌트 재바인딩
+        if (!_init)
+        {
+            BindImage(typeof(Images));
+        }
+    }
     public void OnReleaseFromPool() { }
     public void OnDestroyFromPool() { }
     public void ReleaseSelf() { }

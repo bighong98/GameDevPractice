@@ -483,6 +483,14 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2124436391671571224, guid: 980a19cf18dcef44c94b86e88a37e3cb, type: 3}
+      propertyPath: m_OverrideSorting
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2124436391671571224, guid: 980a19cf18dcef44c94b86e88a37e3cb, type: 3}
+      propertyPath: m_AdditionalShaderChannelsFlag
+      value: 25
+      objectReference: {fileID: 0}
     - target: {fileID: 2734020558036307989, guid: 980a19cf18dcef44c94b86e88a37e3cb, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -509,11 +517,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2734020558036307989, guid: 980a19cf18dcef44c94b86e88a37e3cb, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 0
+      value: 550
       objectReference: {fileID: 0}
     - target: {fileID: 2734020558036307989, guid: 980a19cf18dcef44c94b86e88a37e3cb, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 0
+      value: 120
       objectReference: {fileID: 0}
     - target: {fileID: 2734020558036307989, guid: 980a19cf18dcef44c94b86e88a37e3cb, type: 3}
       propertyPath: m_LocalScale.x
@@ -583,16 +591,36 @@ PrefabInstance:
       propertyPath: m_Name
       value: QuickSlotPanel
       objectReference: {fileID: 0}
+    - target: {fileID: 3475102203645983046, guid: 980a19cf18dcef44c94b86e88a37e3cb, type: 3}
+      propertyPath: m_RaycastTarget
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4025237281396357263, guid: 980a19cf18dcef44c94b86e88a37e3cb, type: 3}
       propertyPath: m_Pivot.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4025237281396357263, guid: 980a19cf18dcef44c94b86e88a37e3cb, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4025237281396357263, guid: 980a19cf18dcef44c94b86e88a37e3cb, type: 3}
       propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4025237281396357263, guid: 980a19cf18dcef44c94b86e88a37e3cb, type: 3}
+      propertyPath: m_AnchorMin.x
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4025237281396357263, guid: 980a19cf18dcef44c94b86e88a37e3cb, type: 3}
       propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4025237281396357263, guid: 980a19cf18dcef44c94b86e88a37e3cb, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4025237281396357263, guid: 980a19cf18dcef44c94b86e88a37e3cb, type: 3}
+      propertyPath: m_SizeDelta.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4347249595385695603, guid: 980a19cf18dcef44c94b86e88a37e3cb, type: 3}
@@ -648,11 +676,27 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5662688476631838349, guid: 980a19cf18dcef44c94b86e88a37e3cb, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5662688476631838349, guid: 980a19cf18dcef44c94b86e88a37e3cb, type: 3}
       propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5662688476631838349, guid: 980a19cf18dcef44c94b86e88a37e3cb, type: 3}
+      propertyPath: m_AnchorMin.x
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5662688476631838349, guid: 980a19cf18dcef44c94b86e88a37e3cb, type: 3}
       propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5662688476631838349, guid: 980a19cf18dcef44c94b86e88a37e3cb, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 5662688476631838349, guid: 980a19cf18dcef44c94b86e88a37e3cb, type: 3}
+      propertyPath: m_SizeDelta.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5662688476631838349, guid: 980a19cf18dcef44c94b86e88a37e3cb, type: 3}
@@ -678,13 +722,65 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2805369106070440842, guid: 980a19cf18dcef44c94b86e88a37e3cb, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5021813193047524207}
+    - targetCorrespondingSourceObject: {fileID: 2805369106070440842, guid: 980a19cf18dcef44c94b86e88a37e3cb, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 715004683239967359}
   m_SourcePrefab: {fileID: 100100000, guid: 980a19cf18dcef44c94b86e88a37e3cb, type: 3}
 --- !u!224 &2674973140899979019 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 2734020558036307989, guid: 980a19cf18dcef44c94b86e88a37e3cb, type: 3}
   m_PrefabInstance: {fileID: 67088696667754270}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &2738457433201198228 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2805369106070440842, guid: 980a19cf18dcef44c94b86e88a37e3cb, type: 3}
+  m_PrefabInstance: {fileID: 67088696667754270}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &5021813193047524207
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2738457433201198228}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a041b565c67f1142bcc33caaf657050, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::QuickSlotController
+  panelUI: {fileID: 7688331219900712415}
+--- !u!114 &715004683239967359
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2738457433201198228}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.GraphicRaycaster
+  m_IgnoreReversedGraphics: 1
+  m_BlockingObjects: 0
+  m_BlockingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+--- !u!114 &7688331219900712415 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7664045002303539905, guid: 980a19cf18dcef44c94b86e88a37e3cb, type: 3}
+  m_PrefabInstance: {fileID: 67088696667754270}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2738457433201198228}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5fcd0c89a0eaca46a0d52352d59c21b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::QuickSlotPanelUI
 --- !u!1001 &415462567691043056
 PrefabInstance:
   m_ObjectHideFlags: 0

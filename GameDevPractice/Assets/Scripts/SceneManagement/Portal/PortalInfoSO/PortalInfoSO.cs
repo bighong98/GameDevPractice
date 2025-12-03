@@ -1,4 +1,3 @@
-using TH.SceneManagement;
 using UnityEngine;
 
 namespace TH.SceneManagement

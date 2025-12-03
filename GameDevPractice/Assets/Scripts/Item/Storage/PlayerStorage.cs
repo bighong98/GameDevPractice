@@ -178,10 +178,11 @@ namespace TH.Item
                     int before = cItem.GetAmount;
                     int expected = before - amount;
                     if (!cItem.TrySetAmount(expected)) return false;
-                    int consumed = before - cItem.GetAmount;
-                    if (consumed > 0)
+                    // int consumed = before - cItem.GetAmount;
+                    // if (consumed > 0)
+                    //     UpdateCountableDict(itemInfo, -consumed);
+                    if (before - cItem.GetAmount is int consumed and > 0)
                         UpdateCountableDict(itemInfo, -consumed);
-
                     NotifySlotChanged(slot);
                     break;
                 case Enums.ItemType.Special:
@@ -277,6 +278,8 @@ namespace TH.Item
         #endregion
 
         #region ICountableItemStorage
+
+        public event Action<ItemTypeSO, int> OnCountableAmountModified;
 
         public bool TryStoreCountable(ICountableItem countableItem, int amount, out int excess)
         {
@@ -416,8 +419,27 @@ namespace TH.Item
 
             return false;
         }
+        // 특정 Countable 아이템의 개수 확인 (저장소 내에 존재하지 않는 아이템이라면 false 반환)
+        public bool TryGetCountableAmount(ICountableItem countableItem, out int amount)
+        {
+            if (countableItem.GetItemInfo is not {} itemInfo)
+            {
+                amount = 0;
+                return false;
+            }
 
-
+            return TryGetCountableAmount(itemInfo, out amount);
+        }
+        
+        public bool TryGetCountableAmount(ItemTypeSO itemInfo, out int amount)
+        {
+            if (itemInfo == null || !itemInfo.IsAlive())
+            {
+                amount = 0;
+                return false;
+            }
+            return countableDict.TryGetValue(itemInfo, out amount);
+        }
 
         private void UpdateCountableDict(ItemTypeSO data, int delta)
         {
@@ -426,11 +448,12 @@ namespace TH.Item
             if (!countableDict.TryGetValue(data, out var current))
                 current = 0;
 
+            // 개수 변동 반영
             current += delta;
-            if (current <= 0)
-                countableDict.Remove(data);
-            else
-                countableDict[data] = current;
+            if (current <= 0) countableDict.Remove(data);
+            else countableDict[data] = current;
+            // 변동 이벤트 전파
+            OnCountableAmountModified?.Invoke(data, current);
         }
 
         public bool TryMergeStacks(int fromIndex, int toIndex)
@@ -1263,6 +1286,8 @@ namespace TH.Item
             countableDict.Clear();
             itemIndexCache.Clear();
         }
+
+        
     }
 }
 
