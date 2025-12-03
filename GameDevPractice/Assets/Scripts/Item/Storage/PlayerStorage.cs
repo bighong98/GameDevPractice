@@ -227,15 +227,16 @@ namespace TH.Item
             // 2) 남은 양을 빈 슬롯에 신규 스택으로 채우기
             while (excess > 0)
             {
-                int idx = FindEmptySlotIndex(0);
-                if (idx < 0) break;
+                if (!FindEmptySlot(0, out var found))
+                    break;
+                int idx = found.Index;
 
-                // 빈 슬롯에 amount 만큼 넣기
+                // 빈 슬롯에 amount 만큼 넣기 -> 실패할 경우 루프 종료
                 if (!TryStoreCountable(countableItem, excess, idx, out var localExcess))
                     break;
 
-                // TryStoreCountable 가 일부 저장하면 localExcess 가 줄어들음
-                if (localExcess == excess) // 아무것도 저장 못 했으면 루프 종료
+                // 아무것도 저장 못 했으면 루프 종료
+                if (localExcess == excess) 
                     break;
 
                 excess = localExcess;
@@ -432,39 +433,6 @@ namespace TH.Item
 
         #region IDividableStorage
 
-        // public void TryDivide(int index, int expected)
-        // {
-        //     Logg.Log($"[PlayerStorage] TryDivide({index}, {expected}) invoked", Logg.LoggingMode.Completed);
-        //     if (GetSlot(index) is not
-        //         {
-        //             HasItem: true,
-        //             GetItem: { Type: Enums.ItemType.Countable, GetAmount: {} total } item, // 1개는 분리 불가
-        //         } slot )
-        //     {
-        //         Logg.Log($"[PlayerStorage] TryDivide({index}, {expected}) - not valid slot", Logg.LoggingMode.Completed);
-        //         return;
-        //     }
-
-        //     if (item is not ICountableItem cItem)
-        //         cItem = (ICountableItem)EnsureItemInstanceByType(item);
-
-        //     int amount = Mathf.Min(expected, total - 1);
-        //     if (amount <= 0) return; // 1개는 분리 불가
-            
-        //     var clone = cItem.Clone<ICountableItem>(amount); // 아이템의 복사본 생성 + 분리한 개수 주입
-        //     // 빈 슬롯 탐색 + 해당 슬롯에 복사본 저장 시도
-        //     if (!FindEmptySlot(0, out var emptySlot)
-        //         || !TryStore(clone, emptySlot.Index))
-        //     {
-        //         Logg.Log($"[PlayerStorage] TryDivide({index}, {expected}) - failed to store item", Logg.LoggingMode.InProgress);
-        //         return;
-        //     }
-        //     // 복사본 분리 저장 성공 -> 기존 아이템에 개수 반영 및 인벤토리 변동 이벤트 전달
-        //     Logg.Log($"[PlayerStorage] TryDivide({index}, {expected}) - trying to SetAmount source item", Logg.LoggingMode.Completed);
-        //     cItem.SetAmount(total - amount);
-        //     NotifySlotChanged(slot);
-        // }
-
         public void TryDivide(int index, int expected)
         {
             Logg.Log($"[PlayerStorage] TryDivide({index}, {expected}) invoked", Logg.LoggingMode.Completed);
@@ -654,7 +622,6 @@ namespace TH.Item
         }
         
         // Trim
-
         public void Trim()
         {
             MergeStacks(false);
@@ -667,21 +634,23 @@ namespace TH.Item
             {
                 if (slots[read] is not { IsAccessible: true, HasItem: true }) continue;
 
-                // 2-a) write는 항상 빈칸이어야 함 (보장 안 될 시 다음 빈칸으로 갱신)
+                // 2-a) slots[write]가 접근불가능or빈칸x -> 다음 빈슬롯 탐색
                 if (slots[write] is not { IsAccessible: true, HasItem: false })
                 {
-                    write = FindEmptySlotIndex(write + 1);
-                    if (write < 0) break;
+                    if (!FindEmptySlot(write+1, out var newFound))
+                        break;
+                    write = newFound.Index;
                 }
 
                 // 2-b) 빈 슬롯으로 아이템 이동
                 if (TryTransferItem(read, write))
                 {
-                    write = FindEmptySlotIndex(write + 1); // 다음 빈칸으로 write 갱신
-                    if (write < 0) break; // 더 이상 빈칸 없으면 조기 종료
+                    if (!FindEmptySlot(write+1, out var newFound))
+                        break;
+                    write = newFound.Index;
                 }
             }
-
+            // 3) 아이템 인덱스 캐시 리빌드
             RebuildItemIndexCache();
         }
         
@@ -821,40 +790,6 @@ namespace TH.Item
         
         #endregion
         
-        #region Compare (deprecated)
-
-        private static bool IsSameItem(IGameItem a, IGameItem b) // 정확히 동일한 아이템인지 검사 (ItemTypeSO 기준)
-        {
-            return (a?.GetItemInfo == b?.GetItemInfo);
-        }
-
-        private bool IsSameType(IGameItem a, IGameItem b) // 동일한 타입인지 검사 (Enums.ItemType 기준)
-        {
-            return (a?.GetItemInfo.itemType == b?.GetItemInfo.itemType);
-        }
-
-        private bool IsSameEquipmentType(IGameItem a, IGameItem b) // 장비 대분류가 동일한지 검사 (Enums.EquipmentType 기준)
-        {
-            if (a?.GetItemInfo is EquipmentTypeSO aData && b?.GetItemInfo is EquipmentTypeSO bData)
-            {
-                return aData.equipmentType == bData.equipmentType;
-            }
-            
-            return false;
-        }
-
-        private bool IsSameEquipSlotType(IGameItem a, IGameItem b) // 장착 슬롯 종류가 동일한지 검사 (Enums.EquippedSlotType 기준)
-        {
-            if (a?.GetItemInfo is EquipmentTypeSO aData && b?.GetItemInfo is EquipmentTypeSO bData)
-            {
-                return aData.slotType == bData.slotType;
-            }
-            
-            return false;
-        }
-
-        #endregion
-        
         #region Slot Helper Methods
 
         private void NotifySlotChanged(int index)
@@ -897,40 +832,6 @@ namespace TH.Item
             found = null;
             return false;
         }
-
-        private int FindEmptySlotIndex(int start = 0) // 빈 인벤토리 슬롯 탐색
-        {
-            int end = GetEndIdx;
-            for (int i = start; i <= end; i++)
-            {
-                switch (slots[i])
-                {
-                    case null:
-                        slots[i] = MakeEmptySlot(index: i); // 해당 인덱스에 최초 접근시, ItemSlot 인스턴스 생성
-                        return i;
-                    case { IsAccessible: true, HasItem: false }:
-                        return i;
-                }
-            }
-            
-            return -1; // 빈칸이 없으면 -1 반환
-        }
-
-        // private bool FindIdenticalCountable(ICountableItem cItem, int start, out IGameItemSlot slot)
-        // {
-        //     slot = null;
-        //     if (!IsValidSlotIdx(start)) return false;
-        //     int end = GetEndIdx;
-            
-        //     for (int i = start; i <= end; i++)
-        //     {
-        //         if (!IsIdenticalCountableItem(cItem, i, out var found)) continue;
-        //         slot = found; // 동일한 Countable 타입 아이템을 찾은 경우, 해당 인덱스 반환
-        //         return true;
-        //     }
-            
-        //     return false;
-        // }
 
         private bool FindIdenticalCountable(ICountableItem cItem, int start, out IGameItemSlot slot)
         {
