@@ -198,6 +198,82 @@ namespace TH.Item
             return TryConsume(slots[index], amount);
         }
 
+        public bool TryConsume(ItemTypeSO itemData, int amount)
+        {
+            // 타입/조건 검증
+            if (itemData == null || amount <= 0) return false;
+            if (!itemData.isUsable) return false;
+            if (itemData.itemType != Enums.ItemType.Countable) return false;
+
+            // 1) 전체 보유량 빠른 체크 (부족하면 바로 실패)
+            if (!countableDict.TryGetValue(itemData, out var total) || total < amount)
+                return false;
+
+            int remaining = amount;
+            int startIndex = 0;
+            int end = GetEndIdx;
+
+            // 2) 캐시에 기록된 슬롯들부터 소비
+            while (remaining > 0 && TryGetCachedIndex(itemData, startIndex, out int idx))
+            {
+                if (!TryConsumeFromIndex(idx, itemData, ref remaining))
+                {
+                    // 이 슬롯에서 소비를 못 했으면 그냥 다음 슬롯으로 넘김
+                    startIndex = idx + 1;
+                    continue;
+                }
+
+                startIndex = idx + 1;
+            }
+
+            // 3) 캐시에서 더 이상 못 찾았으면, 남은 영역 전체 스캔
+            for (int i = startIndex; i <= end && remaining > 0; i++)
+            {
+                if (!TryConsumeFromIndex(i, itemData, ref remaining))
+                    continue;
+
+                // 캐시에 없던 슬롯이면 등록
+                CacheAdd(itemData, i);
+            }
+
+            // 요청한 양을 전부 소비했을 때만 true
+            return remaining <= 0;
+        }
+
+        private bool TryConsumeFromIndex(int index, ItemTypeSO itemData, ref int remaining)
+        {
+            if (!IsValidSlotIdx(index)) 
+                return false;
+
+            var slot = slots[index];
+
+            // 이 슬롯이 소비 가능한 Countable이고, itemData와 타입이 같은지 확인
+            if (slot is not
+                {
+                    IsAccessible: true,
+                    HasItem: true,
+                    GetItem: ICountableItem cItem,
+                    GetItemInfo: ItemTypeSO info
+                })
+                return false;
+
+            if (info != itemData) 
+                return false;
+
+            // 슬롯에서 소비 가능한 최대치 계산
+            int stackAmount = cItem.GetAmount;
+            int toUse = Mathf.Min(remaining, stackAmount);
+            if (toUse <= 0) 
+                return false;
+
+            // 해당 슬롯에서 소비 시도
+            if (!TryConsume(slot, toUse)) 
+                return false;
+            remaining -= toUse;
+
+            return true;
+        }
+
         #endregion
 
         #region ICountableItemStorage

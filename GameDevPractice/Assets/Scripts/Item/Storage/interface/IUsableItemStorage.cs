@@ -1,4 +1,5 @@
 using System;
+using TH.Resource;
 using UnityEngine;
 
 namespace TH.Item
@@ -15,6 +16,7 @@ namespace TH.Item
     {
         bool TryConsume(IGameItemSlot slot, int amount);
         bool TryConsume(int index, int amount);
+        bool TryConsume(ItemTypeSO itemInfo, int amount);
     }
 }
 
