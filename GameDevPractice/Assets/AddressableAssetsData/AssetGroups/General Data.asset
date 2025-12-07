@@ -36,6 +36,13 @@ MonoBehaviour:
     - PreLoad
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8051607782521b445aca898dd7939ac5
+    m_Address: FloatingTextCatalogSO
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: d2ba8464bee1e95408984d72020c209f
     m_Address: SceneCatalogSO
     m_ReadOnly: 0

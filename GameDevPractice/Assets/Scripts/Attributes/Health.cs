@@ -34,8 +34,9 @@ namespace TH.Attribute
         public float GetMaxHealth => maxHp.Value;
         public float GetCurrentHealthRatio => (hp.Value / maxHp.Value);
 
-        // public event Action<HitResult> OnDamaged;
-        public event HitEvent OnDamaged;
+        
+        public event HitEvent OnDamaged; // 피해를 입은 경우
+        public event Action<float> OnHealed; // 회복 받은 경우
         public Action<float> OnHealthRatioChanged; // 현재 체력에 변동이 생긴 경우 (피격, 회복 등)
         public Action<float> OnMaxHealthChanged; // 최대 체력에 변동이 생긴 경우 (레벨 업, 장비 변경 등)
         public Action<float> OnCurrHealthChanged; // 현재 체력에 변동이 생긴 경우 (피격, 회복 등)
@@ -46,7 +47,7 @@ namespace TH.Attribute
         private LazyValue<float> rewardXp;
 
         private IFloatingTextSpawner textSpawner;
-        
+
         private void Awake()
         {
             animator = GetComponent<Animator>();
@@ -72,7 +73,7 @@ namespace TH.Attribute
             });
         }
 
-private void Start()
+        private void Start()
         {
             UIManager.Instance.ReserveOperation(() =>
             {
@@ -84,14 +85,16 @@ private void Start()
         private void OnEnable()
         {
             textSpawner.Register(this, FloatingTextEventType.Damage);
-            if (!hasMutableLevel || levelHolder == null) return;
+            textSpawner.Register(this, FloatingTextEventType.Heal);
+            if (!hasMutableLevel || !levelHolder.IsAlive()) return;
             levelHolder.OnLevelChanged += this.OnLevelUp;
         }
 
         private void OnDisable()
         {
             textSpawner.UnRegister(this, FloatingTextEventType.Damage);
-            if (!hasMutableLevel || levelHolder == null) return;
+            textSpawner.UnRegister(this, FloatingTextEventType.Heal);
+            if (!hasMutableLevel || !levelHolder.IsAlive()) return;
             levelHolder.OnLevelChanged -= this.OnLevelUp;
         }
 
@@ -239,14 +242,21 @@ private void Start()
         public bool Heal(int amount)
         {
             SetCurrentHp(hp.Value + amount, false);
+            OnHealed?.Invoke(amount);
             return true;
         }
+
+        // public bool HealRatio(float ratio)
+        // {
+        //     if (maxHp is not {Initialized: true, Value: {} maxHpValue}) return false;
+        //     SetCurrentHp(maxHpValue * ratio);
+        //     return true;
+        // }
 
         public bool HealRatio(float ratio)
         {
             if (maxHp is not {Initialized: true, Value: {} maxHpValue}) return false;
-            SetCurrentHp(maxHpValue * ratio);
-            return true;
+            return Heal((int)(maxHpValue * ratio));
         }
 
         #endregion

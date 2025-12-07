@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace TH.Combat
@@ -6,6 +7,8 @@ namespace TH.Combat
     {
         bool Heal(int amount);
         bool HealRatio(float ratio);
+
+        event Action<float> OnHealed;
     }
 }
 

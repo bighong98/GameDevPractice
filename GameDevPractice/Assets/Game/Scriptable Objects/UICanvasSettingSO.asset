@@ -16,15 +16,15 @@ MonoBehaviour:
     x: 1920
     y: 1080
   list:
-  - first: 0
-    second:
+  - key: 0
+    value:
       overrideSorting: 1
       defaultSortingOrder: 10
-  - first: 1
-    second:
+  - key: 1
+    value:
+      overrideSorting: 1
+      defaultSortingOrder: 20
+  - key: 2
+    value:
       overrideSorting: 1
       defaultSortingOrder: 100
-  - first: 2
-    second:
-      overrideSorting: 1
-      defaultSortingOrder: 200

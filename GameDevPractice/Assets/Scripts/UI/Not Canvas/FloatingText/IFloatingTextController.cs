@@ -1,10 +1,12 @@
 using UnityEngine;
 
-namespace TH.Utils
+namespace TH.UI.Data
 {
     public interface IFloatingTextController
     {
-        void SetText(string s);
+        void Set(FloatingTextSO data, string text);
+        void SetSetting(FloatingTextSO data);
+        void SetText(string text);
     }
 }
 

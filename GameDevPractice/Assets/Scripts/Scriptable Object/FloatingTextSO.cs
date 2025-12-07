@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.Serialization;
 
-namespace TH.Utils // todo: 네임스페이스 정리
+namespace TH.UI.Data // todo: 네임스페이스 정리
 {
     [CreateAssetMenu(fileName = "FloatingTextSO", menuName = "Scriptable Objects/FloatingTextSO")]
     public class FloatingTextSO : ScriptableObject, IFloatingTextData
@@ -11,11 +11,13 @@ namespace TH.Utils // todo: 네임스페이스 정리
         [SerializeField] float fadeOutDuration = 0.35f; // 끝부분 페이드아웃 시간 (sec)
         [SerializeField] Vector3 startOffset = new Vector3(0f, 0.0f, 0f); // 스폰 시 위치 오프셋(선택)
         [FormerlySerializedAs("color")] [SerializeField] Color textColor;
+        [SerializeField] float textSize;
         public float RiseSpeed => riseSpeed;
         public float LifeTime => lifeTime;
         public float FadeOutDuration => fadeOutDuration;
         public Vector3 StartOffset => startOffset;
         public Color TextColor => textColor;
+        public float TextSize => textSize;
     }
 
     public interface IFloatingTextData
@@ -25,6 +27,7 @@ namespace TH.Utils // todo: 네임스페이스 정리
         public float FadeOutDuration { get; }
         public Vector3 StartOffset { get; }
         public Color TextColor { get; }
+        public float TextSize {get;}
     }
 }
 

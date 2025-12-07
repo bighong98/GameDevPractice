@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using TH.Core.Pool;
 using TH.Utils;
+using TH.UI.Data;
 using TMPro;
 using UnityEngine;
 
@@ -131,5 +132,16 @@ public class DamageTextController : MonoBehaviour, IPoolObject, IFloatingTextCon
 
         running = null;
         ReleaseSelf(); // 수명 종료 시 풀에 반납
+    }
+
+    public void Set(FloatingTextSO data, string text)
+    {
+        SetSetting(data);
+        SetText(text);
+    }
+
+    public void SetSetting(FloatingTextSO data)
+    {
+        animationData = data;
     }
 }

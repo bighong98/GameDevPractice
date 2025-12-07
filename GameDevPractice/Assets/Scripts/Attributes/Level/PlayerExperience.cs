@@ -8,11 +8,13 @@ using Cysharp.Threading.Tasks;
 using TH.Resource;
 using TH.Attribute.Stat;
 using TH.Utils;
+using TH.Core.Service;
 
 namespace TH.Attribute
 {
     public class PlayerExperience : MonoBehaviour, IExperience, ILevel, ISavable, ITypeDependent
     {
+        public event Action<float> OnXpGained;
         public event Action<float> OnXpChanged;
         public event Action<int> OnLevelChanged;
 
@@ -26,11 +28,20 @@ namespace TH.Attribute
         
         private ProgressionSO progression;
         private Action LevelUpEffectAction;
+
+        private IFloatingTextSpawner textSpawner;
         
         private void Awake()
         {
             InitBeforeLoad();
+            textSpawner = ServiceLocator.Get<IFloatingTextSpawner>();
             ResourceManager.Instance.WaitForPreLoadOnlyOnce(InitAfterLoad);
+        }
+
+        void OnDestroy()
+        {
+            if (textSpawner == null) return;
+            textSpawner.UnRegister(this, FloatingTextEventType.GetXp);
         }
 
         private void InitBeforeLoad()
@@ -43,8 +54,10 @@ namespace TH.Attribute
         private void InitAfterLoad()
         {
             progression = ResourceManager.Instance.Load<ProgressionSO>("ProgressionSO.asset");
-            Logg.Log($"[{nameof(PlayerExperience)}.{nameof(InitAfterLoad)}()] progression: {progression}", Logg.LoggingMode.Completed);
             currentLevel.ForceInit();
+
+            textSpawner.Register(this, FloatingTextEventType.GetXp);
+
             LevelUpTestMethod().Forget();
         }
         
@@ -78,9 +91,11 @@ namespace TH.Attribute
         public void SetXp(float xp, bool updateLevel = true) // 경험치 설정
         {
             if (xp.IsEqualFloat(currentXp)) return;
-
+            
+            var delta = xp - currentXp;
             currentXp = xp;
             OnXpChanged?.Invoke(currentXp);
+            if (delta > 0) OnXpGained?.Invoke(delta);
 
             if (updateLevel)
                 SetLevel(CalculateLevel(xp));

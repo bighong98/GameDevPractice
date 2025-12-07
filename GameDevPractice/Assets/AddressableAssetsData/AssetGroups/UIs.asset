@@ -29,6 +29,13 @@ MonoBehaviour:
     - PreLoad
     - UI
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 57c170d5560197d418b8f2778b1b8949
+    m_Address: FloatingText
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad
+    - UI
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 74bd640d5d22cca46bd8e0648a556856
     m_Address: InventoryUI.prefab_testing
     m_ReadOnly: 0

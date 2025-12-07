@@ -5,6 +5,7 @@ using TH.Attribute;
 using TH.Combat;
 using TH.Core.Pool;
 using TH.Resource;
+using TH.UI.Data;
 using UnityEngine;
 using UnityEngine.Pool;
 
@@ -17,56 +18,74 @@ namespace TH.Utils
     public class FloatingTextSpawner : IFloatingTextSpawner
     {
         private readonly Dictionary<FloatingTextEventType, IFloatingTextEventBinder> _binders = new();
+        
+        private GameObject textPrefab;
+        private FloatingTextCatalogSO textCatalogSO;
 
-        private IObjectPool<IPoolObject> damageTextPool;
-        private GameObject damageTextPrefab;
-
-        private const string damageTextPrefabKey = "DamageText";
+        private const string textPrefabKey = "FloatingText";
+        private const string textCatalogSOKey = "FloatingTextCatalogSO";
+        
+        private readonly IResourceLoader resourceLoader;
         
         public FloatingTextSpawner(IResourceLoader resourceLoader)
         {
             AddBinders();
+            this.resourceLoader = resourceLoader;
+            this.resourceLoader.OnLabelResourcesLoadedAll += InitializeTextPools;
+        }
+
+        private void InitializeTextPools(string label)
+        {
             
-            resourceLoader.OnLabelResourcesLoadedAll += (label) =>
+            if (!string.Equals(label, Constants.PreLoadLabel)) return;
+            
+            
+            if (!resourceLoader.TryLoad(textCatalogSOKey, out textCatalogSO))
             {
-                if (!string.Equals(label, Constants.PreLoadLabel)) return;
-                if (!resourceLoader.TryLoad(damageTextPrefabKey, out damageTextPrefab))
-                {
-                    Logg.LogError($"[{nameof(FloatingTextSpawner)}] failed to get damage text prefab");
-                    return;
-                }
-                // todo: PoolManager 대신 ServiceProvider/BootStrapper에서 초기화하는 서비스 사용 고려
-                // todo: 혹은 오브젝트 풀 자체를 생성자에서 주입 고려
-                if (PoolManager.Instance.GetPool(damageTextPrefab) is not { } result)
-                {
-                    Logg.LogError($"[{nameof(FloatingTextSpawner)}] failed to get damage text pool");
-                    return;
-                }
-                
-                damageTextPool = result;
-            };
+                Logg.LogError($"[{nameof(FloatingTextSpawner)}] failed to load text floating text CatalogSO");
+                return;
+            }
+
+            if (!resourceLoader.TryLoad(textPrefabKey, out textPrefab))
+            {
+                Logg.LogError($"[{nameof(FloatingTextSpawner)}] failed to load text prefab");
+                return;
+            }
         }
 
         private void AddBinders()
         {
+            var damageType = FloatingTextEventType.Damage;
             AddBinder<IDamageable, HitResult, HitEvent>(
-                FloatingTextEventType.Damage,
+                damageType,
                 (subject, h) => subject.OnDamaged += h,
                 (subject, h) => subject.OnDamaged -= h,
-                (IDamageable subject, in HitResult data) => ShowDamageText(AnchorOf(subject), in data),
+                (IDamageable subject, in HitResult data) => ShowFloatingText(damageType, AnchorOf(subject), in data.Damage),
                 adapter: ph => new HitEvent((in HitResult x) => ph(in x)) 
             );
-            
+            var xpGainType = FloatingTextEventType.GetXp;
             AddBinder<IExperience, float, Action<float>>(
-                FloatingTextEventType.GetXp,
-                (subject, h) => subject.OnXpChanged += h,
-                (subject, h) => subject.OnXpChanged -= h,
-                (IExperience subject, in float v) => ShowExpText(AnchorOf(subject), v),
+                xpGainType,
+                (subject, h) => subject.OnXpGained += h,
+                (subject, h) => subject.OnXpGained -= h,
+                (IExperience subject, in float v) => ShowFloatingText(xpGainType, AnchorOf(subject), in v),
+                adapter: ph => (float v) => ph(in v)
+            );
+            var healType = FloatingTextEventType.Heal;
+            AddBinder<IHealable, float, Action<float>>(
+                healType,
+                (subject, h) => subject.OnHealed += h,
+                (subject, h) => subject.OnHealed -= h,
+                (IHealable subject, in float v) => ShowFloatingText(healType, AnchorOf(subject), in v),
                 adapter: ph => (float v) => ph(in v)
             );
         }
 
-        private static Transform AnchorOf(object s) => (s as Component)?.transform;
+        private static Transform AnchorOf(object s)
+        {
+            if (!s.IsAlive()) return null;
+            return (s as Component)?.transform;
+        }
 
         private void AddBinder<TSource, TPayload, TEvent>(
             FloatingTextEventType type,
@@ -102,18 +121,26 @@ namespace TH.Utils
         }
 
         #endregion
-        
-        
-        private void ShowDamageText(Transform anchor, in HitResult hr)
+
+        private void ShowFloatingText(FloatingTextEventType type, Transform anchor, in float value)
         {
-            Logg.Log($"[FTSpawner] print damage ({anchor.name}, {hr.Damage})", Logg.LoggingMode.Completed);
-            var s = PoolManager.Instance.GetFromPool<DamageTextController>(damageTextPrefab, null, anchor.position);
-            s.SetText(hr.Damage.ToString(CultureInfo.InvariantCulture));
+            ShowFloatingText(type, anchor, value.ToString(CultureInfo.InvariantCulture));
         }
 
-        private void ShowExpText(Transform anchor, float value)
+        private void ShowFloatingText(FloatingTextEventType type, Transform anchor, in int value)
         {
-            
+            ShowFloatingText(type, anchor, value.ToString(CultureInfo.InvariantCulture));
+        }
+
+        private void ShowFloatingText(FloatingTextEventType type, Transform anchor, in string str)
+        {
+            Logg.Log($"[FTSpawner] print {type} ({anchor.name}, {str})", Logg.LoggingMode.InProgress);
+            var s = PoolManager.Instance.GetFromPool<FloatingTextController>(textPrefab, null, anchor.position);
+            if (textCatalogSO.TryGetValue(type, out var setting))
+            {
+                s.SetSetting(setting);
+                s.SetText(str);
+            }
         }
 
         private sealed class FloatingTextEventBinder<TSource, TPayload, TEvent> : IFloatingTextEventBinder 

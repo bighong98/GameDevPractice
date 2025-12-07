@@ -7,24 +7,24 @@ namespace TH.Utils
     // 반드시 해당 구조체를 사용하는 클래스에서 직렬화 가능 여부 검사 필요 (ISerializationCallback + ValidateUnitySerializable() 사용)
     // ISerializationCallback은 SerializablePair<> 사용하는 개별 클래스에서 구현해서 ValidateUnitySerializable() 호출
     [Serializable]
-    public struct SerializablePair<TFirst, TSecond>
+    public struct SerializablePair<TKey, TValue>
     {
-        public TFirst first;
-        public TSecond second;
+        public TKey key;
+        public TValue value;
 
-        public void Deconstruct(out TFirst f, out TSecond s)
+        public void Deconstruct(out TKey f, out TValue s)
         {
-            f = first;
-            s = second;
+            f = key;
+            s = value;
         }
 
 #if UNITY_EDITOR
         public static void ValidateUnitySerializable()
         {
-            if (!IsUnitySerializable(typeof(TFirst)))
-                throw new InvalidOperationException($"Invalid type for Unity serialization - {typeof(TFirst)}");
-            if (!IsUnitySerializable(typeof(TSecond)))
-                throw new InvalidOperationException($"Invalid type for Unity serialization - {typeof(TSecond)}");
+            if (!IsUnitySerializable(typeof(TKey)))
+                throw new InvalidOperationException($"Invalid type for Unity serialization - {typeof(TKey)}");
+            if (!IsUnitySerializable(typeof(TValue)))
+                throw new InvalidOperationException($"Invalid type for Unity serialization - {typeof(TValue)}");
         }
 
         private static bool IsUnitySerializable(Type t)
