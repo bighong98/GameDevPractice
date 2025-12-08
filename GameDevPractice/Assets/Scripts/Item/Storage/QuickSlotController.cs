@@ -1,3 +1,5 @@
+using System;
+using System.Collections;
 using TH.Combat;
 using TH.Core.Service;
 using TH.Item;
@@ -200,7 +202,10 @@ public class QuickSlotController : MonoBehaviour
             if (quickSlot is not { IsAccessible: true, IsValid: true, GetItemInfo: {} slotItemInfo}) continue;
             if (slotItemInfo == data)
             {
-                DrawSlot(quickSlot.Index, amount);
+                int index = quickSlot.Index;
+                DrawSlot(index, amount);
+                panelUI.HighlightSlot(index, (int)SlotHighlightType.Modified);
+                panelUI.UnHighlightSlotWithFade(index, (int)SlotHighlightType.Modified);
                 break;
             }
         }
@@ -272,7 +277,7 @@ public class QuickSlotController : MonoBehaviour
             return;
         }
 
-        Logg.Log($"[{GetType().Name}.DrawSlot({quickIndex})] SetAmount({totalAmount})", Logg.LoggingMode.InProgress);
+        Logg.Log($"[{GetType().Name}.DrawSlot({quickIndex})] SetAmount({totalAmount})", Logg.LoggingMode.Completed);
         slotUI.SetIcon(itemInfo.sprite);
         slotUI.SetAmount(totalAmount);
     }
@@ -293,6 +298,12 @@ public class QuickSlotController : MonoBehaviour
 
         slotUI.SetAmount(itemAmount);
     }
+
+    IEnumerator DelayUnHighlight(int index, int type) { 
+        yield return _waitForSeconds0_5;
+        panelUI.UnHighlightSlot(index, type); 
+    }
+    private static WaitForSecondsRealtime _waitForSeconds0_5 = new (0.5f);
 
     #endregion
 

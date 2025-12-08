@@ -160,7 +160,7 @@ public class QuickSlotPanelUI : BaseUI, IStorageUI<QuickSlotUI>, IDraggableStora
             //         OnSlotClicked?.Invoke(slotUI.Index);
             //         break;
             // }
-            Logg.Log($"[{GetType().Name}] OnPointerClick({slotUI.Index})", Logg.LoggingMode.InProgress);
+            Logg.Log($"[{GetType().Name}] OnPointerClick({slotUI.Index})", Logg.LoggingMode.Completed);
             OnSlotClicked?.Invoke(slotUI.Index);
         } 
     }
@@ -228,6 +228,12 @@ public class QuickSlotPanelUI : BaseUI, IStorageUI<QuickSlotUI>, IDraggableStora
     {
         if (!IsValidSlotIdx(index)) return;
         slotUIs[index].UnHighlight(highlightType);
+    }
+
+    public void UnHighlightSlotWithFade(int index, int highlightType, float duration = 0.5f)
+    {
+        if (!IsValidSlotIdx(index)) return;
+        slotUIs[index].UnHighlightWithFade(highlightType, duration);
     }
 
     #endregion

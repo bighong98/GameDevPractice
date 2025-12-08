@@ -138,12 +138,12 @@ namespace TH.Item
 
         public bool TryStore(IGameItem item, out IGameItemSlot storedSlot, out IGameItem existing)
         {
-            Logg.Log($"[EquipmentHolder] TryStore({item}) invoked", Logg.LoggingMode.InProgress);
+            Logg.Log($"[EquipmentHolder] TryStore({item}) invoked", Logg.LoggingMode.Completed);
             if (TryGetValidSlot(item, out int index) && IsValidSlotIdx(index)
                 && TryStore(item, index, out existing))
             {
                 storedSlot = equipments[index];
-                Logg.Log($"[EquipmentHolder] TryStore({item}, out {storedSlot}, out {existing}) succeed", Logg.LoggingMode.InProgress);
+                Logg.Log($"[EquipmentHolder] TryStore({item}, out {storedSlot}, out {existing}) succeed", Logg.LoggingMode.Completed);
                 return true;
             }
 

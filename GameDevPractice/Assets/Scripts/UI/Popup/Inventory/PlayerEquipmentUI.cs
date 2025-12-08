@@ -96,6 +96,12 @@ namespace TH.UI
             slotUI.UnHighlight(highlightType);
         }
 
+        public void UnHighlightSlotWithFade(int index, int highlightType, float duration = 0.5f)
+        {
+            if (!TryGetSlot(index, out var slotUI)) return;
+            slotUI.UnHighlightWithFade(highlightType, duration);
+        }
+
         #endregion
         
         #region Helper Mehthods
@@ -128,7 +134,9 @@ namespace TH.UI
             {
                 // 새로운 슬롯에 포인터가 이동한 경우
                 case {} target when target.TryGetComponent(out ISlotUI slotUI) && slotUI != lastHoveredSlot:
-                    if (lastHoveredSlot is {Index: {} lastHoveredIndex}) OffSlotHovered?.Invoke(lastHoveredIndex);
+                    if (lastHoveredSlot is {Index: {} lastHoveredIndex}) 
+                        OffSlotHovered?.Invoke(lastHoveredIndex); 
+                        
                     lastHoveredSlot = slotUI;
                     OnSlotHovered?.Invoke(slotUI.Index);
                     break;
@@ -147,7 +155,6 @@ namespace TH.UI
         public void OnPointerExit(PointerEventData eventData)
         {
             if (lastHoveredSlot == null) return;
-            
             OffSlotHovered?.Invoke(lastHoveredSlot.Index);
             lastHoveredSlot = null;
         }

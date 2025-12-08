@@ -127,7 +127,8 @@ namespace TH.UI
 
         public void HighlightSlot(int index, int highlightType)
         {
-            HighlightSlot(index);
+            if (!TryGetSlot(index, out IInvenSlotUI slotUI)) return;
+            slotUI.Highlight(highlightType);
         }
 
         public void UnHighlightSlot(int index)
@@ -138,7 +139,14 @@ namespace TH.UI
 
         public void UnHighlightSlot(int index, int highlightType)
         {
-            UnHighlightSlot(index);
+            if (!TryGetSlot(index, out IInvenSlotUI slotUI)) return;
+            slotUI.UnHighlight(highlightType);
+        }
+
+        public void UnHighlightSlotWithFade(int index, int highlightType, float duration = 0.5f)
+        {
+            if (!TryGetSlot(index, out IInvenSlotUI slotUI)) return;
+            slotUI.UnHighlightWithFade(highlightType, duration);
         }
 
         #endregion

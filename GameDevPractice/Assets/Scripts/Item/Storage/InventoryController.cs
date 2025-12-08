@@ -24,6 +24,12 @@ namespace TH.Item
         // sub popup
         private UI_ItemTooltip itemTooltip;
 
+        
+        
+        // 드래그 상태 추적
+        private bool isDragging = false;
+        private IGameItemStorage dragSourceStorage = null;
+        private IGameItemSlot dragSourceSlot = null;
         private SlotUIInfo<IHoverableStorageUI> lastHovered;
         private InventoryFilterType currentFilter = InventoryFilterType.All;
         
@@ -354,6 +360,12 @@ namespace TH.Item
                 default:
                     break;
             }
+            
+            if (GetUIFromStorage(storage) is IHighlightableStorageUI hStorageUI)
+            {
+                hStorageUI.HighlightSlot(slot.Index, (int)SlotHighlightType.Modified);
+                hStorageUI.UnHighlightSlotWithFade(slot.Index, (int)SlotHighlightType.Modified);
+            }
         }
 
         #endregion
@@ -362,6 +374,27 @@ namespace TH.Item
 
         private void OnSlotHovered(IHoverableStorageUI target, int index)
         {
+            Logg.Log($"[{GetType().Name}] OnSlotHovered({target}, {index})", Logg.LoggingMode.Completed);
+            
+            // 드래그 중이면 해당 슬롯에 저장 가능한지 체크하여 경고 하이라이트 표시
+            if (isDragging && dragSourceSlot != null)
+            {
+                if (GetStorageFromUI(target) is { } targetStorage &&
+                    targetStorage.TryGetItemSlot(index, out var targetSlot))
+                {
+                    // 드래그 중인 아이템을 해당 슬롯에 저장할 수 있는지 확인
+                    if (!targetSlot.CanStore(dragSourceSlot.GetItemInfo))
+                    {
+                        // 저장 불가능한 경우 경고 하이라이트 표시
+                        if (target is IHighlightableStorageUI highlightStorageUI)
+                        {
+                            highlightStorageUI.HighlightSlot(index, (int)SlotHighlightType.Warn);
+                        }
+                        return; // 경고 하이라이트만 표시하고 일반 hover 처리는 하지 않음
+                    }
+                }
+            }
+            
             if (lastHovered.Source == target && index == lastHovered.Index) return; // 동일 슬롯은 무시
             if (lastHovered.IsValid())
                 SetHighlightSlot(lastHovered.Source, lastHovered.Index, false); // 기존 하이라이트된 슬롯 하이라이트 비활성화
@@ -382,10 +415,22 @@ namespace TH.Item
 
         private void OffSlotHovered(IHoverableStorageUI targetUI, int index)
         {
-            if (lastHovered.IsValid() && !lastHovered.Equals(targetUI, index)) // 기존에 다른 슬롯이 호버링 상태로 기록되어있는 경우
-                SetHighlightSlot(lastHovered.Source, lastHovered.Index, false); // 기록된 슬롯도 하이라이트 비활성화
-            SetHighlightSlot(targetUI, index, false); // 타겟 슬롯 하이라이트 비활성화
-            lastHovered.Clear(); // 호버링 슬롯 기록 초기화
+            // 기존에 다른 슬롯이 lastHovered에 기록되어있는 경우
+            // 해당 슬롯도 하이라이트 비활성화
+            Logg.Log($"[{GetType().Name}] OffSlotHovered({targetUI}, {index})", Logg.LoggingMode.Completed);
+            
+            // 드래그 중이고 경고 하이라이트가 표시된 경우 제거
+            if (isDragging && targetUI is IHighlightableStorageUI highlightStorageUI)
+            {
+                highlightStorageUI.UnHighlightSlot(index, (int)SlotHighlightType.Warn);
+            }
+            
+            if (lastHovered.IsValid() && !lastHovered.Equals(targetUI, index)) 
+                SetHighlightSlot(lastHovered.Source, lastHovered.Index, false); 
+            // 타겟 슬롯(targetUI) 하이라이트 비활성화
+            SetHighlightSlot(targetUI, index, false); 
+            // 호버링 슬롯 기록 초기화
+            lastHovered.Clear(); 
             itemTooltip.HideTooltip();
         }
 
@@ -418,7 +463,19 @@ namespace TH.Item
                 !slot.HasItem) // 해당 슬롯이 비어있다면
             {
                 pInvenUI.CancelDrag(); // 드래그 취소
+                ClearDragState(); // 드래그 상태 초기화
                 return;
+            }
+
+            // 드래그 상태 저장
+            isDragging = true;
+            dragSourceStorage = storage;
+            dragSourceSlot = slot;
+
+            // Equipment 타입 아이템이면 저장 가능한 장비 슬롯 하이라이트
+            if (slot.GetItemInfo is { itemType: Enums.ItemType.Equipment })
+            {
+                HighlightEquipmentSlots(slot.GetItemInfo);
             }
 
             pInvenUI.AllowDrag(slot.GetItemInfo.sprite); // 드래그 허가 및 UI에게 필요한 시각적 효과 출력 명령
@@ -436,9 +493,16 @@ namespace TH.Item
             
             if (GetStorageFromUI(fromSource) is not { } fromStorage
                 || !fromStorage.TryGetItemSlot(from.index, out var fromSlot))
+            {
+                // 드래그 상태 초기화
+                ClearDragState();
                 return;
+            }
             
             pInvenUI.CancelDrag();
+            
+            // 드래그 상태 초기화
+            ClearDragState();
 
             // 퀵슬롯으로의 드래그 앤 드롭 처리 (타입 체크)
             if (toSource is QuickSlotPanelUI)
@@ -491,6 +555,48 @@ namespace TH.Item
                 Logg.LoggingMode.Completed);
         }
 
+        
+        private void ClearDragState()
+        {
+            // 드래그 중이었던 아이템이 Equipment 타입이었다면 장비 슬롯 하이라이트 해제
+            if (isDragging && dragSourceSlot != null && 
+                dragSourceSlot.GetItemInfo is { itemType: Enums.ItemType.Equipment })
+            {
+                ClearEquipmentHighlights();
+            }
+            
+            isDragging = false;
+            dragSourceStorage = null;
+            dragSourceSlot = null;
+        }
+        
+        private void HighlightEquipmentSlots(ItemTypeSO draggedItemType)
+        {
+            if (pEquipHolder == null) return;
+            if (pInvenUI.EquipmentUI is not IHighlightableStorageUI highlightUI) return;
+            
+            foreach (var slot in pEquipHolder.ItemSlots)
+            {
+                // 해당 슬롯에 드래그 중인 아이템을 저장할 수 있는지 확인
+                if (slot.CanStore(draggedItemType))
+                {
+                    highlightUI.HighlightSlot(slot.Index);
+                }
+            }
+        }
+        
+        private void ClearEquipmentHighlights()
+        {
+            if (pEquipHolder == null) return;
+            if (pInvenUI.EquipmentUI is not IHighlightableStorageUI highlightUI) return;
+            
+            foreach (var slot in pEquipHolder.ItemSlots)
+            {
+                highlightUI.UnHighlightSlot(slot.Index);
+            }
+        }
+
+        
         private IGameItem CreateDummyItemForQuickSlot(ItemTypeSO itemInfo)
         {
             if (itemInfo == null) return null;
@@ -571,9 +677,10 @@ namespace TH.Item
 
         private void SetHighlightSlot(object source, int index, bool state)
         {
-            if (source is not IHighlightableStorageUI highUI) return;
+            if (source is not IHighlightableStorageUI highUI) 
+                return;
             
-            if (state)
+            if (state) 
                 highUI.HighlightSlot(index);
             else highUI.UnHighlightSlot(index);
         }

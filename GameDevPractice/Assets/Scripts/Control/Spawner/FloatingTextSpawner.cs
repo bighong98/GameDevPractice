@@ -134,7 +134,7 @@ namespace TH.Utils
 
         private void ShowFloatingText(FloatingTextEventType type, Transform anchor, in string str)
         {
-            Logg.Log($"[FTSpawner] print {type} ({anchor.name}, {str})", Logg.LoggingMode.InProgress);
+            Logg.Log($"[FTSpawner] print {type} ({anchor.name}, {str})", Logg.LoggingMode.Completed);
             var s = PoolManager.Instance.GetFromPool<FloatingTextController>(textPrefab, null, anchor.position);
             if (textCatalogSO.TryGetValue(type, out var setting))
             {
