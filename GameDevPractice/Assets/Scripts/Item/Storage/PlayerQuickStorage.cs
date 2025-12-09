@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace TH.Item.Storage
@@ -10,7 +11,7 @@ namespace TH.Item.Storage
     // 실제 아이템 개수 관리, 사용 처리는 PlayerStorage에서 처리
     
     // 추후 기능 확장을 고려한 인터페이스 래퍼
-    public interface IQuickStorage : IGameItemStorage{  }
+    public interface IQuickStorage : IGameItemStorage, IReferenceStorage{  }
     public class PlayerQuickStorage : IQuickStorage
     {
         public IReadOnlyCollection<IGameItemSlot> ItemSlots { get { 
@@ -108,7 +109,7 @@ namespace TH.Item.Storage
             return result;
         }
 
-        public bool TryRemoveItem(int index, out IGameItem item)
+        public bool TryTakeOut(int index, out IGameItem item)
         {
             if (!IsValidSlotIdx(index))
             {
@@ -195,6 +196,23 @@ namespace TH.Item.Storage
             return true;
         }
 
+        public bool CanStore(IGameItem item)
+        {
+            if (item is not { IsValid: true, GetItemInfo: {} itemInfo }
+                || !quickSlotValidItemTypes.Contains(itemInfo.itemType)
+                || !itemInfo.isUsable)
+                return false;
+        
+            return true;
+        }
+
+        public bool CanStore(IGameItem item, int index)
+        {
+            // 퀵슬롯은 새 아이템 등록 시 덮어쓰기되는 것을 의도했기에 별도의 인덱스 검사 없이 아이템 타입만 검사함
+            // 퀵슬롯 별로 저장 제약이 추가된다면 수정 필요
+            return CanStore(item);
+        }
+
         #endregion
 
         #region Helper
@@ -202,6 +220,25 @@ namespace TH.Item.Storage
         private bool IsValidSlotIdx(int index)
         {
             return index >= 0 && index < Mathf.Min(slots.Count, Capacity);
+        }
+
+        #endregion
+
+        #region IReferenceStorage
+
+        public bool TryStoreReference(IGameItem item)
+        {
+            return TryStore(item);
+        }
+
+        public bool TryStoreReference(IGameItem item, int index)
+        {
+            return TryStore(item, index);
+        }
+
+        public bool TryRemoveReference(int index)
+        {
+            return TryRemoveItem(index);
         }
 
         #endregion

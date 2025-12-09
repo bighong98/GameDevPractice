@@ -5,6 +5,7 @@ using TH.Utils;
 using UnityEngine;
 using TH.Resource;
 using TH.Item.Storage;
+using System.Linq;
 
 
 namespace TH.Item
@@ -141,6 +142,81 @@ namespace TH.Item
             return TryStoreInternal(modified, index);
         }
 
+        // 아이템 저장 가능 여부 확인 메서드
+        public bool CanStore(IGameItem item)
+        {
+            // 아이템 유효성 검사, 아이템 타입 유효성 검사, 빈 슬롯 존재 여부 확인
+            if (item is not { IsValid: true, GetItemInfo: {} itemInfo }
+                || !inventoryValidItemTypes.Contains(itemInfo.itemType)
+                || !FindEmptySlot(0, out _))
+                return false;
+
+            return true;
+        }
+        // 아이템 저장 가능 여부 확인 메서드 (인덱스로 슬롯 특정)
+        public bool CanStore(IGameItem item, int index)
+        {
+            // 아이템 유효성 검사, 인덱스 슬롯에 저장 가능 여부 확인
+            if (item is not { IsValid: true, GetItemInfo: {} itemInfo }
+                || !TryGetItemSlot(index, out var slot)
+                || !slot.CanStore(itemInfo))
+                return false;
+
+            return true;
+        }
+
+
+        #endregion
+
+        #region IReplaceableStorage
+
+        public bool TryReplace(IGameItem item, out IGameItem existing)
+        {
+            return TryReplace(item, out _, out existing);
+        }
+
+        public bool TryReplace(IGameItem item, out IGameItemSlot storedSlot, out IGameItem existing)
+        {
+            if (!FindEmptySlot(0, out storedSlot))
+            {
+                existing = null;
+                return false;
+            }
+            
+            return TryReplaceAt(item, storedSlot.Index, out existing);
+        }
+
+        public bool TryReplaceAt(IGameItem item, int index, out IGameItem existing)
+        {
+            existing = null;
+            if (!TryGetItemSlot(index, out var slot) || !slot.IsAccessible)
+                return false;
+
+            return (!slot.HasItem || TryTakeOut(index, out existing)) && TryStore(item, index);
+        }
+
+        public bool TryTakeOut(int index, out IGameItem item)
+        {
+            Logg.Log($"[PlayerStorage] TryTakeOut({index}) invoked", Logg.LoggingMode.InProgress);
+            item = default;
+            if (!IsValidSlotIdx(index)) return false;
+            if (slots[index] is not { IsAccessible: true, HasItem: true } slot) return false;
+            if (!slot.Clear(out var stored)) return false;
+
+            item = stored;
+
+            if (item.Type == Enums.ItemType.Countable &&
+                item is ICountableItem cItem)
+            {
+                int amount = cItem.GetAmount;
+                if (amount > 0)
+                    UpdateCountableDict(cItem.GetItemInfo, -amount);
+            }
+
+            CacheRemove(item, index);
+            NotifySlotChanged(index);
+            return true;
+        }
 
         #endregion
 
@@ -619,29 +695,6 @@ namespace TH.Item
             if (result) NotifySlotChanged(index);
             
             return result;
-        }
-
-        public bool TryRemoveItem(int index, out IGameItem item)
-        {
-            Logg.Log($"[PlayerStorage] TryRemove({index}) invoked", Logg.LoggingMode.InProgress);
-            item = default;
-            if (!IsValidSlotIdx(index)) return false;
-            if (slots[index] is not { IsAccessible: true, HasItem: true } slot) return false;
-            if (!slot.Clear(out var stored)) return false;
-
-            item = stored;
-
-            if (item.Type == Enums.ItemType.Countable &&
-                item is ICountableItem cItem)
-            {
-                int amount = cItem.GetAmount;
-                if (amount > 0)
-                    UpdateCountableDict(cItem.GetItemInfo, -amount);
-            }
-
-            CacheRemove(item, index);
-            NotifySlotChanged(index);
-            return true;
         }
 
         #endregion
@@ -1286,8 +1339,6 @@ namespace TH.Item
             countableDict.Clear();
             itemIndexCache.Clear();
         }
-
-        
     }
 }
 

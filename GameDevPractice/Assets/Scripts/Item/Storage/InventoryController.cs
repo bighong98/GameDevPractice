@@ -503,13 +503,6 @@ namespace TH.Item
             
             // 드래그 상태 초기화
             ClearDragState();
-
-            // 퀵슬롯으로의 드래그 앤 드롭 처리 (타입 체크)
-            if (toSource is QuickSlotPanelUI)
-            {
-                HandleQuickSlotDrop(fromStorage, fromSlot, to.index);
-                return;
-            }
             
             // 기존 로직: toStorage 확인 후 동일 스토리지 내부 정렬 또는 일반 전송/교환
             if (GetStorageFromUI(toSource) is not { } toStorage
@@ -524,38 +517,7 @@ namespace TH.Item
             }
             else itemTransfer.TransferOrSwap(
                 fromStorage, fromSlot, toStorage, toSlot);
-        }
-
-        private void HandleQuickSlotDrop(IGameItemStorage fromStorage, IGameItemSlot fromSlot, int quickSlotIndex)
-        {
-            if (pQuickStorage == null)
-            {
-                Logg.LogWarning("[InventoryController] QuickStorage not available");
-                return;
-            }
-
-            // 비어있는 슬롯이거나 접근 불가한 슬롯은 무시
-            if (fromSlot is not { HasItem: true, IsAccessible: true, GetItem: { } item, GetItemInfo: { } itemInfo })
-                return;
-
-            // 퀵슬롯에 등록 가능한 아이템 타입인지 검증
-            if (itemInfo.itemType != Enums.ItemType.Countable && itemInfo.itemType != Enums.ItemType.Single)
-            {
-                Logg.LogWarning($"[InventoryController] Item type {itemInfo.itemType} cannot be registered to QuickSlot");
-                return;
-            }
-
-            // ItemTypeSO 참조 저장 목적 더미 아이템 객체 생성
-            // 실제 개수 관리는 PlayerStorage에서 처리
-            // 해당 인덱스의 퀵슬롯에 등록 (덮어쓰기)
-            if (!pQuickStorage.TryStore(CreateDummyItemForQuickSlot(itemInfo), quickSlotIndex))
-                return;
-
-            Logg.Log($"[InventoryController] Successfully registered {itemInfo.name} to QuickSlot {quickSlotIndex}", 
-                Logg.LoggingMode.Completed);
-        }
-
-        
+        }        
         private void ClearDragState()
         {
             // 드래그 중이었던 아이템이 Equipment 타입이었다면 장비 슬롯 하이라이트 해제
@@ -584,7 +546,6 @@ namespace TH.Item
                 }
             }
         }
-        
         private void ClearEquipmentHighlights()
         {
             if (pEquipHolder == null) return;
@@ -595,19 +556,6 @@ namespace TH.Item
                 highlightUI.UnHighlightSlot(slot.Index);
             }
         }
-
-        
-        private IGameItem CreateDummyItemForQuickSlot(ItemTypeSO itemInfo)
-        {
-            if (itemInfo == null) return null;
-            
-            // ItemTypeSO 참조만 필요한 더미 아이템 생성
-            return new GameItem(itemInfo);
-        }
-
-
-        
-        
 
         #endregion
 
@@ -725,7 +673,8 @@ namespace TH.Item
         {
             if (targetUI == pInvenUI.StorageUI) return pStorage;
             if (targetUI == pInvenUI.EquipmentUI) return pEquipHolder;
-            
+            if (targetUI is QuickSlotPanelUI) return pQuickStorage;
+
             return null;
         }
 
@@ -733,7 +682,7 @@ namespace TH.Item
         {
             if (storage == pStorage) return pInvenUI.StorageUI;
             if (storage == pEquipHolder) return pInvenUI.EquipmentUI;
-
+            
             return null;
         }
         

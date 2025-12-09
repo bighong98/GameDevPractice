@@ -125,22 +125,22 @@ namespace TH.Item
             return false;
         }
         
-        public bool TryStore(IGameItem item, out IGameItem existing)
+        public bool TryReplace(IGameItem item, out IGameItem existing)
         {
             if (TryGetValidSlot(item, out int index) && IsValidSlotIdx(index)) // 아이템을 장착할 수 있는 슬롯 인덱스 탐색 + 인덱스 유효성 검사
             {
-                return TryStore(item, index, out existing);
+                return TryReplaceAt(item, index, out existing);
             }
 
             existing = null;
             return false;
         }
 
-        public bool TryStore(IGameItem item, out IGameItemSlot storedSlot, out IGameItem existing)
+        public bool TryReplace(IGameItem item, out IGameItemSlot storedSlot, out IGameItem existing)
         {
             Logg.Log($"[EquipmentHolder] TryStore({item}) invoked", Logg.LoggingMode.Completed);
             if (TryGetValidSlot(item, out int index) && IsValidSlotIdx(index)
-                && TryStore(item, index, out existing))
+                && TryReplaceAt(item, index, out existing))
             {
                 storedSlot = equipments[index];
                 Logg.Log($"[EquipmentHolder] TryStore({item}, out {storedSlot}, out {existing}) succeed", Logg.LoggingMode.Completed);
@@ -152,7 +152,7 @@ namespace TH.Item
             return false;
         }
 
-        public bool TryStore(IGameItem item, int index, out IGameItem existing)
+        public bool TryReplaceAt(IGameItem item, int index, out IGameItem existing)
         {
             if (equipments[index] is not { IsAccessible: true } slot)
             {
@@ -162,6 +162,22 @@ namespace TH.Item
 
             existing = slot.HasItem ? slot.GetItem : null;
             return TryStore(item, index);
+        }
+
+        public bool CanStore(IGameItem item)
+        {
+            return item is { IsValid: true, GetItemInfo: {} itemInfo } && itemInfo.itemType == Enums.ItemType.Equipment; 
+        }
+
+        public bool CanStore(IGameItem item, int index)
+        {
+            if (item is not { IsValid: true, GetItemInfo: {} itemInfo }
+                || itemInfo.itemType != Enums.ItemType.Equipment
+                || !TryGetItemSlot(index, out var slot)
+                || !slot.CanStore(itemInfo))
+                return false;
+
+            return true;
         }
 
         #endregion
@@ -181,7 +197,7 @@ namespace TH.Item
             return false;
         }
 
-        public bool TryRemoveItem(int index, out IGameItem item)
+        public bool TryTakeOut(int index, out IGameItem item)
         {
             if (IsValidSlotIdx(index) && equipments[index] is 
                     { IsAccessible: true, HasItem: true} slot)
@@ -258,7 +274,7 @@ namespace TH.Item
         }
 
         #endregion
-        
+
     }
 }
 

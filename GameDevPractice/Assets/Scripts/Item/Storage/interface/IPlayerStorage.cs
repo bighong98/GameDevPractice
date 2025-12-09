@@ -13,7 +13,8 @@ namespace TH.Item.Storage
         IUsableItemStorage,
         ICountableItemStorage,
         IConsumableItemStorage,
-        IDividableStorage
+        IDividableStorage,
+        IReplaceableStorage
     {
         
     }
