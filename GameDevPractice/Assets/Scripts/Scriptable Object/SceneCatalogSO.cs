@@ -31,6 +31,24 @@ public class SceneCatalogSO : ScriptableObject
     }
 #endif
 
+    public bool TryGetCurrentSceneEntry(out SceneEntry sceneEntry)
+    {
+        var curr = SceneManager.GetActiveScene().name;
+
+        foreach (var e in entries)
+        {
+            if (e == null) continue;
+            if (e.key == curr)
+            {
+                sceneEntry = e;
+                return true;
+            }
+        }
+
+        sceneEntry = null;
+        return false;
+    }
+
     public SceneEntry GetCurrentSceneEntry()
     {
         var curr = SceneManager.GetActiveScene().name;

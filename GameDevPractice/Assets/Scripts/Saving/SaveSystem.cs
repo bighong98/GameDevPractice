@@ -630,23 +630,27 @@ namespace TH.SaveLoad
             if (sceneCatalog == null)
                 catalogPending.Enqueue(entry => AddSceneSavableEntity(entry, entity, token));
             else AddSceneSavableEntity(sceneCatalog.GetCurrentSceneEntry(), entity, token);
+            entity.IsRegistered = true;
         }
 
-        public void UnRegisterEntity(ISavableEntity savable, CancellationToken token = default)
+        public void UnRegisterEntity(ISavableEntity entity, CancellationToken token = default)
         {
-            var id = savable.UniqueIdentifier;
+            var id = entity.UniqueIdentifier;
 
-            if (savable.IsGlobal)
+            if (entity.IsGlobal)
             {
                 GlobalEntities.Remove(id);
                 return;
             }
 
-            if (sceneCatalog == null) return;
-            var currSceneEntry = sceneCatalog.GetCurrentSceneEntry();
+            if (!sceneCatalog.IsAlive() || !sceneCatalog.TryGetCurrentSceneEntry(out var currSceneEntry))
+                return;
+            // if (sceneCatalog == null) return;
+            // var currSceneEntry = sceneCatalog.GetCurrentSceneEntry();
             if (!SceneEntities.TryGetValue(currSceneEntry, out var dict))
                 return;
 
+            entity.IsRegistered = false;
             dict.Remove(id);
         }
         

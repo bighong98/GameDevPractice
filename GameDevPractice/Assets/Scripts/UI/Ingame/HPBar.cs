@@ -112,8 +112,6 @@ namespace TH.UI
                 try
                 {
                     await UniTask.NextFrame(PlayerLoopTiming.LastUpdate, barAnimToken).SuppressCancellationThrow();
-                    // curr = Mathf.MoveTowards(curr, to, speed * Time.deltaTime);
-                    // slider.value = curr;
                 }
                 catch (Exception e)
                 {
@@ -233,7 +231,7 @@ namespace TH.UI
 
         public void OnGetFromPool()
         {
-            
+            SetFill(1f);
         }
 
         public void OnReleaseFromPool()

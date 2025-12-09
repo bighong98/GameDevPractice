@@ -16,6 +16,7 @@ namespace TH.SaveLoad
     {
         string UniqueIdentifier { get; }
         bool IsGlobal { get; }
+        bool IsRegistered {get; set;}
     }
 }
 

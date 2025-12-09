@@ -1106,7 +1106,8 @@ namespace TH.Item
         private const string InventoryIdentifier = "playerInventory";
         public string UniqueIdentifier => InventoryIdentifier;
         public bool IsGlobal { get; } = true;
-
+        public bool IsRegistered {get; set;} = false;
+        
         public object CaptureState()
         {
             List<IGameItem> items = new();

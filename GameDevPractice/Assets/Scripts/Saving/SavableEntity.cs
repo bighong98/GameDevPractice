@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using TH.Core.Service;
-using TH.SaveLoad;
 using TH.Utils;
 using UnityEngine;
 using UnityEditor;
@@ -24,6 +23,8 @@ namespace TH.SaveLoad
 
         public string UniqueIdentifier => uniqueIdentifier;
 
+        public bool IsRegistered {get; set;} = false;
+
         private void Awake()
         {
             RebuildSavableList();
@@ -35,7 +36,8 @@ namespace TH.SaveLoad
         private void OnDestroy()
         {
             savables.Clear();
-            saveSystem?.UnRegisterEntity(this);
+            if (IsRegistered)
+                saveSystem?.UnRegisterEntity(this);
         }
         
         object ISavable.CaptureState()

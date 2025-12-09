@@ -31,6 +31,11 @@ namespace TH.SceneManagement
         
         public event Func<UniTask> OnBeforeSceneChanged;
         public event Action<Scene> OnSceneChanged;
+
+#if UNITY_EDITOR
+        Scene bootScene;
+        bool bootSceneUnLoaded;
+#endif
         
         public SceneLoader(IResourceLoader resourceLoad)
         {
@@ -42,8 +47,13 @@ namespace TH.SceneManagement
         private bool testing = false;
         private async void Init()
         {
+#if UNITY_EDITOR
+            bootScene = SceneManager.GetActiveScene();
+            bootSceneUnLoaded = false;
+            
             if (testing)
                 await LoadSceneAsync("Sandbox");
+#endif
         }
 
         #region PreLoad
@@ -91,6 +101,9 @@ namespace TH.SceneManagement
                 op.ToUniTask(cancellationToken: token),
                 WaitForPreLoad()
             );
+#if UNITY_EDITOR
+            await UnloadBootstrapSceneIfNeeded(token);
+#endif
         }
 
         private static async UniTask UnloadLoadingSceneAsync(CancellationToken token = default)
@@ -125,14 +138,13 @@ namespace TH.SceneManagement
 
             try
             {
-                await UniTask.WhenAll(LoadLoadingSceneAsync(token: token),
-                    RunPreTasks(preTasks, token)); // 로딩 씬 로드, 타겟 씬 로드 전 사전 작업
+                await UniTask.WhenAll(
+                    LoadLoadingSceneAsync(token: token),
+                    RunPreTasks(preTasks, token),
+                    OnBeforeSceneChanged!()); // 로딩 씬 로드, 타겟 씬 로드 전 사전 작업
                 var result = await LoadSceneWithAddressablesAsync(key, onProgress, token); // 타겟 씬 로드
                 await UniTask.WhenAll(UnloadPreviousSceneAsync(token),
-                        UnloadLoadingSceneAsync(token),
-                        OnBeforeSceneChanged!()); // 로딩 씬 언로드, 기존 씬 언로드
-                
-
+                        UnloadLoadingSceneAsync(token)); // 로딩 씬 언로드, 기존 씬 언로드
                 ReportProgress(1); // 진행도 60%
                 OnSceneChanged?.Invoke(result.Scene);
             }
@@ -239,6 +251,39 @@ namespace TH.SceneManagement
             additive?.Invoke(p);
             Logg.Log($"[SceneLoader] progress: {p}", Logg.LoggingMode.InProgress);
         }
+
+        #endregion
+    
+        #region Helper Methods
+#if UNITY_EDITOR
+        // 에디터 환경 버그 방지
+        // Play 버튼 누른 시점의 에디터 상 활성 씬 언로드
+        private async UniTask UnloadBootstrapSceneIfNeeded(CancellationToken token)
+        {
+            if (bootSceneUnLoaded)
+                return;
+
+            if (!bootScene.IsValid())
+            {
+                bootSceneUnLoaded = true;
+                return;
+            }
+
+            // 혹시나 부트씬이 LoadingScene인 경우는 건너뜀
+            if (bootScene.name == LoadingSceneName)
+            {
+                bootSceneUnLoaded = true;
+                return;
+            }
+
+            await SceneManager.UnloadSceneAsync(bootScene)
+                .ToUniTask(cancellationToken: token);
+
+            Logg.Log($"[SceneLoader] bootstrap scene '{bootScene.name}' is unloaded");
+
+            bootSceneUnLoaded = true;
+        }
+#endif
 
         #endregion
     }
