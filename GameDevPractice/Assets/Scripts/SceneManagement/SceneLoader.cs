@@ -85,7 +85,7 @@ namespace TH.SceneManagement
             if (loadScene.IsValid() && loadScene.isLoaded)
                 return;
             
-            var op = SceneManager.LoadSceneAsync(LoadingSceneName, LoadSceneMode.Single);
+            var op = SceneManager.LoadSceneAsync(LoadingSceneName, LoadSceneMode.Additive);
             
             await UniTask.WhenAll(
                 op.ToUniTask(cancellationToken: token),

@@ -16,6 +16,9 @@ namespace TH.Control
         private Fighter fighter;
         private Health health;
         
+        
+        private Vector2 wasdInput = Vector2.zero;
+        private bool isWASDMoving = false;
         private bool fightEnabled = true;
         private const float MaxNavMeshProjectionDistance = 1f;
 
@@ -34,6 +37,7 @@ namespace TH.Control
             InputManager.Instance.ReserveOperation(() =>
             {
                 InputManager.Instance.OnSelected += OnPointerPressed;
+                InputManager.Instance.OnMoved += OnWASDInput;
             });
             // InputManager.Instance.OnSelected += OnPointerPressed;
         }
@@ -43,7 +47,63 @@ namespace TH.Control
             if (Util.IsQuitting) return;
             _camera = null;
             InputManager.Instance.OnSelected -= OnPointerPressed;
+            InputManager.Instance.OnMoved -= OnWASDInput;
         }
+
+        private void Update()
+        {
+            if (Time.timeScale <= float.Epsilon || health?.IsDead == true)
+            {
+                return;
+            }
+
+            // WASD 입력이 있으면 지속적으로 이동 처리
+            if (isWASDMoving && wasdInput.sqrMagnitude > 0.01f)
+            {
+                HandleWASDMovement();
+            }
+        }
+
+        private void OnWASDInput(Vector2 input)
+        {
+            wasdInput = input;
+            isWASDMoving = input.sqrMagnitude > 0.01f;
+            
+            // WASD 입력이 시작되면 즉시 기존 이동/전투 취소
+            if (isWASDMoving)
+            {
+                mover.Cancel();
+            }
+        }
+
+private void HandleWASDMovement()
+        {
+            // 카메라 방향 기준으로 입력 변환
+            Vector3 cameraForward = _camera.transform.forward;
+            Vector3 cameraRight = _camera.transform.right;
+            
+            // Y축 제거 (수평 이동만)
+            cameraForward.y = 0;
+            cameraRight.y = 0;
+            cameraForward.Normalize();
+            cameraRight.Normalize();
+
+            // 이동 방향 계산
+            Vector3 moveDirection = (cameraForward * wasdInput.y + cameraRight * wasdInput.x).normalized;
+            
+            if (moveDirection.sqrMagnitude > 0.01f)
+            {
+                // 현재 위치에서 이동 방향으로 목표 지점 설정 (더 짧은 거리)
+                Vector3 targetPosition = transform.position + moveDirection * 2f; // 10f -> 2f로 변경
+                
+                // NavMesh 위의 유효한 위치로 변환
+                if (NavMesh.SamplePosition(targetPosition, out NavMeshHit navMeshHit, MaxNavMeshProjectionDistance, NavMesh.AllAreas))
+                {
+                    mover.Moveto(navMeshHit.position);
+                }
+            }
+        }
+
 
         private void OnPointerPressed(Vector2 pos)
         {
@@ -52,6 +112,12 @@ namespace TH.Control
             if (Time.timeScale <= float.Epsilon || health?.IsDead == true)
             {
                 return; // 게임이 일시정지 중이거나 플레이어가 사망한 경우 반응 없음
+            }
+            
+            // WASD 이동 중이면 포인터 입력 무시 (WASD 우선)
+            if (isWASDMoving)
+            {
+                return;
             }
             
             if (fightEnabled && TryInteractWithComponent(pos))

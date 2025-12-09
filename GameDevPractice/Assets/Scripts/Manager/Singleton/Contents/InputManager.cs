@@ -5,7 +5,6 @@ using UnityEngine.InputSystem;
 using Cysharp.Threading.Tasks;
 using TH.UI;
 using TH.Core;
-using TH.Item;
 using TH.Utils;
 
 public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, UserInput.IGlobalActions, UserInput.IUIActions
