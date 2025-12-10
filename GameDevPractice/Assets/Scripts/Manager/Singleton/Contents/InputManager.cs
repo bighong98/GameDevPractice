@@ -25,7 +25,8 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
     // player
     public event Action<Vector2> OnMoved; // 플레이어 캐릭터가 이동시 (현재는 사용x)
     public event Action<Vector2> OnSelected; // 게임 오브젝트에 터치/클릭 시 (팝업UI와 상호작용은 미포함)
-    
+    public event Action<Vector2> OnScreenDragged; // 게임 스크린 드래그 시 (팝업UI와 상호작용은 OnDragStarted 혹은 pointerEvent 기반으로 처리 )
+
     // UI
     public event Action<Vector2> OnUIPointerMoved; // UI 팝업이 활성화된 상태에서 포인터 움직임 발생시
     public event Action<Vector2> OnSingleClicked;
@@ -126,6 +127,20 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
         {
             Logg.Log($"[InputManager] OnSelect Invoked ({currentPointerPos})", Logg.LoggingMode.Completed);
             OnSelected?.Invoke(currentPointerPos);
+        }
+    }
+
+    public void OnDragScreen(InputAction.CallbackContext context)
+    {
+        Vector2 delta = context.ReadValue<Vector2>();
+
+        if (context.phase == InputActionPhase.Performed)
+        {
+            if (delta.magnitude > 8f)
+            {
+                OnScreenDragged?.Invoke(delta);
+                Logg.Log($"[{GetType().Name}] OnScreenDragged({delta})", Logg.LoggingMode.Completed);
+            }
         }
     }
 
