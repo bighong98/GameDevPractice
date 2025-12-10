@@ -529,6 +529,87 @@
                     "isPartOfComposite": false
                 }
             ]
+        },
+        {
+            "name": "Cam",
+            "id": "afe3781c-a02a-4eee-aa4c-65ef23efe20f",
+            "actions": [
+                {
+                    "name": "Zoom",
+                    "type": "Value",
+                    "id": "51093529-0b04-4d0f-bd73-a786c3722642",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "DragScreen",
+                    "type": "PassThrough",
+                    "id": "9957d457-a2eb-408f-990e-e35252f84d4e",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "ad72b72c-9515-42a6-9673-6788c5ae1893",
+                    "path": "<Mouse>/scroll",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "Zoom",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "dfcd02f0-f0fb-4f28-8d75-e85e33de18c6",
+                    "path": "<XInputController>/dpad",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Gamepad",
+                    "action": "Zoom",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "One Modifier",
+                    "id": "820c2cd0-dae8-4fbe-bb69-67fd6096fac5",
+                    "path": "OneModifier(modifiersOrder=1)",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "DragScreen",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "modifier",
+                    "id": "c9135094-521b-472d-96dd-cad7784d450b",
+                    "path": "<Pointer>/press",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "DragScreen",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "binding",
+                    "id": "23000f04-a8ea-46c3-9e19-80cacb9f0c68",
+                    "path": "<Pointer>/delta",
+                    "interactions": "",
+                    "processors": "DeltaTimeScale,ScaleVector2(x=0.1,y=0.1)",
+                    "groups": "",
+                    "action": "DragScreen",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                }
+            ]
         }
     ],
     "controlSchemes": []

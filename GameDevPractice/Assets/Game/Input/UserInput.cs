@@ -615,6 +615,87 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": false
                 }
             ]
+        },
+        {
+            ""name"": ""Cam"",
+            ""id"": ""afe3781c-a02a-4eee-aa4c-65ef23efe20f"",
+            ""actions"": [
+                {
+                    ""name"": ""Zoom"",
+                    ""type"": ""Value"",
+                    ""id"": ""51093529-0b04-4d0f-bd73-a786c3722642"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""DragScreen"",
+                    ""type"": ""PassThrough"",
+                    ""id"": ""9957d457-a2eb-408f-990e-e35252f84d4e"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": """",
+                    ""id"": ""ad72b72c-9515-42a6-9673-6788c5ae1893"",
+                    ""path"": ""<Mouse>/scroll"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse"",
+                    ""action"": ""Zoom"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""dfcd02f0-f0fb-4f28-8d75-e85e33de18c6"",
+                    ""path"": ""<XInputController>/dpad"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Gamepad"",
+                    ""action"": ""Zoom"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""One Modifier"",
+                    ""id"": ""820c2cd0-dae8-4fbe-bb69-67fd6096fac5"",
+                    ""path"": ""OneModifier(modifiersOrder=1)"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""DragScreen"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""modifier"",
+                    ""id"": ""c9135094-521b-472d-96dd-cad7784d450b"",
+                    ""path"": ""<Pointer>/press"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""DragScreen"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""binding"",
+                    ""id"": ""23000f04-a8ea-46c3-9e19-80cacb9f0c68"",
+                    ""path"": ""<Pointer>/delta"",
+                    ""interactions"": """",
+                    ""processors"": ""DeltaTimeScale,ScaleVector2(x=0.1,y=0.1)"",
+                    ""groups"": """",
+                    ""action"": ""DragScreen"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                }
+            ]
         }
     ],
     ""controlSchemes"": []
@@ -643,6 +724,10 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
         m_Global_Escape = m_Global.FindAction("Escape", throwIfNotFound: true);
         m_Global_Point = m_Global.FindAction("Point", throwIfNotFound: true);
         m_Global_Release = m_Global.FindAction("Release", throwIfNotFound: true);
+        // Cam
+        m_Cam = asset.FindActionMap("Cam", throwIfNotFound: true);
+        m_Cam_Zoom = m_Cam.FindAction("Zoom", throwIfNotFound: true);
+        m_Cam_DragScreen = m_Cam.FindAction("DragScreen", throwIfNotFound: true);
     }
 
     ~@UserInput()
@@ -651,6 +736,7 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
         UnityEngine.Debug.Assert(!m_QuickSlot.enabled, "This will cause a leak and performance issues, UserInput.QuickSlot.Disable() has not been called.");
         UnityEngine.Debug.Assert(!m_UI.enabled, "This will cause a leak and performance issues, UserInput.UI.Disable() has not been called.");
         UnityEngine.Debug.Assert(!m_Global.enabled, "This will cause a leak and performance issues, UserInput.Global.Disable() has not been called.");
+        UnityEngine.Debug.Assert(!m_Cam.enabled, "This will cause a leak and performance issues, UserInput.Cam.Disable() has not been called.");
     }
 
     /// <summary>
@@ -1238,6 +1324,113 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
     /// Provides a new <see cref="GlobalActions" /> instance referencing this action map.
     /// </summary>
     public GlobalActions @Global => new GlobalActions(this);
+
+    // Cam
+    private readonly InputActionMap m_Cam;
+    private List<ICamActions> m_CamActionsCallbackInterfaces = new List<ICamActions>();
+    private readonly InputAction m_Cam_Zoom;
+    private readonly InputAction m_Cam_DragScreen;
+    /// <summary>
+    /// Provides access to input actions defined in input action map "Cam".
+    /// </summary>
+    public struct CamActions
+    {
+        private @UserInput m_Wrapper;
+
+        /// <summary>
+        /// Construct a new instance of the input action map wrapper class.
+        /// </summary>
+        public CamActions(@UserInput wrapper) { m_Wrapper = wrapper; }
+        /// <summary>
+        /// Provides access to the underlying input action "Cam/Zoom".
+        /// </summary>
+        public InputAction @Zoom => m_Wrapper.m_Cam_Zoom;
+        /// <summary>
+        /// Provides access to the underlying input action "Cam/DragScreen".
+        /// </summary>
+        public InputAction @DragScreen => m_Wrapper.m_Cam_DragScreen;
+        /// <summary>
+        /// Provides access to the underlying input action map instance.
+        /// </summary>
+        public InputActionMap Get() { return m_Wrapper.m_Cam; }
+        /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.Enable()" />
+        public void Enable() { Get().Enable(); }
+        /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.Disable()" />
+        public void Disable() { Get().Disable(); }
+        /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.enabled" />
+        public bool enabled => Get().enabled;
+        /// <summary>
+        /// Implicitly converts an <see ref="CamActions" /> to an <see ref="InputActionMap" /> instance.
+        /// </summary>
+        public static implicit operator InputActionMap(CamActions set) { return set.Get(); }
+        /// <summary>
+        /// Adds <see cref="InputAction.started"/>, <see cref="InputAction.performed"/> and <see cref="InputAction.canceled"/> callbacks provided via <param cref="instance" /> on all input actions contained in this map.
+        /// </summary>
+        /// <param name="instance">Callback instance.</param>
+        /// <remarks>
+        /// If <paramref name="instance" /> is <c>null</c> or <paramref name="instance"/> have already been added this method does nothing.
+        /// </remarks>
+        /// <seealso cref="CamActions" />
+        public void AddCallbacks(ICamActions instance)
+        {
+            if (instance == null || m_Wrapper.m_CamActionsCallbackInterfaces.Contains(instance)) return;
+            m_Wrapper.m_CamActionsCallbackInterfaces.Add(instance);
+            @Zoom.started += instance.OnZoom;
+            @Zoom.performed += instance.OnZoom;
+            @Zoom.canceled += instance.OnZoom;
+            @DragScreen.started += instance.OnDragScreen;
+            @DragScreen.performed += instance.OnDragScreen;
+            @DragScreen.canceled += instance.OnDragScreen;
+        }
+
+        /// <summary>
+        /// Removes <see cref="InputAction.started"/>, <see cref="InputAction.performed"/> and <see cref="InputAction.canceled"/> callbacks provided via <param cref="instance" /> on all input actions contained in this map.
+        /// </summary>
+        /// <remarks>
+        /// Calling this method when <paramref name="instance" /> have not previously been registered has no side-effects.
+        /// </remarks>
+        /// <seealso cref="CamActions" />
+        private void UnregisterCallbacks(ICamActions instance)
+        {
+            @Zoom.started -= instance.OnZoom;
+            @Zoom.performed -= instance.OnZoom;
+            @Zoom.canceled -= instance.OnZoom;
+            @DragScreen.started -= instance.OnDragScreen;
+            @DragScreen.performed -= instance.OnDragScreen;
+            @DragScreen.canceled -= instance.OnDragScreen;
+        }
+
+        /// <summary>
+        /// Unregisters <param cref="instance" /> and unregisters all input action callbacks via <see cref="CamActions.UnregisterCallbacks(ICamActions)" />.
+        /// </summary>
+        /// <seealso cref="CamActions.UnregisterCallbacks(ICamActions)" />
+        public void RemoveCallbacks(ICamActions instance)
+        {
+            if (m_Wrapper.m_CamActionsCallbackInterfaces.Remove(instance))
+                UnregisterCallbacks(instance);
+        }
+
+        /// <summary>
+        /// Replaces all existing callback instances and previously registered input action callbacks associated with them with callbacks provided via <param cref="instance" />.
+        /// </summary>
+        /// <remarks>
+        /// If <paramref name="instance" /> is <c>null</c>, calling this method will only unregister all existing callbacks but not register any new callbacks.
+        /// </remarks>
+        /// <seealso cref="CamActions.AddCallbacks(ICamActions)" />
+        /// <seealso cref="CamActions.RemoveCallbacks(ICamActions)" />
+        /// <seealso cref="CamActions.UnregisterCallbacks(ICamActions)" />
+        public void SetCallbacks(ICamActions instance)
+        {
+            foreach (var item in m_Wrapper.m_CamActionsCallbackInterfaces)
+                UnregisterCallbacks(item);
+            m_Wrapper.m_CamActionsCallbackInterfaces.Clear();
+            AddCallbacks(instance);
+        }
+    }
+    /// <summary>
+    /// Provides a new <see cref="CamActions" /> instance referencing this action map.
+    /// </summary>
+    public CamActions @Cam => new CamActions(this);
     /// <summary>
     /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "Player" which allows adding and removing callbacks.
     /// </summary>
@@ -1381,5 +1574,27 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnRelease(InputAction.CallbackContext context);
+    }
+    /// <summary>
+    /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "Cam" which allows adding and removing callbacks.
+    /// </summary>
+    /// <seealso cref="CamActions.AddCallbacks(ICamActions)" />
+    /// <seealso cref="CamActions.RemoveCallbacks(ICamActions)" />
+    public interface ICamActions
+    {
+        /// <summary>
+        /// Method invoked when associated input action "Zoom" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnZoom(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "DragScreen" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnDragScreen(InputAction.CallbackContext context);
     }
 }
