@@ -7,13 +7,14 @@ using TH.UI;
 using TH.Core;
 using TH.Utils;
 
-public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, UserInput.IGlobalActions, UserInput.IUIActions
+public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, UserInput.IGlobalActions, UserInput.IUIActions, UserInput.IQuickSlotActions
 {
     // 외부 접근용 프로퍼티
     private UserInput userInput; // input action asset 자동생성 클래스
     public UserInput UserInput => userInput;
     public UserInput.GlobalActions GlobalActions => UserInput.Global;
     public UserInput.PlayerActions PlayerActions => UserInput.Player;
+    public UserInput.QuickSlotActions QuickSlotActions => UserInput.QuickSlot;
     public UserInput.UIActions UIActions => UserInput.UI;
 
     #region 외부 접근용 인풋 이벤트
@@ -31,10 +32,19 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
     public event Action<Vector2> OnDoubleClicked; // 더블클릭
     public event Action<Vector2> OnAltClicked; // 보조 입력 발생 시 (마우스 우클릭 등)
     // public event Action<Vector2> OnHolded;
+    
     // UI.Drag
     public event Action<Vector2> OnDragStarted; // 드래그 시작 시
     public event Action<Vector2> OnDragEnded; // 드래그 종료 시
     public event Action<Vector2> OnAdditived;
+    
+    // QuickSlot
+    public event Action OnQuickSlot1Pressed;
+    public event Action OnQuickSlot2Pressed;
+    public event Action OnQuickSlot3Pressed;
+    public event Action OnQuickSlot4Pressed;
+    public event Action OnQuickSlot5Pressed;
+    
 
     #endregion 
     
@@ -57,6 +67,8 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
         
         userInput.Player.SetCallbacks(this);
         userInput.Global.SetCallbacks(this);
+        
+        userInput.QuickSlot.SetCallbacks(this);
         userInput.UI.SetCallbacks(this);
     }
 
@@ -66,6 +78,8 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
         // default: GlobalActions, PlayerActions 활성화
 
         userInput.Global.Enable();
+         
+        userInput.QuickSlot.Enable();
         userInput.Player.Enable(); 
     }
 
@@ -75,6 +89,8 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
         
         userInput.Global.Disable();
         userInput.Player.Disable();
+        
+        userInput.QuickSlot.Disable();
         userInput.UI.Disable();
 
         // userInput.Global.RemoveCallbacks(this);
@@ -286,6 +302,56 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
         }
 
         return true;
+    }
+
+    #endregion
+
+
+    #region QuickSlot Input Handle
+
+    public void OnQuickSlot1(InputAction.CallbackContext context)
+    {
+        if (context.phase == InputActionPhase.Performed)
+        {
+            Logg.Log("[InputManager] QuickSlot1 Pressed", Logg.LoggingMode.Completed);
+            OnQuickSlot1Pressed?.Invoke();
+        }
+    }
+
+    public void OnQuickSlot2(InputAction.CallbackContext context)
+    {
+        if (context.phase == InputActionPhase.Performed)
+        {
+            Logg.Log("[InputManager] QuickSlot2 Pressed", Logg.LoggingMode.Completed);
+            OnQuickSlot2Pressed?.Invoke();
+        }
+    }
+
+    public void OnQuickSlot3(InputAction.CallbackContext context)
+    {
+        if (context.phase == InputActionPhase.Performed)
+        {
+            Logg.Log("[InputManager] QuickSlot3 Pressed", Logg.LoggingMode.Completed);
+            OnQuickSlot3Pressed?.Invoke();
+        }
+    }
+
+    public void OnQuickSlot4(InputAction.CallbackContext context)
+    {
+        if (context.phase == InputActionPhase.Performed)
+        {
+            Logg.Log("[InputManager] QuickSlot4 Pressed", Logg.LoggingMode.Completed);
+            OnQuickSlot4Pressed?.Invoke();
+        }
+    }
+
+    public void OnQuickSlot5(InputAction.CallbackContext context)
+    {
+        if (context.phase == InputActionPhase.Performed)
+        {
+            Logg.Log("[InputManager] QuickSlot5 Pressed", Logg.LoggingMode.Completed);
+            OnQuickSlot5Pressed?.Invoke();
+        }
     }
 
     #endregion

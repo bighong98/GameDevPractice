@@ -20,14 +20,51 @@ public class QuickSlotController : MonoBehaviour
     private IQuickStorage quickStorage;
     // 외부 서비스     
     private IGameItemConsumer itemConsumer;
+    
+    private InputManager inputManager;
     private IPlayerHolder playerHolder;
 
+    
+    private void SubscribeInputEvents()
+    {
+        if (Util.IsQuitting) return;
+        
+        UnsubscribeInputEvents();
+
+        inputManager.OnQuickSlot1Pressed += OnQuickSlot1Input;
+        inputManager.OnQuickSlot2Pressed += OnQuickSlot2Input;
+        inputManager.OnQuickSlot3Pressed += OnQuickSlot3Input;
+        inputManager.OnQuickSlot4Pressed += OnQuickSlot4Input;
+        inputManager.OnQuickSlot5Pressed += OnQuickSlot5Input;
+    }
+
+    private void UnsubscribeInputEvents()
+    {
+        if (Util.IsQuitting) return;
+        
+        inputManager.OnQuickSlot1Pressed -= OnQuickSlot1Input;
+        inputManager.OnQuickSlot2Pressed -= OnQuickSlot2Input;
+        inputManager.OnQuickSlot3Pressed -= OnQuickSlot3Input;
+        inputManager.OnQuickSlot4Pressed -= OnQuickSlot4Input;
+        inputManager.OnQuickSlot5Pressed -= OnQuickSlot5Input;
+    }
+
+
+    private void OnQuickSlot1Input() => UseQuickSlot(0);
+    private void OnQuickSlot2Input() => UseQuickSlot(1);
+    private void OnQuickSlot3Input() => UseQuickSlot(2);
+    private void OnQuickSlot4Input() => UseQuickSlot(3);
+    private void OnQuickSlot5Input() => UseQuickSlot(4);
+
+
+    
     private void Awake()
     {
         playerStorage = ServiceLocator.Get<IPlayerStorage>();
         quickStorage  = ServiceLocator.Get<IQuickStorage>();
         itemConsumer = ServiceLocator.Get<IGameItemConsumer>();
         playerHolder = ServiceLocator.Get<IPlayerHolder>();
+        inputManager = InputManager.Instance;
         
         playerHolder.OnPlayerInstanceUpdated += UpdatePlayerInstance;
         if (panelUI == null)
@@ -58,8 +95,12 @@ public class QuickSlotController : MonoBehaviour
             playerStorage.OnStorageChanged -= HandleInventoryStorageChanged;
             playerStorage.OnStorageChanged += HandleInventoryStorageChanged;
         }
+
+        SubscribeInputEvents();
     }
 
+    
+        
     private void OnDisable()
     {
         if (quickStorage != null)
@@ -72,6 +113,8 @@ public class QuickSlotController : MonoBehaviour
         {
             playerStorage.OnStorageChanged -= HandleInventoryStorageChanged;
         }
+
+        UnsubscribeInputEvents();
     }
 
     private void OnDestroy()
@@ -298,12 +341,6 @@ public class QuickSlotController : MonoBehaviour
 
         slotUI.SetAmount(itemAmount);
     }
-
-    IEnumerator DelayUnHighlight(int index, int type) { 
-        yield return _waitForSeconds0_5;
-        panelUI.UnHighlightSlot(index, type); 
-    }
-    private static WaitForSecondsRealtime _waitForSeconds0_5 = new (0.5f);
 
     #endregion
 

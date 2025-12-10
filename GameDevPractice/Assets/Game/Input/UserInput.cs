@@ -236,6 +236,114 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
             ]
         },
         {
+            ""name"": ""QuickSlot"",
+            ""id"": ""082118bb-50eb-40b1-a90a-84961461872a"",
+            ""actions"": [
+                {
+                    ""name"": ""QuickSlot1"",
+                    ""type"": ""Button"",
+                    ""id"": ""4bad4a0a-67a6-4e6b-a1b8-e6ca12f8b00c"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""QuickSlot2"",
+                    ""type"": ""Button"",
+                    ""id"": ""0123ffd3-b75a-4843-ae6e-f57d93279c61"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""QuickSlot3"",
+                    ""type"": ""Button"",
+                    ""id"": ""1cf127a7-2608-4433-9885-d1a386251f54"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""QuickSlot4"",
+                    ""type"": ""Button"",
+                    ""id"": ""06711dc2-2630-45a3-8fc0-d70ecd1a7d4f"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""QuickSlot5"",
+                    ""type"": ""Button"",
+                    ""id"": ""12bbd467-fa84-4abf-9f30-ce4666f59b3b"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": """",
+                    ""id"": ""7b8e3c16-37a7-41fb-b5f6-d82b136d000c"",
+                    ""path"": ""<Keyboard>/1"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""QuickSlot1"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""4072015e-9e98-4f8a-ab2f-2ba127077300"",
+                    ""path"": ""<Keyboard>/2"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""QuickSlot2"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""93dc99f7-10a0-46b9-854b-ea0f19c04e3d"",
+                    ""path"": ""<Keyboard>/3"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""QuickSlot3"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""79f83923-0a0b-4e87-be91-bfe29b7a96a8"",
+                    ""path"": ""<Keyboard>/4"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""QuickSlot4"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""29e4b272-723a-401c-bb7b-f417c416ff46"",
+                    ""path"": ""<Keyboard>/5"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""QuickSlot5"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                }
+            ]
+        },
+        {
             ""name"": ""UI"",
             ""id"": ""5a480fce-de2b-4237-a66a-37c1326e9855"",
             ""actions"": [
@@ -473,6 +581,13 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
         m_Player = asset.FindActionMap("Player", throwIfNotFound: true);
         m_Player_Move = m_Player.FindAction("Move", throwIfNotFound: true);
         m_Player_Select = m_Player.FindAction("Select", throwIfNotFound: true);
+        // QuickSlot
+        m_QuickSlot = asset.FindActionMap("QuickSlot", throwIfNotFound: true);
+        m_QuickSlot_QuickSlot1 = m_QuickSlot.FindAction("QuickSlot1", throwIfNotFound: true);
+        m_QuickSlot_QuickSlot2 = m_QuickSlot.FindAction("QuickSlot2", throwIfNotFound: true);
+        m_QuickSlot_QuickSlot3 = m_QuickSlot.FindAction("QuickSlot3", throwIfNotFound: true);
+        m_QuickSlot_QuickSlot4 = m_QuickSlot.FindAction("QuickSlot4", throwIfNotFound: true);
+        m_QuickSlot_QuickSlot5 = m_QuickSlot.FindAction("QuickSlot5", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_Click = m_UI.FindAction("Click", throwIfNotFound: true);
@@ -490,6 +605,7 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
     ~@UserInput()
     {
         UnityEngine.Debug.Assert(!m_Player.enabled, "This will cause a leak and performance issues, UserInput.Player.Disable() has not been called.");
+        UnityEngine.Debug.Assert(!m_QuickSlot.enabled, "This will cause a leak and performance issues, UserInput.QuickSlot.Disable() has not been called.");
         UnityEngine.Debug.Assert(!m_UI.enabled, "This will cause a leak and performance issues, UserInput.UI.Disable() has not been called.");
         UnityEngine.Debug.Assert(!m_Global.enabled, "This will cause a leak and performance issues, UserInput.Global.Disable() has not been called.");
     }
@@ -670,6 +786,146 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
     /// Provides a new <see cref="PlayerActions" /> instance referencing this action map.
     /// </summary>
     public PlayerActions @Player => new PlayerActions(this);
+
+    // QuickSlot
+    private readonly InputActionMap m_QuickSlot;
+    private List<IQuickSlotActions> m_QuickSlotActionsCallbackInterfaces = new List<IQuickSlotActions>();
+    private readonly InputAction m_QuickSlot_QuickSlot1;
+    private readonly InputAction m_QuickSlot_QuickSlot2;
+    private readonly InputAction m_QuickSlot_QuickSlot3;
+    private readonly InputAction m_QuickSlot_QuickSlot4;
+    private readonly InputAction m_QuickSlot_QuickSlot5;
+    /// <summary>
+    /// Provides access to input actions defined in input action map "QuickSlot".
+    /// </summary>
+    public struct QuickSlotActions
+    {
+        private @UserInput m_Wrapper;
+
+        /// <summary>
+        /// Construct a new instance of the input action map wrapper class.
+        /// </summary>
+        public QuickSlotActions(@UserInput wrapper) { m_Wrapper = wrapper; }
+        /// <summary>
+        /// Provides access to the underlying input action "QuickSlot/QuickSlot1".
+        /// </summary>
+        public InputAction @QuickSlot1 => m_Wrapper.m_QuickSlot_QuickSlot1;
+        /// <summary>
+        /// Provides access to the underlying input action "QuickSlot/QuickSlot2".
+        /// </summary>
+        public InputAction @QuickSlot2 => m_Wrapper.m_QuickSlot_QuickSlot2;
+        /// <summary>
+        /// Provides access to the underlying input action "QuickSlot/QuickSlot3".
+        /// </summary>
+        public InputAction @QuickSlot3 => m_Wrapper.m_QuickSlot_QuickSlot3;
+        /// <summary>
+        /// Provides access to the underlying input action "QuickSlot/QuickSlot4".
+        /// </summary>
+        public InputAction @QuickSlot4 => m_Wrapper.m_QuickSlot_QuickSlot4;
+        /// <summary>
+        /// Provides access to the underlying input action "QuickSlot/QuickSlot5".
+        /// </summary>
+        public InputAction @QuickSlot5 => m_Wrapper.m_QuickSlot_QuickSlot5;
+        /// <summary>
+        /// Provides access to the underlying input action map instance.
+        /// </summary>
+        public InputActionMap Get() { return m_Wrapper.m_QuickSlot; }
+        /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.Enable()" />
+        public void Enable() { Get().Enable(); }
+        /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.Disable()" />
+        public void Disable() { Get().Disable(); }
+        /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.enabled" />
+        public bool enabled => Get().enabled;
+        /// <summary>
+        /// Implicitly converts an <see ref="QuickSlotActions" /> to an <see ref="InputActionMap" /> instance.
+        /// </summary>
+        public static implicit operator InputActionMap(QuickSlotActions set) { return set.Get(); }
+        /// <summary>
+        /// Adds <see cref="InputAction.started"/>, <see cref="InputAction.performed"/> and <see cref="InputAction.canceled"/> callbacks provided via <param cref="instance" /> on all input actions contained in this map.
+        /// </summary>
+        /// <param name="instance">Callback instance.</param>
+        /// <remarks>
+        /// If <paramref name="instance" /> is <c>null</c> or <paramref name="instance"/> have already been added this method does nothing.
+        /// </remarks>
+        /// <seealso cref="QuickSlotActions" />
+        public void AddCallbacks(IQuickSlotActions instance)
+        {
+            if (instance == null || m_Wrapper.m_QuickSlotActionsCallbackInterfaces.Contains(instance)) return;
+            m_Wrapper.m_QuickSlotActionsCallbackInterfaces.Add(instance);
+            @QuickSlot1.started += instance.OnQuickSlot1;
+            @QuickSlot1.performed += instance.OnQuickSlot1;
+            @QuickSlot1.canceled += instance.OnQuickSlot1;
+            @QuickSlot2.started += instance.OnQuickSlot2;
+            @QuickSlot2.performed += instance.OnQuickSlot2;
+            @QuickSlot2.canceled += instance.OnQuickSlot2;
+            @QuickSlot3.started += instance.OnQuickSlot3;
+            @QuickSlot3.performed += instance.OnQuickSlot3;
+            @QuickSlot3.canceled += instance.OnQuickSlot3;
+            @QuickSlot4.started += instance.OnQuickSlot4;
+            @QuickSlot4.performed += instance.OnQuickSlot4;
+            @QuickSlot4.canceled += instance.OnQuickSlot4;
+            @QuickSlot5.started += instance.OnQuickSlot5;
+            @QuickSlot5.performed += instance.OnQuickSlot5;
+            @QuickSlot5.canceled += instance.OnQuickSlot5;
+        }
+
+        /// <summary>
+        /// Removes <see cref="InputAction.started"/>, <see cref="InputAction.performed"/> and <see cref="InputAction.canceled"/> callbacks provided via <param cref="instance" /> on all input actions contained in this map.
+        /// </summary>
+        /// <remarks>
+        /// Calling this method when <paramref name="instance" /> have not previously been registered has no side-effects.
+        /// </remarks>
+        /// <seealso cref="QuickSlotActions" />
+        private void UnregisterCallbacks(IQuickSlotActions instance)
+        {
+            @QuickSlot1.started -= instance.OnQuickSlot1;
+            @QuickSlot1.performed -= instance.OnQuickSlot1;
+            @QuickSlot1.canceled -= instance.OnQuickSlot1;
+            @QuickSlot2.started -= instance.OnQuickSlot2;
+            @QuickSlot2.performed -= instance.OnQuickSlot2;
+            @QuickSlot2.canceled -= instance.OnQuickSlot2;
+            @QuickSlot3.started -= instance.OnQuickSlot3;
+            @QuickSlot3.performed -= instance.OnQuickSlot3;
+            @QuickSlot3.canceled -= instance.OnQuickSlot3;
+            @QuickSlot4.started -= instance.OnQuickSlot4;
+            @QuickSlot4.performed -= instance.OnQuickSlot4;
+            @QuickSlot4.canceled -= instance.OnQuickSlot4;
+            @QuickSlot5.started -= instance.OnQuickSlot5;
+            @QuickSlot5.performed -= instance.OnQuickSlot5;
+            @QuickSlot5.canceled -= instance.OnQuickSlot5;
+        }
+
+        /// <summary>
+        /// Unregisters <param cref="instance" /> and unregisters all input action callbacks via <see cref="QuickSlotActions.UnregisterCallbacks(IQuickSlotActions)" />.
+        /// </summary>
+        /// <seealso cref="QuickSlotActions.UnregisterCallbacks(IQuickSlotActions)" />
+        public void RemoveCallbacks(IQuickSlotActions instance)
+        {
+            if (m_Wrapper.m_QuickSlotActionsCallbackInterfaces.Remove(instance))
+                UnregisterCallbacks(instance);
+        }
+
+        /// <summary>
+        /// Replaces all existing callback instances and previously registered input action callbacks associated with them with callbacks provided via <param cref="instance" />.
+        /// </summary>
+        /// <remarks>
+        /// If <paramref name="instance" /> is <c>null</c>, calling this method will only unregister all existing callbacks but not register any new callbacks.
+        /// </remarks>
+        /// <seealso cref="QuickSlotActions.AddCallbacks(IQuickSlotActions)" />
+        /// <seealso cref="QuickSlotActions.RemoveCallbacks(IQuickSlotActions)" />
+        /// <seealso cref="QuickSlotActions.UnregisterCallbacks(IQuickSlotActions)" />
+        public void SetCallbacks(IQuickSlotActions instance)
+        {
+            foreach (var item in m_Wrapper.m_QuickSlotActionsCallbackInterfaces)
+                UnregisterCallbacks(item);
+            m_Wrapper.m_QuickSlotActionsCallbackInterfaces.Clear();
+            AddCallbacks(instance);
+        }
+    }
+    /// <summary>
+    /// Provides a new <see cref="QuickSlotActions" /> instance referencing this action map.
+    /// </summary>
+    public QuickSlotActions @QuickSlot => new QuickSlotActions(this);
 
     // UI
     private readonly InputActionMap m_UI;
@@ -949,6 +1205,49 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnSelect(InputAction.CallbackContext context);
+    }
+    /// <summary>
+    /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "QuickSlot" which allows adding and removing callbacks.
+    /// </summary>
+    /// <seealso cref="QuickSlotActions.AddCallbacks(IQuickSlotActions)" />
+    /// <seealso cref="QuickSlotActions.RemoveCallbacks(IQuickSlotActions)" />
+    public interface IQuickSlotActions
+    {
+        /// <summary>
+        /// Method invoked when associated input action "QuickSlot1" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnQuickSlot1(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "QuickSlot2" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnQuickSlot2(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "QuickSlot3" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnQuickSlot3(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "QuickSlot4" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnQuickSlot4(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "QuickSlot5" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnQuickSlot5(InputAction.CallbackContext context);
     }
     /// <summary>
     /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "UI" which allows adding and removing callbacks.

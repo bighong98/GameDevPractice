@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TH.Utils;
 using UnityEngine;
 
 namespace TH.Item.Storage
@@ -11,12 +12,11 @@ namespace TH.Item.Storage
     // 실제 아이템 개수 관리, 사용 처리는 PlayerStorage에서 처리
     
     // 추후 기능 확장을 고려한 인터페이스 래퍼
-    public interface IQuickStorage : IGameItemStorage, IReferenceStorage{  }
+    public interface IQuickStorage : IGameItemStorage, IReferenceStorage { }
     public class PlayerQuickStorage : IQuickStorage
     {
-        public IReadOnlyCollection<IGameItemSlot> ItemSlots { get { 
-            readonlySlots ??= slots.AsReadOnly();
-            return readonlySlots; } }
+        public IReadOnlyCollection<IGameItemSlot> ItemSlots 
+            => readonlySlots ??= slots.AsReadOnly();
 
         private readonly List<IGameItemSlot> slots = new List<IGameItemSlot>(capacity: QuickStorageCapacity);
         private IReadOnlyCollection<IGameItemSlot> readonlySlots;
@@ -109,30 +109,6 @@ namespace TH.Item.Storage
             return result;
         }
 
-        public bool TryTakeOut(int index, out IGameItem item)
-        {
-            if (!IsValidSlotIdx(index))
-            {
-                item = default;
-                return false;
-            }
-
-            if (slots[index] is not { IsAccessible: true, HasItem: true } slot)
-            {
-                item = default;
-                return false;
-            }
-
-            bool result = slot.Clear(out item);
-            if (result)
-            {
-                OnSlotChanged?.Invoke(slot);
-                OnStorageChanged?.Invoke();
-            }
-
-            return result;
-        }
-
         #endregion
 
         #region Store
@@ -175,8 +151,8 @@ namespace TH.Item.Storage
             return false;
         }
 
-        
-        // 특정 인덱스 퀵슬롯에 아이템을 저장 (덮어쓰기)
+        // 빈 퀵슬롯에 아이템을 저장 (좌측부터 순서대로 빈 슬롯에 등록 -> 빈 슬롯 없으면 실패)
+        // 퀵 스토리지의 아이템은 단순 아이템 데이터 식별용 래퍼임에 주의 (ItemTransfer 등으로 이동x) //todo: 아이템 반출 제약 추가
         public bool TryStore(IGameItem item, int index)
         {
             // 등록 아이템 유효성 검사
@@ -188,9 +164,35 @@ namespace TH.Item.Storage
                 return false;
             if (slots[index] is not { IsAccessible: true } slot)
                 return false;
-            // 아이템 등록 시도
-            if (!slot.TryStore(item)) return false;
-            // 아이템 등록 성공 이벤트 호출
+            
+            IGameItem previousItem = null;
+            bool clearEquivalentItem = false;
+            
+            // 1. 동일한 데이터의 아이템이 이미 저장되어 있는지 확인
+            // -> 다른 슬롯에 동일 아이템이 있다면 해당 슬롯 비우기
+            // -> 필요시 롤백을 대비해 해당 슬롯 정보, 슬롯 비우기 성공 여부 캐싱 (previousItem, equivalentItemSlot, clearEquivalentItem)
+            if (ContainsEquivalent(item, out var equivalentItemSlot))
+            {
+                clearEquivalentItem = 
+                    TryGetItem(equivalentItemSlot.Index, out previousItem)
+                    && TryRemoveItem(equivalentItemSlot.Index);
+            }
+
+            // 2. 새로운 슬롯에 아이템 등록 시도
+            if (!slot.TryStore(item))
+            {
+                // 등록 실패 시 기존 슬롯 비우기 절차가 있었다면 롤백 시도
+                if (clearEquivalentItem
+                    && !equivalentItemSlot.TryStore(previousItem))
+                {
+                    Logg.LogWarning($"[{GetType().Name}.TryStore] Failed to rollback while storing item at slot({index})." 
+                       + "Previous item at slot({equivalentItemSlot.Index}) may be lost.");
+                }
+                // 롤백 성공 여부와 무관하게 false 반환
+                return false;
+            }
+            
+            // 3. 아이템 등록 성공 시 이벤트 호출, true 반환
             OnSlotChanged?.Invoke(slot);
             OnStorageChanged?.Invoke();
             return true;
@@ -220,6 +222,27 @@ namespace TH.Item.Storage
         private bool IsValidSlotIdx(int index)
         {
             return index >= 0 && index < Mathf.Min(slots.Count, Capacity);
+        }
+
+        private bool ContainsEquivalent(IGameItem newItem, out IGameItemSlot equivalentItemSlot)
+        {
+            equivalentItemSlot = null;
+            if (newItem is not { IsEmpty: false, GetItemInfo: {} itemInfo } || !itemInfo.IsAlive())
+            {
+                Logg.LogWarning($"[{GetType().Name}.ContainsEquivalent] Invalid item instance entered");
+                return false;
+            }
+
+            foreach (var slot in slots)
+            {
+                if (slot is { HasItem: true, GetItem: {} slotItem }
+                    && slotItem.IsEqual(newItem, ItemComparerExtension.ItemCompareMode.CompareData))
+                {
+                    equivalentItemSlot = slot;
+                    return true;
+                }
+            }
+            return false;
         }
 
         #endregion
