@@ -109,6 +109,15 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""DragScreen"",
+                    ""type"": ""PassThrough"",
+                    ""id"": ""9e1ecbac-f293-41f3-a41f-c6126e232817"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -219,6 +228,39 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Move"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""One Modifier"",
+                    ""id"": ""ef13c4d3-7beb-4783-9249-640fcf76d862"",
+                    ""path"": ""OneModifier"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""DragScreen"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""modifier"",
+                    ""id"": ""1b98190d-15aa-48f8-a796-6ce21fafa9c4"",
+                    ""path"": ""<Pointer>/press"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""DragScreen"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""binding"",
+                    ""id"": ""2b32afb5-a719-4d40-bf58-626e02fabfef"",
+                    ""path"": ""<Pointer>/delta"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""DragScreen"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": true
                 },
@@ -581,6 +623,7 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
         m_Player = asset.FindActionMap("Player", throwIfNotFound: true);
         m_Player_Move = m_Player.FindAction("Move", throwIfNotFound: true);
         m_Player_Select = m_Player.FindAction("Select", throwIfNotFound: true);
+        m_Player_DragScreen = m_Player.FindAction("DragScreen", throwIfNotFound: true);
         // QuickSlot
         m_QuickSlot = asset.FindActionMap("QuickSlot", throwIfNotFound: true);
         m_QuickSlot_QuickSlot1 = m_QuickSlot.FindAction("QuickSlot1", throwIfNotFound: true);
@@ -685,6 +728,7 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
     private List<IPlayerActions> m_PlayerActionsCallbackInterfaces = new List<IPlayerActions>();
     private readonly InputAction m_Player_Move;
     private readonly InputAction m_Player_Select;
+    private readonly InputAction m_Player_DragScreen;
     /// <summary>
     /// Provides access to input actions defined in input action map "Player".
     /// </summary>
@@ -704,6 +748,10 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Player/Select".
         /// </summary>
         public InputAction @Select => m_Wrapper.m_Player_Select;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/DragScreen".
+        /// </summary>
+        public InputAction @DragScreen => m_Wrapper.m_Player_DragScreen;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -736,6 +784,9 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
             @Select.started += instance.OnSelect;
             @Select.performed += instance.OnSelect;
             @Select.canceled += instance.OnSelect;
+            @DragScreen.started += instance.OnDragScreen;
+            @DragScreen.performed += instance.OnDragScreen;
+            @DragScreen.canceled += instance.OnDragScreen;
         }
 
         /// <summary>
@@ -753,6 +804,9 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
             @Select.started -= instance.OnSelect;
             @Select.performed -= instance.OnSelect;
             @Select.canceled -= instance.OnSelect;
+            @DragScreen.started -= instance.OnDragScreen;
+            @DragScreen.performed -= instance.OnDragScreen;
+            @DragScreen.canceled -= instance.OnDragScreen;
         }
 
         /// <summary>
@@ -1205,6 +1259,13 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnSelect(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "DragScreen" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnDragScreen(InputAction.CallbackContext context);
     }
     /// <summary>
     /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "QuickSlot" which allows adding and removing callbacks.

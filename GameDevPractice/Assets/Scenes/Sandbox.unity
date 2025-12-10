@@ -1146,14 +1146,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 415055949950550267, guid: 979fea7d1693c584cb00a39a9d762e0d, type: 3}
-      propertyPath: characterType
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 415055949950550267, guid: 979fea7d1693c584cb00a39a9d762e0d, type: 3}
-      propertyPath: characterClass
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 785334137700611097, guid: 979fea7d1693c584cb00a39a9d762e0d, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -1193,10 +1185,6 @@ PrefabInstance:
     - target: {fileID: 785334137700611097, guid: 979fea7d1693c584cb00a39a9d762e0d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1365668572096963489, guid: 979fea7d1693c584cb00a39a9d762e0d, type: 3}
-      propertyPath: m_Layer
-      value: 19
       objectReference: {fileID: 0}
     - target: {fileID: 2466537272173059495, guid: 979fea7d1693c584cb00a39a9d762e0d, type: 3}
       propertyPath: m_Name
