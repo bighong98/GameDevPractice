@@ -255,19 +255,32 @@ namespace TH.UI
             var loadedSceneUI = await resourceLoader.LoadAsync<GameObject>(targetSceneUIRef);
             if (loadedSceneUI == null) return;
             
-            // 현재 SceneUI와 동일한 경우 변경 없이 갱신만 요청
-            if (sceneUI != null && loadedSceneUI == sceneUI.Origin)
+            // // 현재 SceneUI와 동일한 경우 변경 없이 갱신만 요청
+            // if (sceneUI != null && loadedSceneUI == sceneUI.Origin)
+            // {
+            //     sceneUI.RefreshUI();
+            //     return;
+            // }
+
+            if (sceneUI != null)
             {
-                sceneUI.RefreshUI();
-                return;
+                // 현재 SceneUI와 동일한 경우 변경 없이 갱신만 요청, 종료
+                if (loadedSceneUI == sceneUI.Origin)
+                {
+                    sceneUI.RefreshUI();
+                    return;
+                }
+                // 기존 SceneUI가 있으면 풀에 반환
+                else PoolManager.Instance.ReleaseFromPool(sceneUI);
             }
             
-            // 기존 SceneUI가 있으면 풀에 반환
-            if (sceneUI != null)
-                PoolManager.Instance.ReleaseFromPool(sceneUI);
+            // // 기존 SceneUI가 있으면 풀에 반환
+            // if (sceneUI != null)
+            //     PoolManager.Instance.ReleaseFromPool(sceneUI);
             // 새로운 SceneUI를 풀에서 가져오기
             sceneUI = PoolManager.Instance.GetFromPool<SceneUI>(loadedSceneUI, canvases[(int)UICanvas.Scene].transform);
-            SetCanvas(sceneUI.gameObject, UICanvas.Scene); 
+            SetCanvas(sceneUI.gameObject, UICanvas.Scene);
+            sceneUI.RefreshUI();
         }
 
         public bool TryGetSceneUI(out SceneUI ui)

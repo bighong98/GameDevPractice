@@ -52,7 +52,7 @@ namespace TH.SaveLoad
                 Load().Forget();
             }
 
-            if (Input.GetKeyDown(KeyCode.S))
+            if (Input.GetKeyDown(KeyCode.O))
             {
                 Logg.Log($"[SavingWrapper] Trying to call Save()", Logg.LoggingMode.InProgress);
                 Save().Forget();

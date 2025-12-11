@@ -135,6 +135,7 @@ namespace TH.Attribute
                 return;
             }
             
+            Logg.Log($"[{gameObject.name}.{GetType()}] SetCurrentHp ({amount})", Logg.LoggingMode.Completed);
             var curr = hp.Value = Mathf.Clamp(amount, 0, max);
             OnHealthRatioChanged?.Invoke(curr / max);
             OnCurrHealthChanged?.Invoke(curr);
@@ -144,6 +145,7 @@ namespace TH.Attribute
         private void SetMaxHp(float amount, bool byForce = false)
         {
             if (!byForce && (amount < 0 || amount.IsEqualFloat(0f))) return; // 최대체력 0 이하로 설정 불가능
+            Logg.Log($"[{gameObject.name}.{GetType()}] SetMaxHp ({amount})", Logg.LoggingMode.Completed);
             maxHp.Value = amount;
             OnMaxHealthChanged?.Invoke(maxHp.Value);
         }

@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using TH.Attribute.Stat;
 using TH.UI;
 using TH.Utils;
+using TH.Core.Service;
 
 public class GameSceneUI : SceneUI
 {
@@ -46,6 +47,8 @@ public class GameSceneUI : SceneUI
     private float floorXp;
     private float ceilXp;
     private float currXp;
+
+    private IPlayerHolder playerHolder;
     
     protected override void Awake()
     {
@@ -73,14 +76,17 @@ public class GameSceneUI : SceneUI
             BindSliderEvent(sliderHandler);
             sliderHandler.OffHighlight();
         }
+
+        playerHolder = ServiceLocator.Get<IPlayerHolder>();
+        playerHolder.OnPlayerInstanceUpdated += UpdatePlayerInstance;
         
         return true;
     }
 
     public override void RefreshUI()
     {
+        Logg.Log($"[{GetType().Name}] RefreshUI() invoked", Logg.LoggingMode.Completed);
         base.RefreshUI();
-        ConnectComponents();
     }
 
     private void OnEnable()
@@ -113,11 +119,21 @@ public class GameSceneUI : SceneUI
         BindEvent(parentGo, sliderHandler.OffHighlight, type: Enums.UIEvent.PointerExit);
     }
 
-    private void ConnectComponents()
+    private void UpdatePlayerInstance(object o)
     {
-        var player = FindFirstObjectByType<PlayerController>();
-        if (player == null) return;
-        
+        if (Util.IsQuitting) return;
+        if (o is PlayerController player)
+        {
+            DisConnectComponents(player);
+            ConnectComponents(player);
+        }
+    }
+
+    void DisConnectComponents() => DisConnectComponents(playerHolder.GetPlayerInstance as PlayerController);
+    void ConnectComponents() => ConnectComponents(playerHolder.GetPlayerInstance as PlayerController);
+
+    private void ConnectComponents(PlayerController player)
+    {        
         if (TryConnectComponent(player, out IStatHolder pStatHolder))
             statHolder = pStatHolder;
 
@@ -132,11 +148,9 @@ public class GameSceneUI : SceneUI
             pLevel.OnLevelChanged += OnLevelUp;
     }
 
-    private void DisConnectComponents()
+    private void DisConnectComponents(PlayerController player)
     {
         if (Util.IsQuitting) return;
-        var player = FindFirstObjectByType<PlayerController>();
-        if (player == null) return;
 
         if (TryConnectComponent(player, out Health pHealth))
         {
@@ -205,6 +219,8 @@ public class GameSceneUI : SceneUI
         {
             s.OffHighlight();
         }
+
+        playerHolder.OnPlayerInstanceUpdated -= UpdatePlayerInstance;
     }
 
 
