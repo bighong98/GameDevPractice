@@ -15,7 +15,7 @@ MonoBehaviour:
   m_DefaultGroup: 3b559008265abd04ba68b9cac872e7db
   m_currentHash:
     serializedVersion: 2
-    Hash: 6157aad6c0f041db21b1844790fb238b
+    Hash: 00000000000000000000000000000000
   m_OptimizeCatalogSize: 0
   m_BuildRemoteCatalog: 0
   m_CatalogRequestsTimeout: 0
@@ -60,6 +60,7 @@ MonoBehaviour:
   m_BuildAddressablesWithPlayerBuild: 0
   m_overridePlayerVersion: '[UnityEditor.PlayerSettings.bundleVersion]'
   m_GroupAssets:
+  - {fileID: 11400000, guid: c4661e136b3815449a71bf96919c585c, type: 2}
   - {fileID: 11400000, guid: ac89ba7af84e8024d8ffafc138d42a9f, type: 2}
   - {fileID: 11400000, guid: 9b7efdcabc98d7f4cbdbc995aca9c16e, type: 2}
   - {fileID: 11400000, guid: 5225d7f2c51d9cc4e87b8b1eddf5777b, type: 2}
@@ -112,6 +113,8 @@ MonoBehaviour:
     - Scriptable Object
     - PreLoad1
     - Scene
+    - Sound
+    - SFX
   m_SchemaTemplates: []
   m_GroupTemplateObjects:
   - {fileID: 11400000, guid: 69703238730e7ee44b502850f9032d2a, type: 2}

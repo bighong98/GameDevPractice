@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Sounds
+  m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
+  m_GroupName: Sounds
+  m_GUID: 0382aaedf41a10541ae4b1d97e68d6a6
+  m_SerializeEntries:
+  - m_GUID: 1f53a5fc6bd934e46a5d8cfa8fd27b64
+    m_Address: punchHitSFX
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad
+    - SFX
+    - Sound
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 333946845ce249d458dc4662051fba24
+    m_Address: potionDrinkSFX
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad
+    - SFX
+    - Sound
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4e7a9f408abdba8459fdccbeaea95215
+    m_Address: SwordHitSFX
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad
+    - SFX
+    - Sound
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c230389cdba1a4d47bda71c4d0e2b6f9
+    m_Address: SortingSFX
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad
+    - SFX
+    - Sound
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: da396a16a7f24f64cbb0054f5a56b46a
+    m_Address: fireballHitSFX
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad
+    - SFX
+    - Sound
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: ba2aeaf5da86ad943b7448d84aa19f98, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 8abc7fd574131584f8f05f3c70c3c424, type: 2}
+    - {fileID: 11400000, guid: 133dc43abe8324b40badb90a4289ad5d, type: 2}
