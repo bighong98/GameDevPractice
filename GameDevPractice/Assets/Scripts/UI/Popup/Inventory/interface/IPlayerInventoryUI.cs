@@ -1,4 +1,5 @@
 using System;
+using Cysharp.Threading.Tasks;
 using TH.Item;
 using UnityEngine;
 
@@ -13,6 +14,8 @@ namespace TH.UI
         public void AllowDrag(Sprite sprite);
         public void CancelDrag();
         event Action OnExitUICalled; // 팝업 닫기 요청 발생
+        
+        void SetSfx(UniTask<object> sfxData);
     }
 
     public interface IFilterableStorageUI

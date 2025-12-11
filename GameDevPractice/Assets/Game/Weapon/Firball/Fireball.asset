@@ -15,13 +15,10 @@ MonoBehaviour:
   prefab: {fileID: 1181656062549879669, guid: 272caf2c346b5e04ea0b11b49067dc0a, type: 3}
   nameString: Fireball Test1
   sprite: {fileID: 21300000, guid: 02ff976d39577774bb44b83610e61dec, type: 3}
-  showInMinimap: 0
-  minimapSprite: {fileID: 0}
-  minimapSpriteColor: {r: 1, g: 1, b: 1, a: 1}
   itemType: 1
   maxAmount: 1
   desc: Fireball Test Description
-  isUsable: 1
+  itemUseEffects: []
   equipmentType: 1
   slotType: 0
   equipmentStats:
@@ -38,3 +35,9 @@ MonoBehaviour:
   projectilePrefab: {fileID: 1111895543867379590, guid: 4d654d0ea2ce7e44aa38d9e4596715f7, type: 3}
   hasImpactEffect: 1
   impactParticlePrefab: {fileID: 2302457091093092515, guid: 69d1b1037536b504884c93bb73d662db, type: 3}
+  attackSFXReference:
+    m_AssetGUID: da396a16a7f24f64cbb0054f5a56b46a
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0

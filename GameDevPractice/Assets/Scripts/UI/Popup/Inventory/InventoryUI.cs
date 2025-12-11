@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Resources;
+using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using TH.Item;
+using TH.UI.Data;
 using TH.Utils;
 using UnityEngine;
 using UnityEngine.UI;
@@ -36,6 +39,8 @@ namespace TH.UI
         
         [SerializeField] private Transform dragDropGhost;
         private Image ghostImage;
+        
+        private Dictionary<InventorySFX, AudioClip> sfxs;
         
         #region Enum
 
@@ -246,8 +251,8 @@ namespace TH.UI
             BindFilterButtonEvent(GetButton((int)Buttons.ConsumableFilterButton), InventoryFilterType.Consumable);
             BindFilterButtonEvent(GetButton((int)Buttons.ResourceFilterButton), InventoryFilterType.Resource);
             
-            GetButton((int)Buttons.SortButton).onClick.AddListener(() => { OnSortButtonPressed?.Invoke(); });
-            GetButton((int)Buttons.TrimButton).onClick.AddListener(() => { OnTrimButtonPressed?.Invoke(); });
+            GetButton((int)Buttons.SortButton).onClick.AddListener(() => { OnSortButtonPressed?.Invoke(); PlaySortSound(); });
+            GetButton((int)Buttons.TrimButton).onClick.AddListener(() => { OnTrimButtonPressed?.Invoke(); PlaySortSound(); });
         }
 
         private void BindFilterButtonEvent(Button button, InventoryFilterType filter)
@@ -328,7 +333,21 @@ namespace TH.UI
             Clear();
         }
 
+        private void PlaySortSound()
+        {
+            if (sfxs.TryGetValue(InventorySFX.SortSFX, out var clip))
+            {
+                SoundManager.Instance.Play(Enums.AudioType.Effect, clip);
+            }
+                
+        }
 
+        public async void SetSfx(UniTask<object> sfxData)
+        {
+            if (await sfxData is Dictionary<InventorySFX, AudioClip> casted)
+                sfxs = casted;
+            else Logg.LogWarning($"[{GetType().Name}] failed to get sfx data from Controller");
+        }
     }
 }
 

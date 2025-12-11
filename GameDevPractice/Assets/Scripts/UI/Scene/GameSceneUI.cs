@@ -89,16 +89,6 @@ public class GameSceneUI : SceneUI
         base.RefreshUI();
     }
 
-    private void OnEnable()
-    {
-        ConnectComponents();
-    }
-
-    private void OnDisable()
-    {
-        DisConnectComponents();
-    }
-
     private Slider GetSlider(GameObject go)
     {
         if (Util.FindChild<Slider>(go, "bar") is not { } slider)

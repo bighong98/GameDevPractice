@@ -378,7 +378,7 @@ namespace TH.Resource
 
             if (!assetRef.RuntimeKeyIsValid())
             {
-                Debug.LogError($"[{nameof(LoadAsync)}] Invalid RuntimeKey for AssetReference<{typeof(T).Name}>. Asset: {assetRef.Asset?.name}");
+                Debug.LogError($"[{nameof(LoadAsync)}] Invalid RuntimeKey for AssetReference<{typeof(T).Name}>. Asset: (name:{assetRef.Asset?.name}, guid: {assetRef.AssetGUID})");
                 return null;
             }
             

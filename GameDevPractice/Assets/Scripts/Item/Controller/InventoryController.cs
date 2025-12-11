@@ -10,6 +10,8 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using TH.Item.Storage;
 using TH.Attribute;
+using TH.UI.Data;
+using Cysharp.Threading.Tasks;
 
 namespace TH.Item
 {
@@ -91,8 +93,13 @@ namespace TH.Item
             pInvenUI.UpdateFilter(currentFilter);
             RefreshStorageUI();
             RefreshEquipmentUI();
+
+            if (ResourceManager.Instance.TryLoad<InventorySFXCatalogSO>("InventorySFXCatalogSO", out var catalog))
+            {
+                pInvenUI.SetSfx(LoadInventorySFX(catalog));
+            }
         }
-        
+
         private void OnDisable()
         {
             Refresh();
@@ -123,6 +130,17 @@ namespace TH.Item
 
 
         #region Initialization
+
+        private static async UniTask<object> LoadInventorySFX(InventorySFXCatalogSO catalog)
+        {
+            Dictionary<InventorySFX, AudioClip> dict = new();
+            foreach (var (key, value) in catalog.Items)
+            {
+                dict[key] = await ResourceManager.Instance.ExtractAssetRefAsync(value);
+            }
+
+            return dict;
+        }
 
         // EventHandlerRegistry<> 인스턴스 초기화
         private void InitializeEventRegistries()

@@ -35,3 +35,9 @@ MonoBehaviour:
   projectilePrefab: {fileID: 0}
   hasImpactEffect: 0
   impactParticlePrefab: {fileID: 0}
+  attackSFXReference:
+    m_AssetGUID: 1f53a5fc6bd934e46a5d8cfa8fd27b64
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0

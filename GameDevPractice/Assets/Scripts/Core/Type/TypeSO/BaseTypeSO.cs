@@ -1,3 +1,5 @@
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace TH.Resource
@@ -12,6 +14,13 @@ namespace TH.Resource
         [Header("Basic")]
         public string nameString;
         public Sprite sprite;
+
+        // 비동기 초기화가 필요한 필드가 있는 경우 override해서 사용
+        // 해당 필드가 AssetReference 타입이라면 ResourceManager.Instance.ExtractAssetFromRef() 사용
+        public virtual UniTask InitializeAsync(CancellationToken token = default)
+        {
+            return UniTask.CompletedTask;
+        }
     }
 }
 

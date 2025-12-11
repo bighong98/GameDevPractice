@@ -1,3 +1,6 @@
+using System.Threading;
+using Cysharp.Threading.Tasks;
+using TH.Utils;
 using UnityEngine;
 
 namespace TH.Resource
@@ -19,6 +22,8 @@ namespace TH.Resource
 
         [SerializeField] private bool hasImpactEffect;
         [SerializeField] private GameObject impactParticlePrefab;
+
+        [SerializeField] private AssetReferenceAudioClip attackSFXReference;
     
         public float GetDamage => damage;
         public float GetRange => range;
@@ -30,11 +35,22 @@ namespace TH.Resource
         public bool HasImpactEffect => hasImpactEffect;
         public GameObject GetImpactEffect => impactParticlePrefab;
 
+        public AssetReferenceAudioClip AttackSFXReference => attackSFXReference;
+        public AudioClip AttackSFX { get; private set; }
+
         public enum Hand
         {
             Right,
             Left,
             Both,
+        }
+
+        public async override UniTask InitializeAsync(CancellationToken token = default)
+        {
+            await base.InitializeAsync(token);
+            Logg.Log($"[{GetType().Name}, {nameString}] InitializeAsync() invoked", Logg.LoggingMode.Completed);
+            AttackSFX = await ResourceManager.Instance.ExtractAssetRefAsync<AudioClip>(attackSFXReference, token);
+            // AttackSFX = await ResourceManager.Instance.ExtractAssetRefAsync(attackSFXReference, token);
         }
     }
 }

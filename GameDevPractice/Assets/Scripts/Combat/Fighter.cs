@@ -151,12 +151,15 @@ namespace TH.Combat
         {
             if (!target.IsAlive()) return;
 
-            OnAttack?.Invoke();
+            // OnAttack?.Invoke();
+            // SoundManager.Instance.Play(Enums.AudioType.Effect, currentWeapon.Value.AttackSFX);
+            Shoot();
             combatSystem.ApplyHit(currAttackSource.ToRequest(target));
         }
 
         void Shoot()
         {
+            SoundManager.Instance.Play(Enums.AudioType.Effect, currentWeapon.Value.AttackSFX);
             OnAttack?.Invoke();
         }
 

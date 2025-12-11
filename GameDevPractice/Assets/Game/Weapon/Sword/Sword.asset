@@ -15,13 +15,10 @@ MonoBehaviour:
   prefab: {fileID: 7059132959080541948, guid: d4c092d9dca59304fba951cae1d05868, type: 3}
   nameString: Sword Test1
   sprite: {fileID: 21300000, guid: 2ddf0348701148a4d8a7c6a0f7f146b3, type: 3}
-  showInMinimap: 0
-  minimapSprite: {fileID: 0}
-  minimapSpriteColor: {r: 1, g: 1, b: 1, a: 1}
   itemType: 1
   maxAmount: 1
   desc: Sword Test1 Description
-  isUsable: 1
+  itemUseEffects: []
   equipmentType: 1
   slotType: 0
   equipmentStats:
@@ -38,3 +35,9 @@ MonoBehaviour:
   projectilePrefab: {fileID: 0}
   hasImpactEffect: 0
   impactParticlePrefab: {fileID: 0}
+  attackSFXReference:
+    m_AssetGUID: 4e7a9f408abdba8459fdccbeaea95215
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0

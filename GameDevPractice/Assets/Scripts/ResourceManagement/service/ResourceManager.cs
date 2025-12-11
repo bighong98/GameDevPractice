@@ -164,6 +164,16 @@ namespace TH.Resource
 
             return await resourceLoader.LoadAsync<T>(assetRef, token);
         }
+
+        public async UniTask<T> ExtractAssetRefAsync<T>(AssetReferenceT<T> assetRef, CancellationToken token = default) where T : UnityEngine.Object
+        {
+            return await ExtractAssetRefAsync<T>((AssetReference)assetRef, token);
+        }
+
+        public async UniTask<T> ExtractAssetRefAsync<T>(AssetReferenceGeneric<T> assetRef, CancellationToken token = default) where T : UnityEngine.Object
+        {
+            return await ExtractAssetRefAsync<T>((AssetReference)assetRef, token);
+        }
         
         #endregion
         

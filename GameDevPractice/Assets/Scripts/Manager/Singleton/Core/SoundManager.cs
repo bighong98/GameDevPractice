@@ -15,6 +15,9 @@ public class SoundManager : Singleton<SoundManager>
     private const string SoundSuffix = ".wav";
     private const string VolumeSuffix = "Volume";
     
+    private const float DefaultVolume = 0.5f;
+    private const float DefaultPitch = 1.0f;
+    
     protected override void Awake()
     {
         base.Awake();
@@ -46,9 +49,9 @@ public class SoundManager : Singleton<SoundManager>
         {
             GameObject go = new GameObject { name = soundTypeNames[i] };
             audioSources[i] = go.AddComponent<AudioSource>(); // 오디오 재생용 컴포넌트 부착
-            audioSources[i].spatialBlend = 0; // 2D 게임이기 때문에 0
-            PlayerPrefs.GetFloat($"{soundTypeNames[i]}{VolumeSuffix}", 1.0f); // PlayerPrefs로부터 볼륨 사용자 설정 불러오기. 저장된 설정이 없으면 1.0f 적용
-            
+            audioSources[i].spatialBlend = 0; // 2D 게임이기 때문에 0 //todo: 3D 게임이라 수정 필요
+            // PlayerPrefs.GetFloat($"{soundTypeNames[i]}{VolumeSuffix}", DefaultVolume); // PlayerPrefs로부터 볼륨 사용자 설정 불러오기. 저장된 설정이 없으면 DefaultVolume 적용
+            audioSources[i].volume = DefaultVolume;
             go.transform.SetParent(soundRoot); 
         }
 
@@ -88,12 +91,12 @@ public class SoundManager : Singleton<SoundManager>
         audioSources[(int)type]?.Play();
     }
 
-    public void Play(Enums.AudioType type, string key, float pitch = 1.0f)
+    public void Play(Enums.AudioType type, string key, float pitch = DefaultPitch)
     { // key를 통해 오디오클립을 찾아서 재생
         LoadAudioClip(type, key, pitch, Play);
     }
 
-    public void Play(Enums.AudioType type, AudioClip audioClip, float pitch = 1.0f)
+    public void Play(Enums.AudioType type, AudioClip audioClip, float pitch = DefaultPitch)
     { // 오디오클립을 직접 전달하여 재생. pitch는 Effect 타입에만 사용
         AudioSource audioSource = audioSources[(int)type];
         switch (type)
