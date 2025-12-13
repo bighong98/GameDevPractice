@@ -19,28 +19,28 @@ MonoBehaviour:
     m_Address: Unarmed.asset
     m_ReadOnly: 0
     m_SerializedLabels:
-    - PreLoad
+    - PreLoad1
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 24a647810f57bb345a370aa349b7758c
     m_Address: Sword.asset
     m_ReadOnly: 0
     m_SerializedLabels:
-    - PreLoad
+    - PreLoad1
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 2fb8efb1b192ee345b6e53c7761aa529
     m_Address: Bow.asset
     m_ReadOnly: 0
     m_SerializedLabels:
-    - PreLoad
+    - PreLoad1
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 6b7af030474e11c47a6955ef88e5837e
     m_Address: Fireball.asset
     m_ReadOnly: 0
     m_SerializedLabels:
-    - PreLoad
+    - PreLoad1
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
