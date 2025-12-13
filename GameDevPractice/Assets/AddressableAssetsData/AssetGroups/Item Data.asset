@@ -1,0 +1,79 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Item Data
+  m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
+  m_GroupName: Item Data
+  m_GUID: a25171184736bb8458128c85cac69efa
+  m_SerializeEntries:
+  - m_GUID: 0a8fc87d049409749b518d0d97acf68f
+    m_Address: HealthPotion
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad1
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1b33d3c2108ca6c4ab2eb0d629ec5fb3
+    m_Address: Skull
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad1
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6a1d98e681787c6488733dcec1768613
+    m_Address: ManaPotion
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad1
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 776ca49be7545f044866f2347018f350
+    m_Address: Wool
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad1
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 99213834396249f42a7095af4ec18385
+    m_Address: Wood Log
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad1
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c6d5815de0e57034c98af2ab076b0be7
+    m_Address: HeadArmor
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad1
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e3fe86b9ce978c447b8d43e66859b5a9
+    m_Address: SlimeGel
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad1
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f6ec39d375b21b347b64d5ede791912d
+    m_Address: WaterBottle
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad1
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: ba2aeaf5da86ad943b7448d84aa19f98, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: adbcf9df60295344b93c9ffc7b05270b, type: 2}
+    - {fileID: 11400000, guid: cc9efd719c6cf7349aec735461eb8784, type: 2}

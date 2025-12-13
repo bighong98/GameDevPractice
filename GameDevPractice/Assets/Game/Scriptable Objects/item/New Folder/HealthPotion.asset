@@ -20,3 +20,9 @@ MonoBehaviour:
   desc: A crimson elixir that restores vitality. Recovers 50 HP when consumed.
   itemUseEffects:
   - {fileID: 11400000, guid: 389108454022f9a45b3516705342d06c, type: 2}
+  itemUseSFXReference:
+    m_AssetGUID: 333946845ce249d458dc4662051fba24
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -54,6 +55,14 @@ namespace TH.Utils
             return _dict.TryGetValue(key, out value);
         }
 
+        #region IEnumerable
+
+        public IEnumerable<TKey> Keys { get { EnsureInitialized(); return _dict.Keys; } }
+        public IEnumerable<TValue> Values { get { EnsureInitialized(); return _dict.Values; } }
+
+        #endregion
+        
+
 #if UNITY_EDITOR
         // 유니티 기준 직렬화 가능한 타입인지 에디터에서 강제 검사
         // 직렬화 불가능할 경우 예외 발생
@@ -67,5 +76,6 @@ namespace TH.Utils
             _initialized = false;
         }
 #endif
+        
     }
 }

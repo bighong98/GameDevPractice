@@ -41,7 +41,7 @@ namespace TH.Item
             {
                 if (!string.Equals(label, Constants.PreLoadLabel)) return;
                 saveSystem.RegisterEntity(this);
-                LoadTestData();
+                LoadTestData(resourceLoader);
             };
         }
         
@@ -53,26 +53,30 @@ namespace TH.Item
             Clear();
         }
 
+        private const string InventoryTestDataSOKey = "InventoryTestDataSO";
         private bool isTestDataLoaded = false;
-        private void LoadTestData()
+        
+        private void LoadTestData(IResourceLoader resourceLoader)
         {
             if (isTestDataLoaded) return;
             
-            InventoryTestData testData =
-                ResourceManager.Instance.Load<GameObject>("InventoryTestData.prefab").GetComponent<InventoryTestData>();
-
-            if (testData == null)
+            if (!resourceLoader.TryLoad<InventoryTestDataSO>(InventoryTestDataSOKey, out var testData))
             {
                 Logg.LogError("TestData is null");
                 return;
             }
-             
-            foreach (var item in testData.items)
-            { 
-                Logg.Log($"Trying to add ({item.GetItemInfo.nameString}, {item.GetAmount})", Logg.LoggingMode.Completed);
-                if (!TryStore(EnsureItemInstanceByType(item.GetItemInfo, item.GetAmount)))
+
+            foreach (var (itemReference, amount) in testData.Items)
+            {
+                if (!resourceLoader.TryLoad<ItemTypeSO>(itemReference, out var item))
                 {
-                    Logg.LogError($"[PlayerInventory] failed to add test data item '{item.GetItemInfo.nameString}'");
+                    Logg.LogError($"[{GetType().Name} - LoadTestData] Trying to load item from ({itemReference}, {amount})");
+                    continue;
+                }
+                Logg.Log($"Trying to add ({item.nameString}, {amount})", Logg.LoggingMode.Completed);
+                if (!TryStore(EnsureItemInstanceByType(item, amount)))
+                {
+                    Logg.LogError($"[PlayerInventory] failed to add test data item ({item.nameString}, {amount})");
                 }
             }
 
@@ -197,7 +201,7 @@ namespace TH.Item
 
         public bool TryTakeOut(int index, out IGameItem item)
         {
-            Logg.Log($"[PlayerStorage] TryTakeOut({index}) invoked", Logg.LoggingMode.InProgress);
+            Logg.Log($"[PlayerStorage] TryTakeOut({index}) invoked", Logg.LoggingMode.Completed);
             item = default;
             if (!IsValidSlotIdx(index)) return false;
             if (slots[index] is not { IsAccessible: true, HasItem: true } slot) return false;

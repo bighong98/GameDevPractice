@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c883f9b1e725d0142a4c2b8df41ec1b4, type: 3}
+  m_Name: ManaPotion
+  m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.ItemTypeSO
+  prefab: {fileID: 0}
+  nameString: Mana Potion
+  sprite: {fileID: 21300000, guid: ace8a02646afeda4880fc3cb14cad705, type: 3}
+  itemType: 2
+  maxAmount: 20
+  desc: A shimmering blue liquid infused with magical energy. Restores 30 MP when
+    consumed.
+  itemUseEffects:
+  - {fileID: 11400000, guid: ecd03d5317e58c24eb6459ddc9ace0a7, type: 2}
+  itemUseSFXReference:
+    m_AssetGUID: 333946845ce249d458dc4662051fba24
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0

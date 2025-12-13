@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using TH.Resource;
 using UnityEngine;
 
@@ -48,6 +49,13 @@ namespace TH.Item
                 // todo: 현재 하나라도 실패하면 전체 실패로 판정 (아이템 효과 일부만 적용되고 소비 판정은 안 될 수 있음) -> 롤백 로직 추가 필요
             }
 
+            if (info.HasItemUseSfx)
+            {
+                PlayItemUseSFX(info.ItemUseSfx);
+                // if (info.ItemUseSFX is {} sfx && sfx.IsAlive())
+                //     PlayItemUseSFX(sfx);
+                // else info.InitializeAsync().ContinueWith(() => {SoundManager.Instance.Play(Enums.AudioType.Effect, info.ItemUseSFX);});
+            }
             return true;
         }
 
@@ -84,5 +92,11 @@ namespace TH.Item
 
             return true;
         }
+
+        #region Helper Methods
+
+        private void PlayItemUseSFX(AudioClip audio) => SoundManager.Instance.Play(Enums.AudioType.Effect, audio);
+
+        #endregion
     }
 }

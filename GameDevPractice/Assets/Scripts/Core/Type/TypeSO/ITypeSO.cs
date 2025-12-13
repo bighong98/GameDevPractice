@@ -6,7 +6,7 @@ namespace TH.Resource
 {
     public interface ITypeSO : IAsyncInitializer
     {
-        
+        void RefreshStates();
     }
 
     public interface IAsyncInitializer

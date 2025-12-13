@@ -15,7 +15,7 @@ public class SoundManager : Singleton<SoundManager>
     private const string SoundSuffix = ".wav";
     private const string VolumeSuffix = "Volume";
     
-    private const float DefaultVolume = 0.5f;
+    private const float DefaultVolume = 0.2f;
     private const float DefaultPitch = 1.0f;
     
     protected override void Awake()
@@ -68,8 +68,8 @@ public class SoundManager : Singleton<SoundManager>
 
     private void TestBGM()
     {
-        var bgmClip = ResourceManager.Instance.Load<AudioClip>("Music.wav");
-        Play(Enums.AudioType.Bgm, bgmClip);
+        // var bgmClip = ResourceManager.Instance.Load<AudioClip>("Music.wav");
+        // Play(Enums.AudioType.Bgm, bgmClip);
     }
 
     private void SetVolume()

@@ -64,7 +64,6 @@ namespace TH.Resource
                     $"[{gameObject.name}.{nameof(GetTypeFromAssetRef)}] failed to load asset from AssetReference");
             // 타입 데이터 비동기 로드 시작
             type = await ResourceManager.Instance.ExtractAssetRefAsync<T>(typeRef, token);
-            await type.InitializeAsync(token);
             Logg.Log($"[{gameObject.name}.{nameof(GetTypeFromAssetRef)}] " +
                      $"type: {type}", Logg.LoggingMode.Completed);
         }

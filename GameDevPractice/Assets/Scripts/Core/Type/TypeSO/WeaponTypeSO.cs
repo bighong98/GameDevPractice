@@ -17,25 +17,21 @@ namespace TH.Resource
         [SerializeField] private float range;
         [SerializeField] private Hand hand;
 
-        [SerializeField] private bool hasProjectile;
         [SerializeField] private GameObject projectilePrefab;
-
-        [SerializeField] private bool hasImpactEffect;
         [SerializeField] private GameObject impactParticlePrefab;
-
         [SerializeField] private AssetReferenceAudioClip attackSFXReference;
     
         public float GetDamage => damage;
         public float GetRange => range;
         public Hand GetGripHand => hand;
     
-        public bool HasProjectile => hasProjectile;
+        public bool HasProjectile { get; protected set; }
         public GameObject GetProjectilePrefab => projectilePrefab;
 
-        public bool HasImpactEffect => hasImpactEffect;
+        public bool HasImpactEffect { get; protected set; }
         public GameObject GetImpactEffect => impactParticlePrefab;
 
-        public AssetReferenceAudioClip AttackSFXReference => attackSFXReference;
+        public bool HasAttackSFX {get; protected set;}
         public AudioClip AttackSFX { get; private set; }
 
         public enum Hand
@@ -45,12 +41,20 @@ namespace TH.Resource
             Both,
         }
 
+        // BaseTypeSO.OnValidate() 타이밍에 자동 호출됨
+        public override void RefreshStates()
+        {
+            base.RefreshStates();
+            HasProjectile = projectilePrefab.IsAlive();
+            HasImpactEffect = impactParticlePrefab.IsAlive();
+            HasAttackSFX = IsAssetRefAssigned(attackSFXReference);
+            Logg.Log($"[{GetType().Name}, {nameString}] RefreshStates() - hasProjectile: {HasProjectile}, hasImpactEffect: {HasImpactEffect}, HasAttackSFX: {HasAttackSFX}", Logg.LoggingMode.Completed);
+        }
+
         public async override UniTask InitializeAsync(CancellationToken token = default)
         {
             await base.InitializeAsync(token);
-            Logg.Log($"[{GetType().Name}, {nameString}] InitializeAsync() invoked", Logg.LoggingMode.Completed);
-            AttackSFX = await ResourceManager.Instance.ExtractAssetRefAsync<AudioClip>(attackSFXReference, token);
-            // AttackSFX = await ResourceManager.Instance.ExtractAssetRefAsync(attackSFXReference, token);
+            AttackSFX = await GetStateFromAssetReference(attackSFXReference, token);
         }
     }
 }

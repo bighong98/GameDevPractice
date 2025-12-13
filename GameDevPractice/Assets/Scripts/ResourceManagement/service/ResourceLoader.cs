@@ -4,7 +4,6 @@ using System.Threading;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
-using UnityEngine.U2D;
 using Cysharp.Threading.Tasks;
 using TH.Utils;
 
@@ -20,7 +19,7 @@ namespace TH.Resource
         private readonly Dictionary<string, AsyncOperationHandle> resourceKeys = new();
         // Addressables.LoadAssetAsync 결과 핸들 캐시 (AssetReference 기반)
         private readonly Dictionary<string, AsyncOperationHandle> resourceGuids = new ();
-        // 라벨 일괄 로드 상태 추적
+        // 라벨별 에셋 번들 로드 상태 추적
         private readonly Dictionary<string, LoadStatus> loadStatus = new Dictionary<string, LoadStatus>();
         
         public event Action<string> OnLabelResourcesLoadedAll; // 라벨 단위로 일괄 리소스 로드 완료 알림 이벤트
@@ -33,6 +32,7 @@ namespace TH.Resource
             PreLoad1,
             PreLoad2,
             PreLoad3,
+            PreLoad,
         }
         // 라벨별 로드 상태
         enum LoadStatus
@@ -44,14 +44,10 @@ namespace TH.Resource
         }
 
         #endregion
-        
-        private const string SpriteAtlasSuffix = "(Clone)"; // 스프라이트 아틀라스 내부 리소스 접근용 문자열
-        private int atlasSuffixLength; // 캐싱된 "(Clone)" 문자열 길이
 
         public ResourceLoader()
         {
-            Init();
-            PreLoad();
+            Init();  
         }
 
         private void Init()
@@ -60,7 +56,7 @@ namespace TH.Resource
             {
                 InitForLabel(label);
             }
-            InitForLabel(Constants.PreLoadLabel);
+            PreLoad();
         }
 
         private void InitForLabel(string label)
@@ -75,22 +71,7 @@ namespace TH.Resource
         // 라벨별로 로드 완료 시 이벤트 전달
         private void PreLoad()
         {
-            PreLoadAsync().ContinueWith(() =>
-            {
-                LoadAllAsync<UnityEngine.Object>(Constants.PreLoadLabel, 
-                    (key, count, totalCount) =>
-                    {
-                        Logg.Log($"[{Constants.PreLoadLabel} - {key}] {count} / {totalCount}", 
-                            Logg.LoggingMode.Completed); // 디버깅용 로그
-                        if (count == totalCount)
-                        {
-                            Logg.Log($"[ResourceLoader] finished loading label '{Constants.PreLoadLabel}' assets", 
-                                Logg.LoggingMode.InProgress);
-                            NotifyPreLoadDone(Constants.PreLoadLabel);// 리소스 로딩 대기중인 클래스들에게 로딩 완료 이벤트 전달
-                            loadStatus[Constants.PreLoadLabel] = LoadStatus.Done;
-                        }
-                    });
-            });
+            PreLoadAsync().Forget();
         }
         // PreLoad() 내부 구현
         // 개별 리소스 로드마다 콜백 실행 (로딩 프로그레스 바 등에 사용)
@@ -99,18 +80,9 @@ namespace TH.Resource
             foreach (var label in Enum.GetNames(typeof(PreLoadLabels)))
             {
                 Logg.Log($"[ResourceLoader] start to load label '{label}' assets", Logg.LoggingMode.Completed);
-                await LoadAllAsyncAwaitable<UnityEngine.Object>(label, (key, count, totalCount) =>
+                await LoadAllAsync<UnityEngine.Object>(label, (key, count, totalCount) =>
                 {
                     Logg.Log($"[{label} - {key}] {count} / {totalCount}", Logg.LoggingMode.Completed); // 디버깅용 로그
-
-                    if (count == totalCount)
-                    {
-                        Logg.Log($"[ResourceLoader] finished loading label '{label}' assets", 
-                            Logg.LoggingMode.InProgress);
-
-                        NotifyPreLoadDone(label);// 리소스 로딩 대기중인 클래스들에게 로딩 완료 이벤트 전달
-                        loadStatus[label] = LoadStatus.Done;
-                    }
                 });
             }
         }
@@ -150,219 +122,83 @@ namespace TH.Resource
         #endregion
 
         #region Load (Async)
-
-        // key 기반 비동기 리소스 로드
-        // 완료 후 <key, operationHandle>을 캐싱 후 콜백 실행
-        private void LoadAsync<T>(string key, Action<T> callback) where T : UnityEngine.Object
-        {
-            string loadKey = key;
-            if (key.EndsWith(".sprite"))
-            {
-                loadKey = $"{key}[{key.Replace(".sprite", "")}]";
-            }
-
-            var asyncOperation = Addressables.LoadAssetAsync<T>(loadKey); // 어드레서블로부터 리소스 로딩
-            asyncOperation.Completed += (op) =>
-            {
-                // 로딩이 완료된 후 callback 실행
-                if (resourceKeys.TryGetValue(key, out AsyncOperationHandle resource)) // 중복 key를 사용하는 리소스가 있는 경우
-                {
-                    //todo: 중복 핸들(op) 처리해야하는지 확인
-                    callback?.Invoke(op.Result); // 콜백만 실행하고 저장x
-                    return;
-                }
-                
-                resourceKeys.Add(key, op); // 신규 리소스 딕셔너리에 저장
-                callback?.Invoke(op.Result); // 콜백 실행
-            };
-        }
-
+        
         // 라벨에 매칭되는 모든 리소스 로케이션을 조회한 뒤, 각 항목을 비동기 로드
         // 개별 리소스 로드가 완료될 때마다 콜백(진행도 확인 목적)
-        private void LoadAllAsync<T>(string label, Action<string, int, int> callback = null) where T : UnityEngine.Object
-        {
-            var opHandle = Addressables.LoadResourceLocationsAsync(label, typeof(T));
-            opHandle.ReleaseHandleOnCompletion();
-            opHandle.Completed += (op) =>
-            {
-                int loadCount = 0;
-                int totalCount = op.Result.Count;
-
-                foreach (var result in op.Result)
-                {
-                    if (result.PrimaryKey.EndsWith(".sprite"))
-                    {
-                        LoadAsync<Sprite>(result.PrimaryKey, (obj) =>
-                        {
-                            loadCount++;
-                            callback?.Invoke(result.PrimaryKey, loadCount, totalCount);
-                        });
-                    }
-                    else if (result.PrimaryKey.Contains(".multiSprite"))
-                    {
-                        LoadMultipleSpriteAsync(result.PrimaryKey, (_) =>
-                        {
-                            loadCount++;
-                            callback?.Invoke(result.PrimaryKey, loadCount, totalCount);
-                        });
-                    }
-                    else if (result.PrimaryKey.Contains(".spriteAtlas"))
-                    {
-                        LoadSpriteAtlasAsync(result.PrimaryKey, (_) =>
-                        {
-                            loadCount++;
-                            callback?.Invoke(result.PrimaryKey, loadCount, totalCount);
-                        });
-                    }
-                    else
-                    {
-                        LoadAsync<T>(result.PrimaryKey, (obj) =>
-                        {
-                            loadCount++;
-                            callback?.Invoke(result.PrimaryKey, loadCount, totalCount);
-                        });
-                    }
-                }
-            };
-        }
-        // 라벨에 매칭되는 모든 리소스 로케이션을 조회한 뒤, 각 항목을 비동기 로드 (await 버전)
-        // 개별 리소스 로드가 완료될 때마다 콜백(진행도 확인 목적)
-        private async UniTask LoadAllAsyncAwaitable<T>(string label, Action<string, int, int> callback = null, CancellationToken token = default)
+        private async UniTask LoadAllAsync<T>(string label, Action<string, int, int> callback = null, CancellationToken token = default)
             where T : UnityEngine.Object
         {
-            var handle = Addressables.LoadResourceLocationsAsync(label, typeof(T));
-            var results = await handle.ToUniTask(cancellationToken: token);
+            var locationHandles = Addressables.LoadResourceLocationsAsync(label, typeof(T));
+            var locations = await locationHandles.ToUniTask(cancellationToken: token);
 
-            // var results = handle.Result;
-            int totalCount = results.Count;
+            int totalCount = locations.Count;
             int loadCount = 0;
 
-            foreach (var result in results)
+            var tasks = new List<UniTask>(totalCount);
+
+            foreach (var loc in locations)
             {
-                token.ThrowIfCancellationRequested();
-                
-                var tcs = new UniTaskCompletionSource();
-                string key = result.PrimaryKey;
-
-                if (key.EndsWith(".sprite"))
+                string key = loc.PrimaryKey;
+                if (resourceKeys.ContainsKey(key))
                 {
-                    LoadAsync<Sprite>(key, _ =>
-                    {
-                        loadCount++;
-                        callback?.Invoke(key, loadCount, totalCount);
-                        tcs.TrySetResult();
-                    });
-                }
-                else if (key.Contains(".multiSprite"))
-                {
-                    LoadMultipleSpriteAsync(key, _ =>
-                    {
-                        loadCount++;
-                        callback?.Invoke(key, loadCount, totalCount);
-                        tcs.TrySetResult();
-                    });
-                }
-                else if (key.Contains(".spriteAtlas"))
-                {
-                    LoadSpriteAtlasAsync(key, _ =>
-                    {
-                        loadCount++;
-                        callback?.Invoke(key, loadCount, totalCount);
-                        tcs.TrySetResult();
-                    });
-                }
-                else
-                {
-                    LoadAsync<T>(key, _ =>
-                    {
-                        loadCount++;
-                        callback?.Invoke(key, loadCount, totalCount);
-                        tcs.TrySetResult();
-                    });
+                    loadCount++;
+                    continue;
                 }
 
-                await tcs.Task;
+                var handle = Addressables.LoadAssetAsync<T>(loc);
+                resourceKeys[key] = handle;
+
+                tasks.Add(LoadAndInitAsync(handle, async asset =>
+                {
+                    loadCount++;
+                    callback?.Invoke(key, loadCount, totalCount);
+                    await DoAsyncInitialize(asset, token);
+                }, token));
             }
-            Addressables.Release(handle);
+            await UniTask.WhenAll(tasks);
+            
+            Logg.Log($"[ResourceLoader] finished loading label '{label}' assets", 
+                Logg.LoggingMode.Completed);
+
+            NotifyPreLoadDone(label);// 리소스 로딩 대기중인 클래스들에게 로딩 완료 이벤트 전달
+            loadStatus[label] = LoadStatus.Done;
+            
+            Addressables.Release(locationHandles);
         }
 
-        private void LoadMultipleSpriteAsync(string key, Action<Sprite[]> callback = null)
+        private static async UniTask LoadAndInitAsync<T>(AsyncOperationHandle<T> handle, Func<T, UniTask> onDoneAsync, CancellationToken token)
         {
-            // Sprite Mode: Multiple 전용. 반드시 key 끝에 ".multiSprite" 붙일 것 (대소문자 주의)
-            // var asyncOperation = Addressables.LoadAssetAsync<Sprite[]>(key);
-            // asyncOperation.Completed += (op) =>
-            // {
-            //     if (op.Status == AsyncOperationStatus.Succeeded)
-            //     {
-            //         foreach (var sprite in op.Result)
-            //         {
-            //             if (resourceKeys.ContainsKey(sprite.name))
-            //                 continue;
-            //             resourceKeys.Add($"{key}[{sprite.name}]", sprite); // 포맷: {멀티 스프라이트 이름}[{내부 스프라이트 개별 이름}]
-            //         }
-            //
-            //         callback?.Invoke(op.Result); // 로딩 완료 후 콜백 실행
-            //     }
-            //     else
-            //     {
-            //         Util.Log(
-            //             $"{nameof(ResourceManager)}.LoadMultipleSpriteAsync: Failed to load Multiple Sprite[] with key: {key}");
-            //         callback?.Invoke(null);
-            //     }
-            // };
+            await handle.ToUniTask(cancellationToken: token);
+
+            if (handle.Status != AsyncOperationStatus.Succeeded) return;
+            if (onDoneAsync != null)
+                await onDoneAsync(handle.Result);
         }
 
-        private void LoadSpriteAtlasAsync(string key, Action<SpriteAtlas> callback = null)
+        private async UniTask DoAsyncInitialize(object obj, CancellationToken token)
         {
-            // // Sprite Atlas 전용. 반드시 key 끝에 ".spriteAtlas" 붙일 것 (대소문자 주의)
-            // var asyncOperation = Addressables.LoadAssetAsync<SpriteAtlas>(key);
-            // asyncOperation.Completed += (op) =>
-            // {
-            //     if (op.Status == AsyncOperationStatus.Succeeded)
-            //     {
-            //         SpriteAtlas atlas = op.Result;
-            //         Sprite[] sprites = new Sprite[atlas.spriteCount];
-            //
-            //         for (int i = 0; i < atlas.GetSprites(sprites); i++)
-            //         {
-            //             string subKey =
-            //                 sprites[i].name.EndsWith(SpriteAtlasSuffix) // if (sprites[i].name.EndsWith("(Clone)")
-            //                     ? $"{key}[{sprites[i].name[atlasSuffixLength]}]" // 이름 뒷부분 "(Clone)" 문자열 제거
-            //                     : $"{key}[{sprites[i].name}]";
-            //
-            //             if (resourceKeys.ContainsKey(subKey)) continue; // 중복 키 사용중인 리소스가 존재하는 경우 스킵
-            //
-            //             resourceKeys[subKey] = sprites[i];
-            //         }
-            //
-            //         callback?.Invoke(op.Result);
-            //     }
-            //     else
-            //     {
-            //         Logg.LogError($"{nameof(ResourceLoader)}.LoadSpriteAtlasAsync: " +
-            //                       $"Failed to load sprite atlas with key: {{key}}");
-            //         callback?.Invoke(null);
-            //     }
-            // };
-        }
-
-        public UniTask<T> LoadAsync<T>(string key) where T : UnityEngine.Object
-        {
-            string loadKey = key;
-            if (key.EndsWith(".sprite"))
+            if (obj is IAsyncInitializer asyncInitializer)
             {
-                loadKey = $"{key}[{key.Replace(".sprite", "")}]";
+                await asyncInitializer.InitializeAsync(token);
+                Logg.Log($"[{GetType().Name}.DoAsyncInitialize] {obj.GetType().Name}", Logg.LoggingMode.Completed);
             }
+        }
 
+        public async UniTask<T> LoadAsync<T>(string key, CancellationToken token = default) where T : UnityEngine.Object
+        {
             if (resourceKeys.TryGetValue(key, out AsyncOperationHandle cachedHandle))
             {
-                return UniTask.FromResult((T)cachedHandle.Result);
+                return (T)cachedHandle.Result;
             }
 
-            var op = Addressables.LoadAssetAsync<T>(loadKey);
+            var op = Addressables.LoadAssetAsync<T>(key);
             resourceKeys[key] = op;
 
-            return op.ToUniTask();
+            var result = await op.ToUniTask(cancellationToken: token);
+            if (result is IAsyncInitializer asyncInitializer)
+                await asyncInitializer.InitializeAsync(token);
+            
+            return result;
         }
 
         // AssetReference로 단일 리소스를 비동기 로드
@@ -372,13 +208,13 @@ namespace TH.Resource
         {
             if (assetRef == null)
             {
-                Debug.LogError($"[{nameof(LoadAsync)}] reference is null.");
+                Debug.LogError($"[LoadAsync] reference is null.");
                 return null;
             }
 
             if (!assetRef.RuntimeKeyIsValid())
             {
-                Debug.LogError($"[{nameof(LoadAsync)}] Invalid RuntimeKey for AssetReference<{typeof(T).Name}>. Asset: (name:{assetRef.Asset?.name}, guid: {assetRef.AssetGUID})");
+                Debug.LogError($"[LoadAsync] Invalid RuntimeKey for AssetReference<{typeof(T).Name}>. Asset: (name:{assetRef.Asset?.name}, guid: {assetRef.AssetGUID})");
                 return null;
             }
             
@@ -397,7 +233,7 @@ namespace TH.Resource
             // 리소스 로드에 실패했다면 null 반환
             if (handle.Status != AsyncOperationStatus.Succeeded)
             {
-                Logg.LogError($"[{nameof(LoadAsync)}] Load failed for AssetReference<{typeof(T).Name}> with key: {assetRef.RuntimeKey}");
+                Logg.LogError($"[LoadAsync] Load failed for AssetReference<{typeof(T).Name}> with key: {assetRef.RuntimeKey}");
                 return null;
             }
             // AssetReference로부터 리소스 로드에 성공했다면 핸들을 캐싱 및 리소스 반환
@@ -412,6 +248,8 @@ namespace TH.Resource
         // 로딩 완료된 리소스 목록에 접근 (key 기반)
         public bool TryLoad<T>(string key, out T resource) where T : UnityEngine.Object
         {
+            Logg.Log($"[{GetType().Name}.TryLoad] (key: {key}, resource: {resourceKeys[key].Result})", Logg.LoggingMode.Completed);
+            
             if (resourceKeys.TryGetValue(key, out var result)
                 && result.Result is T cachedResource)
             {

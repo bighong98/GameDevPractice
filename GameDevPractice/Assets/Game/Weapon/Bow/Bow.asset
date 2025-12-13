@@ -19,6 +19,12 @@ MonoBehaviour:
   maxAmount: 1
   desc: Bow Test1 Description
   itemUseEffects: []
+  itemUseSFXReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
   equipmentType: 1
   slotType: 0
   equipmentStats:
@@ -31,9 +37,7 @@ MonoBehaviour:
   damage: 10
   range: 8
   hand: 1
-  hasProjectile: 1
   projectilePrefab: {fileID: 1765392690148027140, guid: 0ed9004fb430f6a4a9c87da6061553bc, type: 3}
-  hasImpactEffect: 1
   impactParticlePrefab: {fileID: 2315604679874030509, guid: 8e2324eab89da3144ab9f07a2edf6cba, type: 3}
   attackSFXReference:
     m_AssetGUID: 1f53a5fc6bd934e46a5d8cfa8fd27b64
