@@ -35,7 +35,8 @@ namespace TH.UI
         private float lastPopupOpenTime;
         
         // Frequently Used UI
-        public TooltipUI Tooltip; 
+        public TooltipUI Tooltip;
+        private OptionMenuUI optionMenu;
         
         // scriptable objects
         private SceneCatalogSO sceneCatalogSO;
@@ -47,6 +48,7 @@ namespace TH.UI
         private const string SceneUIListSOKey = "SceneUIListSO";
         private const string UICanvasSettingSOKey = "UICanvasSettingSO";
         private const string TooltipUIPrefabKey = "TooltipUI.prefab";
+        private const string OptionMenuUIKey = "OptionMenuUI";
 
 
         // default value
@@ -60,26 +62,10 @@ namespace TH.UI
             base.InitOnceAfterPreLoad();
             resourceLoader = ServiceLocator.Get<IResourceLoader>();
 
-            if (!resourceLoader.TryLoad(SceneCatalogSOKey, out sceneCatalogSO))
-            {
-                Logg.LogError($"[UIManager] failed to load sceneCatalogSO");
-                return;
-            }
-            
-            if (!resourceLoader.TryLoad(SceneUIListSOKey, out sceneUIListSO))
-            {
-                Logg.LogError($"[UIManager] failed to load sceneUIListSO");
-                return;
-            }
-            
-            if (!resourceLoader.TryLoad(UICanvasSettingSOKey, out uiCanvasSettingSO))
-            {
-                Logg.LogError($"[UIManager] failed to load sceneUIListSO");
-                return;
-            }
-            
+            LoadData();
             SetUIContainer();
             SetTooltip();
+            // SetOptionMenu();
         }
 
         protected override void Init()
@@ -141,6 +127,27 @@ namespace TH.UI
                     is { } resultSortingOrder)
                 sortOrders[(int)canvasType] = resultSortingOrder;
         }
+        
+        private void LoadData()
+        {
+            if (!resourceLoader.TryLoad(SceneCatalogSOKey, out sceneCatalogSO))
+            {
+                Logg.LogError($"[UIManager] failed to load sceneCatalogSO");
+                return;
+            }
+            
+            if (!resourceLoader.TryLoad(SceneUIListSOKey, out sceneUIListSO))
+            {
+                Logg.LogError($"[UIManager] failed to load sceneUIListSO");
+                return;
+            }
+            
+            if (!resourceLoader.TryLoad(UICanvasSettingSOKey, out uiCanvasSettingSO))
+            {
+                Logg.LogError($"[UIManager] failed to load sceneUIListSO");
+                return;
+            }
+        }
 
         #endregion
 
@@ -151,7 +158,10 @@ namespace TH.UI
             if (popupStacks.Count != 0)
             {
                 ClosePopupUI();
+                return;
             }
+            
+            ShowOptionMenu();
         }
 
         #region Common UI Method
@@ -606,7 +616,8 @@ namespace TH.UI
         #endregion
 
         #region Frequently Used UI Call
-
+        
+        // Tooltip (현재 미사용)
         private void SetTooltip()
         {
             resourceLoader.OnLabelResourcesLoadedAll -= SetTooltip; // 중복 구독 방지
@@ -650,6 +661,22 @@ namespace TH.UI
         public void HideTooltip()
         {
             Tooltip.Hide();
+        }
+        
+        // Option Menu
+
+        private void SetOptionMenu()
+        {
+            if(!resourceLoader.TryLoad<GameObject>(OptionMenuUIKey, out var result)
+               || !result.TryGetComponent(out optionMenu))
+            {
+                Logg.LogError($"[UIManager] failed to load option menu");
+            }
+        }
+
+        private void ShowOptionMenu()
+        {
+            ShowPopupUI<OptionMenuUI>(OptionMenuUIKey);
         }
 
         #endregion

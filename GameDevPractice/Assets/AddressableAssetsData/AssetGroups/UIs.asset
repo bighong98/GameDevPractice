@@ -43,6 +43,13 @@ MonoBehaviour:
     - PreLoad
     - UI
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8bafa41b79bef5f4db386b34f11bf6e8
+    m_Address: OptionMenuUI
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad
+    - UI
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 92c94e40c2f05a543bdf17eb37b930f5
     m_Address: QuestionPopupUI.prefab
     m_ReadOnly: 0
