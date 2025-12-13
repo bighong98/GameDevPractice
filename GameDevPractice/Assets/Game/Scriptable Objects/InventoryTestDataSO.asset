@@ -12,4 +12,67 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d927de054b8675e49ba839f5aabc5c0b, type: 3}
   m_Name: InventoryTestDataSO
   m_EditorClassIdentifier: Assembly-CSharp::InventoryTestDataSO
-  list: []
+  list:
+  - key:
+      m_AssetGUID: 1b33d3c2108ca6c4ab2eb0d629ec5fb3
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    value: 20
+  - key:
+      m_AssetGUID: 776ca49be7545f044866f2347018f350
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    value: 20
+  - key:
+      m_AssetGUID: 99213834396249f42a7095af4ec18385
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    value: 20
+  - key:
+      m_AssetGUID: c6d5815de0e57034c98af2ab076b0be7
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    value: 2
+  - key:
+      m_AssetGUID: 24a647810f57bb345a370aa349b7758c
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    value: 2
+  - key:
+      m_AssetGUID: e3fe86b9ce978c447b8d43e66859b5a9
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    value: 20
+  - key:
+      m_AssetGUID: f6ec39d375b21b347b64d5ede791912d
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    value: 20
+  - key:
+      m_AssetGUID: 6a1d98e681787c6488733dcec1768613
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    value: 25
+  - key:
+      m_AssetGUID: 0a8fc87d049409749b518d0d97acf68f
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 1
+    value: 30
