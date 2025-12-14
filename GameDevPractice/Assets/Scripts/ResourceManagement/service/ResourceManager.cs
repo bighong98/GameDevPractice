@@ -14,7 +14,7 @@ namespace TH.Resource
 {
     // 리소스 로딩 관련 기능 접근을 위한 싱글톤 파사드(Facade)
     // ServiceLocator/Bootstrapper 이외 클래스에서는 ResourceManager 사용 권장 (직접 ServiceLocator.Get() x)
-    public sealed class ResourceManager : Singleton<ResourceManager>
+    public sealed class ResourceManager : MonoSingleton<ResourceManager>
     {
         // PreLoad
         private bool preLoadState = false;

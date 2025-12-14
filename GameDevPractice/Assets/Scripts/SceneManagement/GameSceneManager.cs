@@ -9,7 +9,7 @@ using TH.Utils;
 
 namespace TH.SceneManagement
 {
-    public class GameSceneManager : Singleton<GameSceneManager>
+    public class GameSceneManager : MonoSingleton<GameSceneManager>
     {
         private Action<bool> initializationTasks;
         private readonly Queue<Func<UniTask>> cleanupTasks = new();

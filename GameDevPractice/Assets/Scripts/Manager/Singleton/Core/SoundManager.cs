@@ -5,7 +5,7 @@ using Cysharp.Threading.Tasks;
 using TH.Resource;
 using TH.Core;
 
-public class SoundManager : Singleton<SoundManager>
+public class SoundManager : MonoSingleton<SoundManager>
 {
     private readonly AudioSource[] audioSources = new AudioSource[(int)Enums.AudioType.Max];
     private readonly Dictionary<string, AudioClip> audioClips = new Dictionary<string, AudioClip>();

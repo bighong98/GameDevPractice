@@ -5,6 +5,7 @@ using TH.Combat;
 using UnityEngine.AI;
 using TH.Utils;
 using System;
+using TH.Core;
 using TH.Core.Service;
 
 namespace TH.Control
@@ -34,18 +35,22 @@ namespace TH.Control
         private void OnEnable()
         {
             _camera = Camera.main;
-            InputManager.Instance.ReserveOperation(() =>
-            {
-                InputManager.Instance.OnSelected += OnPointerPressed;
-                InputManager.Instance.OnMoved += OnWASDInput;
-            });
+            // MonoInputManager.Instance.ReserveOperation(() =>
+            // {
+            //     MonoInputManager.Instance.OnSelected += OnPointerPressed;
+            //     MonoInputManager.Instance.OnMoved += OnWASDInput;
+            // });
             // InputManager.Instance.OnSelected += OnPointerPressed;
+            InputManager.Instance.OnSelected += OnPointerPressed;
+            InputManager.Instance.OnMoved += OnWASDInput;
         }
 
         private void OnDisable()
         {
-            if (Util.IsQuitting) return;
+            // if (Util.IsQuitting) return;
             _camera = null;
+            // MonoInputManager.Instance.OnSelected -= OnPointerPressed;
+            // MonoInputManager.Instance.OnMoved -= OnWASDInput;
             InputManager.Instance.OnSelected -= OnPointerPressed;
             InputManager.Instance.OnMoved -= OnWASDInput;
         }

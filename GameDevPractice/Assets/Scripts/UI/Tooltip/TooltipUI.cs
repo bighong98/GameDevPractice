@@ -2,6 +2,7 @@ using System;
 using TMPro;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
+using TH.Core;
 using UnityEngine.InputSystem;
 using TH.Utils;
 
@@ -124,8 +125,9 @@ namespace TH.UI
         {
             // if (Util.IsQuitting) return;
 
+            // Vector2 pointerPos = MonoInputManager.Instance.PointerPos;
             Vector2 pointerPos = InputManager.Instance.PointerPos;
-
+            
 // #if UNITY_EDITOR
 //         pointerPos = Mouse.current.position.ReadValue();
 // #else

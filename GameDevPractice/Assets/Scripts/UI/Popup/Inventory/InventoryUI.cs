@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Resources;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
+using TH.Core;
 using TH.Item;
 using TH.UI.Data;
 using TH.Utils;
@@ -113,6 +114,7 @@ namespace TH.UI
         {
             if (!isDragging) return;
 
+            // dragDropGhost.position = MonoInputManager.Instance.PointerPos;
             dragDropGhost.position = InputManager.Instance.PointerPos;
         }
 

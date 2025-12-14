@@ -18,7 +18,7 @@ namespace TH.UI
         AnchoredOverlay, // 게임 오브젝트와 함께 움직이는 UI용 캔버스
         Popup, // 팝업UI 캔버스
     }
-    public class UIManager : Singleton<UIManager>
+    public class UIManager : MonoSingleton<UIManager>
     {
         private readonly PopupStack popupStacks = new();
         
@@ -88,6 +88,11 @@ namespace TH.UI
 
         private void ConnectInputEvents()
         {
+            // MonoInputManager.Instance.OnEscaped -= OnEscapeCalled;
+            // MonoInputManager.Instance.OnEscaped += OnEscapeCalled;
+            //
+            // MonoInputManager.Instance.OnSingleClicked -= OnPopupOutSideSelected; // 중복 구독 방지
+            // MonoInputManager.Instance.OnSingleClicked += OnPopupOutSideSelected;
             InputManager.Instance.OnEscaped -= OnEscapeCalled;
             InputManager.Instance.OnEscaped += OnEscapeCalled;
 
@@ -363,11 +368,13 @@ namespace TH.UI
             // 일시정지 필요 시 게임 일시정지
             if (popup.PauseRequired)
                 InputManager.Instance.PauseGame();
+                // MonoInputManager.Instance.PauseGame();
 
             // 팝업 열림 시간 기록 (빠른 닫기 방지용)
             lastPopupOpenTime = Time.unscaledTime;
             
             // UI 액션맵 활성화 (ESC 등의 입력 받기)
+            // MonoInputManager.Instance.EnableUIActionMap();
             InputManager.Instance.EnableUIActionMap();
             
             Logg.Log($"[{nameof(UIManager)}.{nameof(ShowPopupUI)}()] new Popup. name: {popup.name} popupStack.Count: {popupStacks.Count}", 
@@ -409,6 +416,7 @@ namespace TH.UI
             // 모든 팝업이 닫혔으면 UI 액션맵 비활성화
             if (popupStacks.Count == 0)
             {
+                // MonoInputManager.Instance.DisableUIActionMap();
                 InputManager.Instance.DisableUIActionMap();
             }
 
@@ -511,6 +519,7 @@ namespace TH.UI
             // 일시정지가 필요한 팝업이 없다면 게임 일시정지 해제
             if (!IsPausedRequired())
             {
+                // MonoInputManager.Instance.ResumeGame();
                 InputManager.Instance.ResumeGame();
             }
 
@@ -712,8 +721,10 @@ namespace TH.UI
 
         private void DisConnectInputEvents()
         {
-            if (Util.IsQuitting || InputManager.Instance == null) return;
+            // if (Util.IsQuitting || MonoInputManager.Instance == null) return;
 
+            // MonoInputManager.Instance.OnEscaped -= OnEscapeCalled;
+            // MonoInputManager.Instance.OnSingleClicked -= OnPopupOutSideSelected;
             InputManager.Instance.OnEscaped -= OnEscapeCalled;
             InputManager.Instance.OnSingleClicked -= OnPopupOutSideSelected;
         }

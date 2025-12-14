@@ -11,7 +11,7 @@ namespace TH.Core.Pool
     // prefab 단위로 풀을 일대일 매핑하여 보관 (반드시 prefab 사용할 것)
     // 풀 생성 시 TH.Core.Pool.IPoolObject 수명 이벤트 (OnCreate,OnGet,OnRelease,OnDestroy) 호출 보장
     // 오브젝트가 생성될 컨테이너 임의 지정 가능, 지정하지 않을 경우 (클래스타입-동일인스턴스)로 분류하여 자동으로 Hierarchy 정리
-    public class PoolManager : Singleton<PoolManager>
+    public class PoolManager : MonoSingleton<PoolManager>
     {
         private const int DefaultCapacity = 10; // 풀 초기 생성 개수(생성 직후 실제 생성되진 않고 필요 시 lazy하게 생성됨)
         private const int DefaultMaxSize = 100; // 풀 상한 (초과 시 Release 대신 Destroy 로직 수행)

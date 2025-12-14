@@ -1,6 +1,5 @@
-using System;
-using System.Collections;
 using TH.Combat;
+using TH.Core;
 using TH.Core.Service;
 using TH.Item;
 using TH.Item.Storage;
@@ -20,8 +19,6 @@ public class QuickSlotController : MonoBehaviour
     private IQuickStorage quickStorage;
     // 외부 서비스     
     private IGameItemConsumer itemConsumer;
-    
-    private InputManager inputManager;
     private IPlayerHolder playerHolder;
 
     
@@ -31,22 +28,22 @@ public class QuickSlotController : MonoBehaviour
         
         UnsubscribeInputEvents();
 
-        inputManager.OnQuickSlot1Pressed += OnQuickSlot1Input;
-        inputManager.OnQuickSlot2Pressed += OnQuickSlot2Input;
-        inputManager.OnQuickSlot3Pressed += OnQuickSlot3Input;
-        inputManager.OnQuickSlot4Pressed += OnQuickSlot4Input;
-        inputManager.OnQuickSlot5Pressed += OnQuickSlot5Input;
+        InputManager.Instance.OnQuickSlot1Pressed += OnQuickSlot1Input;
+        InputManager.Instance.OnQuickSlot2Pressed += OnQuickSlot2Input;
+        InputManager.Instance.OnQuickSlot3Pressed += OnQuickSlot3Input;
+        InputManager.Instance.OnQuickSlot4Pressed += OnQuickSlot4Input;
+        InputManager.Instance.OnQuickSlot5Pressed += OnQuickSlot5Input;
     }
 
     private void UnsubscribeInputEvents()
     {
         if (Util.IsQuitting) return;
         
-        inputManager.OnQuickSlot1Pressed -= OnQuickSlot1Input;
-        inputManager.OnQuickSlot2Pressed -= OnQuickSlot2Input;
-        inputManager.OnQuickSlot3Pressed -= OnQuickSlot3Input;
-        inputManager.OnQuickSlot4Pressed -= OnQuickSlot4Input;
-        inputManager.OnQuickSlot5Pressed -= OnQuickSlot5Input;
+        InputManager.Instance.OnQuickSlot1Pressed -= OnQuickSlot1Input;
+        InputManager.Instance.OnQuickSlot2Pressed -= OnQuickSlot2Input;
+        InputManager.Instance.OnQuickSlot3Pressed -= OnQuickSlot3Input;
+        InputManager.Instance.OnQuickSlot4Pressed -= OnQuickSlot4Input;
+        InputManager.Instance.OnQuickSlot5Pressed -= OnQuickSlot5Input;
     }
 
 
@@ -64,7 +61,6 @@ public class QuickSlotController : MonoBehaviour
         quickStorage  = ServiceLocator.Get<IQuickStorage>();
         itemConsumer = ServiceLocator.Get<IGameItemConsumer>();
         playerHolder = ServiceLocator.Get<IPlayerHolder>();
-        inputManager = InputManager.Instance;
         
         playerHolder.OnPlayerInstanceUpdated += UpdatePlayerInstance;
         if (panelUI == null)

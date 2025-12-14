@@ -12,6 +12,7 @@ using TH.Item.Storage;
 using TH.Attribute;
 using TH.UI.Data;
 using Cysharp.Threading.Tasks;
+using TH.Core;
 
 namespace TH.Item
 {
@@ -425,6 +426,7 @@ namespace TH.Item
                 result.TryGetItemSlot(index, out var slot) &&
                 slot is {HasItem: true, IsAccessible: true})
             {
+                // itemTooltip.MoveTooltip(MonoInputManager.Instance.PointerPos); 
                 itemTooltip.MoveTooltip(InputManager.Instance.PointerPos); 
                 itemTooltip.ShowTooltip(slot);
             }

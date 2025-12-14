@@ -7,7 +7,7 @@ using TH.UI;
 using TH.Core;
 using TH.Utils;
 
-public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, UserInput.IGlobalActions, UserInput.IUIActions, UserInput.IQuickSlotActions
+public class MonoInputManager : MonoSingleton<MonoInputManager>, UserInput.IPlayerActions, UserInput.IGlobalActions, UserInput.IUIActions, UserInput.IQuickSlotActions
 {
     // 외부 접근용 프로퍼티
     private UserInput userInput; // input action asset 자동생성 클래스
@@ -320,7 +320,6 @@ public class InputManager : Singleton<InputManager>, UserInput.IPlayerActions, U
     }
 
     #endregion
-
 
     #region QuickSlot Input Handle
 
