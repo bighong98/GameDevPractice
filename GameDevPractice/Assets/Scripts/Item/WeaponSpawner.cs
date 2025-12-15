@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using TH.Combat;
 using TH.Core.Pool;
 using UnityEngine;
 using UnityEngine.Pool;

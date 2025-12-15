@@ -56,7 +56,7 @@ namespace TH.Core
         public event Action OnQuickSlot4Pressed;
         public event Action OnQuickSlot5Pressed;
         
-        #endregion  
+        #endregion
         
         // 캐싱 좌표
         private Vector2 currentPointerPos = Vector2.zero; // update by OnPoint()
