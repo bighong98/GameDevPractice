@@ -31,6 +31,11 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
         textTrs = text.transform;
     }
 
+    private void OnEnable()
+    {
+        cam = Camera.main;
+    }
+
     private void LateUpdate()
     {
         LookAtCamera();

@@ -6,6 +6,7 @@ using UnityEngine;
 using TH.Core;
 using TH.Attribute;
 using TH.Combat;
+using TH.Core.Service;
 using TH.Movement;
 
 namespace TH.Control
@@ -23,7 +24,8 @@ namespace TH.Control
         private Health health;
         private Mover mover;
         private ActoinScheduler actionScheduler;
-        
+
+        private IPlayerHolder playerHolder;
         private PlayerController player;
 
         private LazyValue<Vector3> guardPosition;
@@ -39,10 +41,17 @@ namespace TH.Control
             actionScheduler = GetComponent<ActoinScheduler>();
             guardPosition = new LazyValue<Vector3>(GetDefaultGuardPosition);
             
-            if (GameObject.FindWithTag("Player") is { } foundPlayer)
-            {
-                player = foundPlayer.GetComponent<PlayerController>();
-            }
+            // if (GameObject.FindWithTag("Player") is { } foundPlayer)
+            // {
+            //     player = foundPlayer.GetComponent<PlayerController>();
+            // }
+            playerHolder = ServiceLocator.Get<IPlayerHolder>();
+        }
+
+        private void OnEnable()
+        {
+            if (playerHolder.GetPlayerInstance is PlayerController p)
+                player = p;
         }
 
         private void Update()

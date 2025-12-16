@@ -27,19 +27,15 @@ namespace TH.Utils
         
         private readonly IResourceLoader resourceLoader;
         
-        public FloatingTextSpawner(IResourceLoader resourceLoader)
+        public FloatingTextSpawner(IResourceLoader rLoader)
         {
             AddBinders();
-            this.resourceLoader = resourceLoader;
-            this.resourceLoader.OnLabelResourcesLoadedAll += InitializeTextPools;
+            resourceLoader = rLoader;
+            resourceLoader.WaitForPreLoad(Constants.PreLoadLabel, InitializeTextPools);
         }
 
-        private void InitializeTextPools(string label)
+        private void InitializeTextPools()
         {
-            
-            if (!string.Equals(label, Constants.PreLoadLabel)) return;
-            
-            
             if (!resourceLoader.TryLoad(textCatalogSOKey, out textCatalogSO))
             {
                 Logg.LogError($"[{nameof(FloatingTextSpawner)}] failed to load text floating text CatalogSO");
@@ -134,7 +130,7 @@ namespace TH.Utils
 
         private void ShowFloatingText(FloatingTextEventType type, Transform anchor, in string str)
         {
-            Logg.Log($"[FTSpawner] print {type} ({anchor.name}, {str})", Logg.LoggingMode.Completed);
+            Logg.Log($"[FTSpawner] print {type} ({anchor.name}, {str} using {textPrefab})", Logg.LoggingMode.Completed);
             var s = PoolManager.Instance.GetFromPool<FloatingTextController>(textPrefab, null, anchor.position);
             if (textCatalogSO.TryGetValue(type, out var setting))
             {

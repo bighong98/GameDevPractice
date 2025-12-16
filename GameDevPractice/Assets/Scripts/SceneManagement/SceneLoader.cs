@@ -1,88 +1,81 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
-using TH.Core.Service;
-using TH.Resource;
-using TH.SaveLoad;
-using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.ResourceManagement.ResourceProviders;
 using UnityEngine.SceneManagement;
+using TH.Resource;
 using TH.Utils;
+using UnityEngine;
 
 namespace TH.SceneManagement
 {
     public class SceneLoader : ISceneLoader
     {
         private readonly IResourceLoader resourceLoader;
-        
-        private const string LoadingSceneName = "LoadingScene";
-        private const float SceneLoadStartPoint = 0.3f;
-        private const float SceneActivateStartPoint = 0.6f;
 
         private AsyncOperationHandle<SceneInstance> currentSceneHandle;
         private AsyncOperationHandle<SceneInstance> prevSceneHandle;
         
         private bool inFlight;
-        private CancellationTokenSource cts = new CancellationTokenSource();
         
         public event Func<UniTask> OnBeforeSceneChanged;
         public event Action<Scene> OnSceneChanged;
-
+        
+        private const string LoadingSceneName = "LoadingScene";
+        private const float SceneLoadStartPoint = 0.3f;
+        private const float SceneActivateStartPoint = 0.6f;
+        
+        public SceneLoader(IResourceLoader resourceLoad)
+        {
+            resourceLoader = resourceLoad;
+            Init();
+        }
+        
 #if UNITY_EDITOR
         Scene bootScene;
         bool bootSceneUnLoaded;
 #endif
         
-        public SceneLoader(IResourceLoader resourceLoad)
+        private void Init()
         {
-            resourceLoader = resourceLoad;
             OnBeforeSceneChanged = () => UniTask.CompletedTask; // 빈 객체로 초기화 (NRE 방지)
-            Init();
-        }
-
-        private bool testing = false;
-        private async void Init()
-        {
 #if UNITY_EDITOR
             bootScene = SceneManager.GetActiveScene();
             bootSceneUnLoaded = false;
-            
-            if (testing)
-                await LoadSceneAsync("Sandbox");
 #endif
         }
 
-        #region PreLoad
-
-        private async UniTask WaitForPreLoad()
+        #region PreLoad (using IResourceLoader)
+        
+        private async UniTask WaitForPreLoad(CancellationToken token = default)
         {
-            try
+            if (resourceLoader.IsLoadedAll(Constants.PreLoadLabel))
+                return;
+
+            SubscribePreLoadProgress(Constants.PreLoadLabel);
+            
+            var tcs = new UniTaskCompletionSource();
+            resourceLoader.WaitForPreLoad(Constants.PreLoadLabel, () => tcs.TrySetResult());
+
+            using (token.Register(() => tcs.TrySetCanceled(token)))
             {
-                if (!resourceLoader.IsLoadedAll(Constants.PreLoadLabel))
-                {
-                    Logg.Log($"[SceneLoader] WaitForPreLoad", Logg.LoggingMode.Completed);
-                    resourceLoader.OnLabelResourcesLoadedAll += OnPreloadDone;
-                    while (!(cts?.IsCancellationRequested ?? true))
-                    {
-                        await UniTask.NextFrame();
-                    }
-                }
+                await tcs.Task;
             }
-            catch (Exception e) {Logg.LogError($"{e}");}
-            finally{ Logg.Log($"[SceneLoader] WaitForPreLoad is done", Logg.LoggingMode.Completed);}
         }
 
-        private void OnPreloadDone(string label)
+        private void SubscribePreLoadProgress(string label)
         {
-            if (label != Constants.PreLoadLabel) return; 
-            
-            if (!(cts?.IsCancellationRequested ?? true))
-                cts.Cancel();
-            cts?.Dispose();
+            resourceLoader.SubscribePreLoadProgress(label, ReportingProgressAction);
+        }
+
+        void ReportingProgressAction(float f)
+        {
+            float mapped = Mathf.Lerp(SceneLoadStartPoint, SceneActivateStartPoint, f);
+            Logg.Log($"[{GetType().Name}] Progress({mapped})", Logg.LoggingMode.InProgress);
+            ReportProgress(mapped);
         }
 
         #endregion
@@ -95,16 +88,14 @@ namespace TH.SceneManagement
             if (loadScene.IsValid() && loadScene.isLoaded)
                 return;
             
-            var op = SceneManager.LoadSceneAsync(LoadingSceneName, LoadSceneMode.Additive);
-            
-            await UniTask.WhenAll(
-                op.ToUniTask(cancellationToken: token),
-                WaitForPreLoad()
-            );
+            await SceneManager.LoadSceneAsync(LoadingSceneName, LoadSceneMode.Additive).ToUniTask(cancellationToken: token);
 #if UNITY_EDITOR
             await UnloadBootstrapSceneIfNeeded(token);
 #endif
+            await WaitForPreLoad(token);
         }
+
+        
 
         private static async UniTask UnloadLoadingSceneAsync(CancellationToken token = default)
         {
@@ -141,11 +132,15 @@ namespace TH.SceneManagement
                 await UniTask.WhenAll(
                     LoadLoadingSceneAsync(token: token),
                     RunPreTasks(preTasks, token),
-                    OnBeforeSceneChanged!()); // 로딩 씬 로드, 타겟 씬 로드 전 사전 작업
+                    OnBeforeSceneChanged!()
+                ); // 로딩 씬 로드, 타겟 씬 로드 전 사전 작업
                 var result = await LoadSceneWithAddressablesAsync(key, onProgress, token); // 타겟 씬 로드
-                await UniTask.WhenAll(UnloadPreviousSceneAsync(token),
-                        UnloadLoadingSceneAsync(token)); // 로딩 씬 언로드, 기존 씬 언로드
+                await UniTask.WhenAll(
+                    UnloadPreviousSceneAsync(token),
+                    UnloadLoadingSceneAsync(token)
+                ); // 로딩 씬 언로드, 기존 씬 언로드
                 ReportProgress(1); // 진행도 60%
+                await result.ActivateAsync().ToUniTask(cancellationToken: token);
                 OnSceneChanged?.Invoke(result.Scene);
             }
             catch (Exception e) { Logg.Log($"exception occured while loadingScene '{key}', {e}"); }
@@ -216,7 +211,6 @@ namespace TH.SceneManagement
             
             try
             {
-                // OnBeforeSceneChanged?.Invoke(); // 기존 씬 언로드 전에 정리작업 실행
                 var prev = prevSceneHandle.Result;
                 await Addressables.UnloadSceneAsync(prev, autoReleaseHandle: true)
                     .ToUniTask(cancellationToken: token);

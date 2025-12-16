@@ -43,6 +43,7 @@ namespace TH.Resource
             { 
                 GetTypeFromAssetRef().ContinueWith(() =>
                 {
+                    if (token.IsCancellationRequested) return;
                     if (addToPool)
                         AddToPool(); // 필요시 자동으로 오브젝트 풀에 등록
                     // 오브젝트 풀 이벤트 수동 호출
@@ -64,6 +65,8 @@ namespace TH.Resource
                     $"[{gameObject.name}.{nameof(GetTypeFromAssetRef)}] failed to load asset from AssetReference");
             // 타입 데이터 비동기 로드 시작
             type = await ResourceManager.Instance.ExtractAssetRefAsync<T>(typeRef, token);
+
+            if (token.IsCancellationRequested) return;
             Logg.Log($"[{gameObject.name}.{nameof(GetTypeFromAssetRef)}] " +
                      $"type: {type}", Logg.LoggingMode.Completed);
         }
@@ -73,7 +76,7 @@ namespace TH.Resource
         // 기존 참조가 존재하는 경우 덮어쓰기 허용 x
         public async UniTask SetTypeRef(AssetReferenceT<T> typeReference)
         {
-            if (typeRef != null) {
+            if (typeRef != null && !token.IsCancellationRequested) {
                 Logg.LogError($"[{gameObject.name}.{nameof(GetTypeFromAssetRef)}.SetTypeRef()] " +
                               $"typeReference overwriting is not accepted");
                 return; // 이미 typeRef가 존재한다면 overwrite 허용x
@@ -104,7 +107,8 @@ namespace TH.Resource
                                   $"failed to load from assetRefT '{typeRef}'");
                     return;
                 }
-                
+
+                if (token.IsCancellationRequested) return;
                 foreach (var dependent in GetComponents<ITypeDependent>())
                 {
                     dependent.ReceiveType(data);

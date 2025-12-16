@@ -61,7 +61,7 @@ MonoBehaviour:
     m_Address: SceneCatalogSO
     m_ReadOnly: 0
     m_SerializedLabels:
-    - PreLoad
+    - PreLoad1
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: eb92a25e250ce7b4c85b8d4b730bee5e

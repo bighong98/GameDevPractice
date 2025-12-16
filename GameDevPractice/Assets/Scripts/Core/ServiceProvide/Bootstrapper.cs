@@ -1,3 +1,4 @@
+using System;
 using TH.Combat;
 using TH.Item;
 using TH.Resource;
@@ -7,6 +8,8 @@ using TH.UI;
 using TH.Utils;
 using UnityEngine;
 using TH.Item.Storage;
+using Cysharp.Threading.Tasks;
+using UnityEngine.SceneManagement;
 
 namespace TH.Core.Service
 {
@@ -17,9 +20,14 @@ namespace TH.Core.Service
     {
         // RuntimeInitializeOnLoadMethod()로 씬 로드 전 실행을 보장
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        private static void Init()
+        private static async void Init()
         {
-            RegisterServices();
+            try
+            {
+                RegisterServices();
+                await InitializeAsync();
+            }
+            catch (Exception e) {Debug.LogError(e);}
         }
         
         // 씬 로드 전 초기화가 필요한 서비스 등록
@@ -52,6 +60,12 @@ namespace TH.Core.Service
             ServiceLocator.Register<IFloatingTextSpawner>(sp => 
                 new FloatingTextSpawner(sp.Get<IResourceLoader>()));
             ServiceLocator.Register<IPlayerHolder>(new PlayerHolder());
+        }
+
+        private static async UniTask InitializeAsync()
+        {
+            await SceneManager.LoadSceneAsync(0, LoadSceneMode.Single);
+            await ServiceLocator.Get<IResourceLoader>().PreLoadAsync();
         }
     }
 }

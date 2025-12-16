@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using Cysharp.Threading.Tasks;
+using TH.SceneManagement;
 using TH.Utils;
+using UnityEngine;
 
 namespace TH.Resource
 {
@@ -50,20 +51,26 @@ namespace TH.Resource
             Init();  
         }
 
+        #region Initialization
+
         private void Init()
         {
             foreach (var label in Enum.GetNames(typeof(PreLoadLabels)))
             {
                 InitForLabel(label);
             }
-            PreLoad();
+            // PreLoad();
         }
-
+        
         private void InitForLabel(string label)
         {
             loadStatus[label] = LoadStatus.NotInitialized;
             reservedPreLoadTasks[label] = new Queue<Action>();
+
+            InitLabelProcess(label);
         }
+
+        #endregion
 
         #region PreLoad
 
@@ -73,17 +80,15 @@ namespace TH.Resource
         {
             PreLoadAsync().Forget();
         }
+        
         // PreLoad() 내부 구현
         // 개별 리소스 로드마다 콜백 실행 (로딩 프로그레스 바 등에 사용)
-        private async UniTask PreLoadAsync()
+        public async UniTask PreLoadAsync()
         {
             foreach (var label in Enum.GetNames(typeof(PreLoadLabels)))
             {
                 Logg.Log($"[ResourceLoader] start to load label '{label}' assets", Logg.LoggingMode.Completed);
-                await LoadAllAsync<UnityEngine.Object>(label, (key, count, totalCount) =>
-                {
-                    Logg.Log($"[{label} - {key}] {count} / {totalCount}", Logg.LoggingMode.Completed); // 디버깅용 로그
-                });
+                await LoadAllAsync<UnityEngine.Object>(label);
             }
         }
 
@@ -147,21 +152,25 @@ namespace TH.Resource
 
                 var handle = Addressables.LoadAssetAsync<T>(loc);
                 resourceKeys[key] = handle;
-
+                
                 tasks.Add(LoadAndInitAsync(handle, async asset =>
                 {
+                    // ReSharper disable once AccessToModifiedClosure
                     loadCount++;
                     callback?.Invoke(key, loadCount, totalCount);
+                    ReportPreLoadProgress(label, (totalCount <= 0) ? 1f : (loadCount / (float)totalCount));
                     await DoAsyncInitialize(asset, token);
+                    Logg.Log($"[ResourceLoader] {label} - finished loading {key}:{handle.Result} ({loadCount}/{totalCount}, {(loadCount / (float)totalCount)})", 
+                        Logg.LoggingMode.Completed);
                 }, token));
             }
             await UniTask.WhenAll(tasks);
             
             Logg.Log($"[ResourceLoader] finished loading label '{label}' assets", 
-                Logg.LoggingMode.Completed);
+                Logg.LoggingMode.InProgress);
 
-            NotifyPreLoadDone(label);// 리소스 로딩 대기중인 클래스들에게 로딩 완료 이벤트 전달
             loadStatus[label] = LoadStatus.Done;
+            NotifyPreLoadDone(label);// 리소스 로딩 대기중인 클래스들에게 로딩 완료 이벤트 전달
             
             Addressables.Release(locationHandles);
         }
@@ -208,13 +217,13 @@ namespace TH.Resource
         {
             if (assetRef == null)
             {
-                Debug.LogError($"[LoadAsync] reference is null.");
+                Logg.LogError($"[LoadAsync] reference is null.");
                 return null;
             }
 
             if (!assetRef.RuntimeKeyIsValid())
             {
-                Debug.LogError($"[LoadAsync] Invalid RuntimeKey for AssetReference<{typeof(T).Name}>. Asset: (name:{assetRef.Asset?.name}, guid: {assetRef.AssetGUID})");
+                Logg.LogError($"[LoadAsync] Invalid RuntimeKey for AssetReference<{typeof(T).Name}>. Asset: (name:{assetRef.Asset?.name}, guid: {assetRef.AssetGUID})");
                 return null;
             }
             
@@ -243,7 +252,7 @@ namespace TH.Resource
 
         #endregion
 
-        #region Load (Sync)
+        #region TryLoad (Sync)
 
         // 로딩 완료된 리소스 목록에 접근 (key 기반)
         public bool TryLoad<T>(string key, out T resource) where T : UnityEngine.Object
@@ -280,6 +289,54 @@ namespace TH.Resource
         {
             return loadStatus.TryGetValue(label, out var status) && (int)status == (int)LoadStatus.Done;
         }
+
+        #region Progress
+
+        // 라벨별 progress broadcaster 저장소
+        private readonly Dictionary<string, ProgressBroadcaster> _preloadProgress = new();
+        private readonly Dictionary<string, float> _preloadProgressCache = new(); // 현재값 캐시(선택)
+
+        // 진행도 구독
+        public IProgressSubscription SubscribePreLoadProgress(string label, Action<float> onProgress, bool fireCurrent = true)
+        {
+            if (string.IsNullOrEmpty(label)) throw new ArgumentNullException(nameof(label));
+            if (onProgress == null) throw new ArgumentNullException(nameof(onProgress));
+
+            if (!_preloadProgress.TryGetValue(label, out var broadcaster))
+            {
+                broadcaster = new ProgressBroadcaster();
+                _preloadProgress[label] = broadcaster;
+                _preloadProgressCache[label] = 0f;
+            }
+
+            if (fireCurrent && _preloadProgressCache.TryGetValue(label, out var current))
+                onProgress.Invoke(current);
+
+            return broadcaster.Subscribe(onProgress);
+        }
+
+        private void ReportPreLoadProgress(string label, float p)
+        {
+            Logg.Log($"[{GetType().Name}] ReportPreLoadProgress label: {label}, progress: {p}", Logg.LoggingMode.InProgress);
+            p = Mathf.Clamp01(p);
+
+            _preloadProgressCache[label] = p;
+
+            if (_preloadProgress.TryGetValue(label, out var broadcaster))
+                broadcaster.Report(p);
+            else Logg.LogWarning($"[{GetType().Name}] ReportPreLoadProgress label: {label}, progress: {p} is ignored");
+
+        }
+        
+        private void InitLabelProcess(string label)
+        {
+            if (!_preloadProgress.ContainsKey(label))
+                _preloadProgress[label] = new ProgressBroadcaster();
+            _preloadProgressCache[label] = 0f;
+            ReportPreLoadProgress(label, 0f);
+        }
+
+        #endregion
     }
 }
 
