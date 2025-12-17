@@ -25,8 +25,8 @@ namespace TH.SceneManagement
         public event Action<Scene> OnSceneChanged;
         
         private const string LoadingSceneName = "LoadingScene";
-        private const float SceneLoadStartPoint = 0.3f;
-        private const float SceneActivateStartPoint = 0.6f;
+        // PreLoad 완료 후 시작점 (ResourceLoader에서 0~0.7 범위로 진행도 보고)
+        private const float PostPreLoadStartPoint = 0.7f;
         
         public SceneLoader(IResourceLoader resourceLoad)
         {
@@ -39,24 +39,25 @@ namespace TH.SceneManagement
         bool bootSceneUnLoaded;
 #endif
         
-        private void Init()
+private void Init()
         {
             OnBeforeSceneChanged = () => UniTask.CompletedTask; // 빈 객체로 초기화 (NRE 방지)
 #if UNITY_EDITOR
             bootScene = SceneManager.GetActiveScene();
             bootSceneUnLoaded = false;
 #endif
+            // 전체 PreLoad 진행도 구독
+            SubscribeGlobalPreLoadProgress();
         }
 
         #region PreLoad (using IResourceLoader)
         
         private async UniTask WaitForPreLoad(CancellationToken token = default)
         {
+            // Init()에서 이미 구독했으므로 여기서는 로드 완료만 대기
             if (resourceLoader.IsLoadedAll(Constants.PreLoadLabel))
                 return;
 
-            SubscribePreLoadProgress(Constants.PreLoadLabel);
-            
             var tcs = new UniTaskCompletionSource();
             resourceLoader.WaitForPreLoad(Constants.PreLoadLabel, () => tcs.TrySetResult());
 
@@ -66,16 +67,14 @@ namespace TH.SceneManagement
             }
         }
 
-        private void SubscribePreLoadProgress(string label)
+        private void SubscribeGlobalPreLoadProgress()
         {
-            resourceLoader.SubscribePreLoadProgress(label, ReportingProgressAction);
+            resourceLoader.SubscribeGlobalPreLoadProgress(ReportingProgressAction);
         }
 
-        void ReportingProgressAction(float f)
+        void ReportingProgressAction(float globalProgress)
         {
-            float mapped = Mathf.Lerp(SceneLoadStartPoint, SceneActivateStartPoint, f);
-            Logg.Log($"[{GetType().Name}] Progress({mapped})", Logg.LoggingMode.InProgress);
-            ReportProgress(mapped);
+            ReportProgress(globalProgress);
         }
 
         #endregion
@@ -135,12 +134,17 @@ namespace TH.SceneManagement
                     OnBeforeSceneChanged!()
                 ); // 로딩 씬 로드, 타겟 씬 로드 전 사전 작업
                 var result = await LoadSceneWithAddressablesAsync(key, onProgress, token); // 타겟 씬 로드
+                // 로딩 씬 언로드, 기존 씬 언로드
                 await UniTask.WhenAll(
                     UnloadPreviousSceneAsync(token),
                     UnloadLoadingSceneAsync(token)
-                ); // 로딩 씬 언로드, 기존 씬 언로드
-                ReportProgress(1); // 진행도 60%
+                ); 
+                ReportProgress(1); // 진행도 100%
+                // 1초 대기 (로딩 바 진행 확인용 추후 제거)
+                await UniTask.WaitForSeconds(1f, ignoreTimeScale: true, cancellationToken: token);
+                // 대기시켜둔 타겟 씬 활성화 시작
                 await result.ActivateAsync().ToUniTask(cancellationToken: token);
+                // 씬 이동 이벤트 호출
                 OnSceneChanged?.Invoke(result.Scene);
             }
             catch (Exception e) { Logg.Log($"exception occured while loadingScene '{key}', {e}"); }
@@ -243,7 +247,7 @@ namespace TH.SceneManagement
         {
             Progress?.Report(p);
             additive?.Invoke(p);
-            Logg.Log($"[SceneLoader] progress: {p}", Logg.LoggingMode.InProgress);
+            Logg.Log($"[SceneLoader] progress: {p}", Logg.LoggingMode.Completed);
         }
 
         #endregion

@@ -64,6 +64,8 @@ namespace TH.Core.Service
 
         private static async UniTask InitializeAsync()
         {
+            // SceneLoader 인스턴스 생성 지연 방지
+            _ = ServiceLocator.Get<ISceneLoader>();
             await SceneManager.LoadSceneAsync(0, LoadSceneMode.Single);
             await ServiceLocator.Get<IResourceLoader>().PreLoadAsync();
         }

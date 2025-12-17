@@ -139,6 +139,12 @@ namespace TH.Resource
             int totalCount = locations.Count;
             int loadCount = 0;
 
+            // 리소스가 없는 라벨은 즉시 100% 완료 처리
+            if (totalCount == 0)
+            {
+                ReportPreLoadProgress(label, 1f);
+            }
+
             var tasks = new List<UniTask>(totalCount);
 
             foreach (var loc in locations)
@@ -292,6 +298,20 @@ namespace TH.Resource
 
         #region Progress
 
+        // 라벨별 가중치 설정 (합계가 1.0일 필요 없음 - 전체 PreLoad 완료 시 70%가 되도록 설계)
+        private static readonly Dictionary<string, float> LabelWeights = new()
+        {
+            { nameof(PreLoadLabels.PreLoad1), 0.20f },
+            { nameof(PreLoadLabels.PreLoad2), 0.10f },
+            { nameof(PreLoadLabels.PreLoad3), 0.10f },
+            { nameof(PreLoadLabels.PreLoad), 0.30f },
+        };
+        
+        // 전체 진행도 broadcaster 및 캐시
+        private readonly ProgressBroadcaster _globalProgress = new();
+        private float _globalProgressCache;
+
+
         // 라벨별 progress broadcaster 저장소
         private readonly Dictionary<string, ProgressBroadcaster> _preloadProgress = new();
         private readonly Dictionary<string, float> _preloadProgressCache = new(); // 현재값 캐시(선택)
@@ -315,9 +335,9 @@ namespace TH.Resource
             return broadcaster.Subscribe(onProgress);
         }
 
-        private void ReportPreLoadProgress(string label, float p)
+private void ReportPreLoadProgress(string label, float p)
         {
-            Logg.Log($"[{GetType().Name}] ReportPreLoadProgress label: {label}, progress: {p}", Logg.LoggingMode.InProgress);
+            Logg.Log($"[{GetType().Name}] ReportPreLoadProgress label: {label}, progress: {p}", Logg.LoggingMode.Completed);
             p = Mathf.Clamp01(p);
 
             _preloadProgressCache[label] = p;
@@ -325,7 +345,9 @@ namespace TH.Resource
             if (_preloadProgress.TryGetValue(label, out var broadcaster))
                 broadcaster.Report(p);
             else Logg.LogWarning($"[{GetType().Name}] ReportPreLoadProgress label: {label}, progress: {p} is ignored");
-
+            
+            // 전체 진행도 계산 및 보고
+            ReportGlobalProgress();
         }
         
         private void InitLabelProcess(string label)
@@ -335,6 +357,34 @@ namespace TH.Resource
             _preloadProgressCache[label] = 0f;
             ReportPreLoadProgress(label, 0f);
         }
+
+        // 전체 진행도 계산 및 보고
+        private void ReportGlobalProgress()
+        {
+            float global = 0f;
+            foreach (var kvp in LabelWeights)
+            {
+                if (_preloadProgressCache.TryGetValue(kvp.Key, out var labelProgress))
+                    global += labelProgress * kvp.Value;
+            }
+            
+            _globalProgressCache = global;
+            _globalProgress.Report(global);
+            
+            Logg.Log($"[{GetType().Name}] GlobalProgress: {global:P1}", Logg.LoggingMode.Completed);
+        }
+        
+        // 전체 PreLoad 진행도 구독
+        public IProgressSubscription SubscribeGlobalPreLoadProgress(Action<float> onProgress, bool fireCurrent = true)
+        {
+            if (onProgress == null) throw new ArgumentNullException(nameof(onProgress));
+            
+            if (fireCurrent)
+                onProgress.Invoke(_globalProgressCache);
+            
+            return _globalProgress.Subscribe(onProgress);
+        }
+
 
         #endregion
     }

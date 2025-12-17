@@ -84,7 +84,7 @@ namespace TH.UI
             {
                 main.value = to; // main 즉시 변경
                 ChangeFillSlowly(sub, from, to, FallingDownSpeed).Forget(); // sub 천천히 변경
-            }
+            }   
             else // case 체력이 늘어남
             {
                 ChangeFillSlowly(main, from, to, FillingUpSpeed).Forget(); // main 천천히 변경
@@ -141,7 +141,6 @@ namespace TH.UI
         {
             if (!barAnimToken.CanBeCanceled || barAnimToken.IsCancellationRequested)
             {
-                // barAnimCTS = new CancellationTokenSource();
                 barAnimCTS = CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken);
                 barAnimToken = barAnimCTS.Token;
             }

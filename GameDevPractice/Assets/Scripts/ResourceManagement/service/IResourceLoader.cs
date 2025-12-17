@@ -29,7 +29,11 @@ namespace TH.Resource
         // label: 진척도 추적 필요한 라벨 이름
         // onProgress: 진척도 전달용 콜백
         // fireCurrent: true -> 구독과 동시에 현재 진척도 즉시 확인
-        IProgressSubscription SubscribePreLoadProgress(
+        // 전체 PreLoad 진행도 구독 (모든 라벨의 가중치 기반 합산)
+        IProgressSubscription SubscribeGlobalPreLoadProgress(Action<float> onProgress, bool fireCurrent = true);
+        
+        
+IProgressSubscription SubscribePreLoadProgress(
             string label, Action<float> onProgress, bool fireCurrent = true);
     }
 }
