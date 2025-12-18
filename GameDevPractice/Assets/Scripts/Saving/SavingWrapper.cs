@@ -1,8 +1,11 @@
+using System;
 using Cysharp.Threading.Tasks;
+using TH.Core;
 using TH.SceneManagement;
 using TH.Core.Service;
 using UnityEngine;
 using TH.Resource;
+using TH.UI;
 using TH.Utils;
 
 namespace TH.SaveLoad
@@ -11,19 +14,30 @@ namespace TH.SaveLoad
     {
         private const string defaultSaveFile = "save";
         private ISaveSystem saveSystem;
-
-        [SerializeField] private float fadeInTime = 0.2f;
+        
         private void Awake()
         {
             saveSystem = ServiceLocator.Get<ISaveSystem>();
+            
             if (ServiceLocator.Get<IResourceLoader>() is {} resourceLoader)
             {
-                if (resourceLoader.IsLoadedAll(Constants.PreLoadLabel))
-                    Init(Constants.PreLoadLabel);
-                else
-                    resourceLoader.OnLabelResourcesLoadedAll += Init;
+                resourceLoader.WaitForPreLoad(Constants.PreLoadLabel, Init);
             }
         }
+
+        private void OnEnable()
+        {
+            InputManager.Instance.OnSaveCalled += SaveCall;
+            InputManager.Instance.OnLoadCalled += LoadCall;
+        }
+        
+        private void OnDisable()
+        {
+            InputManager.Instance.OnSaveCalled -= SaveCall;
+            InputManager.Instance.OnLoadCalled -= LoadCall;
+        }
+
+        private void Init() => Init(Constants.PreLoadLabel);
 
         private void Init(string label)
         {
@@ -37,32 +51,11 @@ namespace TH.SaveLoad
         private async UniTask LoadLastScene()
         {
             await UniTask.Yield(); // 1 프레임 지연 (Awake()에서 실행됨으로써 발생 가능한 fader 초기화 순서 오류 방지)
-            
-            Fader fader = FindFirstObjectByType<Fader>();
-            fader.FadeOutImmediately();
-            
             await saveSystem.LoadLastScene(defaultSaveFile);
-            fader.FadeIn(fadeInTime).Forget();
         }
-
-        private void Update()
-        {
-            if (Input.GetKeyDown(KeyCode.L))
-            {
-                Load().Forget();
-            }
-
-            if (Input.GetKeyDown(KeyCode.O))
-            {
-                Logg.Log($"[SavingWrapper] Trying to call Save()", Logg.LoggingMode.InProgress);
-                Save().Forget();
-            }
-
-            if (Input.GetKeyDown(KeyCode.Delete))
-            {
-                Delete().Forget();
-            }
-        }
+        
+        private void SaveCall() => Save().Forget();
+        private void LoadCall() => Load().Forget();
 
         public async UniTask Save()
         {

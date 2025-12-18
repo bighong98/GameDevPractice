@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using TH.Core.Service;
 using UnityEngine;
@@ -66,11 +67,12 @@ namespace TH.Core
 
             sceneLoader.OnBeforeSceneChanged += this.Clear;
             sceneLoader.OnSceneChanged += this.OnSceneChanged;
-            
-            OnSceneChanged(default);
         }
 
-        protected virtual void Start() {}
+        protected virtual void Start()
+        {
+            
+        }
 
         public bool IsInitOnce { get; private set; }
         public bool IsInitOnceAfterPreLoad { get; private set; }
@@ -78,25 +80,25 @@ namespace TH.Core
         public bool IsInitAfterPreLoad { get; private set; }
 
         // 인스턴스 생성 후 최초 1회만 실행, OnSceneChanged에서 실행
-        protected virtual void InitOnce()
+        protected virtual void InitOnce(Scene scene)
         {
             IsInitOnce = true;
-            Logg.Log($"[{GetType().Name}] InitOnce() invoked", Logg.LoggingMode.Completed);
+            Logg.Log($"[{GetType().Name}] InitOnce({scene}) invoked", Logg.LoggingMode.Completed);
         }
         
         // 인스턴스 생성 후, 초기 리소스 준비 여부 확인하고 최초 1회만 실행, OnSceneChanged에서 실행
-        protected virtual void InitOnceAfterPreLoad()
+        protected virtual void InitOnceAfterPreLoad(Scene scene)
         {
             IsInitOnceAfterPreLoad = true;
             Logg.Log($"[{GetType().Name}] InitOnceAfterPreLoad() invoked", Logg.LoggingMode.Completed);
         }
         // 인스턴스 생성 및 씬 로드 직후마다 실행
-        protected virtual void Init()
+        protected virtual void Init(Scene scene)
         {
             IsInit = true;
             Logg.Log($"[{GetType().Name}] Init() invoked", Logg.LoggingMode.Completed);
         } 
-        protected virtual void InitAfterPreLoad()// 인스턴스 생성 및 씬 로드 직후마다, 초기 리소스 준비 여부 확인하고 실행
+        protected virtual void InitAfterPreLoad(Scene scene)// 인스턴스 생성 및 씬 로드 직후마다, 초기 리소스 준비 여부 확인하고 실행
         {
             Logg.Log($"[{GetType().Name}] InitAfterPreLoad() invoked", Logg.LoggingMode.Completed);
             RunReservedOperations();
@@ -105,9 +107,10 @@ namespace TH.Core
 
         // 씬 이동마다 필요한 정리 작업
         // 오버라이드해서 사용 및 base.Clear() 호출 필요
-        protected virtual UniTask Clear() 
+        protected virtual UniTask Clear(CancellationToken externalToken) 
         {
-            Logg.Log($"[{GetType().Name}] Clear() invoked", Logg.LoggingMode.Completed);
+            externalToken.ThrowIfCancellationRequested();
+            Logg.Log($"[{GetType().Name}] Clear() invoked", Logg.LoggingMode.InProgress);
             // 플래그 초기화
             IsInit = false;
             IsInitAfterPreLoad = false;
@@ -120,12 +123,12 @@ namespace TH.Core
         {
             Logg.Log($"[{GetType().Name}] OnSceneChanged invoked in scene '{scene.name}'",Logg.LoggingMode.Completed);
 
-            if (!IsInitOnce) InitOnce();
-            if (!IsInit) Init();
+            if (!IsInitOnce) InitOnce(scene);
+            if (!IsInit) Init(scene);
             if (!IsInitOnceAfterPreLoad)
-                resourceLoader.WaitForPreLoad(Constants.PreLoadLabel, InitOnceAfterPreLoad);
+                resourceLoader.WaitForPreLoad(Constants.PreLoadLabel, () => InitOnceAfterPreLoad(scene));
             if (!IsInitAfterPreLoad)
-                resourceLoader.WaitForPreLoad(Constants.PreLoadLabel, InitAfterPreLoad);
+                resourceLoader.WaitForPreLoad(Constants.PreLoadLabel, () => InitAfterPreLoad(scene));
         }
         
         protected bool IsInvalidInstance()

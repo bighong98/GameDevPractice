@@ -9,6 +9,7 @@ using Object = UnityEngine.Object;
 using TH.Core;
 using TH.SceneManagement;
 using TH.Utils;
+using UnityEngine.SceneManagement;
 
 namespace TH.Resource
 {
@@ -32,9 +33,9 @@ namespace TH.Resource
 
         #region Singleton<T>
 
-        protected override void Init()
+        protected override void Init(Scene scene)
         {
-            base.Init();
+            base.Init(scene);
             if (resourceLoader.IsLoadedAll(Constants.PreLoadLabel))
             {
                 OnPreLoadDone();
@@ -48,11 +49,14 @@ namespace TH.Resource
 
         #endregion
 
-        protected override UniTask Clear()
+        protected override UniTask Clear(CancellationToken externalToken)
         {
+            base.Clear(externalToken);
+            if (externalToken.IsCancellationRequested) return UniTask.CompletedTask;
+            
             if (resourceLoader != null)
                 resourceLoader.OnLabelResourcesLoadedAll -= OnPreLoadDone;
-            return base.Clear();
+            return UniTask.CompletedTask;
         }
 
         #region PreLoad

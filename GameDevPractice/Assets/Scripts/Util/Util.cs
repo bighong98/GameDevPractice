@@ -233,26 +233,6 @@ public static class Util
 
     #endregion
 
-    #region Raycast (deprecated)
-
-    // private static readonly List<RaycastResult> _raycastResults = new List<RaycastResult>();
-    // public static T RaycastAndGetFirstUIComponent<T>(PointerEventData pointerEventData, List<RaycastResult> raycastResults) where T : Component
-    // {
-    //     raycastResults.Clear();
-    //     EventSystem.current.RaycastAll(pointerEventData, raycastResults);
-    //
-    //     if (raycastResults.Count == 0) return null;
-    //     // Util.Log($"{nameof(RaycastAndGetFirstUIComponent)}: {raycastResults[0]}", LoggingMode.Completed);
-    //     return raycastResults[0].gameObject.GetComponent<T>();
-    // }
-    //
-    // public static T RaycastAndGetFirstPhysicsComponent<T>(Vector2 pos, int layerMask) where T : Component
-    // {
-    //     return Physics2D.OverlapPoint(GetScreenWorldPosition(pos), layerMask)?.GetComponent<T>();
-    // }
-
-    #endregion
-
     #region UniTask
 
     public static void ClearCTS(CancellationTokenSource tokenSource)
@@ -261,7 +241,142 @@ public static class Util
             tokenSource.Cancel();
         tokenSource?.Dispose();
     }
+    private static readonly TimeSpan DefaultTimeoutSpan = TimeSpan.FromSeconds(5);
+    
+    // 모든 멀티캐스트 콜백 실행 보장/병렬 실행/예외 전파를 위한 유틸 매서드
+    // token: 호출자 유효성 검사용 토큰
+    // maxConcurrency: 한 번에 동시 실행 가능한 작업 개수
+    // -> (예시) maxConcurrency: 10, 100개 작업 -> 한 번에 10개씩만, 작업 완료될 때마다 추가로 작업 집어넣어서 실행)
+    // perCallbackTimeout: 무한 루프 등 방지 목적 콜백 별 시간 제한 (시간 제한 넘으면 강제로 cancel)
+    // onException: 예외 발생 시 호출 콜백
+    // throwAggregated: 개별 콜백 실패 시 예외 전파 옵션 (디버그 용도)
+    // Extension.cs 에 정의된 확장 매서드 버전 사용 가능
+    public static async UniTask InvokeAllCallbackAsync(Func<CancellationToken, UniTask> multicast,
+        CancellationToken token,
+        int maxConcurrency,
+        TimeSpan? perCallbackTimeout = null,
+        bool cancelAllOnFirstFailure = false,
+        Action<Exception, Delegate> onException = null,
+        bool throwAggregated = false)
+    {
+        if (multicast == null) return;
+        // 멀티캐스트된 콜백들 분해
+        var list = multicast.GetInvocationList();
+        if (list.Length == 0) return;
 
+        if (maxConcurrency < 1) maxConcurrency = 1;
+        token.ThrowIfCancellationRequested();
+        // SemaphoreSlim으로 동시 수행 가능한 작업 개수 제한 
+        using var semaphore = new SemaphoreSlim(maxConcurrency, maxConcurrency);
+
+        // linkedCts: 전체 취소용 CTS -> token과 연결해서 사용
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(token);
+        perCallbackTimeout ??= DefaultTimeoutSpan;
+        var tasks = new UniTask<Exception>[list.Length];
+        // 개별 콜백을 InvokeCallbackAsync()에 전달해서 실행 및 예외 검사
+        for (int i = 0; i < list.Length; i++)
+        {
+            var d = list[i];
+            tasks[i] = InvokeCallbackAsync(
+                (Func<CancellationToken, UniTask>)d,
+                d,
+                semaphore,
+                linkedCts,
+                perCallbackTimeout,
+                cancelAllOnFirstFailure,
+                onException);
+        }
+        // 모든 콜백 병렬 실행 (maxConcurrency 만큼 묶어서)
+        var results = await UniTask.WhenAll(tasks);
+
+        if (!throwAggregated) return;
+        
+        // call back 실해 중 발생한 예외 전파
+        // 예외가 없었다면 exceptions 리스트 생성x (-> for문 안에서 ??= 로 초기화)
+        List<Exception> exceptions = null;
+        for (int i = 0; i < results.Length; i++)
+        {
+            var ex = results[i];
+            if (ex == null) continue;
+            exceptions ??= new List<Exception>(maxConcurrency);
+            exceptions.Add(ex);
+        }
+
+        if (exceptions is { Count: > 0 })
+            throw new AggregateException(exceptions);
+    }
+    
+    // InvokeAllCallbackAsync()의 개별 콜백 처리 매서드
+    // callback: 멀티캐스트 내부 개별 콜백
+    // originalDelegate: callback의 캐스팅 미적용 버전 델리게이트 객체 (예외 전파용)
+    // semaphore: InvokeAllCallbackAsync()의 동시 실행 작업 제한용 세마포어
+    // perCallbackTimeout: 개별 콜백에 의한 InvokeAllCallbackAsync 무한대기 방지용 시간 제한 TimeSpan
+    // linkedCts: InvokeAllCallbackAsync()에서 사용하는 전체 콜백 공유 CTS 
+    // cancelAllOnFirstFailure: true -> linkedCts.Cancel() 실행해서 전체 콜백 중단
+    // onException: 콜백 실행 중 예외 발생 시 전달 델리게이트
+    private static async UniTask<Exception> InvokeCallbackAsync(
+        Func<CancellationToken, UniTask> callback,
+        Delegate originalDelegate,
+        SemaphoreSlim semaphore,
+        CancellationTokenSource linkedCts,
+        TimeSpan? perCallbackTimeout,
+        bool cancelAllOnFirstFailure,
+        Action<Exception, Delegate> onException)
+    {
+        
+        await semaphore.WaitAsync(linkedCts.Token);
+
+        try
+        {
+            UniTask work;
+            try { work = callback(linkedCts.Token); }
+            catch (Exception e)
+            {
+                onException?.Invoke(e, originalDelegate);
+                if (cancelAllOnFirstFailure) linkedCts.Cancel();
+                return e;
+            }
+
+            // 개별 콜백에 의한 InvokeAllCallbackAsync 무한 대기 방지
+            // 시간 제한을 넘으면 해당 콜백을 무시하고 다음 작업 수행
+            // -> 콜백을 강제로 중단하지 않음
+            // -> 반드시 콜백이 전달받은 토큰 검사 로직을 포함해서 스스로 중단해야함
+            if (perCallbackTimeout.HasValue)
+            {
+                await work.AttachExternalCancellation(linkedCts.Token)
+                          .Timeout(perCallbackTimeout.Value);
+            }
+            else
+            {
+                await work.AttachExternalCancellation(linkedCts.Token);
+            }
+
+            return null;
+        }
+        catch (TimeoutException timeOverException)
+        {
+            onException?.Invoke(timeOverException, originalDelegate);
+            if (cancelAllOnFirstFailure) linkedCts.Cancel();
+            return timeOverException;
+        }
+        catch (OperationCanceledException opCancelException) when (linkedCts.IsCancellationRequested)
+        {
+            onException?.Invoke(opCancelException, originalDelegate);
+            return opCancelException;
+        }
+        catch (Exception e)
+        {
+            onException?.Invoke(e, originalDelegate);
+            if (cancelAllOnFirstFailure) linkedCts.Cancel();
+            return e;
+        }
+        finally
+        {
+            semaphore.Release();
+        }
+    }
+    
+    
     #endregion
 
     #region Addressables

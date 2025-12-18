@@ -22,7 +22,6 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
 
     private void Awake()
     {
-        cam = Camera.main;
         if (text == null && Util.FindChild<TextMeshPro>(gameObject, "text", true) is { } found)
         {
             text = found;
@@ -119,6 +118,8 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
     public void ReleaseSelf()
     {
         if (Util.IsQuitting) return;
+        if (!gameObject.activeSelf) return;
+        
         PoolManager.Instance.ReleaseFromPool(this);
     }
 

@@ -30,39 +30,40 @@ public class SceneCatalogSO : ScriptableObject
             UnityEditor.EditorUtility.SetDirty(this);
     }
 #endif
-
+    private string CurrSceneName => SceneManager.GetActiveScene().name;
     public bool TryGetCurrentSceneEntry(out SceneEntry sceneEntry)
     {
-        var curr = SceneManager.GetActiveScene().name;
+        return TryGetSceneEntry(CurrSceneName, out sceneEntry);
+    }
 
+    public bool TryGetSceneEntry(Scene scene, out SceneEntry sceneEntry)
+    {
+        return TryGetSceneEntry(scene.name, out sceneEntry);
+    }
+    
+    private bool TryGetSceneEntry(string sceneName, out SceneEntry sceneEntry)
+    {
+        sceneEntry = null;
+        if (sceneName == null || string.IsNullOrEmpty(sceneName))
+        {
+            return false;
+        }
+        
         foreach (var e in entries)
         {
             if (e == null) continue;
-            if (e.key == curr)
-            {
-                sceneEntry = e;
-                return true;
-            }
+            if (e.key != sceneName) continue;
+            
+            sceneEntry = e;
+            return true;
         }
-
-        sceneEntry = null;
+        
         return false;
     }
 
     public SceneEntry GetCurrentSceneEntry()
     {
-        var curr = SceneManager.GetActiveScene().name;
-
-        foreach (var e in entries)
-        {
-            if (e == null) continue;
-            if (e.key == curr)
-            {
-                return e;
-            }
-        }
-
-        return null;
+        return FindBySceneName(CurrSceneName);
     }
 
     public SceneEntry FindByGuid(string guid)

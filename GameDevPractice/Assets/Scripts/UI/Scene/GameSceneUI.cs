@@ -56,6 +56,14 @@ public class GameSceneUI : SceneUI
         Init();
     }
 
+    private void Start()
+    {
+        if (playerHolder.GetPlayerInstance is PlayerController p && p.IsAlive())
+        {
+            UpdatePlayerInstance(p);
+        }
+    }
+
     public override bool Init() // call by UIManager
     {
         if (base.Init() == false) return false;
@@ -131,11 +139,22 @@ public class GameSceneUI : SceneUI
         {
             pHealth.OnCurrHealthChanged += sliderHandlers[(int)GameObjects.HPBar].SetFloor;
             pHealth.OnMaxHealthChanged += sliderHandlers[(int)GameObjects.HPBar].SetCeil;
+
+            // sliderHandlers[(int)GameObjects.HPBar].SetFloor(pHealth.GetCurrentHealth);
+            // sliderHandlers[(int)GameObjects.HPBar].SetCeil(pHealth.GetMaxHealth);
         }
+
         if (TryConnectComponent(player, out IExperience pExp))
+        {
             pExp.OnXpChanged += sliderHandlers[(int)GameObjects.PlayerExpBar].SetFloor;
+            // sliderHandlers[(int)GameObjects.PlayerExpBar].SetFloor(pExp.GetCurrXp);
+        }
+
         if (TryConnectComponent(player, out ILevel pLevel))
+        {
             pLevel.OnLevelChanged += OnLevelUp;
+            // OnLevelUp(pLevel.GetCurrLevel);
+        }
     }
 
     private void DisConnectComponents(PlayerController player)

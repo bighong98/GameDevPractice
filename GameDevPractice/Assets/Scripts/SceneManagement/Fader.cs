@@ -1,29 +1,38 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using TH.Core.Service;
+using TH.Resource;
+using TH.UI;
+using TH.Utils;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace TH.SceneManagement
 {
     [RequireComponent(typeof(CanvasGroup))]
     public class Fader : MonoBehaviour
     {
-        private CanvasGroup canvasGroup;
+        [SerializeField] private Canvas canvas;
+        [SerializeField] private CanvasGroup canvasGroup;
+        
         private CancellationTokenSource fadeCTS;
+        
+        private const string UICanvasSettingSOKey =  "UICanvasSettingSO";
         
         private void Awake()
         {
-            canvasGroup = GetComponent<CanvasGroup>();
             if (canvasGroup == null)
+                canvasGroup = gameObject.GetOrAddComponent<CanvasGroup>();
+            if (canvas == null)
+                canvas = gameObject.GetOrAddComponent<Canvas>();
+
+            SceneManager.sceneLoaded += (_, _) => gameObject.SetActive(false);
+            if (ServiceLocator.Get<ISceneLoader>() is { } sceneLoader)
             {
-                canvasGroup = gameObject.AddComponent<CanvasGroup>();
+                sceneLoader.OnBeforeSceneChanged += FadeOut;
+                sceneLoader.OnAfterSceneChanged += FadeIn;
             }
-    
-            // todo: 캔버스그룹 관련 설정 
-            // canvasGroup.ignoreParentGroups = true;
-            // canvasGroup.interactable = false;
         }
 
         public void FadeOutImmediately()
@@ -47,33 +56,65 @@ namespace TH.SceneManagement
             fadeCTS = null;
         }
         
-        public UniTask FadeIn(float duration = 1f) => FadeAsync(0f, duration);
-        public UniTask FadeOut(float duration = 1f) => FadeAsync(1f, duration);
+        private const float FadeInDuration = 0.5f;
+        private const float FadeOutDuration = 0.5f;
+        
+        public UniTask FadeIn(CancellationToken externalToken)
+        {
+            Logg.Log($"[{GetType().Name}] FadeIn()", Logg.LoggingMode.Completed);
+            return FadeIn(FadeInDuration, externalToken);
+        }
+
+        public UniTask FadeOut(CancellationToken externalToken)
+        {
+            Logg.Log($"[{GetType().Name}] FadeOut()", Logg.LoggingMode.Completed);
+            return FadeOut(FadeOutDuration, externalToken);
+        }
+
+        public UniTask FadeIn(float duration, CancellationToken externalToken) => FadeAsync(0f, duration).AttachExternalCancellation(externalToken);
+        public UniTask FadeOut(float duration, CancellationToken externalToken) => FadeAsync(1f, duration).AttachExternalCancellation(externalToken);
 
         private async UniTask FadeAsync(float targetAlpha, float duration)
         {
             FadeCancel();
-            fadeCTS = new CancellationTokenSource();
-            var token = fadeCTS.Token;
-
+            var token = RenewToken();
+            gameObject.SetActive(true);
             try
             {
-                while (!Mathf.Approximately(canvasGroup.alpha, targetAlpha))
+                while (!Mathf.Approximately(canvasGroup.alpha, targetAlpha)
+                       && !token.IsCancellationRequested)
                 {
-                    token.ThrowIfCancellationRequested();
-
-                    float delta = Time.deltaTime / duration;
+                    float delta = Time.unscaledDeltaTime / duration;
                     if (targetAlpha > canvasGroup.alpha)
                         canvasGroup.alpha = Mathf.Min(canvasGroup.alpha + delta, targetAlpha);
                     else
                         canvasGroup.alpha = Mathf.Max(canvasGroup.alpha - delta, targetAlpha);
-
+                    
                     await UniTask.Yield(PlayerLoopTiming.Update, token);
                 }
             }
             finally
             {
-                canvasGroup.alpha = targetAlpha; // 정확한 보정
+                if (!token.IsCancellationRequested)
+                    canvasGroup.alpha = targetAlpha; // 정확한 보정
+            }
+        }
+
+        private CancellationToken RenewToken()
+        {
+            fadeCTS = new CancellationTokenSource();
+            this.GetCancellationTokenOnDestroy().Register(() => fadeCTS.Cancel());
+            
+            return fadeCTS.Token;
+        }
+
+        private void OnDestroy()
+        {
+            if (Util.IsQuitting) return;
+            if (ServiceLocator.Get<ISceneLoader>() is { } sceneLoader)
+            {
+                sceneLoader.OnBeforeSceneChanged -= FadeOut;
+                sceneLoader.OnAfterSceneChanged -= FadeIn;
             }
         }
 

@@ -54,6 +54,12 @@ namespace TH.Control
                 player = p;
         }
 
+        private void Start()
+        {
+            if (playerHolder.GetPlayerInstance is PlayerController p)
+                player = p;
+        }
+
         private void Update()
         {
             if (health.IsDead) return; // 사망 상태라면 실행 취소

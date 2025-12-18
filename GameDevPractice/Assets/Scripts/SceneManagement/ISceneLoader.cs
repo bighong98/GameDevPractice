@@ -14,7 +14,8 @@ namespace TH.SceneManagement
         IProgressSubscription SubscribeProgress(Action<float> onProgress);
         
         UniTask LoadSceneAsync(object key, IEnumerable<Func<CancellationToken, UniTask>> preTasks = null, Action<float> onProgress = null, CancellationToken token = default);
-        event Func<UniTask> OnBeforeSceneChanged;
+        event Func<CancellationToken, UniTask> OnBeforeSceneChanged;
+        event Func<CancellationToken, UniTask> OnAfterSceneChanged;
         event Action<Scene> OnSceneChanged;
     }
 }

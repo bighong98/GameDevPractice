@@ -2,8 +2,10 @@ using UnityEngine;
 using UnityEngine.Pool;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using TH.Utils;
+using UnityEngine.SceneManagement;
 
 namespace TH.Core.Pool
 {
@@ -21,10 +23,10 @@ namespace TH.Core.Pool
         
         #region Initialization (Singleton<T>)
 
-        protected override void InitOnce()
+        protected override void InitOnce(Scene scene)
         {
-            base.InitOnce();
-            poolContainer?.Init(transform);
+            base.InitOnce(scene);
+            poolContainer.Init(transform);
         }
 
         #endregion
@@ -55,7 +57,7 @@ namespace TH.Core.Pool
             maxSize = (maxSize == 0) ? DefaultMaxSize : maxSize;
             
             if (parent == null)
-                parent = poolContainer?.GetPoolContainer(prefab, CacheAndGetType(prefab));
+                parent = poolContainer.GetPoolContainer(prefab, CacheAndGetType(prefab));
             
             if (registerPool == false)
                 return CreatePool(prefab, parent, createAction, getAction, releaseAction, capacity, maxSize);
@@ -180,7 +182,7 @@ namespace TH.Core.Pool
         // 오브젝트를 풀에 반납
         // IPoolObject.Origin을 기준으로 소속 풀을 탐색
         // Origin은 반드시 prefab 게임 오브젝트여야 함
-public void ReleaseFromPool(IPoolObject obj)
+        public void ReleaseFromPool(IPoolObject obj)
         {
             if (obj == null)
             {
@@ -235,13 +237,16 @@ public void ReleaseFromPool(IPoolObject obj)
 
         #endregion
 
-        protected override UniTask Clear()
+        private const bool onlyRelease = true; // test용 임시 변수
+
+        protected override UniTask Clear(CancellationToken externalToken)
         {
-            base.Clear();
-            bool onlyRelease = true; // test용 임시 변수
+            base.Clear(externalToken);
+            if (externalToken.IsCancellationRequested) return UniTask.CompletedTask;
+            
             if (onlyRelease)
             {
-                poolContainer?.ReleaseAllPooledObjects();
+                poolContainer.ReleaseAllPooledObjects();
             }
 
             return UniTask.CompletedTask;

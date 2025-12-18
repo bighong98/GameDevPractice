@@ -28,3 +28,7 @@ MonoBehaviour:
     value:
       overrideSorting: 1
       defaultSortingOrder: 100
+  - key: 3
+    value:
+      overrideSorting: 1
+      defaultSortingOrder: 500

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using TH.Core.Service;
 using UnityEngine;
@@ -74,9 +75,10 @@ namespace TH.SceneManagement
 #endif
         }
         
-        protected override UniTask Clear()
+        protected override UniTask Clear(CancellationToken externalToken)
         {
-            base.Clear();
+            base.Clear(externalToken);
+            if (externalToken.IsCancellationRequested) return UniTask.CompletedTask;
 
             currentSceneLoaded = false;
             return UniTask.CompletedTask;

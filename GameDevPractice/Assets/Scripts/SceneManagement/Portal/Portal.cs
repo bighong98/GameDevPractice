@@ -38,9 +38,6 @@ namespace TH.SceneManagement
             if (NotTransitionWithoutDestination()) return;
             
             DontDestroyOnLoad(gameObject);
-
-            Fader fader = FindFirstObjectByType<Fader>();
-            fader.FadeOut().Forget();
             
             SavingWrapper savingWrapper = FindFirstObjectByType<SavingWrapper>();
             await savingWrapper.Save(); // 다음 씬 로드 전 현재 씬 상태 저장
@@ -57,7 +54,6 @@ namespace TH.SceneManagement
                 await savingWrapper.Save(); // 씬 로드 후 변동사항 다시 한번 저장
             }
             
-            fader.FadeIn().Forget();
             Destroy(gameObject);
         }
         

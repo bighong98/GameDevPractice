@@ -1,42 +1,35 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
-using UnityEngine;
-using UnityEngine.Pool;
-using UnityEngine.UI;
 using TH.Core.Pool;
 using TH.Resource;
-using TH.Core;
-using TH.Core.Service;
+using TH.UI;
 using TH.Utils;
+using UnityEngine;
+using UnityEngine.Pool;
+using UnityEngine.SceneManagement;
+using UnityEngine.Scripting;
+using UnityEngine.UI;
 
-namespace TH.UI
+namespace TH.Core.Service
 {
-    public enum UICanvas
-    {
-        Scene, // 씬UI 캔버스
-        AnchoredOverlay, // 게임 오브젝트와 함께 움직이는 UI용 캔버스
-        Popup, // 팝업UI 캔버스
-    }
-    public class UIManager : MonoSingleton<UIManager>
+    [Preserve]
+    public class UIManager : Singleton<UIManager>, ISingleton
     {
         private readonly PopupStack popupStacks = new();
         
         private readonly Dictionary<string, Type> keyTypeDictionary = new();
         private readonly Dictionary<Type, ObjectPool<IPoolObject>> popupPools = new();
         
-        [SerializeField] private Transform root;
-        [SerializeField] private List<GameObject> canvases;
+        private Transform root;
+        private List<GameObject> canvases;
         private readonly int[] sortOrders = new int[Enum.GetValues(typeof(UICanvas)).Length];
         
         private SceneUI sceneUI;
         
         private const float PopupOpenThreshold = 0.05f;
         private float lastPopupOpenTime;
-        
-        // Frequently Used UI
-        public TooltipUI Tooltip;
-        private OptionMenuUI optionMenu;
         
         // scriptable objects
         private SceneCatalogSO sceneCatalogSO;
@@ -55,46 +48,31 @@ namespace TH.UI
         private const int DefaultReadyMadePopupCount = 1; // 팝업용 오브젝트 풀 생성 시 초기 생성 개수
         private const int MaxDuplicatePopupCount = 10; // 팝업용 오브젝트 풀에서 생성 가능한 동일 팝업 최대 개수
 
-        #region Singleton
-
-        protected override void InitOnceAfterPreLoad()
+        // outer service
+        private readonly IResourceLoader resourceLoader;
+        
+        private UIManager()
         {
-            base.InitOnceAfterPreLoad();
             resourceLoader = ServiceLocator.Get<IResourceLoader>();
-
-            LoadData();
-            SetUIContainer();
-            SetTooltip();
-            // SetOptionMenu();
+            resourceLoader.WaitForPreLoad(Constants.PreLoadLabel, TaskAfterPreLoad);
         }
-
-        protected override void Init()
-        {
-            base.Init();
-            ConnectInputEvents();
-        }
-
-        protected override void InitAfterPreLoad()
-        {
-            SetSceneUIAsync().ContinueWith(() =>
-            {
-                base.InitAfterPreLoad();
-            });
-        }
-
-        #endregion
 
         #region Initialization
 
+        private void TaskAfterPreLoad()
+        {
+            LoadData();
+            SetUIContainer();
+            // SetTooltip();
+        }
+
         private void ConnectInputEvents()
         {
-            // MonoInputManager.Instance.OnEscaped -= OnEscapeCalled;
-            // MonoInputManager.Instance.OnEscaped += OnEscapeCalled;
-            //
-            // MonoInputManager.Instance.OnSingleClicked -= OnPopupOutSideSelected; // 중복 구독 방지
-            // MonoInputManager.Instance.OnSingleClicked += OnPopupOutSideSelected;
             InputManager.Instance.OnEscaped -= OnEscapeCalled;
             InputManager.Instance.OnEscaped += OnEscapeCalled;
+            
+            InputManager.Instance.OnInventoryCalled -= OnInventoryCalled; // 중복 구독 방지
+            InputManager.Instance.OnInventoryCalled += OnInventoryCalled;
 
             InputManager.Instance.OnSingleClicked -= OnPopupOutSideSelected; // 중복 구독 방지
             InputManager.Instance.OnSingleClicked += OnPopupOutSideSelected;
@@ -107,7 +85,7 @@ namespace TH.UI
         {
             // UI_Root GameObject 생성 및 씬 전환 시 파괴되지 않도록 설정
             var rootGo = new GameObject(name: UIRootName);
-            DontDestroyOnLoad(rootGo);
+            UnityEngine.Object.DontDestroyOnLoad(rootGo);
             root = rootGo.transform;
             canvases = new();
             
@@ -155,20 +133,27 @@ namespace TH.UI
         }
 
         #endregion
+        
+        #region ISingleton
 
-        private void OnEscapeCalled()
+        public UniTask BeforeSceneLoad(CancellationToken externalToken)
         {
-            Logg.Log($"[UIManager]OnEscapeCalled. popupStack.Count: {popupStacks.Count}", 
-                Logg.LoggingMode.Completed);
-            if (popupStacks.Count != 0)
-            {
-                ClosePopupUI();
-                return;
-            }
+            if (externalToken.IsCancellationRequested) return UniTask.CompletedTask;
             
-            ShowOptionMenu();
+            CloseAllPopupUI();
+            DisConnectInputEvents();
+
+            return UniTask.CompletedTask;
         }
 
+        public async UniTask AfterSceneLoad(CancellationToken externalToken)
+        {
+            ConnectInputEvents();
+            await SetSceneUIAsync(SceneManager.GetActiveScene()).AttachExternalCancellation(externalToken);
+        }
+
+        #endregion
+        
         #region Common UI Method
 
         // UI Canavas 설정 일괄 적용 
@@ -248,13 +233,13 @@ namespace TH.UI
         }
 
         #endregion
-
+        
         #region Scene UI Method
 
         // 현재 씬에 맞는 SceneUI를 비동기로 로드하고 설정
         // 동일한 SceneUI가 이미 있으면 갱신만 수행, 다르면 교체
         // Singleton.InitAfterPreLoad()에서 실행
-        private async UniTask SetSceneUIAsync()
+        private async UniTask SetSceneUIAsync(Scene scene)
         {
             if (sceneCatalogSO == null || sceneUIListSO == null)
             {
@@ -262,21 +247,26 @@ namespace TH.UI
                 return;
             }
             
-            // 현재 씬 정보 가져오기
-            var currentSceneEntry = sceneCatalogSO.GetCurrentSceneEntry();
-            if (currentSceneEntry == null) return;
-            var targetSceneUIRef = sceneUIListSO.GetSceneUIByScene(currentSceneEntry.sceneRef);
-            if (targetSceneUIRef == null) return;
-            var loadedSceneUI = await resourceLoader.LoadAsync<GameObject>(targetSceneUIRef);
-            if (loadedSceneUI == null) return;
+            if (!sceneCatalogSO.TryGetSceneEntry(scene, out var currentSceneEntry))
+            {
+                Logg.LogWarning($"[UIManager] currentSceneEntry is null from (scene: {scene.name})");
+                return;
+            }
             
-            // // 현재 SceneUI와 동일한 경우 변경 없이 갱신만 요청
-            // if (sceneUI != null && loadedSceneUI == sceneUI.Origin)
-            // {
-            //     sceneUI.RefreshUI();
-            //     return;
-            // }
-
+            var targetSceneUIRef = sceneUIListSO.GetSceneUIByScene(currentSceneEntry?.sceneRef);
+            if (targetSceneUIRef == null)
+            {
+                Logg.LogWarning($"[UIManager] targetSceneUIRef is null");
+                return;
+            }
+            
+            var loadedSceneUI = await resourceLoader.LoadAsync<GameObject>(targetSceneUIRef);
+            if (loadedSceneUI == null)
+            {
+                Logg.LogWarning($"[UIManager] loadedSceneUIis null");
+                return;
+            }
+            
             if (sceneUI != null)
             {
                 // 현재 SceneUI와 동일한 경우 변경 없이 갱신만 요청, 종료
@@ -289,9 +279,6 @@ namespace TH.UI
                 else PoolManager.Instance.ReleaseFromPool(sceneUI);
             }
             
-            // // 기존 SceneUI가 있으면 풀에 반환
-            // if (sceneUI != null)
-            //     PoolManager.Instance.ReleaseFromPool(sceneUI);
             // 새로운 SceneUI를 풀에서 가져오기
             sceneUI = PoolManager.Instance.GetFromPool<SceneUI>(loadedSceneUI, canvases[(int)UICanvas.Scene].transform);
             SetCanvas(sceneUI.gameObject, UICanvas.Scene);
@@ -340,14 +327,14 @@ namespace TH.UI
                 switch (inStackPopup.DuplicatedPopupHandling)
                 {
                     case PopupUI.DuplicatedPopupHandle.Replace: // 기존 닫고 새로 열기
-                        Logg.Log($"[{nameof(UIManager)}.{nameof(ShowPopupUI)}()] Replace mode: close existing popup and create new one", 
+                        Logg.Log($"[{GetType().Name}.{nameof(ShowPopupUI)}()] Replace mode: close existing popup and create new one", 
                                 Logg.LoggingMode.Completed);
                         ClosePopupUI(inStackPopup, escapableCheck: false, ignoreOpenThreshold: true, waitForAnimation: true);
                         break;
                     case PopupUI.DuplicatedPopupHandle.Toggle: // 기존 닫기만 수행
                         if (ClosePopupUI(inStackPopup, escapableCheck: false, ignoreOpenThreshold: true, waitForAnimation: true))
                         {
-                            Logg.Log($"[{nameof(UIManager)}.{nameof(ShowPopupUI)}()] Toggle mode: close existing popup without creating new one", 
+                            Logg.Log($"[{GetType().Name}.{nameof(ShowPopupUI)}()] Toggle mode: close existing popup without creating new one", 
                                     Logg.LoggingMode.Completed);
                             return null;
                         }
@@ -368,16 +355,14 @@ namespace TH.UI
             // 일시정지 필요 시 게임 일시정지
             if (popup.PauseRequired)
                 InputManager.Instance.PauseGame();
-                // MonoInputManager.Instance.PauseGame();
 
             // 팝업 열림 시간 기록 (빠른 닫기 방지용)
             lastPopupOpenTime = Time.unscaledTime;
             
             // UI 액션맵 활성화 (ESC 등의 입력 받기)
-            // MonoInputManager.Instance.EnableUIActionMap();
             InputManager.Instance.EnableUIActionMap();
             
-            Logg.Log($"[{nameof(UIManager)}.{nameof(ShowPopupUI)}()] new Popup. name: {popup.name} popupStack.Count: {popupStacks.Count}", 
+            Logg.Log($"[{GetType().Name}.{nameof(ShowPopupUI)}()] new Popup. name: {popup.name} popupStack.Count: {popupStacks.Count}", 
                     Logg.LoggingMode.Completed);
             return popup;
         }
@@ -403,7 +388,7 @@ namespace TH.UI
             // 스택에서 팝업 제거
             if (!popupStacks.Remove(popup))
             {
-                Logg.Log($"[{nameof(UIManager)}.{nameof(ClosePopupUI)}()]: popup not found in stack : {popup.name}", Logg.LoggingMode.Completed);
+                Logg.Log($"[{GetType().Name}.{nameof(ClosePopupUI)}()]: popup not found in stack : {popup.name}", Logg.LoggingMode.Completed);
                 return false;
             }
 
@@ -416,7 +401,6 @@ namespace TH.UI
             // 모든 팝업이 닫혔으면 UI 액션맵 비활성화
             if (popupStacks.Count == 0)
             {
-                // MonoInputManager.Instance.DisableUIActionMap();
                 InputManager.Instance.DisableUIActionMap();
             }
 
@@ -454,7 +438,7 @@ namespace TH.UI
                 popup.OnPopupClosedAsync().ContinueWith(() =>
                 {
                     try { HandleTimePauseAndReleasePopup(popup, popupPool); }
-                    catch (Exception e) { Logg.LogError($"[{nameof(UIManager)}] Error during popup closing: {e}"); }
+                    catch (Exception e) { Logg.LogError($"[{GetType().Name}] Error during popup closing: {e}"); }
                 }).Forget();
             }
             else
@@ -624,107 +608,95 @@ namespace TH.UI
 
         #endregion
 
-        #region Frequently Used UI Call
-        
-        // Tooltip (현재 미사용)
-        private void SetTooltip()
-        {
-            resourceLoader.OnLabelResourcesLoadedAll -= SetTooltip; // 중복 구독 방지
-            resourceLoader.OnLabelResourcesLoadedAll += SetTooltip;
-        }
+        #region Frequently Used Input Handle
 
-        private void SetTooltip(string label)
+        private void OnEscapeCalled()
         {
-            if (label != Constants.PreLoadLabel) return;
-            
-            if (!resourceLoader.TryLoad<GameObject>(TooltipUIPrefabKey, out var loadedPrefab)
-                || Instantiate(loadedPrefab, root) is not {} instantiatePrefab
-                || !instantiatePrefab.TryGetComponent<TooltipUI>(out var loadedTooltip))
+            Logg.Log($"[UIManager]OnEscapeCalled. popupStack.Count: {popupStacks.Count}", 
+                Logg.LoggingMode.Completed);
+            if (popupStacks.Count != 0)
             {
-                Logg.LogError($"[UIManager] failed to load tooltip");
+                ClosePopupUI();
                 return;
             }
-
-            Tooltip = loadedTooltip;
-        }
-
-        public void ShowTooltip(int errorType, bool hideAfterDelay = false, float delayDuration = 2.0f) // 3.0f is magic number
-        {
-            if (errorType == (int)Enums.TooltipErrorType.Empty) return;
-            if (!Tooltip.IsAlive()) return;
-
-            int order = sortOrders[(int)UICanvas.Popup];
-            Tooltip.tooltipCanvas.sortingOrder = order + 1; // 언제나 최상단 팝업 UI보다 한단계 더 위로
-            Tooltip.Show(errorType, hideAfterDelay, delayDuration);
-        }
-
-        public void ShowTooltip(string tooltipString, bool hideAfterDelay = false, float delayDuration = 3.0f)
-        {
-            if (!Tooltip.IsAlive()) return;
             
-            int order = sortOrders[(int)UICanvas.Popup];
-            Tooltip.tooltipCanvas.sortingOrder = order + 1; // 언제나 최상단 팝업 UI보다 한단계 더 위로
-            Tooltip.Show(tooltipString, hideAfterDelay, delayDuration);
+            ShowOptionMenu();
         }
 
-        public void HideTooltip()
+        private void OnInventoryCalled()
         {
-            Tooltip.Hide();
+            ShowInventoryUI();
         }
+
+        #endregion
         
-        // Option Menu
-
-        private void SetOptionMenu()
-        {
-            if(!resourceLoader.TryLoad<GameObject>(OptionMenuUIKey, out var result)
-               || !result.TryGetComponent(out optionMenu))
-            {
-                Logg.LogError($"[UIManager] failed to load option menu");
-            }
-        }
+        #region Frequently Used UI
 
         private void ShowOptionMenu()
         {
             ShowPopupUI<OptionMenuUI>(OptionMenuUIKey);
         }
 
-        #endregion
-
-        protected override void OnDestroy()
+        private void ShowInventoryUI()
         {
-            if (Util.IsQuitting) return;
-            base.OnDestroy();
-            
-            keyTypeDictionary.Clear();
-
-            foreach (var pool in popupPools.Values)
-            {
-                pool.Clear();
-            }
-            popupPools.Clear();
-            popupStacks.Clear();
-            
-            ClearValues();
+            ShowPopupUI<InventoryUI>("InventoryUI.prefab");
         }
+        
+        // // Tooltip (현재 미사용)
+        //
+        // // Frequently Used UI
+        // public TooltipUI Tooltip;
+        // private void SetTooltip()
+        // {
+        //     resourceLoader.OnLabelResourcesLoadedAll -= SetTooltip; // 중복 구독 방지
+        //     resourceLoader.OnLabelResourcesLoadedAll += SetTooltip;
+        // }
+        //
+        // private void SetTooltip(string label)
+        // {
+        //     if (label != Constants.PreLoadLabel) return;
+        //     
+        //     if (!resourceLoader.TryLoad<GameObject>(TooltipUIPrefabKey, out var loadedPrefab)
+        //         || UnityEngine.Object.Instantiate(loadedPrefab, root) is not {} instantiatePrefab
+        //         || !instantiatePrefab.TryGetComponent<TooltipUI>(out var loadedTooltip))
+        //     {
+        //         Logg.LogError($"[UIManager] failed to load tooltip");
+        //         return;
+        //     }
+        //
+        //     Tooltip = loadedTooltip;
+        // }
+        //
+        // public void ShowTooltip(int errorType, bool hideAfterDelay = false, float delayDuration = 2.0f) // 3.0f is magic number
+        // {
+        //     if (errorType == (int)Enums.TooltipErrorType.Empty) return;
+        //     if (!Tooltip.IsAlive()) return;
+        //
+        //     int order = sortOrders[(int)UICanvas.Popup];
+        //     Tooltip.tooltipCanvas.sortingOrder = order + 1; // 언제나 최상단 팝업 UI보다 한단계 더 위로
+        //     Tooltip.Show(errorType, hideAfterDelay, delayDuration);
+        // }
+        //
+        // public void ShowTooltip(string tooltipString, bool hideAfterDelay = false, float delayDuration = 3.0f)
+        // {
+        //     if (!Tooltip.IsAlive()) return;
+        //     
+        //     int order = sortOrders[(int)UICanvas.Popup];
+        //     Tooltip.tooltipCanvas.sortingOrder = order + 1; // 언제나 최상단 팝업 UI보다 한단계 더 위로
+        //     Tooltip.Show(tooltipString, hideAfterDelay, delayDuration);
+        // }
+        //
+        // public void HideTooltip()
+        // {
+        //     Tooltip.Hide();
+        // }
+
+        #endregion
 
         #region DeInitialization
 
-        protected override UniTask Clear()
-        {
-            base.Clear();
-
-            CloseAllPopupUI();
-            DisConnectInputEvents();
-            
-            return UniTask.CompletedTask;
-        }
-
         private void DisConnectInputEvents()
         {
-            // if (Util.IsQuitting || MonoInputManager.Instance == null) return;
-
-            // MonoInputManager.Instance.OnEscaped -= OnEscapeCalled;
-            // MonoInputManager.Instance.OnSingleClicked -= OnPopupOutSideSelected;
             InputManager.Instance.OnEscaped -= OnEscapeCalled;
             InputManager.Instance.OnSingleClicked -= OnPopupOutSideSelected;
         }
@@ -738,7 +710,17 @@ namespace TH.UI
         }
 
         #endregion
-    
+        
     }
 }
 
+namespace TH.UI
+{
+    public enum UICanvas
+    {
+        Scene, // 씬UI 캔버스
+        AnchoredOverlay, // 게임 오브젝트와 함께 움직이는 UI용 캔버스
+        Popup, // 팝업UI 캔버스
+        Fader, // 화면 전체 마스킹 용도 (Fader 등)
+    }
+}

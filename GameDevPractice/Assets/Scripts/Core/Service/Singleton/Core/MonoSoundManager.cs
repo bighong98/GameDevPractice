@@ -1,11 +1,14 @@
 using UnityEngine;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using TH.Resource;
 using TH.Core;
+using TH.Utils;
+using UnityEngine.SceneManagement;
 
-public class SoundManager : MonoSingleton<SoundManager>
+public class MonoSoundManager : MonoSingleton<MonoSoundManager>
 {
     private readonly AudioSource[] audioSources = new AudioSource[(int)Enums.AudioType.Max];
     private readonly Dictionary<string, AudioClip> audioClips = new Dictionary<string, AudioClip>();
@@ -21,15 +24,15 @@ public class SoundManager : MonoSingleton<SoundManager>
     protected override void Awake()
     {
         base.Awake();
-        // if (IsInvalidInstance()) return; // 중복 인스턴스인 경우 Init() 실행x
-        // Init();
+        if (IsInvalidInstance()) return;
+        InitOnce(default);
     }
 
     #region Singleton<T>
 
-    protected override void InitOnce()
+    protected override void InitOnce(Scene scene)
     {
-        base.InitOnce();
+        base.InitOnce(scene);
         if (soundRoot == null)
         {
             var trans = transform.Find("Sounds");
@@ -59,9 +62,9 @@ public class SoundManager : MonoSingleton<SoundManager>
         audioSources[(int)Enums.AudioType.SubBgm].loop = true;
     }
     
-    protected override void InitAfterPreLoad()
+    protected override void InitAfterPreLoad(Scene scene)
     {
-        base.InitAfterPreLoad();
+        base.InitAfterPreLoad(scene);
         //todo: 필요한 리소스 가져오기, 초기화
         TestBGM();
     }
@@ -149,16 +152,16 @@ public class SoundManager : MonoSingleton<SoundManager>
 
     #region Clear
 
-    protected override UniTask Clear()
+    protected override UniTask Clear(CancellationToken externalToken)
     {
-        base.Clear();
+        Logg.Log($"[SoundManager] Clear", Logg.LoggingMode.InProgress);
+        externalToken.ThrowIfCancellationRequested();
         foreach (var source in audioSources)
         {
             source.Stop();
         }
         audioClips.Clear();
-
-        return UniTask.CompletedTask;
+        return base.Clear(externalToken);
     }
 
     #endregion

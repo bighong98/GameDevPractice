@@ -1,6 +1,7 @@
 using Cysharp.Threading.Tasks;
 using TH.Resource;
 using UnityEngine;
+using TH.Core.Service;
 
 namespace TH.Item
 {

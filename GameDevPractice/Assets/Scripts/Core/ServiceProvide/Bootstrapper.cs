@@ -9,6 +9,7 @@ using TH.Utils;
 using UnityEngine;
 using TH.Item.Storage;
 using Cysharp.Threading.Tasks;
+using TH.Core.Pool;
 using UnityEngine.SceneManagement;
 
 namespace TH.Core.Service
@@ -18,13 +19,14 @@ namespace TH.Core.Service
     // 추후 Scene 개별 ServiceProvider 도입 시 확장 및 수정 필요
     public static class Bootstrapper
     {
-        // RuntimeInitializeOnLoadMethod()로 씬 로드 전 실행을 보장
+        // RuntimeInitializeOnLoadMethod()로 씬 로드 전 실행을 보장 + 메인 스레드 실행 보장
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static async void Init()
         {
             try
             {
                 RegisterServices();
+                await InitializeSingletons();
                 await InitializeAsync();
             }
             catch (Exception e) {Debug.LogError(e);}
@@ -66,8 +68,18 @@ namespace TH.Core.Service
         {
             // SceneLoader 인스턴스 생성 지연 방지
             _ = ServiceLocator.Get<ISceneLoader>();
-            await SceneManager.LoadSceneAsync(0, LoadSceneMode.Single);
+            // await SceneManager.LoadSceneAsync(0, LoadSceneMode.Single);
             await ServiceLocator.Get<IResourceLoader>().PreLoadAsync();
+        }
+
+        private static async UniTask InitializeSingletons()
+        {
+            await UniTask.SwitchToMainThread();
+            _ = ResourceManager.Instance;
+            _ = PoolManager.Instance;
+            _ = UIManager.Instance;
+            _ = InputManager.Instance;
+            _ = SoundManager.Instance;
         }
     }
 }

@@ -75,11 +75,12 @@ namespace TH.Attribute
 
         private void Start()
         {
-            UIManager.Instance.ReserveOperation(() =>
-            {
-                if (!this.IsAlive()) return;
-                UIManager.Instance.GetUIFromPool<HPBar>(HPBarPrefab, UICanvas.AnchoredOverlay).SetOwner(this);
-            });
+            // MonoUIManager.Instance.ReserveOperation(() =>
+            // {
+            //     if (!this.IsAlive()) return;
+            //     MonoUIManager.Instance.GetUIFromPool<HPBar>(HPBarPrefab, UICanvas.AnchoredOverlay).SetOwner(this);
+            // });
+            UIManager.Instance.GetUIFromPool<HPBar>(HPBarPrefab, UICanvas.AnchoredOverlay).SetOwner(this);
         }
 
         private void OnEnable()
@@ -229,7 +230,7 @@ namespace TH.Attribute
         {
             if (state is not HealthSaveData data) return false;
             
-            Logg.Log($"[{gameObject.name}]RestoreState for Health: hp to {data.hp}" ,Logg.LoggingMode.Completed); 
+            Logg.Log($"[{gameObject.name}]RestoreState for Health: hp to {data.hp}" ,Logg.LoggingMode.InProgress); 
             
             SetHp(data.hp);
             // RefreshAliveState();

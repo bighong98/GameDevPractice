@@ -6,6 +6,7 @@ using Cysharp.Threading.Tasks;
 using TH.UI;
 using TH.Core;
 using TH.Utils;
+using UnityEngine.SceneManagement;
 
 public class MonoInputManager : MonoSingleton<MonoInputManager>, UserInput.IPlayerActions, UserInput.IGlobalActions, UserInput.IUIActions, UserInput.IQuickSlotActions
 {
@@ -61,9 +62,9 @@ public class MonoInputManager : MonoSingleton<MonoInputManager>, UserInput.IPlay
 
     #region Initialization
 
-    protected override void InitOnce()
+    protected override void InitOnce(Scene scene)
     {
-        base.InitOnce();
+        base.InitOnce(scene);
         userInput = new UserInput();
         
         userInput.Player.SetCallbacks(this);
@@ -73,9 +74,9 @@ public class MonoInputManager : MonoSingleton<MonoInputManager>, UserInput.IPlay
         userInput.UI.SetCallbacks(this);
     }
 
-    protected override void Init()
+    protected override void Init(Scene scene)
     {
-        base.Init();
+        base.Init(scene);
         // default: GlobalActions, PlayerActions 활성화
 
         userInput.Global.Enable();
@@ -84,9 +85,11 @@ public class MonoInputManager : MonoSingleton<MonoInputManager>, UserInput.IPlay
         userInput.Player.Enable(); 
     }
 
-    protected override UniTask Clear()
+    protected override UniTask Clear(CancellationToken externalToken)
     {
-        base.Clear();
+        base.Clear(externalToken);
+        if (externalToken.IsCancellationRequested) return UniTask.CompletedTask;
+        
         
         userInput.Global.Disable();
         userInput.Player.Disable();
@@ -110,7 +113,7 @@ public class MonoInputManager : MonoSingleton<MonoInputManager>, UserInput.IPlay
     {
         if (Input.GetKeyDown(KeyCode.I))
         {
-            UIManager.Instance.ShowPopupUI<TH.UI.InventoryUI>("InventoryUI.prefab");
+            MonoUIManager.Instance.ShowPopupUI<TH.UI.InventoryUI>("InventoryUI.prefab");
         }
     }
 
@@ -183,6 +186,21 @@ public class MonoInputManager : MonoSingleton<MonoInputManager>, UserInput.IPlay
             default:
                 break;
         }
+    }
+
+    public void OnInventory(InputAction.CallbackContext context)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void OnSave(InputAction.CallbackContext context)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void OnLoad(InputAction.CallbackContext context)
+    {
+        throw new NotImplementedException();
     }
 
     #endregion

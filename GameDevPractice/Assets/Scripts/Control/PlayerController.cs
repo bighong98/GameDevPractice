@@ -12,11 +12,10 @@ namespace TH.Control
 {
     public class PlayerController : MonoBehaviour
     {
-        private Camera _camera;
+        [SerializeField] private Camera _camera;
         private Mover mover;
         private Fighter fighter;
         private Health health;
-        
         
         private Vector2 wasdInput = Vector2.zero;
         private bool isWASDMoving = false;
@@ -34,25 +33,19 @@ namespace TH.Control
 
         private void OnEnable()
         {
-            _camera = Camera.main;
-            // MonoInputManager.Instance.ReserveOperation(() =>
-            // {
-            //     MonoInputManager.Instance.OnSelected += OnPointerPressed;
-            //     MonoInputManager.Instance.OnMoved += OnWASDInput;
-            // });
-            // InputManager.Instance.OnSelected += OnPointerPressed;
             InputManager.Instance.OnSelected += OnPointerPressed;
             InputManager.Instance.OnMoved += OnWASDInput;
         }
 
         private void OnDisable()
         {
-            // if (Util.IsQuitting) return;
-            _camera = null;
-            // MonoInputManager.Instance.OnSelected -= OnPointerPressed;
-            // MonoInputManager.Instance.OnMoved -= OnWASDInput;
             InputManager.Instance.OnSelected -= OnPointerPressed;
             InputManager.Instance.OnMoved -= OnWASDInput;
+        }
+
+        private void Start()
+        {
+            _camera = Camera.main;
         }
 
         private void Update()
@@ -81,7 +74,7 @@ namespace TH.Control
             }
         }
 
-private void HandleWASDMovement()
+        private void HandleWASDMovement()
         {
             // 카메라 방향 기준으로 입력 변환
             Vector3 cameraForward = _camera.transform.forward;

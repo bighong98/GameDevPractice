@@ -1,3 +1,4 @@
+using System.Threading;
 using Cysharp.Threading.Tasks;
 
 namespace TH.SceneManagement
@@ -5,8 +6,8 @@ namespace TH.SceneManagement
     public interface ILoadingUI
     {
         void SetProgress(float ratio);
-        UniTask ShowAsync();
-        UniTask HideAsync();
+        UniTask ShowAsync(CancellationToken externalToken);
+        UniTask HideAsync(CancellationToken externalToken);
     }
 }
 

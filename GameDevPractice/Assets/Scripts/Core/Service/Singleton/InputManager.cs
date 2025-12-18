@@ -1,15 +1,17 @@
 using System;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using TH.UI;
 using TH.Utils;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Scripting;
+using TH.Core.Service;
 
 namespace TH.Core
 {
     [Preserve]
-    public sealed class InputManager : Singleton<InputManager>,
+    public sealed class InputManager : Singleton<InputManager>, ISingleton,
         UserInput.IPlayerActions, UserInput.IGlobalActions, UserInput.IUIActions, UserInput.IQuickSlotActions
     {
         private InputManager()
@@ -36,6 +38,9 @@ namespace TH.Core
         // global
         public event Action OnEscaped;
         public event Action<Vector2> OnPointerMoved; // 마우스/터치 등의 포인터 움직임 발생시 (UI 팝업과 무관하게 항상 사용 가능)
+        public event Action OnInventoryCalled;
+        public event Action OnSaveCalled;
+        public event Action OnLoadCalled;
         // player
         public event Action<Vector2> OnMoved; // 플레이어 캐릭터가 이동시 (현재는 사용x)
         public event Action<Vector2> OnSelected; // 게임 오브젝트에 터치/클릭 시 (팝업UI와 상호작용은 미포함)
@@ -83,7 +88,7 @@ namespace TH.Core
             UserInput.Player.Enable(); 
         }
 
-        private UniTask Clear()
+        public UniTask BeforeSceneLoad(CancellationToken externalToken)
         {
             UserInput.Global.Disable();
             UserInput.Player.Disable();
@@ -101,16 +106,22 @@ namespace TH.Core
             return UniTask.CompletedTask;
         }
 
+        public UniTask AfterSceneLoad(CancellationToken externalToken)
+        {
+            Init();
+            return UniTask.CompletedTask;
+        }
+
         #endregion
 
-        private void Update()
-        {
-            // todo: 제거 후 Input System 사용
-            if (Input.GetKeyDown(KeyCode.I))
-            {
-                UIManager.Instance.ShowPopupUI<TH.UI.InventoryUI>("InventoryUI.prefab");
-            }
-        }
+        // private void Update()
+        // {
+        //     // todo: 제거 후 Input System 사용
+        //     if (Input.GetKeyDown(KeyCode.I))
+        //     {
+        //         UIManager.Instance.ShowPopupUI<TH.UI.InventoryUI>("InventoryUI.prefab");
+        //     }
+        // }
 
         #region Player Input Handle // 플레이어 캐릭터 조작에 사용하는 입력
         
@@ -178,7 +189,22 @@ namespace TH.Core
                     break;
             }
         }
-        
+
+        public void OnInventory(InputAction.CallbackContext context)
+        {
+            OnInventoryCalled?.Invoke();
+        }
+
+        public void OnSave(InputAction.CallbackContext context)
+        {
+            OnSaveCalled?.Invoke();
+        }
+
+        public void OnLoad(InputAction.CallbackContext context)
+        {
+            OnLoadCalled?.Invoke();
+        }
+
         #endregion
 
         #region UI Input Handle // UI 상호작용 입력

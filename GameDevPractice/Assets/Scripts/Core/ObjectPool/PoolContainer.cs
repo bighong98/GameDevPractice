@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
 using System.Collections.Generic;
+using TH.Utils;
 
 namespace TH.Core.Pool
 {
@@ -65,6 +66,7 @@ namespace TH.Core.Pool
 
         public void ReleaseAllPooledObjects()
         {
+            Logg.Log($"[{GetType().Name}] Releasing all pooled objects", Logg.LoggingMode.Completed);
             foreach (var poolContainer in PoolContainerDictionary.Values)
             {
                 if (poolContainer.childCount == 0) continue; // 풀 컨테이너에 오브젝트 풀이 없으면 스킵
@@ -72,6 +74,7 @@ namespace TH.Core.Pool
                 for (int i = 0; i < poolContainer.childCount; i++)
                 {
                     var child = poolContainer.GetChild(i);
+                    Logg.Log($"[{GetType().Name}] Releasing {child.gameObject.name}", Logg.LoggingMode.Completed);
                     if (child.gameObject.activeSelf && child.GetComponent<IPoolObject>() is { Origin: not null } pooledObject)
                     {
                         pooledObject.ReleaseSelf();

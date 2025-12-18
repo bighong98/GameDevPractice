@@ -1,5 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using TH.UI;
@@ -49,6 +51,20 @@ public static class Extension
         }
 
         return del;
+    }
+    
+    private const int DefaultMaxConcurrency = 10;
+    public static UniTask InvokeAllThrottledAsync(
+        this Func<CancellationToken, UniTask> multicast,
+        CancellationToken token,
+        int maxConcurrency = DefaultMaxConcurrency,
+        TimeSpan? perCallbackTimeout = null,
+        bool cancelAllOnFirstFailure = false,
+        Action<Exception, Delegate> onException = null,
+        bool throwAggregated = false)
+    {
+        return Util.InvokeAllCallbackAsync(
+            multicast, token, maxConcurrency, perCallbackTimeout, cancelAllOnFirstFailure, onException, throwAggregated);
     }
 
     // fake null 이슈에 대응하기 위한 헬퍼 확장 메서드

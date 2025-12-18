@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using TH.UI;
+using TH.Core.Service;
 
 public class OptionMenuUI : PopupUI
 {

@@ -8,7 +8,7 @@ namespace TH.Core.Service
         private object currentPlayerInstance;
         public object GetPlayerInstance { get { if (!currentPlayerInstance.IsAlive()) {
                     currentPlayerInstance = UnityEngine.Object.FindAnyObjectByType<PlayerController>();
-                } return currentPlayerInstance; }}
+        } return currentPlayerInstance; }}
 
         public event Action<object> OnPlayerInstanceUpdated;
 

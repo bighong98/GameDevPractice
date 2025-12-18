@@ -578,6 +578,33 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Inventory"",
+                    ""type"": ""Button"",
+                    ""id"": ""87969ff5-fbc1-4dd8-bf7b-a3cb05ab6d3b"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Save"",
+                    ""type"": ""Button"",
+                    ""id"": ""ab9a1a2d-2c3a-416a-8520-977f9a8d0ff7"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Load"",
+                    ""type"": ""Button"",
+                    ""id"": ""c3459077-d17e-4563-bd1c-82f1b468717a"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -611,6 +638,39 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Release"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""01b973d3-24ab-4485-aeb3-988a6f682a61"",
+                    ""path"": ""<Keyboard>/i"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Inventory"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""629e86b7-6c8b-4c26-be11-14c73eac60e3"",
+                    ""path"": ""<Keyboard>/o"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Save"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""4692376d-4bb6-418d-8fe8-f8fba19f70aa"",
+                    ""path"": ""<Keyboard>/l"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Load"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -724,6 +784,9 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
         m_Global_Escape = m_Global.FindAction("Escape", throwIfNotFound: true);
         m_Global_Point = m_Global.FindAction("Point", throwIfNotFound: true);
         m_Global_Release = m_Global.FindAction("Release", throwIfNotFound: true);
+        m_Global_Inventory = m_Global.FindAction("Inventory", throwIfNotFound: true);
+        m_Global_Save = m_Global.FindAction("Save", throwIfNotFound: true);
+        m_Global_Load = m_Global.FindAction("Load", throwIfNotFound: true);
         // Cam
         m_Cam = asset.FindActionMap("Cam", throwIfNotFound: true);
         m_Cam_Zoom = m_Cam.FindAction("Zoom", throwIfNotFound: true);
@@ -1213,6 +1276,9 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
     private readonly InputAction m_Global_Escape;
     private readonly InputAction m_Global_Point;
     private readonly InputAction m_Global_Release;
+    private readonly InputAction m_Global_Inventory;
+    private readonly InputAction m_Global_Save;
+    private readonly InputAction m_Global_Load;
     /// <summary>
     /// Provides access to input actions defined in input action map "Global".
     /// </summary>
@@ -1236,6 +1302,18 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Global/Release".
         /// </summary>
         public InputAction @Release => m_Wrapper.m_Global_Release;
+        /// <summary>
+        /// Provides access to the underlying input action "Global/Inventory".
+        /// </summary>
+        public InputAction @Inventory => m_Wrapper.m_Global_Inventory;
+        /// <summary>
+        /// Provides access to the underlying input action "Global/Save".
+        /// </summary>
+        public InputAction @Save => m_Wrapper.m_Global_Save;
+        /// <summary>
+        /// Provides access to the underlying input action "Global/Load".
+        /// </summary>
+        public InputAction @Load => m_Wrapper.m_Global_Load;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -1271,6 +1349,15 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
             @Release.started += instance.OnRelease;
             @Release.performed += instance.OnRelease;
             @Release.canceled += instance.OnRelease;
+            @Inventory.started += instance.OnInventory;
+            @Inventory.performed += instance.OnInventory;
+            @Inventory.canceled += instance.OnInventory;
+            @Save.started += instance.OnSave;
+            @Save.performed += instance.OnSave;
+            @Save.canceled += instance.OnSave;
+            @Load.started += instance.OnLoad;
+            @Load.performed += instance.OnLoad;
+            @Load.canceled += instance.OnLoad;
         }
 
         /// <summary>
@@ -1291,6 +1378,15 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
             @Release.started -= instance.OnRelease;
             @Release.performed -= instance.OnRelease;
             @Release.canceled -= instance.OnRelease;
+            @Inventory.started -= instance.OnInventory;
+            @Inventory.performed -= instance.OnInventory;
+            @Inventory.canceled -= instance.OnInventory;
+            @Save.started -= instance.OnSave;
+            @Save.performed -= instance.OnSave;
+            @Save.canceled -= instance.OnSave;
+            @Load.started -= instance.OnLoad;
+            @Load.performed -= instance.OnLoad;
+            @Load.canceled -= instance.OnLoad;
         }
 
         /// <summary>
@@ -1574,6 +1670,27 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnRelease(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Inventory" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnInventory(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Save" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnSave(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Load" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnLoad(InputAction.CallbackContext context);
     }
     /// <summary>
     /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "Cam" which allows adding and removing callbacks.

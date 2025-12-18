@@ -21,7 +21,8 @@ namespace TH.SceneManagement
         
         private bool inFlight;
         
-        public event Func<UniTask> OnBeforeSceneChanged;
+        public event Func<CancellationToken, UniTask> OnBeforeSceneChanged;
+        public event Func<CancellationToken, UniTask> OnAfterSceneChanged;
         public event Action<Scene> OnSceneChanged;
         
         private const string LoadingSceneName = "LoadingScene";
@@ -41,7 +42,9 @@ namespace TH.SceneManagement
         
 private void Init()
         {
-            OnBeforeSceneChanged = () => UniTask.CompletedTask; // 빈 객체로 초기화 (NRE 방지)
+            // 이벤트 내부 빈 객체로 초기화 (NRE 방지)
+            OnBeforeSceneChanged = (token) => UniTask.CompletedTask; 
+            OnAfterSceneChanged = (token) => UniTask.CompletedTask; 
 #if UNITY_EDITOR
             bootScene = SceneManager.GetActiveScene();
             bootSceneUnLoaded = false;
@@ -94,8 +97,6 @@ private void Init()
             await WaitForPreLoad(token);
         }
 
-        
-
         private static async UniTask UnloadLoadingSceneAsync(CancellationToken token = default)
         {
             var loadScene = SceneManager.GetSceneByName(LoadingSceneName);
@@ -125,30 +126,42 @@ private void Init()
 
             if (inFlight) return;
             inFlight = true;
+            float prevTimeScale = Time.timeScale;
 
             try
             {
+                // 로딩 씬 로드(최초 1회)
+                await LoadLoadingSceneAsync(token: token);
+                // 타겟 씬 비동기 로드 
+                var result = await LoadSceneWithAddressablesAsync(key, onProgress, token);
+                // 씬 전환 전 사전작업 처리
                 await UniTask.WhenAll(
-                    LoadLoadingSceneAsync(token: token),
-                    RunPreTasks(preTasks, token),
-                    OnBeforeSceneChanged!()
-                ); // 로딩 씬 로드, 타겟 씬 로드 전 사전 작업
-                var result = await LoadSceneWithAddressablesAsync(key, onProgress, token); // 타겟 씬 로드
-                // 로딩 씬 언로드, 기존 씬 언로드
+                    OnBeforeSceneChanged.InvokeAllThrottledAsync(token),
+                    RunPreTasks(preTasks, token)
+                );
+                // 타겟 씬 활성화
+                await result.ActivateAsync().ToUniTask(cancellationToken: token);
+                Time.timeScale = 0f; // 게임 시간 일시정지 (todo: timeScale 대신 게임 플레이 일시정지 기능 추가하여 대체)
+                // 씬 매니저에게 Active Scene 변동 전달 (멀티 씬 문제 대응)
+                SceneManager.SetActiveScene(result.Scene);
+                ReportProgress(1); // 진행도 100% 전달
+
+                // 이전 씬 언로드 및 씬 전환 이벤트 호출
                 await UniTask.WhenAll(
                     UnloadPreviousSceneAsync(token),
-                    UnloadLoadingSceneAsync(token)
-                ); 
-                ReportProgress(1); // 진행도 100%
-                // 1초 대기 (로딩 바 진행 확인용 추후 제거)
-                await UniTask.WaitForSeconds(1f, ignoreTimeScale: true, cancellationToken: token);
-                // 대기시켜둔 타겟 씬 활성화 시작
-                await result.ActivateAsync().ToUniTask(cancellationToken: token);
-                // 씬 이동 이벤트 호출
+                    OnAfterSceneChanged.InvokeAllThrottledAsync(token)
+                );
                 OnSceneChanged?.Invoke(result.Scene);
             }
-            catch (Exception e) { Logg.Log($"exception occured while loadingScene '{key}', {e}"); }
-            finally { inFlight = false; }
+            catch (Exception e)
+            {
+                Logg.Log($"exception occured while loadingScene '{key}', {e}");
+            }
+            finally
+            {
+                inFlight = false;
+                Time.timeScale = prevTimeScale;
+            }
         }
         
         private async UniTask RunPreTasks(IEnumerable<Func<CancellationToken, UniTask>> preTasks, CancellationToken token)
@@ -169,14 +182,15 @@ private void Init()
             AsyncOperationHandle<SceneInstance> handle = default;
             try
             {
+                Logg.Log($"[SceneLoader] LoadSceneWithAddressablesAsync({key})", Logg.LoggingMode.Completed);
                 handle = Addressables.LoadSceneAsync(key, LoadSceneMode.Additive, activateOnLoad: false);
                 
                 var result = await handle;
                 if (handle.Status == AsyncOperationStatus.Failed)
                     throw handle.OperationException ??
                           new Exception($"[{nameof(SceneLoader)}] load scene failed: {key}");
-
-                await result.ActivateAsync().ToUniTask(cancellationToken: token);
+                
+                // await result.ActivateAsync().ToUniTask(cancellationToken: token);
                 
                 // 이전 씬, 현재 씬 갱신
                 if (currentSceneHandle.IsValid())
@@ -199,8 +213,7 @@ private void Init()
                             ToUniTask(cancellationToken: token);
                     else Addressables.Release(handle);
                 }
-                catch (Exception e) { 
-                    throw new Exception($"[{nameof(SceneLoader)}] " +
+                catch (Exception e) { throw new Exception($"[{nameof(SceneLoader)}] " +
                                                           $"failed to load scene - {e.Message}"); 
                 }
             }
@@ -216,9 +229,10 @@ private void Init()
             try
             {
                 var prev = prevSceneHandle.Result;
-                await Addressables.UnloadSceneAsync(prev, autoReleaseHandle: true)
+                var prevSceneName = prev.Scene.name; // 디버깅용 씬 이름 클로저
+                await Addressables.UnloadSceneAsync(prevSceneHandle, autoReleaseHandle: true)
                     .ToUniTask(cancellationToken: token);
-                Logg.Log($"[SceneLoader] scene '{prev.Scene.name}' is unloaded");
+                Logg.Log($"[SceneLoader] scene '{prevSceneName}' is unloaded", Logg.LoggingMode.InProgress);
             }
             catch (Exception e)
             {

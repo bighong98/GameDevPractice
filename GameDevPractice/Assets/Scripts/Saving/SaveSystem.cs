@@ -353,8 +353,11 @@ namespace TH.SaveLoad
             // 파싱된 런타임 데이터 반영 (글로벌)
             RestoreState(GlobalEntities.Values, grouped);
             // 파싱된 런타임 데이터 반영 (현재 씬)
-            if (SceneEntities.TryGetValue(currentSceneEntry, out var sceneSavables))
+            if (currentSceneEntry != null &&
+                SceneEntities.TryGetValue(currentSceneEntry, out var sceneSavables))
+            {
                 RestoreState(sceneSavables.Values, grouped);
+            }
             
             foreach (var (id, stateDict) in grouped)
             {
@@ -366,9 +369,17 @@ namespace TH.SaveLoad
         {
             var sceneEntries = data.sceneData;
             // 현재 씬 세이브 데이터 추가
-            if (sceneEntries.TryGetValue(currentSceneEntry.sceneId, out var targetSceneEntries))
-                entries.AddRange(targetSceneEntries); // 세이브 데이터 리스트에 추가
-            else Logg.Log($"[SaveSystem] No saved data for scene '{currentSceneEntry.key}'", Logg.LoggingMode.Completed);
+            if (currentSceneEntry != null
+                && sceneEntries.TryGetValue(currentSceneEntry.sceneId, 
+                    out var targetSceneEntries))
+            {
+                // 세이브 데이터 리스트에 추가
+                entries.AddRange(targetSceneEntries);
+            }
+            else if (currentSceneEntry != null)
+            {
+                Logg.Log($"[SaveSystem] No saved data for scene '{currentSceneEntry?.key}'", Logg.LoggingMode.Completed);
+            }
             // 글로벌(특정 씬에 종속되지 않는) 세이브 데이터 추가
             if (data.globalData is { Count: > 0 } globEntries)
                 entries.AddRange(globEntries); 

@@ -20,6 +20,9 @@ public class SimpleLoadingUI : MonoBehaviour, ILoadingUI
         if (ServiceLocator.Get<ISceneLoader>() is { } sceneLoader)
         {
             sub = sceneLoader.SubscribeProgress(SetProgress);
+            
+            sceneLoader.OnBeforeSceneChanged += ShowAsync;
+            sceneLoader.OnAfterSceneChanged += HideAsync;
         }
     }
 
@@ -29,6 +32,23 @@ public class SimpleLoadingUI : MonoBehaviour, ILoadingUI
         sub = null;
     }
 
+    public void Show()
+    {
+        if (easing) StopBarAnimation();
+        slider.value = 0f;
+
+        if (gameObject.activeSelf) return;
+        gameObject.SetActive(true);
+    }
+
+    public void Hide()
+    {
+        if (easing) StopBarAnimation();
+        
+        if (!gameObject.activeSelf) return;
+        gameObject.SetActive(false);
+    }
+    
     public void SetProgress(float ratio)
     {
         SetBar(ratio);
@@ -45,13 +65,21 @@ public class SimpleLoadingUI : MonoBehaviour, ILoadingUI
         ChangeFillSlowly(slider, slider.value, ratio, EasingSpeed).Forget();
     }
 
-    public UniTask ShowAsync()
+    public UniTask ShowAsync(CancellationToken externalToken)
     {
+        UniTask.WaitForEndOfFrame(cancellationToken: externalToken);
+        
+        gameObject.SetActive(true);
+        
         return UniTask.CompletedTask;
     }
 
-    public UniTask HideAsync()
+    public UniTask HideAsync(CancellationToken externalToken)
     {
+        UniTask.WaitForEndOfFrame(cancellationToken: externalToken);
+        
+        gameObject.SetActive(false);
+        
         return UniTask.CompletedTask;
     }
     

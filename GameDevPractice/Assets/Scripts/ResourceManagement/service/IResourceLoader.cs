@@ -31,10 +31,8 @@ namespace TH.Resource
         // fireCurrent: true -> 구독과 동시에 현재 진척도 즉시 확인
         // 전체 PreLoad 진행도 구독 (모든 라벨의 가중치 기반 합산)
         IProgressSubscription SubscribeGlobalPreLoadProgress(Action<float> onProgress, bool fireCurrent = true);
-        
-        
-IProgressSubscription SubscribePreLoadProgress(
-            string label, Action<float> onProgress, bool fireCurrent = true);
+        // 현재 진행 중인 모든 리소스 일괄 로드 진척도 총합 확인
+        // 정확한 계산 대신 내부 가중치 적용
+        IProgressSubscription SubscribePreLoadProgress(string label, Action<float> onProgress, bool fireCurrent = true); }
     }
-}
 
