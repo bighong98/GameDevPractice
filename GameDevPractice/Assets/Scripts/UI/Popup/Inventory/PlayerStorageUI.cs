@@ -2,13 +2,12 @@ using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using TH.UI;
 using TH.Core.Pool;
 using TH.Item;
-using TH.Resource;
 using TH.Utils;
 using UnityEngine.EventSystems;
 using UnityEngine.Pool;
+using TH.Core.Service;
 
 namespace TH.UI
 {
@@ -65,18 +64,16 @@ namespace TH.UI
 
         private void InitSlotUIPool()
         {
-            ResourceManager.Instance.ReserveOperation(() => {
-                if (ResourceManager.Instance.Load<GameObject>("InvenSlotUI")
-                    is not { } loadedSlotUI) return;
+            if (ResourceManager.Instance.Load<GameObject>("InvenSlotUI")
+                is not { } loadedSlotUI) return;
 
-                slotUIPrefab = loadedSlotUI;
-                slotUIPool = PoolManager.Instance.GetPool(
-                    slotUIPrefab,
-                    GetObject((int)GameObjects.ItemSlots).transform,
-                    capacity: DefaultSlotUIPoolCapacity,
-                    maxSize: DefaultSlotUIPoolMax,
-                    registerPool: false);
-            });
+            slotUIPrefab = loadedSlotUI;
+            slotUIPool = PoolManager.Instance.GetPool(
+                slotUIPrefab,
+                GetObject((int)GameObjects.ItemSlots).transform,
+                capacity: DefaultSlotUIPoolCapacity,
+                maxSize: DefaultSlotUIPoolMax,
+                registerPool: false);
         }
 
         #endregion

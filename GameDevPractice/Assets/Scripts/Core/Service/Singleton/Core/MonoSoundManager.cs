@@ -142,7 +142,7 @@ public class MonoSoundManager : MonoSingleton<MonoSoundManager>
     {
         if (! audioClips.TryGetValue(key, out var audioClip))
         {
-            audioClip = ResourceManager.Instance.Load<AudioClip>(key); // 캐싱된 오디오클립이 없으면 리소스 매니저에서 key로 탐색
+            audioClip = MonoResourceManager.Instance.Load<AudioClip>(key); // 캐싱된 오디오클립이 없으면 리소스 매니저에서 key로 탐색
             audioClips[key] = audioClip; // 새로운 오디오클립 저장
         }
         callback?.Invoke(type, audioClip, pitch);

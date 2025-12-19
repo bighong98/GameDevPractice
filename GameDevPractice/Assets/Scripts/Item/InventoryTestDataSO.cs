@@ -4,6 +4,7 @@ using Cysharp.Threading.Tasks;
 using TH.Resource;
 using TH.Utils;
 using UnityEngine;
+using TH.Core.Service;
 
 [CreateAssetMenu(fileName = "InventoryTestDataSO", menuName = "Scriptable Objects/TypeList/InventoryTestDataSO")]
 public class InventoryTestDataSO : KeyValueListSO<AssetReferenceItemSO, int>, IAsyncInitializer

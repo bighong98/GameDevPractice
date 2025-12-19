@@ -477,7 +477,7 @@ namespace TH.UI
 
             // 풀이 없으면 리소스 로드 후 풀 생성
             string key = uiName ?? $"{type.Name}.prefab";
-            if (ResourceManager.Instance.Load<UnityEngine.Object>(key) is not GameObject loadedUI)
+            if (MonoResourceManager.Instance.Load<UnityEngine.Object>(key) is not GameObject loadedUI)
                 return null;
             
             // 오브젝트 풀 생성 (초기 1개, 최대 10개)

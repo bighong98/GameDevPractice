@@ -968,7 +968,7 @@ MonoBehaviour:
   anchorWorldObject: 0
   playEnterAnimation: 1
   enterAnimation: 0
-  playExitAnimation: 1
+  playExitAnimation: 0
   exitAnimation: 1
   storageUI: {fileID: 3806894848871151956}
   equipmentUI: {fileID: 2740406102695703382}

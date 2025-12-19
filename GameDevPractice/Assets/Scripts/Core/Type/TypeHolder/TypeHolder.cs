@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.AddressableAssets;
 using TH.Core.Pool;
 using TH.Utils;
+using TH.Core.Service;
 
 namespace TH.Resource
 {

@@ -15,7 +15,7 @@ namespace TH.Resource
 {
     // 리소스 로딩 관련 기능 접근을 위한 싱글톤 파사드(Facade)
     // ServiceLocator/Bootstrapper 이외 클래스에서는 ResourceManager 사용 권장 (직접 ServiceLocator.Get() x)
-    public sealed class ResourceManager : MonoSingleton<ResourceManager>
+    public sealed class MonoResourceManager : MonoSingleton<MonoResourceManager>
     {
         // PreLoad
         private bool preLoadState = false;
@@ -154,7 +154,7 @@ namespace TH.Resource
                 return clone;
             }
             
-            Logg.LogError($"{nameof(ResourceManager)}.Instantiate: Failed to load prefab: {key}");
+            Logg.LogError($"{nameof(MonoResourceManager)}.Instantiate: Failed to load prefab: {key}");
             return null;
         }
         // AssetReference기반 리소스 조회 (비동기 지원)
