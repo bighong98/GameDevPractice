@@ -110,7 +110,7 @@ namespace TH.Core
         protected virtual UniTask Clear(CancellationToken externalToken) 
         {
             externalToken.ThrowIfCancellationRequested();
-            Logg.Log($"[{GetType().Name}] Clear() invoked", Logg.LoggingMode.InProgress);
+            Logg.Log($"[{GetType().Name}] Clear() invoked", Logg.LoggingMode.Completed);
             // 플래그 초기화
             IsInit = false;
             IsInitAfterPreLoad = false;

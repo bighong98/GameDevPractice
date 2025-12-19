@@ -1,6 +1,4 @@
-using System;
-using UnityEngine;
-using TH.SceneManagement;
+using TH.Core.Service;
 
 namespace TH.UI
 {

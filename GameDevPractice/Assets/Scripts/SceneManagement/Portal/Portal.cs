@@ -1,9 +1,7 @@
-using System;
-using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using TH.SaveLoad;
-using TH.Utils;
+using TH.Core.Service;
 
 namespace TH.SceneManagement
 {

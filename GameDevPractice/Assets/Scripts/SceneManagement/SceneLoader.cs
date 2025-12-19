@@ -15,16 +15,17 @@ namespace TH.SceneManagement
     public class SceneLoader : ISceneLoader
     {
         private readonly IResourceLoader resourceLoader;
-
+        
+        // 현재/이전 씬 핸들 (현재 씬 상태 확인 및 이전 씬 언로드에 사용)
         private AsyncOperationHandle<SceneInstance> currentSceneHandle;
         private AsyncOperationHandle<SceneInstance> prevSceneHandle;
-        
-        private bool inFlight;
-        
+        // 씬 전환 중 확인 플래그
+        private bool isLoadingScene;
+        // 씬 전환 이벤트
         public event Func<CancellationToken, UniTask> OnBeforeSceneChanged;
         public event Func<CancellationToken, UniTask> OnAfterSceneChanged;
         public event Action<Scene> OnSceneChanged;
-        
+        // 로딩 씬 이름
         private const string LoadingSceneName = "LoadingScene";
         // PreLoad 완료 후 시작점 (ResourceLoader에서 0~0.7 범위로 진행도 보고)
         private const float PostPreLoadStartPoint = 0.7f;
@@ -46,6 +47,7 @@ private void Init()
             OnBeforeSceneChanged = (token) => UniTask.CompletedTask; 
             OnAfterSceneChanged = (token) => UniTask.CompletedTask; 
 #if UNITY_EDITOR
+            // 에디터 환경일 경우 플레이 시점 씬 캐시
             bootScene = SceneManager.GetActiveScene();
             bootSceneUnLoaded = false;
 #endif
@@ -84,11 +86,13 @@ private void Init()
         
         #region Load/Unload Scene
 
-        private async UniTask LoadLoadingSceneAsync(Action<float> onProgress = null, CancellationToken token = default)
+        public async UniTask LoadLoadingSceneAsync(Action<float> onProgress = null, CancellationToken token = default)
         {
             var loadScene = SceneManager.GetSceneByName(LoadingSceneName);
-            if (loadScene.IsValid() && loadScene.isLoaded)
+            if (loadScene.IsValid() && SceneManager.GetActiveScene() == loadScene || loadScene.isLoaded)
                 return;
+            
+            this.Log($"loadScene: {loadScene}, IsValid: {loadScene.IsValid()}, isLoaded: {loadScene.isLoaded}", Logg.LoggingMode.InProgress);
             
             await SceneManager.LoadSceneAsync(LoadingSceneName, LoadSceneMode.Additive).ToUniTask(cancellationToken: token);
 #if UNITY_EDITOR
@@ -124,8 +128,8 @@ private void Init()
                 }
             }
 
-            if (inFlight) return;
-            inFlight = true;
+            if (isLoadingScene) return;
+            isLoadingScene = true;
             float prevTimeScale = Time.timeScale;
 
             try
@@ -159,7 +163,7 @@ private void Init()
             }
             finally
             {
-                inFlight = false;
+                isLoadingScene = false;
                 Time.timeScale = prevTimeScale;
             }
         }

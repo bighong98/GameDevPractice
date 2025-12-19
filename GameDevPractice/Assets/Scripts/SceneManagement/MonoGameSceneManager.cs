@@ -2,15 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using TH.Core.Service;
-using UnityEngine;
 using UnityEngine.SceneManagement;
 using TH.Core;
 using TH.Utils;
 
 namespace TH.SceneManagement
 {
-    public class GameSceneManager : MonoSingleton<GameSceneManager>
+    public class MonoGameSceneManager : MonoSingleton<MonoGameSceneManager>
     {
         private Action<bool> initializationTasks;
         private readonly Queue<Func<UniTask>> cleanupTasks = new();

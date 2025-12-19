@@ -67,19 +67,24 @@ namespace TH.Core.Service
         private static async UniTask InitializeAsync()
         {
             // SceneLoader 인스턴스 생성 지연 방지
-            _ = ServiceLocator.Get<ISceneLoader>();
-            // await SceneManager.LoadSceneAsync(0, LoadSceneMode.Single);
+            var sceneLoader = ServiceLocator.Get<ISceneLoader>();
+            // 첫 씬은 무조건 로딩 씬으로 강제
+            await sceneLoader.LoadLoadingSceneAsync(); 
+            // 리소스 일괄 로드 시작
             await ServiceLocator.Get<IResourceLoader>().PreLoadAsync();
         }
 
         private static async UniTask InitializeSingletons()
         {
+            // 싱글톤 인스턴스 초기화
+            // 메인 쓰레드 환경 보장 (RuntimeInitializeOnLoadMethod으로 보장되나 추후 기능 확장을 고려해 미리 방어)
             await UniTask.SwitchToMainThread();
             _ = ResourceManager.Instance;
             _ = PoolManager.Instance;
             _ = UIManager.Instance;
             _ = InputManager.Instance;
             _ = SoundManager.Instance;
+            _ = GameSceneManager.Instance;
         }
     }
 }
