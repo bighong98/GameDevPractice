@@ -3,6 +3,7 @@ using TH.Core.Pool;
 using UnityEngine;
 using UnityEngine.Pool;
 using TH.Resource;
+using TH.Core.Service;
 
 namespace TH.Item
 {

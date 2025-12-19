@@ -4,6 +4,7 @@ using System;
 using Cysharp.Threading.Tasks;
 using TH.Core.Pool;
 using TH.Utils;
+using TH.Core.Service;
 
 public class Spawner<T> : MonoBehaviour where T : UnityEngine.Component, IPoolObject
 {

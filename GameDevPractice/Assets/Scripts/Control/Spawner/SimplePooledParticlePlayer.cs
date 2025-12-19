@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using TH.Core.Pool;
+using TH.Core.Service;
 
 public class SimplePooledParticlePlayer : MonoBehaviour, IPoolObject
 {

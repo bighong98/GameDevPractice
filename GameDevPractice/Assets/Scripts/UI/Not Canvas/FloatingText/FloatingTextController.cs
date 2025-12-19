@@ -6,6 +6,7 @@ using TH.UI.Data;
 using TH.Utils;
 using TMPro;
 using UnityEngine;
+using TH.Core.Service;
 
 public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextController
 {

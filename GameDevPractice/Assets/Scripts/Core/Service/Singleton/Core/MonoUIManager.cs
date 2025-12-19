@@ -291,11 +291,11 @@ namespace TH.UI
                     return;
                 }
                 // 기존 SceneUI가 있으면 풀에 반환
-                else PoolManager.Instance.ReleaseFromPool(sceneUI);
+                else MonoPoolManager.Instance.ReleaseFromPool(sceneUI);
             }
             
             // 새로운 SceneUI를 풀에서 가져오기
-            sceneUI = PoolManager.Instance.GetFromPool<SceneUI>(loadedSceneUI, canvases[(int)UICanvas.Scene].transform);
+            sceneUI = MonoPoolManager.Instance.GetFromPool<SceneUI>(loadedSceneUI, canvases[(int)UICanvas.Scene].transform);
             SetCanvas(sceneUI.gameObject, UICanvas.Scene);
             sceneUI.RefreshUI();
         }
@@ -320,7 +320,7 @@ namespace TH.UI
         // PopupUI가 아닌 일반 UI에 사용 (예: AnchoredOverlay UI)
         public T GetUIFromPool<T>(GameObject prefab, UICanvas canvasType) where T : BaseUI, IPoolObject
         {
-            return PoolManager.Instance.GetFromPool<T>(prefab, canvases[(int)canvasType]?.transform);
+            return MonoPoolManager.Instance.GetFromPool<T>(prefab, canvases[(int)canvasType]?.transform);
         }
 
         #endregion
@@ -481,7 +481,7 @@ namespace TH.UI
                 return null;
             
             // 오브젝트 풀 생성 (초기 1개, 최대 10개)
-            var uiPool = PoolManager.Instance.GetPool(
+            var uiPool = MonoPoolManager.Instance.GetPool(
                 loadedUI,
                 parent: GetUIParent(UICanvas.Popup),
                 capacity: DefaultReadyMadePopupCount, // 1

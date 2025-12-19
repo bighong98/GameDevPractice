@@ -1,10 +1,10 @@
 using System;
 using System.Collections;
 using TH.Core.Pool;
-using TH.Utils;
 using TH.UI.Data;
 using TMPro;
 using UnityEngine;
+using TH.Core.Service;
 
 public class DamageTextController : MonoBehaviour, IPoolObject, IFloatingTextController
 {

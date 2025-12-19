@@ -13,7 +13,7 @@ namespace TH.Core.Pool
     // prefab 단위로 풀을 일대일 매핑하여 보관 (반드시 prefab 사용할 것)
     // 풀 생성 시 TH.Core.Pool.IPoolObject 수명 이벤트 (OnCreate,OnGet,OnRelease,OnDestroy) 호출 보장
     // 오브젝트가 생성될 컨테이너 임의 지정 가능, 지정하지 않을 경우 (클래스타입-동일인스턴스)로 분류하여 자동으로 Hierarchy 정리
-    public class PoolManager : MonoSingleton<PoolManager>
+    public class MonoPoolManager : MonoSingleton<MonoPoolManager>
     {
         private const int DefaultCapacity = 10; // 풀 초기 생성 개수(생성 직후 실제 생성되진 않고 필요 시 lazy하게 생성됨)
         private const int DefaultMaxSize = 100; // 풀 상한 (초과 시 Release 대신 Destroy 로직 수행)
@@ -43,13 +43,13 @@ namespace TH.Core.Pool
         {
             if (prefab == null)
             {
-                Logg.LogError($"[{nameof(PoolManager)}.{nameof(GetPool)}] Prefab is null");
+                Logg.LogError($"[{nameof(MonoPoolManager)}.{nameof(GetPool)}] Prefab is null");
                 return null;
             }
             
             if (prefab.GetComponent<IPoolObject>() is not { } instance)
             {
-                Logg.LogError($"[{nameof(PoolManager)}.{nameof(GetPool)}] Prefab '{prefab.name}' does not have IPoolObject component");
+                Logg.LogError($"[{nameof(MonoPoolManager)}.{nameof(GetPool)}] Prefab '{prefab.name}' does not have IPoolObject component");
                 return null;
             }
             
@@ -186,13 +186,13 @@ namespace TH.Core.Pool
         {
             if (obj == null)
             {
-                Logg.LogError($"[{nameof(PoolManager)}.{nameof(ReleaseFromPool)}] Object is null");
+                Logg.LogError($"[{nameof(MonoPoolManager)}.{nameof(ReleaseFromPool)}] Object is null");
                 return;
             }
             
             if (obj.Origin == null)
             {
-                Logg.LogError($"[{nameof(PoolManager)}.{nameof(ReleaseFromPool)}] Object.Origin is null. Object: {(obj as UnityEngine.Object)?.name ?? "Unknown"}");
+                Logg.LogError($"[{nameof(MonoPoolManager)}.{nameof(ReleaseFromPool)}] Object.Origin is null. Object: {(obj as UnityEngine.Object)?.name ?? "Unknown"}");
                 return;
             }
 
@@ -202,7 +202,7 @@ namespace TH.Core.Pool
             }
             else
             {
-                Logg.LogWarning($"[{nameof(PoolManager)}.{nameof(ReleaseFromPool)}] Pool not found for origin: {obj.Origin.name}");
+                Logg.LogWarning($"[{nameof(MonoPoolManager)}.{nameof(ReleaseFromPool)}] Pool not found for origin: {obj.Origin.name}");
             }
         }
 
@@ -231,7 +231,7 @@ namespace TH.Core.Pool
         {
             foreach (var pool in pools)
             {
-                Logg.Log($"[{nameof(PoolManager)}] prefab: {pool.Key}, pool: {pool.Value}");
+                Logg.Log($"[{nameof(MonoPoolManager)}] prefab: {pool.Key}, pool: {pool.Value}");
             }
         }
 
