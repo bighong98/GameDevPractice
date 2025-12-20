@@ -380,43 +380,20 @@ public static class Util
     #endregion
 
     #region Addressables
-
-    // public static async UniTask<T> ExtractAssetRefAsync<T>(AssetReferenceT<T> reference) where T : UnityEngine.Object
-    // {
-    //     if (reference == null)
-    //     {
-    //         Debug.LogError($"[ExtractAssetReference] reference is null.");
-    //         return null;
-    //     }
-    //
-    //     if (!reference.RuntimeKeyIsValid())
-    //     {
-    //         Debug.LogError($"[ExtractAssetReference] Invalid RuntimeKey for AssetReference<{typeof(T).Name}>. Asset: {reference.Asset?.name}");
-    //         return null;
-    //     }
-    //
-    //     var handle = reference.OperationHandle.IsValid()
-    //         ? reference.OperationHandle
-    //         : reference.LoadAssetAsync();
-    //
-    //     await handle.Task;
-    //
-    //     if (handle.Status != AsyncOperationStatus.Succeeded)
-    //     {
-    //         Debug.LogError($"[ExtractAssetReference] Load failed for AssetReference<{typeof(T).Name}> with key: {reference.RuntimeKey}");
-    //         return null;
-    //     }
-    //
-    //     return handle.Result as T;
-    // }
-
+    
 #if UNITY_EDITOR
     public static string GetAddressKeyInEditor(AssetReference assetRef)
     {
-        var settings = AddressableAssetSettingsDefaultObject.Settings;
-        if (settings == null || string.IsNullOrEmpty(assetRef.AssetGUID)) return null;
+        if (string.IsNullOrEmpty(assetRef.AssetGUID)) return null;
+        return GetAddressKeyInEditor(assetRef.AssetGUID);
+    }
 
-        var entry = settings.FindAssetEntry(assetRef.AssetGUID);
+    public static string GetAddressKeyInEditor(string assetGuid)
+    {
+        var settings = AddressableAssetSettingsDefaultObject.Settings;
+        if (settings == null) return null;
+        
+        var entry = settings.FindAssetEntry(assetGuid);
         return entry?.address;
     }
 #endif

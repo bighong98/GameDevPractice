@@ -75,7 +75,7 @@ public class SimpleLoadingUI : MonoBehaviour, ILoadingUI
 
     public async UniTask ShowAsync(CancellationToken externalToken)
     {
-        this.Log($"ShowAsync called", Logg.LoggingMode.InProgress);
+        this.Log($"ShowAsync called", Logg.LoggingMode.Completed);
         await UniTask.WaitForEndOfFrame(cancellationToken: externalToken);
         Show();
     }

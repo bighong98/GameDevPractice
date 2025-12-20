@@ -27,8 +27,6 @@ namespace TH.SceneManagement
         public event Action<Scene> OnSceneChanged;
         // 로딩 씬 이름
         private const string LoadingSceneName = "LoadingScene";
-        // PreLoad 완료 후 시작점 (ResourceLoader에서 0~0.7 범위로 진행도 보고)
-        private const float PostPreLoadStartPoint = 0.7f;
         
         public SceneLoader(IResourceLoader resourceLoad)
         {
@@ -98,13 +96,6 @@ private void Init()
 #if UNITY_EDITOR
             await UnloadBootstrapSceneIfNeeded(token);
 #endif
-        }
-
-        private static async UniTask UnloadLoadingSceneAsync(CancellationToken token = default)
-        {
-            var loadScene = SceneManager.GetSceneByName(LoadingSceneName);
-            if (loadScene.IsValid() && loadScene.isLoaded)
-                await SceneManager.UnloadSceneAsync(loadScene).ToUniTask(cancellationToken: token);
         }
 
         public async UniTask LoadSceneAsync(object key, IEnumerable<Func<CancellationToken, UniTask>> preTasks = null,
@@ -216,13 +207,12 @@ private void Init()
                 try
                 {
                     if (handle.IsDone)
-                        await Addressables.UnloadSceneAsync(handle, true).
+                        await Addressables.UnloadSceneAsync(handle, autoReleaseHandle: true).
                             ToUniTask(cancellationToken: token);
                     else Addressables.Release(handle);
                 }
-                catch (Exception e) { throw new Exception($"[{nameof(SceneLoader)}] " +
-                                                          $"failed to load scene - {e.Message}"); 
-                }
+                catch (Exception e) { throw new Exception($"[{nameof(SceneLoader)}] " 
+                                                          + $"failed to load scene - {e.Message}"); }
             }
             
             await UniTask.NextFrame(token); // 1 프레임 대기

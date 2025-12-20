@@ -9,8 +9,6 @@ using TH.Utils;
 using UnityEngine;
 using TH.Item.Storage;
 using Cysharp.Threading.Tasks;
-using TH.Core.Pool;
-using UnityEngine.SceneManagement;
 
 namespace TH.Core.Service
 {

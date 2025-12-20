@@ -105,12 +105,14 @@ namespace TH.SaveLoad
                 {
                     if (LoadFile(saveFile) is not { } data) return;
 
+                    // 메인 쓰레드 환경, scene catalog 보장
                     await UniTask.SwitchToMainThread();
-                    await WaitForCatalog(); // scene catalog 보장
+                    await WaitForCatalog(); 
 
+                    // 저장된 씬이 없다면 디폴트 씬으로 이동
                     if (data.lastSceneEntry is not { sceneRef: { } key })
-                        key = sceneCatalog.entries[DefaultSceneIndexInCatalog].sceneRef; // 저장된 씬이 없다면 디폴트 씬으로 이동
-
+                        key = sceneCatalog.GetDefaultSceneEntry().sceneRef;
+                    
                     await sceneLoader.LoadSceneAsync(key);
                     await UniTask.Yield();
                     RestoreState(data);

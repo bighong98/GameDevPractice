@@ -31,3 +31,13 @@ MonoBehaviour:
       m_SubObjectGUID: 
       m_EditorAssetChanged: 1
       sceneName: Sandbox2
+  defaultSceneEntry:
+    key: Sandbox
+    sceneId: cbcc82c65a311f84994a9d24cf0b2546
+    sceneRef:
+      m_AssetGUID: cbcc82c65a311f84994a9d24cf0b2546
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+      sceneName: Sandbox
