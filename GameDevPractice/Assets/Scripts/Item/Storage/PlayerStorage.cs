@@ -6,6 +6,7 @@ using UnityEngine;
 using TH.Resource;
 using TH.Item.Storage;
 using System.Linq;
+using UnityEngine.SceneManagement;
 
 
 namespace TH.Item
@@ -1111,7 +1112,8 @@ namespace TH.Item
         public string UniqueIdentifier => InventoryIdentifier;
         public bool IsGlobal { get; } = true;
         public bool IsRegistered {get; set;} = false;
-        
+        public Scene TargetScene { get; } = default;
+
         public object CaptureState()
         {
             List<IGameItem> items = new();

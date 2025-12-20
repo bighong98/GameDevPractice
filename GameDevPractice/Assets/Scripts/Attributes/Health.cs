@@ -75,11 +75,6 @@ namespace TH.Attribute
 
         private void Start()
         {
-            // MonoUIManager.Instance.ReserveOperation(() =>
-            // {
-            //     if (!this.IsAlive()) return;
-            //     MonoUIManager.Instance.GetUIFromPool<HPBar>(HPBarPrefab, UICanvas.AnchoredOverlay).SetOwner(this);
-            // });
             UIManager.Instance.GetUIFromPool<HPBar>(HPBarPrefab, UICanvas.AnchoredOverlay).SetOwner(this);
         }
 
@@ -117,9 +112,9 @@ namespace TH.Attribute
 
         // 최대 체력 + 현재 체력 조정
         // 강제로 현재 체력을 조정하기 때문에 사망한 캐릭터에 사용 시 부활하므로 주의
-        private void SetHp(float amount)
+        private void SetHp(float amount, bool modifyMax = false)
         {
-            SetMaxHp(amount, byForce: true);
+            if (modifyMax) SetMaxHp(amount, byForce: true);
             SetCurrentHp(amount, byForce: true);
         }
  
@@ -150,7 +145,9 @@ namespace TH.Attribute
             maxHp.Value = amount;
             OnMaxHealthChanged?.Invoke(maxHp.Value);
         }
-        
+
+        #region IDamageable
+
         private void TakeDamage(float damage)
         {
             SetCurrentHp(hp.Value - damage); 
@@ -164,6 +161,8 @@ namespace TH.Attribute
             lastAttacker = hitResult.Attacker;
         }
 
+        #endregion
+        
         private void RefreshAliveState()
         {
             if (!IsDead && hp.Value.IsEqualFloat(0f))
@@ -207,18 +206,11 @@ namespace TH.Attribute
             Logg.Log($"OnLevelUp: hp: {hp.Value}", Logg.LoggingMode.Completed);
         }
 
-
-
-        #region ISavable
+        #region MyRegion
+        
         public object CaptureState()
         {
-            #region For Debug
-
-            // Logg.Log($"[Health.CaptureState()] \n"+ 
-            //           $"id: {GetComponent<SavableEntity>().GetUniqueIdentifier()} \n" + 
-            //           $"hp: {healthPoints}");
-
-            #endregion
+            this.Log($"[{gameObject.name}]CaptureState - hp: {hp.Value}" ,Logg.LoggingMode.Completed); 
             
             return new HealthSaveData
             {
@@ -229,11 +221,9 @@ namespace TH.Attribute
         public bool RestoreState(object state)
         {
             if (state is not HealthSaveData data) return false;
-            
-            Logg.Log($"[{gameObject.name}]RestoreState for Health: hp to {data.hp}" ,Logg.LoggingMode.InProgress); 
-            
+            //todo: MaxHp 최초 초기화보다 먼저 실행될 경우 체력값 세이브 적용이 누락될 수 있음
+            this.Log($"[{gameObject.name}]RestoreState for Health: hp to {data.hp}" ,Logg.LoggingMode.Completed); 
             SetHp(data.hp);
-            // RefreshAliveState();
 
             return true;
         }

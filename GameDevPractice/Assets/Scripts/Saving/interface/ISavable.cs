@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TH.Utils;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace TH.SaveLoad
 {
@@ -17,6 +18,7 @@ namespace TH.SaveLoad
         string UniqueIdentifier { get; }
         bool IsGlobal { get; }
         bool IsRegistered {get; set;}
+        Scene TargetScene { get; }
     }
 }
 

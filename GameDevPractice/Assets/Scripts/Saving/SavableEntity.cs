@@ -4,6 +4,7 @@ using TH.Core.Service;
 using TH.Utils;
 using UnityEngine;
 using UnityEditor;
+using UnityEngine.SceneManagement;
 
 namespace TH.SaveLoad
 {
@@ -22,8 +23,8 @@ namespace TH.SaveLoad
         private static readonly string UniqueIdentifierPropertyName = "uniqueIdentifier";
 
         public string UniqueIdentifier => uniqueIdentifier;
-
         public bool IsRegistered {get; set;} = false;
+        public Scene TargetScene => gameObject.scene;
 
         private void Awake()
         {
@@ -54,7 +55,7 @@ namespace TH.SaveLoad
 
         public Dictionary<string, object> CaptureState()
         {
-            this.Log($"{gameObject.name} - CaptureState", Logg.LoggingMode.InProgress);
+            this.Log($"{gameObject.name} - CaptureState", Logg.LoggingMode.Completed);
             var state = new Dictionary<string, object>();
             
             foreach (var savable in savables)
@@ -78,7 +79,7 @@ namespace TH.SaveLoad
         
         public void RestoreState(Dictionary<string, object> state)
         {
-            this.Log($"{gameObject.name} - RestoreState", Logg.LoggingMode.InProgress);
+            this.Log($"{gameObject.name} - RestoreState", Logg.LoggingMode.Completed);
             foreach (var savable in savables)
             {
                 if (savable == null) continue;

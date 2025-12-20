@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using TH.Utils;
 using UnityEditor.AddressableAssets;
 using UnityEditor.AddressableAssets.Settings;
 using UnityEngine;
@@ -263,7 +264,7 @@ public static class Util
         // 멀티캐스트된 콜백들 분해
         var list = multicast.GetInvocationList();
         if (list.Length == 0) return;
-
+        
         if (maxConcurrency < 1) maxConcurrency = 1;
         token.ThrowIfCancellationRequested();
         // SemaphoreSlim으로 동시 수행 가능한 작업 개수 제한 

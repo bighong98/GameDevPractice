@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using TH.Core;
 using TH.SaveLoad;
 using TH.Attribute;
+using TH.Utils;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -85,14 +86,16 @@ namespace TH.Movement
         public bool RestoreState(object state)
         {
             if (state is not MoverSaveData data) return false;
+            if (!TryGetComponent(out navMeshAgent)) return false;
             
-            var nav = GetComponent<NavMeshAgent>();
-            nav.enabled = false; // NavMeshAgent의 transform 간섭 차단 방지
+            // NavMeshAgent의 transform 간섭 차단 방지
+            navMeshAgent.enabled = false; 
             
+            this.Log($"({gameObject.name}) - set position: {data.position.ToVector()}, set rotation: {data.rotation.ToVector()}", Logg.LoggingMode.Completed);
             transform.position = data.position.ToVector();
             transform.eulerAngles = data.rotation.ToVector();
             
-            nav.enabled = true;
+            navMeshAgent.enabled = true;
             return true;
         }
 

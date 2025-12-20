@@ -18,8 +18,8 @@ namespace TH.Attribute
         public event Action<float> OnXpChanged;
         public event Action<int> OnLevelChanged;
 
-        public int GetCurrLevel { get; private set; }
-        public float GetCurrXp { get; private set; }
+        public int GetCurrLevel => currentLevel.Value;
+        public float GetCurrXp => currentXp;
 
         private LazyValue<int> currentLevel;
         private float currentXp;
@@ -47,8 +47,6 @@ namespace TH.Attribute
         private void InitBeforeLoad()
         {
             currentLevel = new LazyValue<int>(CalculateLevel);
-            GetCurrLevel = currentLevel.Value;
-            GetCurrXp = currentXp;
         }
         
         private void InitAfterLoad()
@@ -190,8 +188,11 @@ namespace TH.Attribute
 
         public object CaptureState()
         {
+            this.Log($"- ({gameObject.name}) CaptureState invoked", Logg.LoggingMode.Completed);
+
             if (GetCurrLevel is { } level && GetCurrXp is { } xp)
             {
+                this.Log($"- ({gameObject.name}) CaptureState invoked - level: {level}), xp: {xp}", Logg.LoggingMode.InProgress);
                 return new PlayerLevelXpData(level, xp);
             }
 
@@ -200,8 +201,10 @@ namespace TH.Attribute
 
         public bool RestoreState(object state)
         {
+            this.Log($"- ({gameObject.name}) RestoreState invoked", Logg.LoggingMode.Completed);
             if (state is PlayerLevelXpData { } data)
             {
+                this.Log($"- ({gameObject.name}) RestoreState invoked - SetLevel({data.level}), SetXp({data.xp})", Logg.LoggingMode.InProgress);
                 SetLevel(data.level);
                 SetXp(data.xp);
                 return true;

@@ -133,6 +133,7 @@ private void Init()
                 // 타겟 씬 비동기 로드 
                 var result = await LoadSceneWithAddressablesAsync(key, onProgress, token);
                 // 씬 전환 전 사전작업 처리
+                this.Log($"OnBeforeSceneChanged starts - scene: {result.Scene.name}", Logg.LoggingMode.InProgress);
                 await UniTask.WhenAll(
                     OnBeforeSceneChanged.InvokeAllThrottledAsync(token),
                     RunPreTasks(preTasks, token)
@@ -143,7 +144,8 @@ private void Init()
                 // 씬 매니저에게 Active Scene 변동 전달 (멀티 씬 문제 대응)
                 SceneManager.SetActiveScene(result.Scene);
                 ReportProgress(1); // 진행도 100% 전달
-
+                
+                this.Log($"OnAfterSceneChanged starts - scene: {result.Scene.name}", Logg.LoggingMode.InProgress);
                 // 이전 씬 언로드 및 씬 전환 이벤트 호출
                 await UniTask.WhenAll(
                     UnloadPreviousSceneAsync(token),

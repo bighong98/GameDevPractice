@@ -36,6 +36,8 @@ namespace TH.Stats
 
         public int GetMaxLevel(GameStats stats, CharacterType characterType)
         {
+            InitializeLookupTable();
+            
             if (characterProgressionLookup.TryGetValue(characterType, out var progressionStats) &&
                 progressionStats.TryGetValue(stats, out var levels))
             {
