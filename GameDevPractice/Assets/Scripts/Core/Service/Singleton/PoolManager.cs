@@ -15,7 +15,7 @@ namespace TH.Core.Service
     {
         // <prefab-오브젝트 풀> 목록
         private readonly Dictionary<GameObject, ObjectPool<IPoolObject>> pools = new Dictionary<GameObject, ObjectPool<IPoolObject>>();
-        private readonly PoolContainer poolContainer = new PoolContainer(); // 풀 오브젝트 컨테이너 생성 담당, serialize for debug
+        private readonly PoolContainer poolContainer = new (); // 풀 오브젝트 컨테이너 생성 담당
 
         private const int DefaultCapacity = 10; // 풀 초기 생성 개수(생성 직후 실제 생성되진 않고 필요 시 lazy하게 생성됨)
         private const int DefaultMaxSize = 100; // 풀 상한 (초과 시 Release 대신 Destroy 로직 수행)
@@ -217,14 +217,13 @@ namespace TH.Core.Service
                 return;
             }
 
-            if (pools.TryGetValue(obj.Origin, out var pool))
-            {
-                pool.Release(obj);
-            }
-            else
+            if (!pools.TryGetValue(obj.Origin, out var pool))
             {
                 Logg.LogWarning($"[{nameof(PoolManager)}.{nameof(ReleaseFromPool)}] Pool not found for origin: {obj.Origin.name}");
+                return;
             }
+
+            pool.Release(obj);
         }
 
         #endregion

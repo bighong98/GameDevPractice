@@ -1,7 +1,6 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using TH.UI;
 using TH.Core.Service;
 using TH.SceneManagement;
 using TH.Utils;
@@ -11,122 +10,123 @@ using UnityEngine.UI;
 public class SimpleLoadingUI : MonoBehaviour, ILoadingUI
 {
     [SerializeField] private Slider slider;
-    private float targetRatio;
 
-    private IProgressSubscription sub;
+    // 표시용 값 / 목표 값
+    private float _displayValue;
+    private float _targetValue;
+
+    // 진행도 바 보간 속도
+    private const float FollowSpeed = 0.5f;
+
+    private IProgressSubscription _sub;
+    private ISceneLoader _sceneLoader;
+
+    private CancellationTokenSource _animCts;
+
+    private void Awake()
+    {
+        _sceneLoader = ServiceLocator.Get<ISceneLoader>();
+    }
 
     private void OnEnable()
     {
-        if (ServiceLocator.Get<ISceneLoader>() is { } sceneLoader)
-        {
-            sub = sceneLoader.SubscribeProgress(SetProgress);
-            
-            sceneLoader.OnBeforeSceneChanged += ShowAsync;
-            sceneLoader.OnAfterSceneChanged += HideAsync;
-        }
+        // 구독 갱신
+        _sub = _sceneLoader.SubscribeProgress(SetProgress);
+        _sceneLoader.OnBeforeSceneChanged += ShowAsync;
+        _sceneLoader.OnAfterSceneChanged += HideAsync;
+        // 바 애니메이션 루프 시작
+        StartBarLoop();
     }
 
     private void OnDisable()
     {
-        sub?.Dispose();
-        sub = null;
+        // 바 애니메이션 루프 중지
+        StopBarLoop();
+        // 구독 해제
+        _sub?.Dispose();
+        _sub = null;
+        _sceneLoader.OnBeforeSceneChanged -= ShowAsync;
+        _sceneLoader.OnAfterSceneChanged -= HideAsync;
+        _sceneLoader = null;
     }
+
+    public void SetProgress(float ratio)
+    {
+        ratio = Mathf.Clamp01(ratio);
+        _targetValue = Mathf.Max(_targetValue, ratio);
+    }
+
+    #region Show/Hide
 
     public void Show()
     {
-        if (easing) StopBarAnimation();
-        slider.value = 0f;
-
         if (gameObject.activeSelf) return;
+        
         gameObject.SetActive(true);
+        ResetBar();
     }
 
     public void Hide()
     {
-        if (easing) StopBarAnimation();
-        
         if (!gameObject.activeSelf) return;
-        gameObject.SetActive(false);
-    }
-    
-    public void SetProgress(float ratio)
-    {
-        SetBar(ratio);
-    }
-
-    private void SetBar(float ratio)
-    {
-        if (slider == null)
-        {
-            Logg.LogWarning($"[SimpleLoadingUI] slider is null but invoked");
-            return;
-        }
-        // slider.value = Mathf.Clamp01(ratio);
-        ChangeFillSlowly(slider, slider.value, ratio, EasingSpeed).Forget();
-    }
-
-    public UniTask ShowAsync(CancellationToken externalToken)
-    {
-        UniTask.WaitForEndOfFrame(cancellationToken: externalToken);
-        
-        gameObject.SetActive(true);
-        
-        return UniTask.CompletedTask;
-    }
-
-    public UniTask HideAsync(CancellationToken externalToken)
-    {
-        UniTask.WaitForEndOfFrame(cancellationToken: externalToken);
         
         gameObject.SetActive(false);
-        
-        return UniTask.CompletedTask;
     }
-    
-    private bool easing; // 천천히 움직이는 bar 애니메이션 실행중인지 여부
-    private const float EasingSpeed = 0.5f;
-    private async UniTask ChangeFillSlowly(Slider s, float from, float to, float speed)
+
+    public async UniTask ShowAsync(CancellationToken externalToken)
     {
-        if (easing) StopBarAnimation(); // 기존 바 애니메이션 중지
-        ClarifyToken();
-            
-        float curr = from;
-        easing = true;
-        while (!barAnimToken.IsCancellationRequested && !Mathf.Approximately(curr, to))
+        this.Log($"ShowAsync called", Logg.LoggingMode.InProgress);
+        await UniTask.WaitForEndOfFrame(cancellationToken: externalToken);
+        Show();
+    }
+
+    public async UniTask HideAsync(CancellationToken externalToken)
+    {
+        await UniTask.WaitForEndOfFrame(cancellationToken: externalToken);
+        Hide();
+    }
+
+    #endregion
+
+    #region Handle Bar Loop
+
+    private void ResetBar()
+    {
+        _displayValue = 0f;
+        _targetValue = 0f;
+        if (slider != null) slider.value = 0f;
+    }
+
+    private void StartBarLoop()
+    {
+        StopBarLoop();
+
+        _animCts = CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken);
+        BarLoop(_animCts.Token).Forget();
+    }
+
+    private void StopBarLoop()
+    {
+        if (_animCts == null) return;
+        _animCts.Cancel();
+        _animCts.Dispose();
+        _animCts = null;
+    }
+
+    private async UniTask BarLoop(CancellationToken token)
+    {
+        while (!token.IsCancellationRequested)
         {
-            try
-            {
-                await UniTask.NextFrame(PlayerLoopTiming.LastUpdate, barAnimToken).SuppressCancellationThrow();
-            }
-            catch (Exception e)
-            {
-                Logg.LogError($"[{nameof(HPBar)}] error occurred while {nameof(ChangeFillSlowly)}(). {e}");
-                break;
-            }
-            curr = Mathf.MoveTowards(curr, to, speed * Time.deltaTime);
-            s.value = curr;
-        }
+            await UniTask.NextFrame(PlayerLoopTiming.LastUpdate, token).SuppressCancellationThrow();
+
+            if (slider == null) continue;
+            if (!gameObject.activeSelf) continue;
             
-        if (s.IsAlive())
-            s.value = to;
-        easing = false;
+            _displayValue = Mathf.MoveTowards(_displayValue, _targetValue, FollowSpeed * Time.unscaledDeltaTime);
+            slider.value = _displayValue;
+        }
     }
 
-    private CancellationTokenSource barAnimCTS = new ();
-    private CancellationToken barAnimToken;
-
-    private void StopBarAnimation()
-    {
-        barAnimCTS.Cancel();
-        barAnimCTS.Dispose();
-
-        easing = false;
-    }
-    private void ClarifyToken()
-    {
-        if (barAnimToken is { CanBeCanceled: true, IsCancellationRequested: false }) return;
-        
-        barAnimCTS = CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken);
-        barAnimToken = barAnimCTS.Token;
-    }
+    #endregion
+    
 }
