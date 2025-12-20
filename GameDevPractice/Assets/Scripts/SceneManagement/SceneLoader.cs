@@ -98,7 +98,6 @@ private void Init()
 #if UNITY_EDITOR
             await UnloadBootstrapSceneIfNeeded(token);
 #endif
-            await WaitForPreLoad(token);
         }
 
         private static async UniTask UnloadLoadingSceneAsync(CancellationToken token = default)
@@ -135,7 +134,11 @@ private void Init()
             try
             {
                 // 로딩 씬 로드(최초 1회)
-                await LoadLoadingSceneAsync(token: token);
+                // 리소스 일괄 로드 대기 (최초 1회)
+                await UniTask.WhenAll(
+                    LoadLoadingSceneAsync(token: token),
+                    WaitForPreLoad(token)
+                );
                 // 타겟 씬 비동기 로드 
                 var result = await LoadSceneWithAddressablesAsync(key, onProgress, token);
                 // 씬 전환 전 사전작업 처리
