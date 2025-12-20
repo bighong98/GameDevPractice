@@ -59,11 +59,13 @@ namespace TH.SaveLoad
 
         public async UniTask Save()
         {
+            this.Log($"Save() invoked", Logg.LoggingMode.InProgress);
             await saveSystem.SaveAsync(defaultSaveFile);
         }
 
         public async UniTask Load()
         {
+            this.Log($"Load() invoked", Logg.LoggingMode.InProgress);
             await saveSystem.LoadAsync(defaultSaveFile);
         }
 

@@ -114,15 +114,6 @@ namespace TH.Core
 
         #endregion
 
-        // private void Update()
-        // {
-        //     // todo: 제거 후 Input System 사용
-        //     if (Input.GetKeyDown(KeyCode.I))
-        //     {
-        //         UIManager.Instance.ShowPopupUI<TH.UI.InventoryUI>("InventoryUI.prefab");
-        //     }
-        // }
-
         #region Player Input Handle // 플레이어 캐릭터 조작에 사용하는 입력
         
         public void OnMove(InputAction.CallbackContext context)
@@ -155,10 +146,9 @@ namespace TH.Core
         
         public void OnEscape(InputAction.CallbackContext context)
         {
-            if (context.phase == InputActionPhase.Performed)
-            {
-                OnEscaped?.Invoke();
-            }
+            if (context.phase != InputActionPhase.Performed) return;
+
+            OnEscaped?.Invoke();
         }
 
         public void OnPoint(InputAction.CallbackContext context)
@@ -192,16 +182,19 @@ namespace TH.Core
 
         public void OnInventory(InputAction.CallbackContext context)
         {
+            if (context.phase != InputActionPhase.Performed) return;
             OnInventoryCalled?.Invoke();
         }
 
         public void OnSave(InputAction.CallbackContext context)
         {
+            if (context.phase != InputActionPhase.Performed) return;
             OnSaveCalled?.Invoke();
         }
 
         public void OnLoad(InputAction.CallbackContext context)
         {
+            if (context.phase != InputActionPhase.Performed) return;
             OnLoadCalled?.Invoke();
         }
 

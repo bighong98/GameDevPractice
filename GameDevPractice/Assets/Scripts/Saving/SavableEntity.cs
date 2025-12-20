@@ -54,6 +54,7 @@ namespace TH.SaveLoad
 
         public Dictionary<string, object> CaptureState()
         {
+            this.Log($"{gameObject.name} - CaptureState", Logg.LoggingMode.InProgress);
             var state = new Dictionary<string, object>();
             
             foreach (var savable in savables)
@@ -77,6 +78,7 @@ namespace TH.SaveLoad
         
         public void RestoreState(Dictionary<string, object> state)
         {
+            this.Log($"{gameObject.name} - RestoreState", Logg.LoggingMode.InProgress);
             foreach (var savable in savables)
             {
                 if (savable == null) continue;
