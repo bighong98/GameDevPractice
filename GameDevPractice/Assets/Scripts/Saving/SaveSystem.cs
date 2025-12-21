@@ -117,17 +117,21 @@ namespace TH.SaveLoad
 
                     // 메인 쓰레드 환경, scene catalog 보장
                     await UniTask.SwitchToMainThread();
-                    await WaitForCatalog(); 
+                    await WaitForCatalog();
 
                     // 저장된 씬이 없다면 디폴트 씬으로 이동
                     if (data.lastSceneEntry is not { sceneRef: { } key })
                         key = sceneCatalog.GetDefaultSceneEntry().sceneRef;
-                    
+
                     await sceneLoader.LoadSceneAsync(key);
                     await UniTask.Yield();
                     RestoreState(data);
                 }
-                finally { isLoading = false; }
+                finally
+                {
+                    isLoading = false;
+                    this.Log($"LoadLastScene() 종료", Logg.LoggingMode.InProgress);
+                }
             });
         }
 
@@ -298,7 +302,7 @@ namespace TH.SaveLoad
             data.lastSceneEntry = sceneEntry;
 
             SaveFile(saveFile, data);
-            this.Log("[SaveSystem] SaveCoreAsync() 완료");
+            this.Log("[SaveSystem] SaveCoreAsync() 완료", Logg.LoggingMode.InProgress);
         }
         
         private async UniTask LoadCoreAsync(string saveFile)
@@ -339,7 +343,7 @@ namespace TH.SaveLoad
             }
             else
             {
-                Debug.LogWarning("[SaveSystem] 현재 씨에 저장 가능한 엔티티 없음");
+                Debug.LogWarning("[SaveSystem] 현재 씬에 저장 가능한 엔티티 없음");
             }
             this.Log("CaptureState() 완료 - sceneEntries: {sceneEntries.Count}, globalEntries: {globalEntries.Count}");
         }
@@ -440,15 +444,15 @@ namespace TH.SaveLoad
             }
             else
             {
-                Logg.LogWarning("[SaveSystem] 현재 씬의 엔티티 없음");
+                Logg.LogWarning($"[{GetType().Name}] RestoreState() - 현재 씬의 엔티티 없음 (currentSceneEntry: {currentSceneEntry})");
             }
             
-            this.Log("LoadedStateCache 업데이트 시작", Logg.LoggingMode.Completed);
+            this.Log("LoadedStateCache 업데이트 시작", Logg.LoggingMode.InProgress);
             foreach (var (id, stateDict) in grouped)
             {
                 LoadedStateCache.TryAdd(id, stateDict);
             }
-            this.Log("RestoreState(SaveFileData) 완료", Logg.LoggingMode.Completed);
+            this.Log("RestoreState(SaveFileData) 완료", Logg.LoggingMode.InProgress);
         }
 
         private static void GetEntryFromSave(SaveFileData data, List<SavableEntry> entries, SceneEntry currentSceneEntry)

@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace TH.SceneManagement
 {
-    public interface IProgressSubscription : IDisposable
+    public interface IBroadcastSubscription : IDisposable
     {
     
     }

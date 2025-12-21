@@ -4,12 +4,15 @@ using Cysharp.Threading.Tasks;
 using TH.Core.Service;
 using TH.SceneManagement;
 using TH.Utils;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class SimpleLoadingUI : MonoBehaviour, ILoadingUI
 {
     [SerializeField] private Slider slider;
+    [SerializeField] private TextMeshProUGUI handleText;
+    [SerializeField] private TextMeshProUGUI progressingTaskText;
 
     // 표시용 값 / 목표 값
     private float _displayValue;
@@ -18,7 +21,7 @@ public class SimpleLoadingUI : MonoBehaviour, ILoadingUI
     // 진행도 바 보간 속도
     private const float FollowSpeed = 0.5f;
 
-    private IProgressSubscription _sub;
+    private IBroadcastSubscription _sub;
     private ISceneLoader _sceneLoader;
 
     private CancellationTokenSource _animCts;
@@ -26,6 +29,16 @@ public class SimpleLoadingUI : MonoBehaviour, ILoadingUI
     private void Awake()
     {
         _sceneLoader = ServiceLocator.Get<ISceneLoader>();
+
+        if (handleText == null)
+        {
+            handleText = Util.FindChild<TextMeshProUGUI>(gameObject, "handleText", recursive: true);
+        }
+        
+        if (progressingTaskText == null)
+        {
+            progressingTaskText = Util.FindChild<TextMeshProUGUI>(gameObject, "progressingTaskText", recursive: true);
+        }
     }
 
     private void OnEnable()
@@ -50,10 +63,10 @@ public class SimpleLoadingUI : MonoBehaviour, ILoadingUI
         _sceneLoader = null;
     }
 
-    public void SetProgress(float ratio)
+    public void SetProgress((float, string) progressMessage)
     {
-        ratio = Mathf.Clamp01(ratio);
-        _targetValue = Mathf.Max(_targetValue, ratio);
+        _targetValue = Mathf.Max(_targetValue, Mathf.Clamp01(progressMessage.Item1));
+        progressingTaskText.SetText(progressMessage.Item2);
     }
 
     #region Show/Hide
@@ -124,6 +137,7 @@ public class SimpleLoadingUI : MonoBehaviour, ILoadingUI
             
             _displayValue = Mathf.MoveTowards(_displayValue, _targetValue, FollowSpeed * Time.unscaledDeltaTime);
             slider.value = _displayValue;
+            handleText.SetText($"{(_displayValue * 100):F2}%");
         }
     }
 

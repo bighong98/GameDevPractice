@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using TH.SaveLoad;
+using TH.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -68,14 +69,7 @@ namespace TH.Resource
             // 빌드 환경: 기본 씬 엔트리 반환
             return defaultSceneEntry;
         }
-
-        private string CurrSceneName => SceneManager.GetActiveScene().name;
-
-        public bool TryGetCurrentSceneEntry(out SceneEntry sceneEntry)
-        {
-            return TryGetSceneEntry(CurrSceneName, out sceneEntry);
-        }
-
+        
         public bool TryGetSceneEntry(Scene scene, out SceneEntry sceneEntry)
         {
             return TryGetSceneEntry(scene.name, out sceneEntry);
@@ -100,6 +94,12 @@ namespace TH.Resource
 
             return false;
         }
+        
+        private string CurrSceneName => SceneManager.GetActiveScene().name;
+        public bool TryGetCurrentSceneEntry(out SceneEntry sceneEntry)
+        {
+            return TryGetSceneEntry(CurrSceneName, out sceneEntry);
+        }
 
         public SceneEntry GetCurrentSceneEntry()
         {
@@ -108,6 +108,7 @@ namespace TH.Resource
 
         public SceneEntry FindByGuid(string guid)
         {
+            this.Log($"FindByGuid({guid})", Logg.LoggingMode.InProgress);
             if (string.IsNullOrEmpty(guid) || entries == null || entries.Count == 0) return null;
 
             foreach (var entry in entries)

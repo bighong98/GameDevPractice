@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine.AddressableAssets;
@@ -21,12 +22,16 @@ namespace TH.SceneManagement
         private AsyncOperationHandle<SceneInstance> prevSceneHandle;
         // 씬 전환 중 확인 플래그
         private bool isLoadingScene;
+        
         // 씬 전환 이벤트
         public event Func<CancellationToken, UniTask> OnBeforeSceneChanged;
         public event Func<CancellationToken, UniTask> OnAfterSceneChanged;
         public event Action<Scene> OnSceneChanged;
+        
         // 로딩 씬 이름
         private const string LoadingSceneName = "LoadingScene";
+        private const string SceneCatalogKey =  "SceneCatalogSO";
+        private SceneCatalogSO sceneCatalog;
         
         public SceneLoader(IResourceLoader resourceLoad)
         {
@@ -57,17 +62,28 @@ private void Init()
         
         private async UniTask WaitForPreLoad(CancellationToken token = default)
         {
-            // Init()에서 이미 구독했으므로 여기서는 로드 완료만 대기
-            if (resourceLoader.IsLoadedAll(Constants.PreLoadLabel))
-                return;
-
-            var tcs = new UniTaskCompletionSource();
-            resourceLoader.WaitForPreLoad(Constants.PreLoadLabel, () => tcs.TrySetResult());
-
-            using (token.Register(() => tcs.TrySetCanceled(token)))
+            // PreLoad가 완료되지 않은 경우 대기
+            if (!resourceLoader.IsLoadedAll(Constants.PreLoadLabel))
             {
-                await tcs.Task;
+                var tcs = new UniTaskCompletionSource();
+                resourceLoader.WaitForPreLoad(Constants.PreLoadLabel, () => tcs.TrySetResult());
+
+                using (token.Register(() => tcs.TrySetCanceled(token)))
+                {
+                    await tcs.Task;
+                }
             }
+            
+            // PreLoad 완료 여부와 상관없이 sceneCatalog가 없으면 로드
+            if (sceneCatalog == null)
+            {
+                await LoadSceneCatalogAsync(token);
+            }
+        }
+
+        private async UniTask LoadSceneCatalogAsync(CancellationToken token)
+        {
+            sceneCatalog = await resourceLoader.LoadAsync<SceneCatalogSO>(SceneCatalogKey, token);
         }
 
         private void SubscribeGlobalPreLoadProgress()
@@ -75,9 +91,9 @@ private void Init()
             resourceLoader.SubscribeGlobalPreLoadProgress(ReportingProgressAction);
         }
 
-        void ReportingProgressAction(float globalProgress)
+        void ReportingProgressAction((float, string) globalProgress)
         {
-            ReportProgress(globalProgress);
+            ReportProgress(globalProgress, format: ProgressTextFormat.LoadingAssetsIn);
         }
 
         #endregion
@@ -90,7 +106,7 @@ private void Init()
             if (loadScene.IsValid() && SceneManager.GetActiveScene() == loadScene || loadScene.isLoaded)
                 return;
             
-            this.Log($"loadScene: {loadScene}, IsValid: {loadScene.IsValid()}, isLoaded: {loadScene.isLoaded}", Logg.LoggingMode.InProgress);
+            this.Log($"loadScene: {loadScene}, IsValid: {loadScene.IsValid()}, isLoaded: {loadScene.isLoaded}", Logg.LoggingMode.Completed);
             
             await SceneManager.LoadSceneAsync(LoadingSceneName, LoadSceneMode.Additive).ToUniTask(cancellationToken: token);
 #if UNITY_EDITOR
@@ -130,22 +146,33 @@ private void Init()
                     LoadLoadingSceneAsync(token: token),
                     WaitForPreLoad(token)
                 );
+                
+                this.Log($"WaitForPreLoad 완료", Logg.LoggingMode.Completed);
+
+                // 진행도 70% + 현재 씬 이름 전달 (SceneCatalogSO로 선 조회)
+                var sceneName = GetSceneNameFromKey(key);
+                this.Log($"sceneName: {sceneName}", Logg.LoggingMode.Completed);
+                ReportProgress((0.7f, sceneName), format: ProgressTextFormat.LoadingScene);
                 // 타겟 씬 비동기 로드 
                 var result = await LoadSceneWithAddressablesAsync(key, onProgress, token);
                 // 씬 전환 전 사전작업 처리
-                this.Log($"OnBeforeSceneChanged starts - scene: {result.Scene.name}", Logg.LoggingMode.InProgress);
+                this.Log($"OnBeforeSceneChanged starts - scene: {result.Scene.name}", Logg.LoggingMode.Completed);
                 await UniTask.WhenAll(
                     OnBeforeSceneChanged.InvokeAllThrottledAsync(token),
                     RunPreTasks(preTasks, token)
                 );
+                
                 // 타겟 씬 활성화
                 await result.ActivateAsync().ToUniTask(cancellationToken: token);
-                Time.timeScale = 0f; // 게임 시간 일시정지 (todo: timeScale 대신 게임 플레이 일시정지 기능 추가하여 대체)
+                // 게임 시간 일시정지 (todo: timeScale 대신 게임 플레이 일시정지 기능 추가하여 대체)
+                Time.timeScale = 0f;
+                
                 // 씬 매니저에게 Active Scene 변동 전달 (멀티 씬 문제 대응)
                 SceneManager.SetActiveScene(result.Scene);
-                ReportProgress(1); // 진행도 100% 전달
+                // 진행도 100% 전달
+                ReportProgress((1f, "Loading ended. Wait for seconds")); 
                 
-                this.Log($"OnAfterSceneChanged starts - scene: {result.Scene.name}", Logg.LoggingMode.InProgress);
+                this.Log($"OnAfterSceneChanged starts - scene: {result.Scene.name}", Logg.LoggingMode.Completed);
                 // 이전 씬 언로드 및 씬 전환 이벤트 호출
                 await UniTask.WhenAll(
                     UnloadPreviousSceneAsync(token),
@@ -155,13 +182,21 @@ private void Init()
             }
             catch (Exception e)
             {
-                Logg.Log($"exception occured while loadingScene '{key}', {e}");
+                Logg.LogWarning($"exception occured while loadingScene '{key}', {e}");
             }
             finally
             {
                 isLoadingScene = false;
                 Time.timeScale = prevTimeScale;
             }
+        }
+        
+        string GetSceneNameFromKey(object key)
+        {
+            if (key is AssetReference { AssetGUID: { Length: > 0 } sceneGuid } 
+                && sceneCatalog.FindByGuid(sceneGuid) is { key: { Length: > 0 } targetSceneName }) 
+                return targetSceneName;
+            return string.Empty;
         }
         
         private async UniTask RunPreTasks(IEnumerable<Func<CancellationToken, UniTask>> preTasks, CancellationToken token)
@@ -231,7 +266,7 @@ private void Init()
                 var prevSceneName = prev.Scene.name; // 디버깅용 씬 이름 클로저
                 await Addressables.UnloadSceneAsync(prevSceneHandle, autoReleaseHandle: true)
                     .ToUniTask(cancellationToken: token);
-                Logg.Log($"[SceneLoader] scene '{prevSceneName}' is unloaded", Logg.LoggingMode.InProgress);
+                Logg.Log($"[SceneLoader] scene '{prevSceneName}' is unloaded", Logg.LoggingMode.Completed);
             }
             catch (Exception e)
             {
@@ -241,7 +276,7 @@ private void Init()
             finally
             {
                 prevSceneHandle = default; 
-                Progress.Clear();
+                ProgressMessage.Clear();
             }
         }
 
@@ -249,18 +284,79 @@ private void Init()
 
         #region Progress handle
         
-        public IProgressBroadcaster Progress { get; } = new ProgressBroadcaster();
+        public IMessageBroadcaster<(float, string)> ProgressMessage { get; } = new MessageBroadcaster<(float, string)>();
 
-        public IProgressSubscription SubscribeProgress(Action<float> onProgress)
+        public IBroadcastSubscription SubscribeProgress(Action<(float, string)> onProgress)
         {
-            return Progress.Subscribe(onProgress);
+            return ProgressMessage.Subscribe(onProgress);
         }
         
-        private void ReportProgress(float p, Action<float> additive = null)
+        private void ReportProgress((float, string) p, Action<(float, string)> additive = null,
+            ProgressTextFormat format = ProgressTextFormat.Raw)
         {
-            Progress?.Report(p);
-            additive?.Invoke(p);
-            Logg.Log($"[SceneLoader] progress: {p}", Logg.LoggingMode.Completed);
+            ProgressMessage?.Report((p.Item1, FormatProgressText(p.Item2, format)));
+            additive?.Invoke((p.Item1, FormatProgressText(p.Item2, format)));
+            this.Log($"ReportProgress: {(p.Item1, FormatProgressText(p.Item2, format))}", Logg.LoggingMode.Completed);
+        }
+        
+        public enum ProgressTextFormat
+        {
+            LoadingAssetsIn,     // "loading assets in {raw}..."
+            LoadingScene,        // "loading scene: {raw}..."
+            UnloadingScene,      // "unloading scene: {raw}..."
+            PreloadingLabel,     // "preloading label: {raw}..."
+            Initializing,        // "initializing: {raw}..."
+            Raw              // "{raw}"
+        }
+
+        private readonly StringBuilder _sb = new StringBuilder(64);
+
+        private string FormatProgressText(string raw, ProgressTextFormat format)
+        {
+            _sb.Clear();
+
+            // null 방어 (원하시면 string.Empty 대신 고정 문구로 바꿔도 됨)
+            raw ??= string.Empty;
+
+            switch (format)
+            {
+                case ProgressTextFormat.LoadingAssetsIn:
+                    _sb.Append("loading assets in ");
+                    _sb.Append(raw);
+                    _sb.Append("...");
+                    break;
+
+                case ProgressTextFormat.LoadingScene:
+                    _sb.Append("loading scene ");
+                    _sb.Append(raw);
+                    _sb.Append("...");
+                    break;
+
+                case ProgressTextFormat.UnloadingScene:
+                    _sb.Append("unloading scene ");
+                    _sb.Append(raw);
+                    _sb.Append("...");
+                    break;
+
+                case ProgressTextFormat.PreloadingLabel:
+                    _sb.Append("preloading label ");
+                    _sb.Append(raw);
+                    _sb.Append("...");
+                    break;
+
+                case ProgressTextFormat.Initializing:
+                    _sb.Append("initializing ");
+                    _sb.Append(raw);
+                    _sb.Append("...");
+                    break;
+
+                case ProgressTextFormat.Raw:
+                default:
+                    _sb.Append(raw);
+                    break;
+            }
+
+            return _sb.ToString();
         }
 
         #endregion

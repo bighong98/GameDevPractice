@@ -10,14 +10,14 @@ namespace TH.SceneManagement
 {
     public interface ISceneLoader
     {
-        IProgressBroadcaster Progress { get; }
-        IProgressSubscription SubscribeProgress(Action<float> onProgress);
-
         UniTask LoadLoadingSceneAsync(Action<float> onProgress = null, CancellationToken token = default);
         UniTask LoadSceneAsync(object key, IEnumerable<Func<CancellationToken, UniTask>> preTasks = null, Action<float> onProgress = null, CancellationToken token = default);
         event Func<CancellationToken, UniTask> OnBeforeSceneChanged;
         event Func<CancellationToken, UniTask> OnAfterSceneChanged;
         event Action<Scene> OnSceneChanged;
+        
+        IMessageBroadcaster<(float, string)> ProgressMessage { get; }
+        IBroadcastSubscription SubscribeProgress(Action<(float, string)> onProgress);
     }
 }
 

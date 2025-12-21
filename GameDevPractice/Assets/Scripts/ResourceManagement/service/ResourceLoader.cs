@@ -308,34 +308,34 @@ namespace TH.Resource
         };
         
         // 전체 진행도 broadcaster 및 캐시
-        private readonly ProgressBroadcaster _globalProgress = new();
+        private readonly MessageBroadcaster<(float, string)> _globalProgressMessage = new();
         private float _globalProgressCache;
 
 
         // 라벨별 progress broadcaster 저장소
-        private readonly Dictionary<string, ProgressBroadcaster> _preloadProgress = new();
+        private readonly Dictionary<string, MessageBroadcaster<float>> _preloadProgress = new();
         private readonly Dictionary<string, float> _preloadProgressCache = new(); // 현재값 캐시(선택)
 
-        // 진행도 구독
-        public IProgressSubscription SubscribePreLoadProgress(string label, Action<float> onProgress, bool fireCurrent = true)
+        // 라벨별 진행도 구독
+        public IBroadcastSubscription SubscribePreLoadProgress(string label, Action<(float, string)> onProgress, bool fireCurrent = true)
         {
             if (string.IsNullOrEmpty(label)) throw new ArgumentNullException(nameof(label));
             if (onProgress == null) throw new ArgumentNullException(nameof(onProgress));
 
             if (!_preloadProgress.TryGetValue(label, out var broadcaster))
             {
-                broadcaster = new ProgressBroadcaster();
+                broadcaster = new MessageBroadcaster<float>();
                 _preloadProgress[label] = broadcaster;
                 _preloadProgressCache[label] = 0f;
             }
 
             if (fireCurrent && _preloadProgressCache.TryGetValue(label, out var current))
-                onProgress.Invoke(current);
-
-            return broadcaster.Subscribe(onProgress);
+                onProgress.Invoke((current, label));
+            // 타겟 라벨을 캡처한 람다 형식으로 구독
+            return broadcaster.Subscribe(value => onProgress.Invoke((value, label)));
         }
 
-private void ReportPreLoadProgress(string label, float p)
+        private void ReportPreLoadProgress(string label, float p)
         {
             Logg.Log($"[{GetType().Name}] ReportPreLoadProgress label: {label}, progress: {p}", Logg.LoggingMode.Completed);
             p = Mathf.Clamp01(p);
@@ -347,19 +347,19 @@ private void ReportPreLoadProgress(string label, float p)
             else Logg.LogWarning($"[{GetType().Name}] ReportPreLoadProgress label: {label}, progress: {p} is ignored");
             
             // 전체 진행도 계산 및 보고
-            ReportGlobalProgress();
+            ReportGlobalProgress(label);
         }
         
         private void InitLabelProcess(string label)
         {
             if (!_preloadProgress.ContainsKey(label))
-                _preloadProgress[label] = new ProgressBroadcaster();
+                _preloadProgress[label] = new MessageBroadcaster<float>();
             _preloadProgressCache[label] = 0f;
             ReportPreLoadProgress(label, 0f);
         }
 
         // 전체 진행도 계산 및 보고
-        private void ReportGlobalProgress()
+        private void ReportGlobalProgress(string label)
         {
             float global = 0f;
             foreach (var kvp in LabelWeights)
@@ -369,20 +369,20 @@ private void ReportPreLoadProgress(string label, float p)
             }
             
             _globalProgressCache = global;
-            _globalProgress.Report(global);
+            _globalProgressMessage.Report((global, label));
             
             Logg.Log($"[{GetType().Name}] GlobalProgress: {global:P1}", Logg.LoggingMode.Completed);
         }
         
         // 전체 PreLoad 진행도 구독
-        public IProgressSubscription SubscribeGlobalPreLoadProgress(Action<float> onProgress, bool fireCurrent = true)
+        public IBroadcastSubscription SubscribeGlobalPreLoadProgress(Action<(float, string)> onProgress, bool fireCurrent = true)
         {
             if (onProgress == null) throw new ArgumentNullException(nameof(onProgress));
             
-            if (fireCurrent)
-                onProgress.Invoke(_globalProgressCache);
+            if (fireCurrent) // 구독 시점 진행도 반영 필요 시 임시로 빈 문자열로 반환
+                onProgress.Invoke((_globalProgressCache, ""));
             
-            return _globalProgress.Subscribe(onProgress);
+            return _globalProgressMessage.Subscribe(onProgress);
         }
 
 
