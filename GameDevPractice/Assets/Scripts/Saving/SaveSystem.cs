@@ -130,7 +130,7 @@ namespace TH.SaveLoad
                 finally
                 {
                     isLoading = false;
-                    this.Log($"LoadLastScene() 종료", Logg.LoggingMode.InProgress);
+                    this.Log($"LoadLastScene() 종료", Logg.LoggingMode.Completed);
                 }
             });
         }
@@ -302,7 +302,7 @@ namespace TH.SaveLoad
             data.lastSceneEntry = sceneEntry;
 
             SaveFile(saveFile, data);
-            this.Log("[SaveSystem] SaveCoreAsync() 완료", Logg.LoggingMode.InProgress);
+            this.Log("[SaveSystem] SaveCoreAsync() 완료", Logg.LoggingMode.Completed);
         }
         
         private async UniTask LoadCoreAsync(string saveFile)
@@ -447,12 +447,12 @@ namespace TH.SaveLoad
                 Logg.LogWarning($"[{GetType().Name}] RestoreState() - 현재 씬의 엔티티 없음 (currentSceneEntry: {currentSceneEntry})");
             }
             
-            this.Log("LoadedStateCache 업데이트 시작", Logg.LoggingMode.InProgress);
+            this.Log("LoadedStateCache 업데이트 시작", Logg.LoggingMode.Completed);
             foreach (var (id, stateDict) in grouped)
             {
                 LoadedStateCache.TryAdd(id, stateDict);
             }
-            this.Log("RestoreState(SaveFileData) 완료", Logg.LoggingMode.InProgress);
+            this.Log("RestoreState(SaveFileData) 완료", Logg.LoggingMode.Completed);
         }
 
         private static void GetEntryFromSave(SaveFileData data, List<SavableEntry> entries, SceneEntry currentSceneEntry)
@@ -737,7 +737,7 @@ namespace TH.SaveLoad
         public void RegisterEntity(ISavableEntity entity, CancellationToken token = default)
         {
             var id = entity.UniqueIdentifier;
-            this.Log($"RegisterEntity({entity.GetType()}) - id: {id}, IsGlobal: {entity.IsGlobal}", Logg.LoggingMode.Completed);
+            this.Log($"RegisterEntity({entity.GetType()}) - id: {id}, IsGlobal: {entity.IsGlobal}", Logg.LoggingMode.InProgress);
 
             if (entity.IsGlobal)
             {

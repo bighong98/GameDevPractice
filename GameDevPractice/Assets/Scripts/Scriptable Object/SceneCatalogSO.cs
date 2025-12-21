@@ -108,7 +108,7 @@ namespace TH.Resource
 
         public SceneEntry FindByGuid(string guid)
         {
-            this.Log($"FindByGuid({guid})", Logg.LoggingMode.InProgress);
+            this.Log($"FindByGuid({guid})", Logg.LoggingMode.Completed);
             if (string.IsNullOrEmpty(guid) || entries == null || entries.Count == 0) return null;
 
             foreach (var entry in entries)
