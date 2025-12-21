@@ -15,23 +15,26 @@ namespace TH.SceneManagement
 {
     public class SceneLoader : ISceneLoader
     {
-        private readonly IResourceLoader resourceLoader;
-        
-        // 현재/이전 씬 핸들 (현재 씬 상태 확인 및 이전 씬 언로드에 사용)
-        private AsyncOperationHandle<SceneInstance> currentSceneHandle;
-        private AsyncOperationHandle<SceneInstance> prevSceneHandle;
-        // 씬 전환 중 확인 플래그
-        private bool isLoadingScene;
-        
         // 씬 전환 이벤트
         public event Func<CancellationToken, UniTask> OnBeforeSceneChanged;
         public event Func<CancellationToken, UniTask> OnAfterSceneChanged;
         public event Action<Scene> OnSceneChanged;
         
-        // 로딩 씬 이름
+        // 외부 서비스, 리소스
+        private readonly IResourceLoader resourceLoader;
+        private SceneCatalogSO sceneCatalog;
+        
+        // 현재/이전 씬 핸들 (현재 씬 상태 확인 및 이전 씬 언로드에 사용)
+        private AsyncOperationHandle<SceneInstance> currentSceneHandle;
+        private AsyncOperationHandle<SceneInstance> prevSceneHandle;
+       
+        // 씬 전환 중 확인 플래그
+        private bool isLoadingScene;
+        
+        // 리소스 어드레서블 키
         private const string LoadingSceneName = "LoadingScene";
         private const string SceneCatalogKey =  "SceneCatalogSO";
-        private SceneCatalogSO sceneCatalog;
+        
         
         public SceneLoader(IResourceLoader resourceLoad)
         {
@@ -136,8 +139,10 @@ private void Init()
 
             if (isLoadingScene) return;
             isLoadingScene = true;
+            
             float prevTimeScale = Time.timeScale;
-
+            BeginTransition(); // 씬 전환 
+            
             try
             {
                 // 로딩 씬 로드(최초 1회)
@@ -154,11 +159,13 @@ private void Init()
                 // 타겟 씬 비동기 로드 
                 var result = await LoadSceneWithAddressablesAsync(key, onProgress, token);
                 // 씬 전환 전 사전작업 처리
-                this.Log($"OnBeforeSceneChanged starts - scene: {result.Scene.name}", Logg.LoggingMode.InProgress);
+                this.Log($"OnBeforeSceneChanged starts - scene: {result.Scene.name}", Logg.LoggingMode.Completed);
                 await UniTask.WhenAll(
                     OnBeforeSceneChanged.InvokeAllThrottledAsync(token),
+                    AwaitBeforeGates(token),
                     RunPreTasks(preTasks, token)
                 );
+                CloseBeforePhase();
                 // 진행도 100% 전달
                 ReportProgress((0.8f, sceneName), format: ProgressTextFormat.LoadingScene);
                 // 타겟 씬 활성화
@@ -172,12 +179,14 @@ private void Init()
                 // 씬 매니저에게 Active Scene 변동 전달 (멀티 씬 문제 대응)
                 SceneManager.SetActiveScene(result.Scene);
                 
-                this.Log($"OnAfterSceneChanged starts - scene: {result.Scene.name}", Logg.LoggingMode.InProgress);
+                this.Log($"OnAfterSceneChanged starts - scene: {result.Scene.name}", Logg.LoggingMode.Completed);
                 // 이전 씬 언로드 및 씬 전환 이벤트 호출
                 await UniTask.WhenAll(
                     UnloadPreviousSceneAsync(token),
-                    OnAfterSceneChanged.InvokeAllThrottledAsync(token)
+                    OnAfterSceneChanged.InvokeAllThrottledAsync(token),
+                    AwaitAfterGates(token)
                 );
+                CloseAfterPhase();
                 OnSceneChanged?.Invoke(result.Scene);
             }
             catch (Exception e)
@@ -188,6 +197,7 @@ private void Init()
             {
                 isLoadingScene = false;
                 Time.timeScale = prevTimeScale;
+                EndTransitionInvalidateAll();
             }
         }
         
@@ -361,7 +371,111 @@ private void Init()
         }
 
         #endregion
-    
+
+        #region Scene Transition Gate
+
+        private int _transitionId; // 0이면 전환 없음
+        private bool _beforeOpen;
+        private bool _afterOpen;
+
+        private readonly List<SceneTransitionGate> _beforeGates = new();
+        private readonly List<SceneTransitionGate> _afterGates  = new();
+
+        public SceneTransitionGate CreateBeforeGate()
+        {
+            if (_transitionId == 0 || !_beforeOpen)
+                return SceneTransitionGate.CreateCompletedNoop();
+
+            var g = new SceneTransitionGate(_transitionId);
+            _beforeGates.Add(g);
+            return g;
+        }
+
+        public SceneTransitionGate CreateAfterGate()
+        {
+            if (_transitionId == 0 || !_afterOpen)
+                return SceneTransitionGate.CreateCompletedNoop();
+
+            var g = new SceneTransitionGate(_transitionId);
+            _afterGates.Add(g);
+            return g;
+        }
+
+        private void BeginTransition()
+        {
+            _transitionId++;
+            _beforeOpen = true;
+            _afterOpen = true;
+
+            _beforeGates.Clear();
+            _afterGates.Clear();
+        }
+
+        private void CloseBeforePhase() => _beforeOpen = false;
+        private void CloseAfterPhase() => _afterOpen = false;
+
+        // 전환이 끝나면 전부 무효화 + 게이트 목록 제거
+        private void EndTransitionInvalidateAll()
+        {
+            foreach (var t in _beforeGates)
+                t.Invalidate(_transitionId);
+
+            foreach (var t in _afterGates)
+                t.Invalidate(_transitionId);
+
+            _beforeGates.Clear();
+            _afterGates.Clear();
+
+            _beforeOpen = false;
+            _afterOpen = false;
+        }
+
+        private UniTask AwaitBeforeGates(CancellationToken token)
+        {
+            if (_beforeGates.Count == 0) return UniTask.CompletedTask;
+            
+            var snapshot = _beforeGates.ToArray();
+            var tid = _transitionId;
+
+            using (token.Register(() =>
+               {
+                   // 취소되면 전부 cancel
+                   foreach (var t in snapshot)
+                       t.TryCancel(tid, token);
+               }))
+            {
+                var tasks = new UniTask[snapshot.Length];
+                for (int i = 0; i < snapshot.Length; i++)
+                    tasks[i] = snapshot[i].Task;
+
+                return UniTask.WhenAll(tasks);
+            }
+        }
+
+        private UniTask AwaitAfterGates(CancellationToken token)
+        {
+            if (_afterGates.Count == 0) return UniTask.CompletedTask;
+
+            var snapshot = _afterGates.ToArray();
+            var tid = _transitionId;
+
+            using (token.Register(() =>
+                   {
+                       // 취소되면 전부 cancel
+                       foreach (var t in snapshot)
+                           t.TryCancel(tid, token);
+                   }))
+            {
+                var tasks = new UniTask[snapshot.Length];
+                for (int i = 0; i < snapshot.Length; i++)
+                    tasks[i] = snapshot[i].Task;
+
+                return UniTask.WhenAll(tasks);
+            }
+        }
+
+        #endregion
+        
         #region Helper Methods
 #if UNITY_EDITOR
         // 에디터 환경 버그 방지

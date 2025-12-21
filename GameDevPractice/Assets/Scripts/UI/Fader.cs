@@ -2,13 +2,12 @@ using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using TH.Core.Service;
-using TH.Resource;
-using TH.UI;
 using TH.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using TH.SceneManagement;
 
-namespace TH.SceneManagement
+namespace TH.UI
 {
     [RequireComponent(typeof(CanvasGroup))]
     public class Fader : MonoBehaviour

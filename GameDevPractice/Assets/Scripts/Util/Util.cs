@@ -403,40 +403,6 @@ public static class Util
     
     #region Debug
 
-    // public enum LoggingMode
-    // {
-    //     Completed,
-    //     InProgress,
-    //     Focussed,
-    // }
-    // enum LogLevel
-    // {
-    //     None,
-    //     OnlyFocussing,
-    //     OnlyInProgress,
-    //     All,
-    // }
-    // private static readonly LogLevel CurrLogLevel = LogLevel.OnlyInProgress;
-
-    // [System.Diagnostics.Conditional("UNITY_EDITOR")]
-    // public static void Log(object msg, LoggingMode mode)
-    // {
-    //     switch (mode)
-    //     {
-    //         case LoggingMode.InProgress when CurrLogLevel is LogLevel.All or LogLevel.OnlyInProgress:
-    //         case LoggingMode.Focussed when CurrLogLevel is not LogLevel.None:
-    //             Log(msg);
-    //             break;
-    //         default:
-    //             if (CurrLogLevel is LogLevel.All) Log(msg);
-    //             break;
-    //     }
-    // }
-    // [System.Diagnostics.Conditional("UNITY_EDITOR")]
-    // public static void Log(object msg) => UnityEngine.Debug.Log(msg);
-    // [System.Diagnostics.Conditional("UNITY_EDITOR")]
-    // public static void LogError(object msg) => UnityEngine.Debug.LogError(msg);
-
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void InitForUtil()
     {

@@ -42,14 +42,11 @@ namespace TH.SaveLoad
 
         public SaveSystem(ISceneLoader sceneLoader, IResourceLoader resourceLoader)
         {
-            this.Log("[SaveSystem] ===== 생성자 시작 =====");
             this.sceneLoader = sceneLoader;
             this.resourceLoader = resourceLoader;
-            this.Log($"sceneLoader: {(sceneLoader != null ? "OK" : "NULL")}, resourceLoader: {(resourceLoader != null ? "OK" : "NULL")}");
 
             catalogResolved = catalogResolveTCS.Task.Preserve();
             LoadSceneCatalogAsync().Forget();
-            this.Log("[SaveSystem] ===== 생성자 완료, LoadSceneCatalogAsync 시작됨 =====");
         }
 
         #region Initialization
@@ -111,6 +108,7 @@ namespace TH.SaveLoad
             {
                 if (isLoading) return;
                 isLoading = true;
+                
                 try
                 {
                     if (LoadFile(saveFile) is not { } data) return;
@@ -127,6 +125,7 @@ namespace TH.SaveLoad
                     await UniTask.Yield();
                     RestoreState(data);
                 }
+                catch (Exception e) { Logg.LogWarning($"[{GetType().Name}] exception while LoadLastScene - {e}"); }
                 finally
                 {
                     isLoading = false;
@@ -146,7 +145,6 @@ namespace TH.SaveLoad
             
             if (isLoading || ioSemaphore.CurrentCount == 0)
             {
-                Debug.LogWarning($"[SaveSystem] SaveAsync 지연됨 (isLoading:{isLoading}, semaphore:{ioSemaphore.CurrentCount}) -> CoalesceSave 호출");
                 Logg.Log($"[SaveSystem] ioSemaphore.CurrentCount: {ioSemaphore.CurrentCount}", Logg.LoggingMode.Completed);
                 CoalesceSave(saveFile, sceneEntry);
                 return;
@@ -229,7 +227,6 @@ namespace TH.SaveLoad
                 }
                 catch (Exception e) 
                 { 
-                    Debug.LogError($"[SaveSystem] LoadAsync 예외: {e}");
                     Logg.LogError($"[SaveSystem] LoadAsync() failed: {e.Message}"); 
                 }
                 finally 
@@ -737,7 +734,7 @@ namespace TH.SaveLoad
         public void RegisterEntity(ISavableEntity entity, CancellationToken token = default)
         {
             var id = entity.UniqueIdentifier;
-            this.Log($"RegisterEntity({entity.GetType()}) - id: {id}, IsGlobal: {entity.IsGlobal}", Logg.LoggingMode.InProgress);
+            this.Log($"RegisterEntity({entity.GetType()}) - id: {id}, IsGlobal: {entity.IsGlobal}", Logg.LoggingMode.Completed);
 
             if (entity.IsGlobal)
             {
