@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 6186847598349890935}
   - component: {fileID: 2823857570014986721}
   m_Layer: 0
-  m_Name: Lazy Follow Camera Test
+  m_Name: Player Follow Camera
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
