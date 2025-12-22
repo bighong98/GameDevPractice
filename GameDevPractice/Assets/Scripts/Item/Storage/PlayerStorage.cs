@@ -1116,6 +1116,7 @@ namespace TH.Item
 
         public object CaptureState()
         {
+            this.Log($"CaptureState", Logg.LoggingMode.InProgress);
             List<IGameItem> items = new();
 
             foreach (var slot in slots)
@@ -1129,6 +1130,8 @@ namespace TH.Item
 
         public bool RestoreState(object state)
         {
+            this.Log($"RestoreState", Logg.LoggingMode.InProgress);
+
             Clear();
             
             List<IGameItem> items = ExtractSaveData(state);

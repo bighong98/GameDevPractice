@@ -170,6 +170,7 @@ private void Init()
                 ReportProgress((0.8f, sceneName), format: ProgressTextFormat.LoadingScene);
                 // 타겟 씬 활성화
                 await result.ActivateAsync().ToUniTask(cancellationToken: token);
+                await UniTask.Yield();
                 
                 // 게임 시간 일시정지 (todo: timeScale 대신 게임 플레이 일시정지 기능 추가하여 대체)
                 Time.timeScale = 0f;
@@ -178,7 +179,8 @@ private void Init()
                 ReportProgress((1f, "Loading ended. Wait for seconds")); 
                 // 씬 매니저에게 Active Scene 변동 전달 (멀티 씬 문제 대응)
                 SceneManager.SetActiveScene(result.Scene);
-                
+
+                await UniTask.Yield();
                 this.Log($"OnAfterSceneChanged starts - scene: {result.Scene.name}", Logg.LoggingMode.Completed);
                 // 이전 씬 언로드 및 씬 전환 이벤트 호출
                 await UniTask.WhenAll(

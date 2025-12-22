@@ -31,7 +31,6 @@ namespace TH.SaveLoad
         private SceneCatalogSO sceneCatalog;
         
         private const string SceneCatalogKey = "SceneCatalogSO";
-        private const int DefaultSceneIndexInCatalog = 0;
         
         private readonly SemaphoreSlim ioSemaphore = new (1, 1);
         
@@ -104,36 +103,6 @@ namespace TH.SaveLoad
         #endregion
         
         #region Load Last Scene
-        
-        // public async UniTask LoadLastScene(string saveFile)
-        // {
-        //     await RunExclusive(async () =>
-        //     {
-        //         if (isLoading) return;
-        //         isLoading = true;
-        //         
-        //         try
-        //         {
-        //             if (LoadFile(saveFile) is not { } data) return;
-        //
-        //             // 메인 쓰레드 환경, scene catalog 보장
-        //             await UniTask.SwitchToMainThread();
-        //             await WaitForCatalog();
-        //
-        //             // 저장된 씬이 없다면 디폴트 씬으로 이동
-        //             if (data.lastSceneEntry is not { sceneRef: { } key })
-        //                 key = sceneCatalog.GetDefaultSceneEntry().sceneRef;
-        //             
-        //             await sceneLoader.LoadSceneAsync(key);
-        //         }
-        //         catch (Exception e) { Logg.LogWarning($"[{GetType().Name}] exception while LoadLastScene - {e}"); }
-        //         finally
-        //         {
-        //             isLoading = false;
-        //             this.Log($"LoadLastScene() 종료", Logg.LoggingMode.Completed);
-        //         }
-        //     });
-        // }
         
         public async UniTask LoadLastScene(string saveFile)
         {
@@ -302,28 +271,34 @@ namespace TH.SaveLoad
         #endregion
 
         #region Save/Load/Delete Core (private)
-
+        
         private async UniTask SaveCoreAsync(string saveFile, SceneEntry sceneEntry = null)
         {
             this.Log($"SaveCoreAsync() 시작 - saveFile: {saveFile}", Logg.LoggingMode.Completed);
-            
+            // 세이브 데이터를 저장할 세이브 파일 데이터 컨테이너 생성
             SaveFileData data = LoadFile(saveFile);
             this.Log($"LoadFile 완료 - data: (globalData.Count: {data.globalData.Count}, lastSceneEntry: {data.lastSceneEntry?.key}, sceneData.Count: {data.sceneData.Count})", Logg.LoggingMode.Completed);
-            
-            List<SavableEntry> sceneEntries = new List<SavableEntry>();
-            List<SavableEntry> globalEntries = new List<SavableEntry>();
+            // 세이브 데이터(SavableEntry) 목록 생성
+            List<SavableEntry> sceneSaveEntries = new List<SavableEntry>();
+            List<SavableEntry> globalSaveEntries = new List<SavableEntry>();
             
             await UniTask.SwitchToMainThread();
-            CaptureState(sceneEntries, globalEntries);
-            this.Log($"CaptureState 완료 - sceneEntries: {sceneEntries.Count}, globalEntries: {globalEntries.Count}", Logg.LoggingMode.Completed);
-            
             sceneEntry ??= sceneCatalog.GetCurrentSceneEntry();
+            
+            // 등록된 세이브 대상(ISavable)들의 데이터 직렬화 수행
+            // 직렬화된 데이터(SavableEntry)를 씬 데이터(씬에 종속된 오브젝트), 글로벌(씬과 무관한 오브젝트, 서비스) 데이터로 구분하여 캐싱
+            if (TryGetSceneSavables(sceneEntry, out var sceneEntities ))
+                AddSaveEntries(sceneSaveEntries, sceneEntities);
+            AddSaveEntries(globalSaveEntries, GlobalEntities.Values);
+            this.Log($"CaptureState 완료 - sceneEntries: {sceneSaveEntries.Count}, globalEntries: {globalSaveEntries.Count}", Logg.LoggingMode.Completed);
+            
+            // 직렬화된 데이터를 컨테이너(SaveFileData)에 저장 
             if (data.sceneData != null && sceneEntry != null)
-                data.sceneData[sceneEntry.sceneId] = sceneEntries;
-            if (data.globalData != null)
-                data.globalData = globalEntries;
+                data.sceneData[sceneEntry.sceneId] = sceneSaveEntries;
+            data.globalData = globalSaveEntries;
             data.lastSceneEntry = sceneEntry;
-
+            
+            // 세이브 데이터 파일로 저장
             SaveFile(saveFile, data);
             this.Log($"SaveCoreAsync() 완료", Logg.LoggingMode.Completed);
         }
@@ -371,81 +346,80 @@ namespace TH.SaveLoad
         #region State (CaptureState, RestoreState)
 
         // 씬에 존재하는 모든 SavableEntity의 상태 수집, 저장데이터에 반영
-        private void CaptureState(List<SavableEntry> sceneEntries, List<SavableEntry> globalEntries)
-        {
-            this.Log($"CaptureState() 시작 - GlobalEntities: {GlobalEntities.Count}, SceneEntities keys: {SceneEntities.Count}");
-            AddEntries(globalEntries, GlobalEntities.Values);
-            this.Log($"글로벌 엔티티 처리 완료 - globalEntries: {globalEntries.Count}");
-            if (GetCurrentSceneSavables(out var sceneSavableCollection))
-            {
-                this.Log($"씬 엔티티 - count: {sceneSavableCollection.Count}");
-                AddEntries(sceneEntries, sceneSavableCollection);
-            }
-            else
-            {
-                Debug.LogWarning("[SaveSystem] 현재 씬에 저장 가능한 엔티티 없음");
-            }
-            this.Log($"CaptureState() 완료 - sceneEntries: {sceneEntries.Count}, globalEntries: {globalEntries.Count}");
-        }
 
-        private bool GetCurrentSceneSavables(out ICollection<ISavableEntity> savables)
+        private bool TryGetSceneSavables(SceneEntry targetSceneEntry, out ICollection<ISavableEntity> entityCollection)
         {
-            if (sceneCatalog.GetCurrentSceneEntry() is { } currentSceneEntry
-                && SceneEntities.TryGetValue(currentSceneEntry,
-                    out var sceneSavables))
+            if (targetSceneEntry != null
+                && SceneEntities.TryGetValue(targetSceneEntry, out var sceneSavables))
             {
-                savables = sceneSavables.Values;
+                entityCollection = sceneSavables.Values;
                 return true;
             }
-            savables = null;
+            entityCollection = null;
             return false;
         } 
 
-        private void AddEntries(ICollection<SavableEntry> collection, ICollection<ISavableEntity> savables)
+        private void AddSaveEntries(ICollection<SavableEntry> entryCollection, ICollection<ISavableEntity> entities)
         {
-            if (collection == null || savables == null) return;
-            
-            foreach (var savable in savables)
+            if (entryCollection == null || entities == null)
             {
-                try
-                {
-                    if (!savable.IsAlive()) continue;
-                    if (savable.CaptureState() is not { } captured) continue;
-
-                    if (captured is Dictionary<string, object> captures)
-                    {
-                        foreach (var (typeName, capture) in captures)
-                        {
-                            AddNewEntry(collection, typeName, capture, savable);
-                        }
-                    }
-                    else
-                    {
-                        var typeName = captured.GetType().AssemblyQualifiedName;
-                        AddNewEntry(collection, typeName, captured, savable);
-                    }
-                }
-                catch (Exception e) { Debug.LogError($"[SaveSystem] error occured while AddEntries() - {e}");}
+                Logg.LogWarning($"[{GetType().Name}] AddEntries - empty entryCollection or savableEntities");
+                return;
+            }
+            
+            foreach (var entity in entities)
+            {
+                AddNewEntry(entryCollection, entity);
             }
         }
 
-        private void AddNewEntry(ICollection<SavableEntry> collection, string typeName, object stateObj, ISavableEntity entity)
-        {
-            if (GetTypeByName(typeName) is not { } type) return;
-            RegisterEntries(stateObj, type, collection, entity.UniqueIdentifier, typeName);
-        }
-
-        private static void RegisterEntries(object stateObj, Type type, ICollection<SavableEntry> targetEntryCollection, 
-            string identifier, string typeName)
+        private void AddNewEntry(ICollection<SavableEntry> entryCollection, ISavableEntity entity)
         {
             try
             {
-                string json = JsonSerialization.ToJson(stateObj, new JsonSerializationParameters
+                if (!entity.IsAlive())
+                {
+                    Logg.LogWarning($"[{GetType().Name}] AddNewEntry - entity is destroyed");
+                    return;
+                }
+                if (entity.CaptureState() is not { } capturedStates) return;
+
+                if (capturedStates is Dictionary<string, object> stateDict)
+                {
+                    foreach (var (typeName, state) in stateDict)
+                    {
+                        CaptureEntry(entryCollection, entity, typeName, state);
+                    }
+                }
+                else
+                {
+                    var typeName = capturedStates.GetType().AssemblyQualifiedName;
+                    CaptureEntry(entryCollection, entity, typeName, capturedStates);
+                }
+            }
+            catch (Exception e) { Debug.LogError($"[SaveSystem] error occured while AddEntries() - {e}");}
+        }
+
+        private void CaptureEntry(
+            ICollection<SavableEntry> entryCollection, 
+            ISavableEntity entity, string typeName, object state)
+        {
+            if (GetTypeByName(typeName) is not { } type) return;
+            SerializeSavableEntry(entryCollection, state, entity.UniqueIdentifier, type, typeName);
+        }
+
+        private static void SerializeSavableEntry(
+            ICollection<SavableEntry> entryCollection,
+            object state, string identifier, Type type, string typeName)
+        {
+            try
+            {
+                string json = JsonSerialization.ToJson(state, new JsonSerializationParameters
                 {
                     SerializedType = type,
                 });
 
-                targetEntryCollection.Add(new SavableEntry
+                entryCollection.Add(new SavableEntry
                 {
                     id = identifier,
                     typeName = typeName,
@@ -465,6 +439,12 @@ namespace TH.SaveLoad
             // entries에 세이브 엔트리 목록 반영
             GetEntryFromSave(data, entries, currentSceneEntry);
             this.Log($"GetEntryFromSave 완료 - currentSceneEntry: {currentSceneEntry}, entries: {entries.Count}", Logg.LoggingMode.Completed);
+            string entryFromSave = "";
+            foreach (var e in entries)
+            {
+                entryFromSave += $"\n({e.id} - {e.typeName})";
+            }
+            this.Log($"GetEntryFromSave (entries.id - entries.typeName): {entryFromSave}", Logg.LoggingMode.Completed);
             
             // <고유 식별자, 고유 객체의 <타입, 세이브 데이터>> 딕셔너리 생성 (grouped)
             var grouped = new Dictionary<string, Dictionary<string, object>>(entries.Count); 
@@ -474,12 +454,13 @@ namespace TH.SaveLoad
             
             // 파싱된 런타임 데이터 반영 (글로벌)
             this.Log($"글로벌 엔티티 복원 시작 - GlobalEntities: {GlobalEntities.Count}", Logg.LoggingMode.Completed);
-            RestoreState(GlobalEntities.Values, grouped);
+            ApplyState(GlobalEntities.Values, grouped);
+            
             // 파싱된 런타임 데이터 반영 (현재 씬)
             if (currentSceneEntry != null &&
                 SceneEntities.TryGetValue(currentSceneEntry, out var sceneSavables))
             {
-                RestoreState(sceneSavables.Values, grouped);
+                ApplyState(sceneSavables.Values, grouped);
                 this.Log($"씬 엔티티 복원 완료 - count: {sceneSavables.Count}");
             }
             else
@@ -490,10 +471,12 @@ namespace TH.SaveLoad
             this.Log($"LoadedStateCache 업데이트 시작", Logg.LoggingMode.Completed);
             foreach (var (id, stateDict) in grouped)
             {
-                LoadedStateCache.TryAdd(id, stateDict);
+                // 기존 데이터가 있으면 덜어쓰기, 없으면 추가
+                LoadedStateCache[id] = stateDict;
             }
             this.Log($"RestoreState(SaveFileData) 완료", Logg.LoggingMode.Completed);
         }
+
 
         private static void GetEntryFromSave(SaveFileData data, List<SavableEntry> entries, SceneEntry currentSceneEntry)
         {
@@ -508,12 +491,15 @@ namespace TH.SaveLoad
             }
             else if (currentSceneEntry != null)
             {
-                Logg.Log($"[SaveSystem] No saved data for scene '{currentSceneEntry?.key}'", Logg.LoggingMode.Completed);
+                Logg.LogWarning($"[SaveSystem] No saved data for scene '{currentSceneEntry?.key}'");
             }
             // 글로벌(특정 씬에 종속되지 않는) 세이브 데이터 추가
             if (data.globalData is { Count: > 0 } globEntries)
-                entries.AddRange(globEntries); 
-            else Logg.Log("[SaveSystem] No saved global data", Logg.LoggingMode.Completed);
+            {
+                Logg.Log($"[SaveSystem] GetEntryFromSave - globEntries.Count: {globEntries.Count}", Logg.LoggingMode.Completed);
+                entries.AddRange(globEntries);
+            } 
+            else Logg.LogWarning("[SaveSystem] No saved global data");
         }
 
         private void ExtractSaveData(List<SavableEntry> entries, Dictionary<string, Dictionary<string, object>> grouped)
@@ -523,7 +509,7 @@ namespace TH.SaveLoad
                 // 타입명으로 데이터 타입 조회(or 리플렉션 생성)
                 if (GetTypeByName(entry.typeName) is not { } type) 
                 {
-                    Logg.LogError($"[{nameof(SaveSystem)}.{nameof(RestoreState)}()] Type not found: {entry.typeName}");
+                    Logg.LogError($"[{nameof(SaveSystem)}.ExtractSaveData()] Type not found: {entry.typeName}");
                     continue;
                 }
 
@@ -539,7 +525,7 @@ namespace TH.SaveLoad
 
                     if (state == null)
                     {
-                        Logg.LogError($"[{nameof(SaveSystem)}.{nameof(RestoreState)}()] FromJson Method missing for: {type.FullName}");
+                        Logg.LogError($"[{nameof(SaveSystem)}.ExtractSaveData()] FromJson Method missing for: {type.FullName}");
                         continue;
                     }
                 }
@@ -559,14 +545,23 @@ namespace TH.SaveLoad
             }
         }
 
-        private void RestoreState(IEnumerable<ISavableEntity> entities,
+        private void ApplyState(IEnumerable<ISavableEntity> entities,
             IReadOnlyDictionary<string, Dictionary<string, object>> stateGroup)
         {
             foreach (var entity in entities)
             {
-                if (!entity.IsAlive()) continue;
+                if (!entity.IsAlive())
+                {
+                    Logg.LogWarning($"[{GetType().Name}] ApplyState - entity is destroyed");
+                    continue;
+                }
+
                 if (!stateGroup.TryGetValue(entity.UniqueIdentifier,
-                        out var states)) continue;
+                        out var states))
+                {
+                    Logg.LogWarning($"[{GetType().Name}] ApplyState - there is no state group for {entity.UniqueIdentifier}");
+                    continue;
+                }
                 entity.RestoreState(states);
             }
         }
@@ -591,7 +586,11 @@ namespace TH.SaveLoad
             {
                 // json -> 런타임 데이터로 파싱 시도
                 string json = File.ReadAllText(path);
-                return JsonSerialization.FromJson<SaveFileData>(json); 
+                var data = JsonSerialization.FromJson<SaveFileData>(json);
+                // Json 역직렬화 후 null 체크 및 초기화
+                data.globalData ??= new List<SavableEntry>();
+                data.sceneData ??= new Dictionary<string, List<SavableEntry>>();
+                return data; 
             }
             catch (Exception e)
             {
@@ -780,35 +779,48 @@ namespace TH.SaveLoad
                 return aliasType;
             }
 
-            var type = Type.GetType(typeName);
-            if (type == null)
-            {
-                foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) // 추후 불필요해지면 삭제 고려
-                {
-                    type = assembly.GetType(typeName);
-                    if (type != null) break;
-                }
-            }
-            
+            var type = GetTypeFromAssembly(typeName);
+
             CachedTypes[typeName] = type;
             return type;
         }
-        
+
+        private static Type GetTypeFromAssembly(string typeName)
+        {
+            var type = Type.GetType(typeName);
+            if (type != null) return type;
+            
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) // 추후 불필요해지면 삭제 고려
+            {
+                type = assembly.GetType(typeName);
+                if (type != null) break;
+            }
+
+            if (type == null)
+            {
+                Logg.LogWarning($"[SaveSystem] GetTypeFromAssembly({typeName}) result is null");
+            }
+
+            return type;
+        }
+
         #endregion
 
         #region Register/UnRegister Entity
 
-        public void RegisterEntity(ISavableEntity entity, CancellationToken token = default)
+        public void RegisterEntity(ISavableEntity entity, bool saveImmediately = false, CancellationToken token = default)
         {
             var id = entity.UniqueIdentifier;
-            this.Log($"RegisterEntity({entity.GetType()}) - id: {id}, IsGlobal: {entity.IsGlobal}", Logg.LoggingMode.Completed);
+            this.Log($"RegisterEntity({entity.GetType()}) - id: {id}, IsGlobal: {entity.IsGlobal}"
+                + $"{(entity.IsAlive() && entity is Component c ? ", from scene:"+ c.gameObject.scene.name : string.Empty )}"
+                , Logg.LoggingMode.Completed);
 
             if (entity.IsGlobal)
             {
                 // 덮어쓰기 적용
                 // 글로벌 ISavable 구현 객체는 자체적으로 IsRegistered 기준으로 중복 등록 방지 필요
                 GlobalEntities[id] = entity;
-
+                
                 if (entity.IsAlive() && LoadedStateCache.TryGetValue(id, out var stateDict))
                 {
                     entity.RestoreState(stateDict);
@@ -842,6 +854,7 @@ namespace TH.SaveLoad
             {
                 GlobalEntities.Remove(id);
                 entity.IsRegistered = false;
+                this.Log($"UnRegisterEntity - entity: ({entity.GetType()}/{id}), IsGlobal: {entity.IsGlobal}", Logg.LoggingMode.Completed);
                 return;
             }
 
@@ -853,6 +866,7 @@ namespace TH.SaveLoad
 
             entity.IsRegistered = false;
             dict.Remove(id);
+            this.Log($"UnRegisterEntity - entity: ({entity.GetType()}/{id}), IsGlobal: {entity.IsGlobal}", Logg.LoggingMode.Completed);
         }
         
         private static void AddSceneSavableEntity(SceneEntry sceneEntry, ISavableEntity entity, CancellationToken token)

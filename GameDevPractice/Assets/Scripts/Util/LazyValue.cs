@@ -39,7 +39,7 @@ namespace TH.Utils
             Initialized = true;
         }
 
-        public bool TrGet(out T value)
+        public bool TryGet(out T value)
         {
             if (Initialized)
             {

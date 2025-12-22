@@ -13,7 +13,7 @@ namespace TH.SaveLoad
         UniTask DeleteAsync(string saveFile);
         UniTask LoadAsync(string saveFile);
 
-        void RegisterEntity(ISavableEntity entity, CancellationToken token = default);
+        void RegisterEntity(ISavableEntity entity, bool saveImmediately = false, CancellationToken token = default);
         void UnRegisterEntity(ISavableEntity savable, CancellationToken token = default);
     }
 }

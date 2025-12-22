@@ -31,13 +31,19 @@ namespace TH.SaveLoad
             RebuildSavableList();
             
             saveSystem ??= ServiceLocator.Get<ISaveSystem>();
-            saveSystem.RegisterEntity(this, destroyCancellationToken);
+            // global 세이브 객체는 세이브 시스템에 등록 즉시 상태 저장
+            // saveSystem.RegisterEntity(this, isGlobal, destroyCancellationToken);
         }
-        
+
+        private void Start()
+        {
+            saveSystem.RegisterEntity(this, isGlobal, destroyCancellationToken);
+        }
+
         private void OnDestroy()
         {
             savables.Clear();
-            if (IsRegistered)
+            if (IsRegistered && !isGlobal)
                 saveSystem?.UnRegisterEntity(this);
         }
         
@@ -48,6 +54,7 @@ namespace TH.SaveLoad
 
         public bool RestoreState(object state)
         {
+            this.Log($"{gameObject.name} - RestoreState", Logg.LoggingMode.InProgress);
             if (state is not Dictionary<string, object> states) return false;
             RestoreState(states);
             return true;

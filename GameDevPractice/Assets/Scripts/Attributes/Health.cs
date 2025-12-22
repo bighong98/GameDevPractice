@@ -71,11 +71,14 @@ namespace TH.Attribute
                 Logg.LogError($"[{gameObject.name}.Health] Failed to initialize rewardXp field. Stat 'ExperienceReward' not found.");
                 return 0;
             });
+            this.Log($"{gameObject.name} - Awake() in scene({gameObject.scene.name}) done", Logg.LoggingMode.Completed);
         }
 
         private void Start()
         {
             UIManager.Instance.GetUIFromPool<HPBar>(HPBarPrefab, UICanvas.AnchoredOverlay).SetOwner(this);
+            maxHp.ForceInit();
+            hp.ForceInit();
         }
 
         private void OnEnable()
@@ -96,17 +99,19 @@ namespace TH.Attribute
 
         private float GetInitialHealth()
         {
-            if (statHolder?.GetStat(GameStats.Health) is not { } stat)
+            if (!statHolder.IsAlive() || statHolder.GetStat(GameStats.Health) is not { } stat)
             {
                 Logg.LogError($"[{gameObject.name}.Health] Failed to initialize health stat");
                 return 0;
             }
             
+            // 스탯 변경 시 SetMaxHp를 통해 비율 기반으로 체력 조정
             stat.OnStatChanged += () => 
             { 
-                hp.Value = stat.Value; 
-                Logg.Log($"[{gameObject.name}.Health] HP stat changed. Setting HP to {stat.Value}", Logg.LoggingMode.Completed); 
+                SetMaxHp(stat.Value);
+                Logg.Log($"[{gameObject.name}.Health] HP stat changed. MaxHp updated to {stat.Value}", Logg.LoggingMode.Completed); 
             };
+            this.Log($"{gameObject.name} - GetInitialHealth({stat.Value})", Logg.LoggingMode.InProgress);
             return stat.Value;
         }
 
@@ -124,9 +129,9 @@ namespace TH.Attribute
         {
             if (IsDead && !byForce) return; // 사망 상태인 경우 체력 조정x
             
-            if (maxHp.Value is not ({ } max and > 0))
+            if (!maxHp.TryGet(out var max) || max.IsEqualFloat(0f))
             {
-                Logg.Log($"[{gameObject.name}.{nameof(SetCurrentHp)}]Max Hp is less or equal to 0. failed to set HP", Logg.LoggingMode.Completed);
+                Logg.LogWarning($"[{gameObject.name}.{nameof(SetCurrentHp)}]Max Hp is less or equal to 0. failed to set HP");
                 Die(); // 최대 체력이 세팅되어있지 않다면 사망 처리
                 return;
             }
@@ -141,9 +146,19 @@ namespace TH.Attribute
         private void SetMaxHp(float amount, bool byForce = false)
         {
             if (!byForce && (amount < 0 || amount.IsEqualFloat(0f))) return; // 최대체력 0 이하로 설정 불가능
-            Logg.Log($"[{gameObject.name}.{GetType()}] SetMaxHp ({amount})", Logg.LoggingMode.Completed);
+            
+            // 최초 초기화인지 확인 (maxHp가 아직 초기화되지 않았으면 최초)
+            bool isFirstInit = !maxHp.Initialized;
+            
+            // 기존 체력 비율 계산 (최초 초기화라면 100%, 아니면 현재 비율 유지)
+            float healthRatio = isFirstInit ? 1f : GetCurrentHealthRatio;
+            
+            Logg.Log($"[{gameObject.name}.{GetType()}] SetMaxHp ({amount}), isFirstInit: {isFirstInit}, healthRatio: {healthRatio:F2}", Logg.LoggingMode.Completed);
             maxHp.Value = amount;
             OnMaxHealthChanged?.Invoke(maxHp.Value);
+            
+            // 체력 비율에 맞게 현재 체력 조정
+            SetCurrentHp(maxHp.Value * healthRatio, byForce: true);
         }
 
         #region IDamageable
@@ -210,7 +225,7 @@ namespace TH.Attribute
         
         public object CaptureState()
         {
-            this.Log($"[{gameObject.name}]CaptureState - hp: {hp.Value}" ,Logg.LoggingMode.Completed); 
+            this.Log($"[{gameObject.name}]CaptureState - hp: {hp.Value}" ,Logg.LoggingMode.InProgress); 
             
             return new HealthSaveData
             {
@@ -222,7 +237,7 @@ namespace TH.Attribute
         {
             if (state is not HealthSaveData data) return false;
             //todo: MaxHp 최초 초기화보다 먼저 실행될 경우 체력값 세이브 적용이 누락될 수 있음
-            this.Log($"[{gameObject.name}]RestoreState for Health: hp to {data.hp}" ,Logg.LoggingMode.Completed); 
+            this.Log($"[{gameObject.name}]RestoreState for Health: hp to {data.hp}" ,Logg.LoggingMode.InProgress); 
             SetHp(data.hp);
 
             return true;
