@@ -37,19 +37,12 @@ namespace TH.SceneManagement
             
             DontDestroyOnLoad(gameObject);
             
-            SavingWrapper savingWrapper = FindFirstObjectByType<SavingWrapper>();
-            await savingWrapper.Save(); // 다음 씬 로드 전 현재 씬 상태 저장
-            
             await GameSceneManager.Instance.LoadSceneAsync(info.destinationScene);
-            
-            await UniTask.Yield(); // 씬 로드 직후 한 프레임 대기
-            await savingWrapper.Load(); // 다음 씬 로드 후 상태 로드
 
             Portal portal = GetDestinationPortal();
             if (portal != null)
             {
                 TeleportPlayer(portal);
-                await savingWrapper.Save(); // 씬 로드 후 변동사항 다시 한번 저장
             }
             
             Destroy(gameObject);

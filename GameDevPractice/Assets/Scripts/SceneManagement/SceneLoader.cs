@@ -50,8 +50,8 @@ namespace TH.SceneManagement
 private void Init()
         {
             // 이벤트 내부 빈 객체로 초기화 (NRE 방지)
-            OnBeforeSceneChanged = (token) => UniTask.CompletedTask; 
-            OnAfterSceneChanged = (token) => UniTask.CompletedTask; 
+            OnBeforeSceneChanged = _ => UniTask.CompletedTask; 
+            OnAfterSceneChanged = _ => UniTask.CompletedTask; 
 #if UNITY_EDITOR
             // 에디터 환경일 경우 플레이 시점 씬 캐시
             bootScene = SceneManager.GetActiveScene();

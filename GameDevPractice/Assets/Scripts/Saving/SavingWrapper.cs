@@ -1,18 +1,15 @@
 using System;
 using Cysharp.Threading.Tasks;
 using TH.Core;
-using TH.SceneManagement;
 using TH.Core.Service;
 using UnityEngine;
 using TH.Resource;
-using TH.UI;
 using TH.Utils;
 
 namespace TH.SaveLoad
 {
     public class SavingWrapper : MonoBehaviour
     {
-        private const string defaultSaveFile = "save";
         private ISaveSystem saveSystem;
         
         private void Awake()
@@ -41,17 +38,16 @@ namespace TH.SaveLoad
 
         private void Init(string label)
         {
-            if (label == Constants.PreLoadLabel)
-            {
-                Logg.Log($"[SavingWrapper] Init() invoked");
-                LoadLastScene().Forget();
-            }
+            if (label != Constants.PreLoadLabel) return;
+            
+            Logg.Log($"[SavingWrapper] Init() invoked");
+            LoadLastScene().Forget();
         }
         
         private async UniTask LoadLastScene()
         {
             await UniTask.Yield(); // 1 프레임 지연 (Awake()에서 실행됨으로써 발생 가능한 fader 초기화 순서 오류 방지)
-            await saveSystem.LoadLastScene(defaultSaveFile);
+            await saveSystem.LoadLastScene(Constants.DefaultSaveFile);
         }
         
         private void SaveCall() => Save().Forget();
@@ -60,18 +56,18 @@ namespace TH.SaveLoad
         public async UniTask Save()
         {
             this.Log($"Save() invoked", Logg.LoggingMode.InProgress);
-            await saveSystem.SaveAsync(defaultSaveFile);
+            await saveSystem.SaveAsync(Constants.DefaultSaveFile);
         }
 
         public async UniTask Load()
         {
             this.Log($"Load() invoked", Logg.LoggingMode.InProgress);
-            await saveSystem.LoadAsync(defaultSaveFile);
+            await saveSystem.LoadAsync(Constants.DefaultSaveFile);
         }
 
         public async UniTask Delete()
         {
-            await saveSystem.DeleteAsync(defaultSaveFile);
+            await saveSystem.DeleteAsync(Constants.DefaultSaveFile);
         }
     }
 }

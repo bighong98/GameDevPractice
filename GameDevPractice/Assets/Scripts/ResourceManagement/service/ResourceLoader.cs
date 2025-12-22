@@ -173,7 +173,7 @@ namespace TH.Resource
             await UniTask.WhenAll(tasks);
             
             Logg.Log($"[ResourceLoader] finished loading label '{label}' assets", 
-                Logg.LoggingMode.InProgress);
+                Logg.LoggingMode.Completed);
 
             loadStatus[label] = LoadStatus.Done;
             NotifyPreLoadDone(label);// 리소스 로딩 대기중인 클래스들에게 로딩 완료 이벤트 전달

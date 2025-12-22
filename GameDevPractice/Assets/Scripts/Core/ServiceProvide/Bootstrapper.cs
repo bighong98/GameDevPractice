@@ -67,9 +67,12 @@ namespace TH.Core.Service
             // SceneLoader 인스턴스 생성 지연 방지
             var sceneLoader = ServiceLocator.Get<ISceneLoader>();
             // 첫 씬은 무조건 로딩 씬으로 강제
-            await sceneLoader.LoadLoadingSceneAsync(); 
+            await sceneLoader.LoadLoadingSceneAsync();
+
+            var resourceLoader = ServiceLocator.Get<IResourceLoader>();
+            _ = ServiceLocator.Get<ISaveSystem>();
             // 리소스 일괄 로드 시작
-            await ServiceLocator.Get<IResourceLoader>().PreLoadAsync();
+            await resourceLoader.PreLoadAsync();
         }
 
         private static async UniTask InitializeSingletons()
