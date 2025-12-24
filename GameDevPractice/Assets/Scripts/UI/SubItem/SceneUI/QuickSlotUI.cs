@@ -54,7 +54,7 @@ public class QuickSlotUI : BaseSlotUI, IHighlightableSlotUI
 
     public void Highlight(int type)
     {
-        if (GetImage((int)Images.HighLightImage) is {} highlightImage && highlightImage.IsAlive())
+        if (GetImage((int)Images.HighLightImage) is {} highlightImage && highlightImage.IsNotNull())
         {
             var color = type switch
             {
@@ -89,7 +89,7 @@ public class QuickSlotUI : BaseSlotUI, IHighlightableSlotUI
 
     private IEnumerator CoUnHighlightFade(int type, float duration)
     {
-        if (GetImage((int)Images.HighLightImage) is not {} highlightImage || !highlightImage.IsAlive())
+        if (GetImage((int)Images.HighLightImage) is not {} highlightImage || !highlightImage.IsNotNull())
             yield break;
 
         float elapsed = 0f;

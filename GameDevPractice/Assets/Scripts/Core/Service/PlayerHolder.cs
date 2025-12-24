@@ -6,7 +6,7 @@ namespace TH.Core.Service
     public class PlayerHolder : IPlayerHolder
     {
         private object currentPlayerInstance;
-        public object GetPlayerInstance { get { if (!currentPlayerInstance.IsAlive()) {
+        public object GetPlayerInstance { get { if (!currentPlayerInstance.IsNotNull()) {
                     currentPlayerInstance = UnityEngine.Object.FindAnyObjectByType<PlayerController>();
         } return currentPlayerInstance; }}
 

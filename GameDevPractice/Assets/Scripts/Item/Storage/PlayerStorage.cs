@@ -250,7 +250,7 @@ namespace TH.Item
         public bool TryConsume(IGameItemSlot slot, int amount)
         {
             if (slot is not { IsAccessible: true, HasItem: true, GetItem: {} item }) return false;
-            if (item.GetItemInfo is not {} itemInfo || !itemInfo.IsAlive() || !itemInfo.isUsable ) return false;
+            if (item.GetItemInfo is not {} itemInfo || !itemInfo.IsNotNull() || !itemInfo.isUsable ) return false;
 
             switch (item.Type)
             {
@@ -514,7 +514,7 @@ namespace TH.Item
         
         public bool TryGetCountableAmount(ItemTypeSO itemInfo, out int amount)
         {
-            if (itemInfo == null || !itemInfo.IsAlive())
+            if (itemInfo == null || !itemInfo.IsNotNull())
             {
                 amount = 0;
                 return false;

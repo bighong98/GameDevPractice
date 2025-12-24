@@ -8,10 +8,11 @@ public class ItemHealEffect : ItemEffectBase
 {
     [SerializeField] int healAmount;
     [SerializeField] float healRatio;
-
+    [SerializeField] private bool healByForce;
+    
     public override bool TryApply(in ItemUseContext context)
     {
-        if (context.User is not IHealable target || !target.IsAlive())
+        if (context.User is not IHealable target || !target.IsNotNull())
         {
             return false;
         }
@@ -25,8 +26,8 @@ public class ItemHealEffect : ItemEffectBase
         bool healByRatio = healRatio > 0;
         if (!healByAmount && !healByRatio) return false;
 
-        if (healByAmount) target.Heal(healAmount);
-        if (healByRatio) target.HealRatio(healRatio);
+        if (healByAmount) target.Heal(healAmount, healByForce);
+        if (healByRatio) target.HealRatio(healRatio, healByForce);
 
         return true;
     }

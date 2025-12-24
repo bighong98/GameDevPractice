@@ -355,6 +355,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Core
       objectReference: {fileID: 0}
+    - target: {fileID: 5178505937247375002, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
+      propertyPath: initialState
+      value: 
+      objectReference: {fileID: 11400000, guid: 6ad8b0b46e757f64d9dbb76b4f89d062, type: 2}
     - target: {fileID: 7630140644809386613, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
       propertyPath: m_LocalPosition.x
       value: -3.356664

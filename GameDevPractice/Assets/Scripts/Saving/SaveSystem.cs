@@ -377,7 +377,7 @@ namespace TH.SaveLoad
         {
             try
             {
-                if (!entity.IsAlive())
+                if (!entity.IsNotNull())
                 {
                     Logg.LogWarning($"[{GetType().Name}] AddNewEntry - entity is destroyed");
                     return;
@@ -550,7 +550,7 @@ namespace TH.SaveLoad
         {
             foreach (var entity in entities)
             {
-                if (!entity.IsAlive())
+                if (!entity.IsNotNull())
                 {
                     Logg.LogWarning($"[{GetType().Name}] ApplyState - entity is destroyed");
                     continue;
@@ -812,7 +812,7 @@ namespace TH.SaveLoad
         {
             var id = entity.UniqueIdentifier;
             this.Log($"RegisterEntity({entity.GetType()}) - id: {id}, IsGlobal: {entity.IsGlobal}"
-                + $"{(entity.IsAlive() && entity is Component c ? ", from scene:"+ c.gameObject.scene.name : string.Empty )}"
+                + $"{(entity.IsNotNull() && entity is Component c ? ", from scene:"+ c.gameObject.scene.name : string.Empty )}"
                 , Logg.LoggingMode.Completed);
 
             if (entity.IsGlobal)
@@ -821,7 +821,7 @@ namespace TH.SaveLoad
                 // 글로벌 ISavable 구현 객체는 자체적으로 IsRegistered 기준으로 중복 등록 방지 필요
                 GlobalEntities[id] = entity;
                 
-                if (entity.IsAlive() && LoadedStateCache.TryGetValue(id, out var stateDict))
+                if (entity.IsNotNull() && LoadedStateCache.TryGetValue(id, out var stateDict))
                 {
                     entity.RestoreState(stateDict);
                 }
@@ -858,7 +858,7 @@ namespace TH.SaveLoad
                 return;
             }
 
-            if (!sceneCatalog.IsAlive() || !sceneCatalog.TryGetCurrentSceneEntry(out var currSceneEntry))
+            if (!sceneCatalog.IsNotNull() || !sceneCatalog.TryGetCurrentSceneEntry(out var currSceneEntry))
                 return;
             
             if (!SceneEntities.TryGetValue(currSceneEntry, out var dict))
@@ -871,7 +871,7 @@ namespace TH.SaveLoad
         
         private static void AddSceneSavableEntity(SceneEntry sceneEntry, ISavableEntity entity, CancellationToken token)
         {
-            if (token.IsCancellationRequested || sceneEntry == null || !entity.IsAlive()) return;
+            if (token.IsCancellationRequested || sceneEntry == null || !entity.IsNotNull()) return;
 
             if (!SceneEntities.TryGetValue(sceneEntry, out var dict))
             {

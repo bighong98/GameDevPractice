@@ -33,7 +33,7 @@ namespace TH.Resource
         public override void RefreshStates()
         {
             base.RefreshStates();
-            HasItemUseSfx = ItemUseSfx.IsAlive() || IsAssetRefAssigned(itemUseSFXReference);
+            HasItemUseSfx = ItemUseSfx.IsNotNull() || IsAssetRefAssigned(itemUseSFXReference);
             Logg.Log($"[{GetType().Name}, {nameString}] RefreshStates() - HasItemUseSFX: {HasItemUseSfx}", Logg.LoggingMode.Completed);
         }
     }

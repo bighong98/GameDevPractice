@@ -52,7 +52,7 @@ public class InvenSlotUI : BaseSlotUI, IInvenSlotUI
 
     public void Highlight(int type)
     {
-        if (GetImage((int)Images.HighLightImage) is {} highlightImage && highlightImage.IsAlive())
+        if (GetImage((int)Images.HighLightImage) is {} highlightImage && highlightImage.IsNotNull())
         {
             var color = type switch
             {
@@ -76,6 +76,7 @@ public class InvenSlotUI : BaseSlotUI, IInvenSlotUI
 
     public void UnHighlightWithFade(int type, float duration = 0.5f)
     {
+        if (!gameObject.activeSelf) return;
         if (currentHighlightType != type) return;
         if (_fadeCoroutine != null)
         {
@@ -87,7 +88,7 @@ public class InvenSlotUI : BaseSlotUI, IInvenSlotUI
 
     private IEnumerator CoUnHighlightFade(int type, float duration)
     {
-        if (GetImage((int)Images.HighLightImage) is not {} highlightImage || !highlightImage.IsAlive())
+        if (GetImage((int)Images.HighLightImage) is not {} highlightImage || !highlightImage.IsNotNull())
             yield break;
 
         float elapsed = 0f;

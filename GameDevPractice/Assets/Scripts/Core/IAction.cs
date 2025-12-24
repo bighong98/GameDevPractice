@@ -6,8 +6,8 @@ namespace TH.Core
 {
     public interface IAction
     {
-        public ActoinScheduler ActionScheduler { get; }
-        public void Cancel();
+        public CharacterActionScheduler ActionScheduler { get; }
+        public void CancelAction();
         
     }
 }

@@ -5,6 +5,7 @@ using TH.Combat;
 using UnityEngine.AI;
 using TH.Utils;
 using System;
+using TH.Control.Movement;
 using TH.Core;
 using TH.Core.Service;
 
@@ -13,7 +14,8 @@ namespace TH.Control
     public class PlayerController : MonoBehaviour
     {
         [SerializeField] private Camera _camera;
-        private Mover mover;
+        // private Mover mover;
+        private MoverRefactoring mover;
         private Fighter fighter;
         private Health health;
         
@@ -24,9 +26,9 @@ namespace TH.Control
 
         private void Awake()
         {
-            mover = GetComponent<Mover>();
-            fighter = GetComponent<Fighter>();
-            health = GetComponent<Health>();
+            TryGetComponent(out mover);
+            TryGetComponent(out fighter);
+            TryGetComponent(out health);
 
             ServiceLocator.Get<IPlayerHolder>().SetPlayer(this);
         }
@@ -70,7 +72,7 @@ namespace TH.Control
             // WASD 입력이 시작되면 즉시 기존 이동/전투 취소
             if (isWASDMoving)
             {
-                mover.Cancel();
+                mover.CancelAction();
             }
         }
 
@@ -178,7 +180,7 @@ namespace TH.Control
             if (!RaycastWithNavMesh(pos, out var navMeshPos)) return false;
             
             SetCursor(CursorType.Movement);
-            mover.StartMoveAction(navMeshPos);
+            // mover.StartMoveAction(navMeshPos);
             return true;
         }
         

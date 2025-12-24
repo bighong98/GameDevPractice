@@ -28,7 +28,7 @@ public class CoreDuplicationHandler : MonoBehaviour
 
         foreach (var target in targets)
         {
-            if (!target.IsAlive() || !target.activeSelf) continue;
+            if (!target.IsNotNull() || !target.activeSelf) continue;
             target.SetActive(false);
         }
         

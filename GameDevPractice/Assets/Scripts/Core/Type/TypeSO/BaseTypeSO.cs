@@ -34,7 +34,7 @@ namespace TH.Resource
 
         protected static bool IsAssetRefAssigned(AssetReference a)
         {
-            return a.IsAlive() && a.RuntimeKeyIsValid();
+            return a.IsNotNull() && a.RuntimeKeyIsValid();
         }
 
         protected static async UniTask<T> GetStateFromAssetReference<T>(AssetReference assetReference, CancellationToken token = default) where T : UnityEngine.Object

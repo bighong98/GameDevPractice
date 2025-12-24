@@ -64,7 +64,7 @@ namespace TH.Utils
         {
             foreach (var (key, handler) in handlers)
             {
-                if (!key.IsAlive()) continue;
+                if (!key.IsNotNull()) continue;
                 _remover(key, handler);
             }
 

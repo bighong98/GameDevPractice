@@ -23,7 +23,7 @@ namespace TH.Control
         private Fighter fighter;
         private Health health;
         private Mover mover;
-        private ActoinScheduler actionScheduler;
+        private CharacterActionScheduler actionScheduler;
 
         private IPlayerHolder playerHolder;
         private PlayerController player;
@@ -38,7 +38,7 @@ namespace TH.Control
             fighter = GetComponent<Fighter>();
             health = GetComponent<Health>();
             mover = GetComponent<Mover>();
-            actionScheduler = GetComponent<ActoinScheduler>();
+            actionScheduler = GetComponent<CharacterActionScheduler>();
             guardPosition = new LazyValue<Vector3>(GetDefaultGuardPosition);
             
             // if (GameObject.FindWithTag("Player") is { } foundPlayer)

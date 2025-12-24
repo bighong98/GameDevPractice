@@ -157,7 +157,7 @@ namespace TH.Item.Storage
         {
             // 등록 아이템 유효성 검사
             if (item is not {GetItemInfo: {} itemInfo} 
-                || !itemInfo.IsAlive() 
+                || !itemInfo.IsNotNull() 
                 || !itemInfo.isUsable) return false;
             // 등록 슬롯 유효성 검사
             if (!IsValidSlotIdx(index)) 
@@ -227,7 +227,7 @@ namespace TH.Item.Storage
         private bool ContainsEquivalent(IGameItem newItem, out IGameItemSlot equivalentItemSlot)
         {
             equivalentItemSlot = null;
-            if (newItem is not { IsEmpty: false, GetItemInfo: {} itemInfo } || !itemInfo.IsAlive())
+            if (newItem is not { IsEmpty: false, GetItemInfo: {} itemInfo } || !itemInfo.IsNotNull())
             {
                 Logg.LogWarning($"[{GetType().Name}.ContainsEquivalent] Invalid item instance entered");
                 return false;

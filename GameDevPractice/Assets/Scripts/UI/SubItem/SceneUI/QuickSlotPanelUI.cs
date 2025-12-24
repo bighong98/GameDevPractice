@@ -45,7 +45,7 @@ public class QuickSlotPanelUI : BaseUI, IStorageUI<QuickSlotUI>, IDraggableStora
         BindObject(typeof(GameObjects));
 
         if (slotUIs.Count > 0) return;
-        if (GetObject((int)GameObjects.slots) is {} slots && slots.IsAlive())
+        if (GetObject((int)GameObjects.slots) is {} slots && slots.IsNotNull())
         {
             int i = 0;
             foreach (var slotUI in slots.GetComponentsInChildren<QuickSlotUI>())

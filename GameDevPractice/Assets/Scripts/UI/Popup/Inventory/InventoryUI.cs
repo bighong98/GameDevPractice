@@ -95,7 +95,7 @@ namespace TH.UI
         IDraggableStorageUI quickSlotPanelUI;
         void OnEnable()
         {
-            if (UIManager.Instance.TryGetSceneUI(out var sceneUI) && sceneUI.IsAlive()
+            if (UIManager.Instance.TryGetSceneUI(out var sceneUI) && sceneUI.IsNotNull()
                 && sceneUI.GetQuickSlotPanelUI(out var quickSlotPanelUI))
             {
                 this.quickSlotPanelUI = quickSlotPanelUI;
@@ -105,7 +105,7 @@ namespace TH.UI
 
         void OnDisable()
         {
-            if (quickSlotPanelUI.IsAlive())
+            if (quickSlotPanelUI.IsNotNull())
             {
                 UnSubscribeDragEndEvent(quickSlotPanelUI);
             }

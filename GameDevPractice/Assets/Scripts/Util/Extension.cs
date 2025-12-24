@@ -71,7 +71,7 @@ public static class Extension
     // 특정 인터페이스 구현 인스턴스가 MonoBehaviour 상속 받았을 가능성이 있는 경우 '==', 'is' 대신 사용 권장 
     // 반드시 호출 전 await UniTask.SwitchToMainThread(); 등으로 메인 쓰레드 상태임을 보장할 것
     #nullable enable
-    public static bool IsAlive<T>([NotNullWhen(true)] this T? obj) where T : class
+    public static bool IsNotNull<T>([NotNullWhen(true)] this T? obj) where T : class
     {
         if (obj is null) return false; // 가리키는 참조가 없는 경우 
         if (obj is UnityEngine.Object unityObject) return unityObject != null;

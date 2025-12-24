@@ -122,7 +122,7 @@ namespace TH.UI
                 slider.value = curr;
             }
             
-            if (slider.IsAlive())
+            if (slider.IsNotNull())
                 slider.value = to;
             easing = false;
         }

@@ -76,8 +76,8 @@ namespace TH.SceneManagement
         private bool NotTransitionWithoutDestination()
         {
             if (info is not { destinationScene: { } dest, destinationPortal: {} destPortalData } 
-                || !dest.IsAlive()
-                || !destPortalData.IsAlive())
+                || !dest.IsNotNull()
+                || !destPortalData.IsNotNull())
             {
                 if (TryGetComponent(out Collider coll))
                     coll.enabled = false;

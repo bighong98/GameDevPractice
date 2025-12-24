@@ -29,7 +29,7 @@ namespace TH.Combat
         
         private static readonly int Attack1 = Animator.StringToHash("attack");
         private static readonly int StopAttack = Animator.StringToHash("stopAttack");
-        public ActoinScheduler ActionScheduler { get; private set; }
+        public CharacterActionScheduler ActionScheduler { get; private set; }
         
         public event Action<WeaponTypeSO, Animator> OnEquipWeapon; // 장비 변경(장착, 장착해제) 시, Equipper.cs 에서 사용
         public event Action OnAttack; // 공격 시도 시
@@ -42,7 +42,7 @@ namespace TH.Combat
         {
             mover = GetComponent<Mover>();
             animator = GetComponent<Animator>();
-            ActionScheduler = GetComponent<ActoinScheduler>();
+            ActionScheduler = GetComponent<CharacterActionScheduler>();
             statHolder = GetComponent<IStatHolder>();
             equipHolder = GetComponent<IEquipmentHolder>();
 
@@ -103,13 +103,20 @@ namespace TH.Combat
                 mover.Moveto(target.transform.position);
             else
             {
-                mover.Cancel();
+                mover.CancelAction();
                 AttackBehaviour();
             }
         }
 
-        private bool IsInRange => Vector3.Distance(transform.position, target.transform.position) < currentWeapon.Value.GetRange;
-        
+        public bool IsInRange
+        {
+            get
+            {
+                if (!target.IsNotNull()) return false;
+                return Vector3.Distance(transform.position, target.transform.position) < currentWeapon.Value.GetRange;
+            }
+        }
+
         private void AttackBehaviour()
         {
             transform.LookAt(target.transform);
@@ -120,7 +127,7 @@ namespace TH.Combat
             }
         }
         
-        public void Cancel()
+        public void CancelAction()
         {
             timeSinceLastAttack = 0;
             AnimateStopAttack();
@@ -149,7 +156,7 @@ namespace TH.Combat
 
         void Hit() // Animation Event Method
         {
-            if (!target.IsAlive()) return;
+            if (!target.IsNotNull()) return;
 
             // OnAttack?.Invoke();
             // SoundManager.Instance.Play(Enums.AudioType.Effect, currentWeapon.Value.AttackSFX);
@@ -170,7 +177,7 @@ namespace TH.Combat
         private void ChangeTarget(Health newTarget)
         {
             // if (target is { } prevTarget && prevTarget == newTarget) return;
-            if (!newTarget.IsAlive() || (target.IsAlive() && target == newTarget)) return;
+            if (!newTarget.IsNotNull() || (target.IsNotNull() && target == newTarget)) return;
 
             target = newTarget;
             OnTargetChanged?.Invoke(target);

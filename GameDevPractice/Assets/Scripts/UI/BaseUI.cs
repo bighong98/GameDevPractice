@@ -121,7 +121,7 @@ namespace TH.UI
         {
             if (go == null || asyncAction == null)
             {
-                Logg.Log($"BindAsyncEvent(): go or asyncAction is null: {(go.IsAlive() ? go.name : string.Empty)}");
+                Logg.Log($"BindAsyncEvent(): go or asyncAction is null: {(go.IsNotNull() ? go.name : string.Empty)}");
                 return;
             }
             

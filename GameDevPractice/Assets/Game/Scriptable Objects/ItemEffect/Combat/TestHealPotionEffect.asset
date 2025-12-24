@@ -14,3 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemHealEffect
   healAmount: 20
   healRatio: 0
+  healByForce: 1

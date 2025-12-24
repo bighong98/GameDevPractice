@@ -2555,7 +2555,9 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 1397199764304502419, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
+    - {fileID: 9198958092334245496, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 8132568554257588984, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
@@ -2571,6 +2573,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6061633697407881761, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1982705169968435462}
+    - targetCorrespondingSourceObject: {fileID: 6061633697407881761, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1145590896275456100}
+    - targetCorrespondingSourceObject: {fileID: 6061633697407881761, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3624171116214287911}
   m_SourcePrefab: {fileID: 100100000, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
 --- !u!1 &4641656488832625914 stripped
 GameObject:
@@ -2589,6 +2597,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c736ef8122e4bde478a1f8309f8670bc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _camera: {fileID: 0}
 --- !u!114 &1982705169968435462
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2601,6 +2610,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ca5b6d709f091d419292485de9d54ce, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TH.Attribute.PlayerExperience
+--- !u!114 &1145590896275456100
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4641656488832625914}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bdd2503e2fe5ee0408f24be7b7c958cc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TH.Control.Movement.MoverRefactoring
+  maxSpeed: 6
+  speedFraction: 1
+--- !u!114 &3624171116214287911
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4641656488832625914}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c38ccd8ebc91c547969be971fe77214, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TH.Control.State.ActionStateMachine
+  initialState: {fileID: 11400000, guid: 6ad8b0b46e757f64d9dbb76b4f89d062, type: 2}
+  globalTransitions:
+  - condition: {fileID: 11400000, guid: 6ee183327986dab4184ec78b9b8dab3e, type: 2}
+    destinationState: {fileID: 11400000, guid: dc33e8789b0525041b251428d1cd4b50, type: 2}
+  stateTime: 0
 --- !u!4 &7253599445613321251 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8132568554257588984, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}

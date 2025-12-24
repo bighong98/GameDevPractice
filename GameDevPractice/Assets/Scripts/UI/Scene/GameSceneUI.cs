@@ -58,7 +58,7 @@ public class GameSceneUI : SceneUI
 
     private void Start()
     {
-        if (playerHolder.GetPlayerInstance is PlayerController p && p.IsAlive())
+        if (playerHolder.GetPlayerInstance is PlayerController p && p.IsNotNull())
         {
             UpdatePlayerInstance(p);
         }
@@ -235,7 +235,7 @@ public class GameSceneUI : SceneUI
 
     public override bool GetQuickSlotPanelUI(out QuickSlotPanelUI quickSlotPanelUI)
     {
-        if (GetObject((int)GameObjects.QuickSlotPanel) is {} go && go.IsAlive()
+        if (GetObject((int)GameObjects.QuickSlotPanel) is {} go && go.IsNotNull()
             && go.TryGetComponent<QuickSlotPanelUI>(out quickSlotPanelUI))
         {
             return true;

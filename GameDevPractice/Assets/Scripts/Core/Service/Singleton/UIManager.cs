@@ -287,7 +287,7 @@ namespace TH.Core.Service
 
         public bool TryGetSceneUI(out SceneUI ui)
         {
-            if (!sceneUI.IsAlive())
+            if (!sceneUI.IsNotNull())
             {
                 ui = default;
                 return false;

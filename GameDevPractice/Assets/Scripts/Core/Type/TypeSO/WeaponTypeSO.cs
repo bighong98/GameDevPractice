@@ -45,8 +45,8 @@ namespace TH.Resource
         public override void RefreshStates()
         {
             base.RefreshStates();
-            HasProjectile = projectilePrefab.IsAlive();
-            HasImpactEffect = impactParticlePrefab.IsAlive();
+            HasProjectile = projectilePrefab.IsNotNull();
+            HasImpactEffect = impactParticlePrefab.IsNotNull();
             HasAttackSFX = IsAssetRefAssigned(attackSFXReference);
             Logg.Log($"[{GetType().Name}, {nameString}] RefreshStates() - hasProjectile: {HasProjectile}, hasImpactEffect: {HasImpactEffect}, HasAttackSFX: {HasAttackSFX}", Logg.LoggingMode.Completed);
         }

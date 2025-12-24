@@ -78,7 +78,7 @@ namespace TH.Utils
 
         private static Transform AnchorOf(object s)
         {
-            if (!s.IsAlive()) return null;
+            if (!s.IsNotNull()) return null;
             return (s as Component)?.transform;
         }
 

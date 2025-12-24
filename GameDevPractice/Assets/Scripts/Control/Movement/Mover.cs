@@ -27,7 +27,7 @@ namespace TH.Movement
         
         private static readonly int ForwardSpeed = Animator.StringToHash("forwardSpeed");
         
-        public ActoinScheduler ActionScheduler { get; private set; }
+        public CharacterActionScheduler ActionScheduler { get; private set; }
 
         private void Awake()
         {
@@ -35,7 +35,7 @@ namespace TH.Movement
             animator = GetComponent<Animator>();
             health = GetComponent<Health>();
             
-            ActionScheduler = GetComponent<ActoinScheduler>();
+            ActionScheduler = GetComponent<CharacterActionScheduler>();
         }
 
         private void Update()
@@ -57,7 +57,7 @@ namespace TH.Movement
             navMeshAgent.isStopped = false;
         }
 
-        public void Cancel()
+        public void CancelAction()
         {
             navMeshAgent.isStopped = true;
         }

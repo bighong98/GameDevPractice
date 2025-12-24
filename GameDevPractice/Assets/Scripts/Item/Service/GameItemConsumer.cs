@@ -63,7 +63,7 @@ namespace TH.Item
         public bool TryConsume(IGameItemStorage storage, ItemTypeSO itemInfo, object user = null, int amount = 1)
         {
             // 1) 아이템 데이터 유효성 검사
-            if (!itemInfo.IsAlive() || !itemInfo.isUsable)
+            if (!itemInfo.IsNotNull() || !itemInfo.isUsable)
                 return false;
             
             // 2) 컨텍스트 구성

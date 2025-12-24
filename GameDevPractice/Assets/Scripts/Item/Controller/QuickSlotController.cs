@@ -304,12 +304,12 @@ public class QuickSlotController : MonoBehaviour
         if (quickStorage == null || panelUI == null) return;
         if (!IsValidQuickIndex(quickIndex)) return;
 
-        if (panelUI.GetSlotUI(quickIndex) is not {} slotUI || !slotUI.IsAlive())
+        if (panelUI.GetSlotUI(quickIndex) is not {} slotUI || !slotUI.IsNotNull())
             return;
 
         if (!quickStorage.TryGetItem(quickIndex, out var slotItem)
             || slotItem is not {GetItemInfo: {} itemInfo}
-            || !itemInfo.IsAlive()
+            || !itemInfo.IsNotNull()
             || !TryGetTotalAmount(itemInfo, out var totalAmount))
         {
             slotUI.Clear();
@@ -326,7 +326,7 @@ public class QuickSlotController : MonoBehaviour
         if (quickStorage == null || panelUI == null) return;
         if (!IsValidQuickIndex(quickIndex)) return;
 
-        if (panelUI.GetSlotUI(quickIndex) is not {} slotUI || !slotUI.IsAlive())
+        if (panelUI.GetSlotUI(quickIndex) is not {} slotUI || !slotUI.IsNotNull())
             return;
 
         if (itemAmount <= 0)
@@ -366,7 +366,7 @@ public class QuickSlotController : MonoBehaviour
 
     private IHealable GetPlayerInstance(object player)
     {
-        if (!player.IsAlive() || player is not Component c || !c.TryGetComponent<IHealable>(out var p))
+        if (!player.IsNotNull() || player is not Component c || !c.TryGetComponent<IHealable>(out var p))
         {
             Logg.LogError($"[{GetType().Name}] failed to Get Player Instance");
             return null;

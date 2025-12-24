@@ -25,21 +25,19 @@ namespace TH.Attribute
         private ILevel levelHolder;
         private bool hasMutableLevel;
         
-        private static readonly int DieAnimHash = Animator.StringToHash("die");
-        public bool IsDead { get; private set; }
         public event Action OnDead;
         public event Action OnRevived;
+        public event HitEvent OnDamaged; // 피해를 입은 경우
+        public event Action<float> OnHealed; // 회복 받은 경우
+        
+        public Action<float> OnHealthRatioChanged; // 현재 체력에 변동이 생긴 경우 (피격, 회복 등)
+        public Action<float> OnMaxHealthChanged; // 최대 체력에 변동이 생긴 경우 (레벨 업, 장비 변경 등)
+        public Action<float> OnCurrHealthChanged; // 현재 체력에 변동이 생긴 경우 (피격, 회복 등)
         
         public float GetCurrentHealth => hp.Value;
         public float GetMaxHealth => maxHp.Value;
         public float GetCurrentHealthRatio => (hp.Value / maxHp.Value);
-
-        
-        public event HitEvent OnDamaged; // 피해를 입은 경우
-        public event Action<float> OnHealed; // 회복 받은 경우
-        public Action<float> OnHealthRatioChanged; // 현재 체력에 변동이 생긴 경우 (피격, 회복 등)
-        public Action<float> OnMaxHealthChanged; // 최대 체력에 변동이 생긴 경우 (레벨 업, 장비 변경 등)
-        public Action<float> OnCurrHealthChanged; // 현재 체력에 변동이 생긴 경우 (피격, 회복 등)
+        public bool IsDead { get; private set; }
         
         [SerializeField] private GameObject HPBarPrefab; // serialize for debug
 
@@ -47,6 +45,10 @@ namespace TH.Attribute
         private LazyValue<float> rewardXp;
 
         private IFloatingTextSpawner textSpawner;
+        
+        private static readonly int DieAnimHash = Animator.StringToHash("die");
+        private static readonly int ReviveAnimHash = Animator.StringToHash("revive");
+
 
         private void Awake()
         {
@@ -85,7 +87,7 @@ namespace TH.Attribute
         {
             textSpawner.Register(this, FloatingTextEventType.Damage);
             textSpawner.Register(this, FloatingTextEventType.Heal);
-            if (!hasMutableLevel || !levelHolder.IsAlive()) return;
+            if (!hasMutableLevel || !levelHolder.IsNotNull()) return;
             levelHolder.OnLevelChanged += this.OnLevelUp;
         }
 
@@ -93,13 +95,13 @@ namespace TH.Attribute
         {
             textSpawner.UnRegister(this, FloatingTextEventType.Damage);
             textSpawner.UnRegister(this, FloatingTextEventType.Heal);
-            if (!hasMutableLevel || !levelHolder.IsAlive()) return;
+            if (!hasMutableLevel || !levelHolder.IsNotNull()) return;
             levelHolder.OnLevelChanged -= this.OnLevelUp;
         }
 
         private float GetInitialHealth()
         {
-            if (!statHolder.IsAlive() || statHolder.GetStat(GameStats.Health) is not { } stat)
+            if (!statHolder.IsNotNull() || statHolder.GetStat(GameStats.Health) is not { } stat)
             {
                 Logg.LogError($"[{gameObject.name}.Health] Failed to initialize health stat");
                 return 0;
@@ -196,8 +198,9 @@ namespace TH.Attribute
             
             IsDead = true;
             OnDead?.Invoke();
+            GetComponent<CharacterActionScheduler>().CancelCurrentAction();
+            animator.ResetTrigger(ReviveAnimHash);
             animator.SetTrigger(DieAnimHash);
-            GetComponent<ActoinScheduler>().CancelCurrentAction();
 
             if (lastAttacker is Component c && c.TryGetComponent(out IExperience xp))
             {
@@ -209,7 +212,8 @@ namespace TH.Attribute
         {
             if (!IsDead) return;
             IsDead = false;
-            
+            animator.ResetTrigger(DieAnimHash);
+            animator.SetTrigger(ReviveAnimHash);
             OnRevived?.Invoke();
         }
 
@@ -221,7 +225,7 @@ namespace TH.Attribute
             Logg.Log($"OnLevelUp: hp: {hp.Value}", Logg.LoggingMode.Completed);
         }
 
-        #region MyRegion
+        #region ISavable
         
         public object CaptureState()
         {
@@ -247,24 +251,17 @@ namespace TH.Attribute
 
         #region IHealable
 
-        public bool Heal(int amount)
+        public bool Heal(int amount, bool byForce = false)
         {
-            SetCurrentHp(hp.Value + amount, false);
+            SetCurrentHp(hp.Value + amount, byForce);
             OnHealed?.Invoke(amount);
             return true;
         }
 
-        // public bool HealRatio(float ratio)
-        // {
-        //     if (maxHp is not {Initialized: true, Value: {} maxHpValue}) return false;
-        //     SetCurrentHp(maxHpValue * ratio);
-        //     return true;
-        // }
-
-        public bool HealRatio(float ratio)
+        public bool HealRatio(float ratio, bool byForce = false)
         {
             if (maxHp is not {Initialized: true, Value: {} maxHpValue}) return false;
-            return Heal((int)(maxHpValue * ratio));
+            return Heal((int)(maxHpValue * ratio), byForce);
         }
 
         #endregion
