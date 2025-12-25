@@ -3,7 +3,7 @@ using UnityEngine.Serialization;
 
 namespace TH.UI.Data // todo: 네임스페이스 정리
 {
-    [CreateAssetMenu(fileName = "FloatingTextSO", menuName = "Scriptable Objects/FloatingTextSO")]
+    [CreateAssetMenu(fileName = "FloatingTextSO", menuName = "Scriptable Objects/UI/FloatingTextSO")]
     public class FloatingTextSO : ScriptableObject, IFloatingTextData
     {
         [SerializeField] float riseSpeed = 1.5f;      // 위로 떠오르는 속도 (units/sec)

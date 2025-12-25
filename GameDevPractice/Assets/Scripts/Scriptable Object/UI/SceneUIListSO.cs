@@ -6,7 +6,7 @@ using UnityEngine.AddressableAssets;
 
 namespace TH.Resource
 {
-    [CreateAssetMenu(fileName = "SceneUIListSO", menuName = "Scriptable Objects/TypeList/SceneUIListSO")]
+    [CreateAssetMenu(fileName = "SceneUIListSO", menuName = "Scriptable Objects/UI/SceneUIListSO")]
     public class SceneUIListSO : ScriptableObject
     {
         [SerializeField] private List<SceneUIPair> list;

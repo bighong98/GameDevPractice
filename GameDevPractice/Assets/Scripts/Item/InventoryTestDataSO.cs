@@ -6,7 +6,7 @@ using TH.Utils;
 using UnityEngine;
 using TH.Core.Service;
 
-[CreateAssetMenu(fileName = "InventoryTestDataSO", menuName = "Scriptable Objects/TypeList/InventoryTestDataSO")]
+[CreateAssetMenu(fileName = "InventoryTestDataSO", menuName = "Scriptable Objects/Catalog/InventoryTestDataSO")]
 public class InventoryTestDataSO : KeyValueListSO<AssetReferenceItemSO, int>, IAsyncInitializer
 {
     public async UniTask InitializeAsync(CancellationToken token)

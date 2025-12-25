@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace TH.UI.Data
 {
-    [CreateAssetMenu(fileName = "InventorySFXCatalogSO", menuName = "Scriptable Objects/TypeList/InventorySFXCatalogSO")]
+    [CreateAssetMenu(fileName = "InventorySFXCatalogSO", menuName = "Scriptable Objects/Catalog/InventorySFXCatalogSO")]
     public class InventorySFXCatalogSO : KeyValueListSO<InventorySFX, AssetReferenceAudioClip>
     {
         

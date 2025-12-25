@@ -13,7 +13,7 @@ using EditorSceneManager = UnityEditor.SceneManagement.EditorSceneManager;
 namespace TH.Resource
 {
 
-    [CreateAssetMenu(fileName = "SceneCatalogSO", menuName = "Scriptable Objects/SceneCatalogSO")]
+    [CreateAssetMenu(fileName = "SceneCatalogSO", menuName = "Scriptable Objects/Catalog/SceneCatalogSO")]
     public class SceneCatalogSO : ScriptableObject
     {
         [SerializeField] private List<SceneEntry> entries = new();

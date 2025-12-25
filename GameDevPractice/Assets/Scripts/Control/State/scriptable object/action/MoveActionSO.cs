@@ -4,7 +4,7 @@ using TH.Control.State;
 
 namespace TH.Control.Data
 {
-    [CreateAssetMenu(fileName = "MoveAction", menuName = "Scriptable Objects/CharacterAction/MoveAction")]
+    [CreateAssetMenu(fileName = "MoveActionSO", menuName = "Scriptable Objects/CharacterAction/MoveActionSO")]
     public class MoveActionSO : CharacterActionSO
     {
         public override void Execute(IActionStateController controller)

@@ -7,7 +7,7 @@ using TH.Utils;
 
 namespace TH.Stats
 {
-    [CreateAssetMenu(fileName = "ProgressionSO", menuName = "Scriptable Objects/ProgressionSO")]
+    [CreateAssetMenu(fileName = "ProgressionSO", menuName = "Scriptable Objects/GameStat/ProgressionSO")]
     public class ProgressionSO : ScriptableObject
     {
         [SerializeField] private ProgressionCharacterClass[] characterClasses;
