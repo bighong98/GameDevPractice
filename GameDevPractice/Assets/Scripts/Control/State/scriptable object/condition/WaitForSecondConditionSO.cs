@@ -1,8 +1,9 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using TH.Control.State;
 using UnityEngine;
+using TH.Control.State;
+using TH.Utils;
 
 namespace TH.Control.Data
 {
@@ -23,7 +24,7 @@ namespace TH.Control.Data
             var cts = new CancellationTokenSource();
             RunDelayAsync(delaySeconds, onTriggered, cts.Token).Forget();
 
-            return new StateConditionHandler(() =>
+            return new DisposableDelegate(() =>
             {
                 cts.Cancel();
                 cts.Dispose();

@@ -1,6 +1,7 @@
 using System;
-using TH.Control.State;
 using UnityEngine;
+using TH.Control.State;
+using TH.Utils;
 
 namespace TH.Control.Data
 {
@@ -17,23 +18,6 @@ namespace TH.Control.Data
         // -> 상속 클래스에서 return base.Bind(controller, onTriggered);
         // -> 해당 ConditionSO의 의존 컴포넌트가 없는 경우에도 마찬가지로 Empty 반환하도록 구현
         public virtual IDisposable Bind(IActionStateController controller, Action onTriggered) 
-            => StateConditionHandler.Empty;
-    }
-
-    public sealed class StateConditionHandler : IDisposable
-    {
-        public static readonly IDisposable Empty = new StateConditionHandler(null);
-        private Action _handler;
-
-        public StateConditionHandler(Action handler)
-        {
-            _handler = handler;
-        }
-        
-        public void Dispose()
-        {
-            _handler?.Invoke();
-            _handler = null;
-        }
+            => DisposableDelegate.Empty;
     }
 }

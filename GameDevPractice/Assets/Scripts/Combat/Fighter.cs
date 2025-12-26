@@ -98,7 +98,8 @@ namespace TH.Combat
             if (!IsEquippingWeapon) return;
             if (target == null) return;
             if (target.IsDead) return;
-            
+
+            if (mover == null) return;
             if (!IsInRange)
                 mover.Moveto(target.transform.position);
             else
@@ -193,7 +194,8 @@ namespace TH.Combat
 
         public void Attack(Health targetHealth)
         {
-            ActionScheduler.StartAction(this);
+            if (ActionScheduler != null)
+                ActionScheduler.StartAction(this);
             ChangeTarget(targetHealth);
         }
 

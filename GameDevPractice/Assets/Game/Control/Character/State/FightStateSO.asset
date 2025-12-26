@@ -10,10 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 856e2d3a5c9d0b34da515cdd74a384c0, type: 3}
-  m_Name: CombatStateSO
+  m_Name: FightStateSO
   m_EditorClassIdentifier: Assembly-CSharp::TH.Control.Data.CombatStateSO
-  onEnterActions: []
+  onEnterActions:
+  - {fileID: 11400000, guid: 1ae8a8d9e54a66749944c4318d7c5b1a, type: 2}
   updateActions: []
   onExitActions: []
-  transitions: []
+  transitions:
+  - condition: {fileID: 11400000, guid: 52fb27d837f4fb0499a958b5a49823a0, type: 2}
+    destinationState: {fileID: 11400000, guid: aebd0b6c5f806a346a562df8927ab54d, type: 2}
+  - condition: {fileID: 11400000, guid: a33ed81b398c1c64d9270f02ee06d2ef, type: 2}
+    destinationState: {fileID: 11400000}
   allowSelfTransition: 0
+  transitionLockRequired: 1

@@ -13,7 +13,11 @@ MonoBehaviour:
   m_Name: ApproachStateSO
   m_EditorClassIdentifier: Assembly-CSharp::TH.Control.Data.ApproachStateSO
   onEnterActions: []
-  updateActions: []
+  updateActions:
+  - {fileID: 11400000, guid: c81a42815fff3c9498b7fb7f247e88a5, type: 2}
   onExitActions: []
-  transitions: []
+  transitions:
+  - condition: {fileID: 11400000, guid: a33ed81b398c1c64d9270f02ee06d2ef, type: 2}
+    destinationState: {fileID: 11400000, guid: a6399e600cad3064d8bb74e9a62dd747, type: 2}
   allowSelfTransition: 0
+  transitionLockRequired: 0

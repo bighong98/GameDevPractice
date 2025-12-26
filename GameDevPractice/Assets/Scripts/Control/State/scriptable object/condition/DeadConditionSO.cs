@@ -1,6 +1,7 @@
 using System;
 using TH.Attribute;
 using TH.Control.State;
+using TH.Utils;
 using UnityEngine;
 
 namespace TH.Control.Data
@@ -21,7 +22,7 @@ namespace TH.Control.Data
             
             health.OnDead += Handler;
 
-            return new StateConditionHandler(() =>
+            return new DisposableDelegate(() =>
             {
                 if (health.IsNotNull())
                     health.OnDead -= Handler;

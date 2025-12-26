@@ -2,6 +2,7 @@ using System;
 using TH.Attribute;
 using TH.Combat;
 using TH.Control.State;
+using TH.Utils;
 using UnityEngine;
 
 namespace TH.Control.Data
@@ -22,7 +23,7 @@ namespace TH.Control.Data
 
             fighter.OnTargetChanged += Handler;
 
-            return new StateConditionHandler(() =>
+            return new DisposableDelegate(() =>
             {
                 if (fighter.IsNotNull())
                     fighter.OnTargetChanged -= Handler;

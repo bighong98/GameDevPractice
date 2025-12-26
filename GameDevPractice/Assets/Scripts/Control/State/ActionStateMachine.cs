@@ -25,10 +25,9 @@ namespace TH.Control.State
 
         private void Start()
         {
-            if (initialState != null)
-            {
-                TransitionToState(initialState);
-            }
+            if (initialState == null) return;
+            
+            TransitionToState(initialState);
         }
         
         private void OnEnable()
@@ -56,14 +55,23 @@ namespace TH.Control.State
 
         #region IActionStateController
 
-        public void TransitionToState(IActionState nextState)
+        public void TransitionToState(IActionState nextState, bool force = false)
         {
             // RemainState거나 null이면 전환하지 않음
             if (nextState == remainState || nextState == null) return;
             this.Log($"{gameObject.name}: {currentState} -> {nextState}");
             
-            // 기존 상태 event-driven 전환 조건 구독 해제
+            if (!force && _isLocked)
+            {
+                _pendingState = nextState;
+                return;
+            }
+            
+            // 기존 상태 event-driven 전환 조건 구독 해제 및 핸들러 정리
             UnbindTransitions();
+            // 기존 상태 전환 잠금 이벤트 구독 해제 및 핸들러 정리
+            DisposeTransitionLockHandler();
+            
             // 기존 상태 퇴장 로직 실행
             if (currentState.IsNotNull())
                 currentState.ExitState(this);
@@ -72,13 +80,22 @@ namespace TH.Control.State
             currentState = nextState;
             stateTime = 0;
             
+            _pendingState = null;
+            _isLocked = currentState.TransitionLockRequired;
+            if (_isLocked)
+            {
+                _transitionUnlockHandler 
+                    = currentState.BindTransitionUnlock(this, OnUnlockTransition);
+            }
+            
             // 새 상태 진입 로직 실행
             if (currentState.IsNotNull())
                 currentState.EnterState(this);
             // 새 상태 event-driven 전환 조건 구독
             BindTransitions();
             
-            this.Log($"[{gameObject.name}] TransitionToState({nextState.GetType().Name})", Logg.LoggingMode.InProgress);
+            this.Log($"[{gameObject.name}] TransitionToState({nextState.GetType().Name})"
+                , Logg.LoggingMode.InProgress);
         }
 
         #endregion
@@ -155,21 +172,53 @@ namespace TH.Control.State
             foreach (var t in globalTransitions)
             {
                 // Transition 구조체 내부 참조 유효성 검사
-                if (t is not { DestinationState: {} dest, Condition: {} cond}
-                    || !dest.IsNotNull() || !cond.IsNotNull()) 
-                    return false;
+                if (t is not { DestinationState: { } dest, Condition: { } cond }
+                    || !dest.IsNotNull() || !cond.IsNotNull())
+                    continue;
                 // 조건 검사
                 if (!cond.Decide(this)) continue;
                 // 동일한 상태로의 전환인지 확인 + 동일 상태로의 전환 허락 여부 확인
-                if (currentState == dest && dest.AllowSelfTransition) continue;
+                if (currentState == dest && !dest.AllowSelfTransition) continue;
                 
                 // 상태 전환 및 루프 종료
-                TransitionToState(dest);
+                // 글로벌 상태 전환 조건은 전환 지연(lock)을 무시함
+                TransitionToState(dest, force: true);
                 return true; 
             }
 
             return false;
         }
+
+        #endregion
+
+        #region Transition Lock Handle
+
+        private bool _isLocked;
+        private IActionState _pendingState;
+        
+        // 상태 전환 잠금 해제 이벤트를 구독 해제하기 위한 핸들러
+        private IDisposable _transitionUnlockHandler;
+
+        // 이전 상태의 Ready 핸들러 해제
+        private void DisposeTransitionLockHandler()
+        {
+            _transitionUnlockHandler?.Dispose(); 
+            _transitionUnlockHandler = null;
+        }
+        
+        private void OnUnlockTransition()
+        {
+            if (!_isLocked) return;
+            _isLocked = false;
+            
+            if (_pendingState == null) return;
+            
+            // 대기 중인 전환이 있다면 수행
+            var next = _pendingState;
+            _pendingState = null;
+            TransitionToState(next);
+        }
+        
 
         #endregion
     }
