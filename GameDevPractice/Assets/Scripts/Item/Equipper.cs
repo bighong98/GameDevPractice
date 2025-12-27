@@ -24,7 +24,6 @@ namespace TH.Item
 
         private bool isInit = false;
         private WeaponTypeHolder currentWeapon;
-        // private readonly Dictionary<WeaponTypeSO, ObjectPool<WeaponTypeHolder>> weaponPools = new();
         private readonly Dictionary<WeaponTypeSO, ObjectPool<IPoolObject>> weaponPools = new();
 
         private const string DefaultRootName = "Root";
@@ -57,8 +56,8 @@ namespace TH.Item
                 leftHandTransform = leftGo;
             }
 
-            TryGetComponent<IEquipmentHolder>(out equipHolder);
-            if (fighter == null) TryGetComponent<Fighter>(out fighter);
+            TryGetComponent(out equipHolder);
+            if (fighter == null) TryGetComponent(out fighter);
         }
 
         private void Start()
@@ -78,7 +77,7 @@ namespace TH.Item
             }
         }
 
-private void OnEquipWeapon(WeaponTypeSO weaponType, Animator animator)
+        private void OnEquipWeapon(WeaponTypeSO weaponType, Animator animator)
         {
             if (!isInit)
             {
@@ -132,18 +131,13 @@ private void OnEquipWeapon(WeaponTypeSO weaponType, Animator animator)
             
             if (!weaponPools.TryGetValue(weaponType, out var weaponPool))
             {
-                // weaponPool = PoolingManager.Instance.GetPool<WeaponTypeHolder>(
-                //     weaponType.EquippedPrefab, 
-                //     GetHandGrip(weaponType), 
-                //     registerPool: false);
                 weaponPool = PoolManager.Instance.GetPool(
                     weaponType.EquippedPrefab, 
                     GetHandGrip(weaponType), 
                     registerPool: false);
                 weaponPools[weaponType] = weaponPool; // 풀 딕셔너리에 신규 풀 등록
             }
-
-            // if (weaponPool is { } pool && pool.Get() is { } result)
+            
             if (weaponPool is { } pool && pool.Get() is WeaponTypeHolder result)
             {
                 result.owner = fighter;

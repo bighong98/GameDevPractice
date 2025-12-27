@@ -11,7 +11,7 @@ namespace TH.Control.Data
         {
             if (!controller.Components.TryGet(out Fighter fighter)) return false;
             
-            return fighter.IsInRange;
+            return fighter.IsTargetInRange;
         }
     }
 }

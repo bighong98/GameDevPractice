@@ -55,7 +55,7 @@ namespace TH.Control.Data
 
                 if (t.Condition is not {} condition) continue;
                 
-                // 이벤트 미지원 -> StateConditionHandler.Empty 반환
+                // 이벤트 미지원인 DisposableDelegate.Empty 반환
                 var token = condition.Bind(
                     controller,
                     onTriggered: () => controller.TransitionToState(destination)
@@ -165,7 +165,7 @@ namespace TH.Control.Data
             foreach (var action in actions)
             {
                 if (action is not IStateTransitionLock lockAction) continue;
-                if (!lockAction.IsNotNull() || !lockAction.IsMinimumAction) continue;
+                if (!lockAction.IsNotNull() || !lockAction.TransitionLockRequired) continue;
                 
                 dst.Add(lockAction);
             }

@@ -11,7 +11,7 @@ using TH.Utils;
 
 namespace TH.Combat
 {
-    public class Fighter : MonoBehaviour, IAction, IAttackable
+    public class Fighter : MonoBehaviour, IAction, IAttackable, IWeaponEquipHandler
     {
         [SerializeField] private float timeBetweenAttacks = 1f; // todo: move to equipped weapon
         private float timeSinceLastAttack = 0;
@@ -21,6 +21,7 @@ namespace TH.Combat
 
         private ICombatSystem combatSystem; 
         [SerializeField] private Health target;
+        public Health Target => target;
         
         private Mover mover;
         private Animator animator;
@@ -100,7 +101,7 @@ namespace TH.Combat
             if (target.IsDead) return;
 
             if (mover == null) return;
-            if (!IsInRange)
+            if (!IsTargetInRange)
                 mover.Moveto(target.transform.position);
             else
             {
@@ -109,7 +110,7 @@ namespace TH.Combat
             }
         }
 
-        public bool IsInRange
+        public bool IsTargetInRange
         {
             get
             {
@@ -117,6 +118,8 @@ namespace TH.Combat
                 return Vector3.Distance(transform.position, target.transform.position) < currentWeapon.Value.GetRange;
             }
         }
+
+        public bool IsTargetValid => target.IsNotNull() && !target.IsDead;
 
         private void AttackBehaviour()
         {

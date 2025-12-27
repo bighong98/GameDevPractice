@@ -9,7 +9,7 @@ namespace TH.Control.State
     // -> onCompleted.Invoke(); 호출되지 않으면 FSM이 영원히 멈춤
     public interface IStateTransitionLock
     {
-        bool IsMinimumAction { get; } // true인 경우에만 대기 조건에 반영됨
+        bool TransitionLockRequired { get; } // true인 경우에만 대기 조건에 반영됨
         IDisposable BindMinimumCompleted(IActionStateController controller, Action onCompleted);
     }
 }

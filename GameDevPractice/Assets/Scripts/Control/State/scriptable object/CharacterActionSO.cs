@@ -9,9 +9,9 @@ namespace TH.Control.Data
     {
         public abstract void Execute(IActionStateController controller);
         
-        protected static readonly int CancelAllowHash = Animator.StringToHash("CancelAllow"); 
-        protected static readonly float CancelAllowThreshold = 0.5f;
-        protected static readonly float AnimationEndThreshold = 0.95f;
+        protected static readonly int CancelAllowHash = Animator.StringToHash("CancelAllow");
+        protected const float CancelAllowThreshold = 0.5f;
+        protected const float AnimationEndThreshold = 0.95f;
     }
 }
 
