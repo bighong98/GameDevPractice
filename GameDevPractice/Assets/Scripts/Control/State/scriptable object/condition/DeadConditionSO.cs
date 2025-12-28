@@ -11,7 +11,10 @@ namespace TH.Control.Data
     {
         public override bool Decide(IActionStateController controller)
         {
-            return false;
+            if (!controller.Components.TryGet(out Health health))
+                return base.Decide(controller);
+
+            return health.IsDead;
         }
 
         public override IDisposable Bind(IActionStateController controller, Action onTriggered)
@@ -28,7 +31,7 @@ namespace TH.Control.Data
                     health.OnDead -= Handler;
             });
 
-            void Handler() { if (health.IsDead) onTriggered.Invoke(); }
+            void Handler() { onTriggered.Invoke(); }
         }
     }
 }

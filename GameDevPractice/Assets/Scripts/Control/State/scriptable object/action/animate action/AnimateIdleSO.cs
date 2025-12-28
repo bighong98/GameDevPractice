@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace TH.Control.Data
 {
-    [CreateAssetMenu(fileName = "AnimateIdleSO", menuName = "Scriptable Objects/AnimateAction/AnimateIdleSO")]
+    [CreateAssetMenu(fileName = "AnimateIdleSO", menuName = "Scriptable Objects/CharacterAction/AnimateAction/AnimateIdleSO")]
     public class AnimateIdleSO : CharacterActionSO
     {
         private static readonly int ForwardSpeed = Animator.StringToHash("forwardSpeed");

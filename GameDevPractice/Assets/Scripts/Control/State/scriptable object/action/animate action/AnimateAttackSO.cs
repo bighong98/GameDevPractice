@@ -7,8 +7,8 @@ using UnityEngine;
 
 namespace TH.Control.Data
 {
-    [CreateAssetMenu(fileName = "CombatActionSO", menuName = "Scriptable Objects/CharacterAction/CombatActionSO")]
-    public class CombatActionSO : CharacterActionSO, IStateTransitionLock
+    [CreateAssetMenu(fileName = "AnimateAttackSO", menuName = "Scriptable Objects/CharacterAction/AnimateAction/AnimateAttackSO")]
+    public class AnimateAttackSO : CharacterActionSO, IStateTransitionLock
     {
         private static readonly int AttackAnimHash = Animator.StringToHash("attack");
         public override void Execute(IActionStateController controller)

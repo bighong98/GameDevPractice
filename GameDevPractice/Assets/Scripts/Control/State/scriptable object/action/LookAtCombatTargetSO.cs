@@ -10,7 +10,7 @@ namespace TH.Control.Data
     {
         public override void Execute(IActionStateController controller)
         {
-            if (!controller.Components.TryGet(out IAttackable attackable)) return;
+            if (!controller.Components.TryGet(out IAttacker attackable)) return;
             if (!controller.Components.TryGet(out Transform trs)) return;
             if (!attackable.IsTargetValid) return;
             

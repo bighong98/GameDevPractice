@@ -25,7 +25,8 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
         combatSystem = ServiceLocator.Get<ICombatSystem>();
     }
     
-    public void InitializeProjectileSpawner(Fighter owner, WeaponTypeSO weaponTypeSO)
+    // public void InitializeProjectileSpawner(Fighter owner, WeaponTypeSO weaponTypeSO)
+    public void InitializeProjectileSpawner(IAttacker owner, WeaponTypeSO weaponTypeSO)
     {
         if (owner is not { } shootingWeaponOwner)
         {
@@ -70,7 +71,12 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
         }
     }
 
-    private void SetAttackSource(Fighter owner, float damage)
+    // private void SetAttackSource(Fighter owner, float damage)
+    // {
+    //     projectileAttackSource = new AttackSource(owner, damage);
+    // }
+    
+    private void SetAttackSource(IAttacker owner, float damage)
     {
         projectileAttackSource = new AttackSource(owner, damage);
     }

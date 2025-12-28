@@ -9,7 +9,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8d3a8e870c4c7cb4392eff7120966213, type: 3}
-  m_Name: WaitForSecondConditionSO
-  m_EditorClassIdentifier: Assembly-CSharp::TH.Control.Data.WaitForSecondConditionSO
-  delaySeconds: 1
+  m_Script: {fileID: 11500000, guid: c5415a092719a234ba72b27e18a8594f, type: 3}
+  m_Name: AttackReadyConditionSO
+  m_EditorClassIdentifier: Assembly-CSharp::TH.Control.Data.AttackReadyConditionSO

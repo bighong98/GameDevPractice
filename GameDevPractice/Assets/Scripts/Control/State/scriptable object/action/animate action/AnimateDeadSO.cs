@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace TH.Control.Data
 {
-    [CreateAssetMenu(fileName = "AnimateDeadSO", menuName = "Scriptable Objects/AnimateAction/AnimateDeadSO")]
+    [CreateAssetMenu(fileName = "AnimateDeadSO", menuName = "Scriptable Objects/CharacterAction/AnimateAction/AnimateDeadSO")]
     public class AnimateDeadSO : CharacterActionSO
     {
         private static readonly int DieAnimHash = Animator.StringToHash("die");

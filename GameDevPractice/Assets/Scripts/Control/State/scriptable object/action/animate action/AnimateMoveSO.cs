@@ -4,7 +4,7 @@ using UnityEngine.AI;
 
 namespace TH.Control.Data
 {
-    [CreateAssetMenu(fileName = "AnimateMoveSO", menuName = "Scriptable Objects/AnimateAction/AnimateMoveSO")]
+    [CreateAssetMenu(fileName = "AnimateMoveSO", menuName = "Scriptable Objects/CharacterAction/AnimateAction/AnimateMoveSO")]
     public class AnimateMoveSO : CharacterActionSO
     {
         private static readonly int ForwardSpeed = Animator.StringToHash("forwardSpeed");

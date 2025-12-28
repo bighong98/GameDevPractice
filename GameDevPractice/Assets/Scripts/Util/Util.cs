@@ -14,15 +14,8 @@ using Random = UnityEngine.Random;
 
 public static class Util
 {
-    // private static Camera mainCamera;
     private static bool _isQuitting = false;
     public static bool IsQuitting { get { return _isQuitting; } }
-    
-    // public static void SetMainCameraForUtilClass() // UIManager.Init()에서 호출됨
-    // {
-    //     if (mainCamera == null)
-    //         mainCamera = Camera.main;
-    // }
 
     #region Position Conversion (WorldSpace <-> Screen, etc) (deprecated)
 

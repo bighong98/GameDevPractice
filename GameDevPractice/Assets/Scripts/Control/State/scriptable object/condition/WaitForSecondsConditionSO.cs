@@ -7,14 +7,10 @@ using TH.Utils;
 
 namespace TH.Control.Data
 {
-    [CreateAssetMenu(fileName = "WaitForSecondConditionSO", menuName = "Scriptable Objects/State Condition/WaitForSecondConditionSO")]
-    public class WaitForSecondConditionSO : ActionStateConditionSO
+    [CreateAssetMenu(fileName = "WaitForSecondsConditionSO", menuName = "Scriptable Objects/State Condition/WaitForSecondsConditionSO")]
+    public class WaitForSecondsConditionSO : ActionStateConditionSO
     {
         [SerializeField, Min(0f)] private float delaySeconds = 1f;
-        public override bool Decide(IActionStateController controller)
-        {
-            return false;
-        }
 
         public override IDisposable Bind(IActionStateController controller, Action onTriggered)
         {

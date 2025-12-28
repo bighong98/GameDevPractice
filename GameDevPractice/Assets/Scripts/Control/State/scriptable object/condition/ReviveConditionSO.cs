@@ -30,7 +30,7 @@ namespace TH.Control.Data
                     health.OnRevived -= Handler;
             });
 
-            void Handler() { if (!health.IsDead) onTriggered.Invoke(); }
+            void Handler() { onTriggered.Invoke(); }
         }
     }
 }

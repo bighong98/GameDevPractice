@@ -41,7 +41,7 @@ namespace TH.Attribute
         
         [SerializeField] private GameObject HPBarPrefab; // serialize for debug
 
-        private IAttackable lastAttacker; // 가장 최근 자신에게 피해를 입힌 대상
+        private IAttacker lastAttacker; // 가장 최근 자신에게 피해를 입힌 대상
         private LazyValue<float> rewardXp;
 
         private IFloatingTextSpawner textSpawner;

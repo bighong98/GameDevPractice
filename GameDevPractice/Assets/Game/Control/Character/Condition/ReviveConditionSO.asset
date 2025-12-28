@@ -12,3 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cd3c80e4bdd2553489c22d3fdab616ac, type: 3}
   m_Name: ReviveConditionSO
   m_EditorClassIdentifier: Assembly-CSharp::TH.Control.Data.ReviveConditionSO
+  measure: 0

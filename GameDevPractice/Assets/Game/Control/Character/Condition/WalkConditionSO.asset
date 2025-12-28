@@ -12,3 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 292d36f286cb17f4883e9162d3c006d5, type: 3}
   m_Name: WalkConditionSO
   m_EditorClassIdentifier: Assembly-CSharp::TH.Control.Data.WalkConditionSO
+  measure: 1

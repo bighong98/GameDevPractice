@@ -12,3 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eaa7ff4df4f2b9a458bec770b7d4cddc, type: 3}
   m_Name: InRangeConditionSO
   m_EditorClassIdentifier: Assembly-CSharp::TH.Control.Data.InRangeConditionSO
+  measure: 1

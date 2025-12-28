@@ -16,7 +16,7 @@ namespace TH.Control
         [SerializeField] private Camera _camera;
         // private Mover mover;
         private MoverRefactoring mover;
-        private Fighter fighter;
+        private IFighter fighter;
         private Health health;
         
         private Vector2 wasdInput = Vector2.zero;

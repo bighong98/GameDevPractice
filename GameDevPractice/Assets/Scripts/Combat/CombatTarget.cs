@@ -10,10 +10,13 @@ namespace TH.Combat
     {
         public bool HandleRaycast(PlayerController caller)
         {
-            if (caller.GetComponent<Fighter>() is not { } fighter ||
-                !fighter.CanAttack(gameObject, out var targetHealth)) return false;
+            // if (caller.GetComponent<Fighter>() is not { } fighter ||
+            //     !fighter.CanAttack(gameObject, out var targetHealth)) return false;
             
-            fighter.Attack(targetHealth);
+            if (!TryGetComponent(out IAttacker attacker)
+                || !attacker.CanAttack(gameObject, out var targetHealth)) return false;
+            
+            attacker.Attack(targetHealth);
             return true;
         }
 

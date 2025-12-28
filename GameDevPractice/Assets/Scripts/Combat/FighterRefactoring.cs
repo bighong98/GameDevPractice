@@ -8,13 +8,16 @@ using TH.Resource;
 using TH.Utils;
 using UnityEngine;
 
-public class FighterRefactoring : MonoBehaviour, IAttackable, IWeaponEquipHandler
+public interface IFighter : IAttacker, IWeaponEquipHandler {}
+public class FighterRefactoring : MonoBehaviour, IFighter
 {
     [SerializeField] private Health target;
     
-    // IAttackable
-    public event Action OnAttack;
-    public event Action<Health> OnTargetChanged;
+    // IAttacker
+    public event Action OnAttack; // 공격 시도 시
+    public event Action<Health> OnTargetChanged; // 공격 타겟(target) 변경 시
+    public event Action OnAttackReady; // 공격 준비 완료 시 (공격 가능한 적 한정)
+    
     
     public bool IsTargetInRange 
         => target.IsNotNull() && (Vector3.Distance(transform.position, target.transform.position) <= currentWeapon.Value.GetRange);
@@ -81,14 +84,25 @@ public class FighterRefactoring : MonoBehaviour, IAttackable, IWeaponEquipHandle
         equipHolder.OnEquipmentChanged -= OnEquipmentChanged;
     }
 
-    #region Initialization
+    private float timeBetweenAttacks = 1f; // todo: move to equipped weapon
+    private float timeSinceLastAttack = 0;
+    private void Update()
+    {
+        timeSinceLastAttack += Time.deltaTime;
 
-    
-
-    #endregion
+        if (!IsEquippingWeapon) return;
+        if (!IsTargetValid) return;
+        if (timeSinceLastAttack >= timeBetweenAttacks)
+            OnAttackReady?.Invoke();
+    }
 
     #region IAttackable
 
+    public void Attack()
+    {
+        timeSinceLastAttack = 0f;
+    }
+    
     public void Attack(Health attackTarget)
     {
         ChangeTarget(attackTarget);

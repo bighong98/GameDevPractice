@@ -9,7 +9,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ea0e3c2941cc36940b362f9c83da2652, type: 3}
-  m_Name: StopConditionSO
-  m_EditorClassIdentifier: Assembly-CSharp::TH.Control.Data.StopConditionSO
-  measure: 1
+  m_Script: {fileID: 11500000, guid: 3c2d7fa21c6ebe54f9e50d22a494fb07, type: 3}
+  m_Name: AnimateStopSO
+  m_EditorClassIdentifier: Assembly-CSharp::TH.Control.Data.AnimateStopSO

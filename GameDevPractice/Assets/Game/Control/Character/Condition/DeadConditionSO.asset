@@ -12,3 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c50485d8e4ed23b438f847450ed00f26, type: 3}
   m_Name: DeadConditionSO
   m_EditorClassIdentifier: Assembly-CSharp::TH.Control.Data.DeadConditionSO
+  measure: 0

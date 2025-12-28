@@ -4,16 +4,16 @@ namespace TH.Combat
 {
     public struct HitResult
     {
-        public readonly IAttackable Attacker;
+        public readonly IAttacker Attacker;
         public float Damage;
 
-        public HitResult(in IAttackable attacker)
+        public HitResult(in IAttacker attacker)
         {
             Attacker = attacker;
             Damage = default;
         }
 
-        public HitResult(in IAttackable attacker, float damage)
+        public HitResult(in IAttacker attacker, float damage)
         {
             Attacker = attacker;
             Damage = damage;

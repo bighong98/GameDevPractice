@@ -9,9 +9,9 @@ namespace TH.Control.Data
     {
         public override bool Decide(IActionStateController controller)
         {
-            if (!controller.Components.TryGet(out Fighter fighter)) return false;
+            if (!controller.Components.TryGet(out IAttacker attacker)) return false;
             
-            return fighter.IsTargetInRange;
+            return attacker.IsTargetInRange;
         }
     }
 }

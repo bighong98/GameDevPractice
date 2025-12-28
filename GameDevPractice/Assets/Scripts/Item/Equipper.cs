@@ -13,12 +13,10 @@ using TH.Core.Service;
 
 namespace TH.Item
 {
-    [RequireComponent(typeof(Fighter))]
-    [RequireComponent(typeof(IEquipmentHolder))]
     public class Equipper : MonoBehaviour
     {
         private IEquipmentHolder equipHolder;
-        [SerializeField] private Fighter fighter; // serialize for debug
+        private IFighter fighter; // serialize for debug
         [SerializeField] private Transform rightHandTransform;
         [SerializeField] private Transform leftHandTransform;
 
@@ -57,7 +55,7 @@ namespace TH.Item
             }
 
             TryGetComponent(out equipHolder);
-            if (fighter == null) TryGetComponent(out fighter);
+            TryGetComponent(out fighter);
         }
 
         private void Start()

@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace TH.Control.Data
 {
-    [CreateAssetMenu(fileName = "AnimateReviveSO", menuName = "Scriptable Objects/AnimateAction/AnimateReviveSO")]
+    [CreateAssetMenu(fileName = "AnimateReviveSO", menuName = "Scriptable Objects/CharacterAction/AnimateAction/AnimateReviveSO")]
     public class AnimateReviveSO : CharacterActionSO
     {
         private static readonly int ReviveAnimHash = Animator.StringToHash("revive");

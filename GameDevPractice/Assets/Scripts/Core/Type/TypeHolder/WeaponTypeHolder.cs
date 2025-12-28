@@ -5,7 +5,7 @@ namespace TH.Resource
 {
     public class WeaponTypeHolder : TypeHolder<WeaponTypeSO>
     {
-        public Fighter owner; // 무기의 소유자
+        public IFighter owner; // 무기의 소유자
     }
 }
 

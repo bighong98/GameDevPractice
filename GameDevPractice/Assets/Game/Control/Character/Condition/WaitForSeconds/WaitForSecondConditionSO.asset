@@ -9,7 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ea0e3c2941cc36940b362f9c83da2652, type: 3}
-  m_Name: StopConditionSO
-  m_EditorClassIdentifier: Assembly-CSharp::TH.Control.Data.StopConditionSO
-  measure: 1
+  m_Script: {fileID: 11500000, guid: 8d3a8e870c4c7cb4392eff7120966213, type: 3}
+  m_Name: WaitForSecondConditionSO
+  m_EditorClassIdentifier: Assembly-CSharp::TH.Control.Data.WaitForSecondConditionSO
+  measure: 2
+  delaySeconds: 1

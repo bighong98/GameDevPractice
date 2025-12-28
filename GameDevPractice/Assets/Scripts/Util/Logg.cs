@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using Object = System.Object;
 
 namespace TH.Utils
 {
@@ -55,13 +56,13 @@ namespace TH.Utils
         }
         
         [System.Diagnostics.Conditional("UNITY_EDITOR")]
-        public static void LogWarning(object msg)
+        public static void LogWarning(object msg, UnityEngine.Object context = null)
         {
-            if (CurrLogLevel != LogLevel.None) Debug.LogWarning(msg);
+            if (CurrLogLevel != LogLevel.None) Debug.LogWarning(msg, context);
         }
 
         [System.Diagnostics.Conditional("UNITY_EDITOR")]
-        public static void LogError(object msg) => Debug.LogError(msg);
+        public static void LogError(object msg, UnityEngine.Object context = null) => Debug.LogError(msg, context);
     }
 
 }

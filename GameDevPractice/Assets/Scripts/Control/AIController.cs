@@ -20,7 +20,7 @@ namespace TH.Control
         [SerializeField] private float waypointDwellTime = 3f;
         [SerializeField] private float patrolSpeedFraction = 0.2f;
         
-        private Fighter fighter;
+        private IAttacker attacker;
         private Health health;
         private Mover mover;
         private CharacterActionScheduler actionScheduler;
@@ -35,16 +35,18 @@ namespace TH.Control
 
         private void Awake()
         {
-            fighter = GetComponent<Fighter>();
-            health = GetComponent<Health>();
-            mover = GetComponent<Mover>();
-            actionScheduler = GetComponent<CharacterActionScheduler>();
+            // attacker = GetComponent<Fighter>();
+            // health = GetComponent<Health>();
+            // mover = GetComponent<Mover>();
+            // actionScheduler = GetComponent<CharacterActionScheduler>();
+            
+            TryGetComponent(out attacker);
+            TryGetComponent(out mover);
+            TryGetComponent(out health);
+            TryGetComponent(out actionScheduler);
+            
             guardPosition = new LazyValue<Vector3>(GetDefaultGuardPosition);
             
-            // if (GameObject.FindWithTag("Player") is { } foundPlayer)
-            // {
-            //     player = foundPlayer.GetComponent<PlayerController>();
-            // }
             playerHolder = ServiceLocator.Get<IPlayerHolder>();
         }
 
@@ -63,7 +65,7 @@ namespace TH.Control
         private void Update()
         {
             if (health.IsDead) return; // 사망 상태라면 실행 취소
-            if (IsInAttackRange && fighter.CanAttack(player.gameObject, out Health playerHealth))
+            if (IsInAttackRange && attacker.CanAttack(player.gameObject, out Health playerHealth))
             {
                 timeSinceLastSawPlayer = 0;
                 AttackBehaviour(playerHealth);
@@ -135,7 +137,7 @@ namespace TH.Control
 
         private void AttackBehaviour(Health playerHealth)
         {
-            fighter.Attack(playerHealth);
+            attacker.Attack(playerHealth);
         }
 
         private bool IsInAttackRange => Vector3.Distance(player.transform.position, transform.position) < chaseDistance;

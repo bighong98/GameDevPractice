@@ -12,3 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 668cbc1e9535dcb468455f332ddb058a, type: 3}
   m_Name: TargetSetConditionSO
   m_EditorClassIdentifier: Assembly-CSharp::TH.Control.Data.TargetSetConditionSO
+  measure: 2
