@@ -113,7 +113,7 @@ namespace TH.Attribute
                 SetMaxHp(stat.Value);
                 Logg.Log($"[{gameObject.name}.Health] HP stat changed. MaxHp updated to {stat.Value}", Logg.LoggingMode.Completed); 
             };
-            this.Log($"{gameObject.name} - GetInitialHealth({stat.Value})", Logg.LoggingMode.InProgress);
+            this.Log($"{gameObject.name} - GetInitialHealth({stat.Value})", Logg.LoggingMode.Completed);
             return stat.Value;
         }
 
@@ -198,7 +198,10 @@ namespace TH.Attribute
             
             IsDead = true;
             OnDead?.Invoke();
-            GetComponent<CharacterActionScheduler>().CancelCurrentAction();
+            
+            if (TryGetComponent(out CharacterActionScheduler cas))
+                cas.CancelCurrentAction();
+            
             animator.ResetTrigger(ReviveAnimHash);
             animator.SetTrigger(DieAnimHash);
 
@@ -229,7 +232,7 @@ namespace TH.Attribute
         
         public object CaptureState()
         {
-            this.Log($"[{gameObject.name}]CaptureState - hp: {hp.Value}" ,Logg.LoggingMode.InProgress); 
+            this.Log($"[{gameObject.name}]CaptureState - hp: {hp.Value}" ,Logg.LoggingMode.Completed); 
             
             return new HealthSaveData
             {
@@ -241,7 +244,7 @@ namespace TH.Attribute
         {
             if (state is not HealthSaveData data) return false;
             //todo: MaxHp 최초 초기화보다 먼저 실행될 경우 체력값 세이브 적용이 누락될 수 있음
-            this.Log($"[{gameObject.name}]RestoreState for Health: hp to {data.hp}" ,Logg.LoggingMode.InProgress); 
+            this.Log($"[{gameObject.name}]RestoreState for Health: hp to {data.hp}" ,Logg.LoggingMode.Completed); 
             SetHp(data.hp);
 
             return true;

@@ -1,7 +1,5 @@
 using UnityEngine;
 using TH.Attribute;
-using TH.Movement;
-using TH.Combat;
 using UnityEngine.AI;
 using TH.Utils;
 using System;
@@ -11,14 +9,21 @@ using TH.Core.Service;
 
 namespace TH.Control
 {
-    public class PlayerController : MonoBehaviour
+    public interface IPlayerController
+    {
+        ComponentProvider Components { get; }
+    }
+    
+    public class PlayerController : MonoBehaviour, IPlayerController
     {
         [SerializeField] private Camera _camera;
         // private Mover mover;
         private MoverRefactoring mover;
         private IFighter fighter;
         private Health health;
-        
+
+        public ComponentProvider Components { get; private set; }
+
         private Vector2 wasdInput = Vector2.zero;
         private bool isWASDMoving = false;
         private bool fightEnabled = true;
@@ -26,6 +31,8 @@ namespace TH.Control
 
         private void Awake()
         {
+            Components = new ComponentProvider(gameObject);
+            
             TryGetComponent(out mover);
             TryGetComponent(out fighter);
             TryGetComponent(out health);
@@ -206,55 +213,5 @@ namespace TH.Control
         {
             
         }
-
-        #region Deprecated
-
-        // private bool TryMoveTo(Vector2 pos)
-        // {
-        //     if (!Physics.Raycast(GetPointerRay(pos), out var hit)) return false;
-        //     
-        //     SetCursor(CursorType.Movement);
-        //     mover.StartMoveAction(hit.point);
-        //     return true;
-        // }
-        
-        
-        // // Check Path Length Version
-        // private readonly NavMeshPath navMeshPath = new ();
-        // private float GetPathLength(NavMeshPath path) // Not Using Yet
-        // {
-        //     if (path.corners.Length is not ({ } cornerLength and >= 2)) return 0;
-        //
-        //     float total = 0;
-        //     for (int i = 0; i < cornerLength - 1; i++)
-        //     {
-        //         total += Vector3.Distance(path.corners[i], path.corners[i + 1]);
-        //     }
-        //
-        //     return total;
-        // }
-        // private const float MaxPathLength = 40f;
-        // private bool RaycastWithNavMesh(Vector2 pointerPos, out Vector3 target)
-        // {
-        //     if (Physics.Raycast(GetPointerRay(pointerPos), out RaycastHit hit) &&
-        //         NavMesh.SamplePosition(hit.point, out NavMeshHit navMeshHit, MaxNavMeshProjectionDistance, NavMesh.AllAreas))
-        //     {
-        //         target = navMeshHit.position;
-        //
-        //         if (NavMesh.CalculatePath(transform.position, target, NavMesh.AllAreas, navMeshPath) &&
-        //             navMeshPath.status == NavMeshPathStatus.PathComplete &&
-        //             GetPathLength(navMeshPath) > MaxPathLength)
-        //         {
-        //             return true;
-        //         }
-        //
-        //         return false;
-        //     }
-        //
-        //     target = Vector3.zero;
-        //     return false;
-        // }
-
-        #endregion
     }
 }

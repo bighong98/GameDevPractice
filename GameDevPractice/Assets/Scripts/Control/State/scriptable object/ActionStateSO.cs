@@ -52,13 +52,20 @@ namespace TH.Control.Data
                 // 클로저 생성 (destination 캡처)
                 var destination = t.DestinationState;
                 if (destination == null) continue;
-
-                if (t.Condition is not {} condition) continue;
+                // 상태 전환 조건 유효성 검사
+                // Polling은 이벤트 지원x -> 스킵
+                if (t.Condition is not {} condition
+                    || !condition.IsNotNull()
+                    || condition.Measure == StateConditionMeasures.Polling) continue;
                 
-                // 이벤트 미지원인 DisposableDelegate.Empty 반환
+                
+                // 이벤트 미지원인 경우 DisposableDelegate.Empty 반환
                 var token = condition.Bind(
-                    controller,
-                    onTriggered: () => controller.TransitionToState(destination)
+                    controller: controller,
+                    onTriggered: () => controller.HandleConditionTriggered(
+                            condition: condition, 
+                            destination: destination,
+                            isGlobal: false, ignoreForce: false)
                 );
                 
                 if (token != null)
@@ -131,6 +138,7 @@ namespace TH.Control.Data
             {
                 if (fired) return;
                 fired = true;
+                this.Log($"transition unlocked", Logg.LoggingMode.Completed);
                 register.Invoke();
             }
         }
@@ -145,14 +153,24 @@ namespace TH.Control.Data
                 action.Execute(controller);
             }
         }
-
+        
+        // Polling 타입 상태 전환 조건 체크
+        // Update 주기로 실행
         private void CheckTransitions(IActionStateController controller)
         {
             if (transitions == null || transitions.Count == 0) return;
             foreach (var transition in transitions)
             {
-                if (!transition.Condition.Decide(controller)) continue;
+                // condition null 체크 (UnityEngine.Object 타입 널 체크 포함)
+                if (transition.Condition is not { } condition) continue;
+                if (!condition.IsNotNull()) continue;
+                // Polling이 아니면 매 프레임 체크x
+                if (condition.Measure != StateConditionMeasures.Polling) continue;
+                if (!condition.Decide(controller)) continue;
+                
                 // 조건 충족 시 상태 전이 및 루프 종료
+                this.Log($"CheckTransitions - Trying to TransitionToState from" +
+                         $" condition: ({condition.GetType()}), state: {transition.DestinationState}", Logg.LoggingMode.Completed);
                 controller.TransitionToState(transition.DestinationState);
                 return; 
             }

@@ -16,10 +16,12 @@ MonoBehaviour:
   updateActions:
   - {fileID: 11400000, guid: c81a42815fff3c9498b7fb7f247e88a5, type: 2}
   - {fileID: 11400000, guid: 81c49f06e0fa7ed4dbfad3d52bfcb47f, type: 2}
-  onExitActions: []
+  onExitActions:
+  - {fileID: 11400000, guid: c9502975d051df14aa8f8419e1e08784, type: 2}
   transitions:
   - condition: {fileID: 11400000, guid: e3b2979e803480a45976113e73009e7f, type: 2}
     destinationState: {fileID: 11400000, guid: 6ad8b0b46e757f64d9dbb76b4f89d062, type: 2}
   - condition: {fileID: 11400000, guid: 52fb27d837f4fb0499a958b5a49823a0, type: 2}
     destinationState: {fileID: 11400000, guid: aebd0b6c5f806a346a562df8927ab54d, type: 2}
   allowSelfTransition: 0
+  transitionLockRequired: 0

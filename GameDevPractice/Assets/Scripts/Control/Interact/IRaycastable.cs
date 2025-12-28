@@ -4,7 +4,7 @@ namespace TH.Control
 {
     public interface IRaycastable
     {
-        bool HandleRaycast(PlayerController caller);
+        bool HandleRaycast(IPlayerController caller);
         CursorType GetCursorType();
     }
 }

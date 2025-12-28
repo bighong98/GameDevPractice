@@ -85,7 +85,7 @@ public class FighterRefactoring : MonoBehaviour, IFighter
     }
 
     private float timeBetweenAttacks = 1f; // todo: move to equipped weapon
-    private float timeSinceLastAttack = 0;
+    private float timeSinceLastAttack;
     private void Update()
     {
         timeSinceLastAttack += Time.deltaTime;
@@ -93,7 +93,10 @@ public class FighterRefactoring : MonoBehaviour, IFighter
         if (!IsEquippingWeapon) return;
         if (!IsTargetValid) return;
         if (timeSinceLastAttack >= timeBetweenAttacks)
+        {
+            this.Log($"[FighterRefactoring] OnAttackReady.Invoke()", Logg.LoggingMode.Completed);
             OnAttackReady?.Invoke();
+        }
     }
 
     #region IAttackable
@@ -128,7 +131,8 @@ public class FighterRefactoring : MonoBehaviour, IFighter
     
     private void ChangeTarget(Health newTarget)
     {
-        if (!newTarget.IsNotNull() || (target.IsNotNull() && target == newTarget)) return;
+        // if (!newTarget.IsNotNull() || (target.IsNotNull() && target == newTarget)) return;
+        if (!newTarget.IsNotNull()) return;
 
         target = newTarget;
         OnTargetChanged?.Invoke(target);

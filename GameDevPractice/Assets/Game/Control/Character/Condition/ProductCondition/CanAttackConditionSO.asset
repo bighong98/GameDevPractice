@@ -10,8 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 901d7fd6035cc3a488dc3ed13454d977, type: 3}
-  m_Name: CanAttackCondisionSO
+  m_Name: CanAttackConditionSO
   m_EditorClassIdentifier: Assembly-CSharp::TH.Control.Data.CompositeConditionSO
+  measure: 3
   conditions:
   - {fileID: 11400000, guid: a33ed81b398c1c64d9270f02ee06d2ef, type: 2}
   - {fileID: 11400000, guid: fb8467ea25f0cb44bb79e9fde10c994b, type: 2}

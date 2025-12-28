@@ -10,6 +10,14 @@ namespace TH.Control.Data
     [CreateAssetMenu(fileName = "TargetSetConditionSO", menuName = "Scriptable Objects/State Condition/TargetSetConditionSO")]
     public class TargetSetConditionSO : ActionStateConditionSO
     {
+        public override bool Decide(IActionStateController controller)
+        {
+            if (!controller.IsNotNull()) return base.Decide(controller);
+            if (!controller.Components.TryGet(out IAttacker attacker)) return base.Decide(controller);
+
+            return attacker.IsTargetValid;
+        }
+
         public override IDisposable Bind(IActionStateController controller, Action onTriggered)
         {
             if (!controller.Components.TryGet(out IAttacker attacker)

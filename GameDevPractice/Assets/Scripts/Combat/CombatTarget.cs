@@ -1,6 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
 using TH.Control;
+using TH.Utils;
 using UnityEngine;
 
 namespace TH.Combat
@@ -8,15 +7,17 @@ namespace TH.Combat
     [RequireComponent(typeof(TH.Attribute.Health))]
     public class CombatTarget : MonoBehaviour, IRaycastable
     {
-        public bool HandleRaycast(PlayerController caller)
+        public bool HandleRaycast(IPlayerController caller)
         {
-            // if (caller.GetComponent<Fighter>() is not { } fighter ||
-            //     !fighter.CanAttack(gameObject, out var targetHealth)) return false;
+            this.Log($"({gameObject.name}) - HandleRaycast({caller})", Logg.LoggingMode.InProgress);
+            // if (!TryGetComponent(out IAttacker attacker)
+            //     || !attacker.CanAttack(gameObject, out var targetHealth)) return false;
+            // attacker.Attack(targetHealth);
+
+            if (!caller.Components.TryGet(out IAttacker attacker)) return false;
+            if (!attacker.CanAttack(gameObject, out var self)) return false;
             
-            if (!TryGetComponent(out IAttacker attacker)
-                || !attacker.CanAttack(gameObject, out var targetHealth)) return false;
-            
-            attacker.Attack(targetHealth);
+            attacker.Attack(self);
             return true;
         }
 

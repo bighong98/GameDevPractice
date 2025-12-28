@@ -11,7 +11,7 @@ using TH.Utils;
 
 namespace TH.Combat
 {
-    public class Fighter : MonoBehaviour, IAction, IAttacker, IWeaponEquipHandler
+    public class Fighter : MonoBehaviour, IAction, IFighter
     {
         [SerializeField] private float timeBetweenAttacks = 1f; // todo: move to equipped weapon
         private float timeSinceLastAttack = 0;

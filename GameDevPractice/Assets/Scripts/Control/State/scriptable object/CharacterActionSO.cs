@@ -8,8 +8,17 @@ namespace TH.Control.Data
     public abstract class CharacterActionSO : ScriptableObject, ICharacterAction
     {
         public abstract void Execute(IActionStateController controller);
-        
+
+
+        protected static readonly int AnimatorBaseLayer = 0;
+        // Animator.StringToHash()
+        // 실제 파라미터 이름이 바뀌면 작동하지 않음에 주의
         protected static readonly int CancelAllowHash = Animator.StringToHash("CancelAllow");
+        
+        protected static readonly int AttackASSHash = Animator.StringToHash("Attack");
+        protected static readonly int LocomotionASSHash =  Animator.StringToHash("Locomotion");
+        protected static readonly int DeathASSHash =  Animator.StringToHash("Death");
+        
         protected const float CancelAllowThreshold = 0.5f;
         protected const float AnimationEndThreshold = 0.95f;
     }

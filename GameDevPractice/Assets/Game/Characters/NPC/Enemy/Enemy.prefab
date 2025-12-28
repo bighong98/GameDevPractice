@@ -74,6 +74,14 @@ PrefabInstance:
       propertyPath: typeRef.m_AssetGUID
       value: 9475cc137199d7f4290a14c8b92ac824
       objectReference: {fileID: 0}
+    - target: {fileID: 216005970898446488, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
+      propertyPath: m_UpdateMode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 216005970898446488, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
+      propertyPath: m_CullingMode
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1599618502693370758, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
       propertyPath: uniqueIdentifier
       value: 162307e2-b4cf-4512-b82d-b99c87ba1163

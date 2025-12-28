@@ -31,7 +31,7 @@ namespace TH.Control.Data
                     attacker.OnAttackReady -= Handler;
             });
             
-            void Handler() { onTriggered.Invoke();}
+            void Handler() { if (attacker.IsTargetValid) onTriggered.Invoke();}
         }
     }
 }

@@ -15,13 +15,18 @@ MonoBehaviour:
   onEnterActions:
   - {fileID: 11400000, guid: f74d07e8a295fb9499c63066d465bdb9, type: 2}
   - {fileID: 11400000, guid: 1ae8a8d9e54a66749944c4318d7c5b1a, type: 2}
+  - {fileID: 11400000, guid: a68038a294969554a9c9b536c112d164, type: 2}
   updateActions: []
   onExitActions:
   - {fileID: 11400000, guid: d8a51050e6bf8ae47873aac1d15d0d99, type: 2}
   transitions:
+  - condition: {fileID: 11400000, guid: 99915f28cdf03fb44b522e2c3679638e, type: 2}
+    destinationState: {fileID: 11400000, guid: 6ad8b0b46e757f64d9dbb76b4f89d062, type: 2}
   - condition: {fileID: 11400000, guid: 52fb27d837f4fb0499a958b5a49823a0, type: 2}
     destinationState: {fileID: 11400000, guid: aebd0b6c5f806a346a562df8927ab54d, type: 2}
-  - condition: {fileID: 11400000, guid: a33ed81b398c1c64d9270f02ee06d2ef, type: 2}
+  - condition: {fileID: 11400000, guid: 4cf2e9d6bf42a18449c08ab688bb405a, type: 2}
     destinationState: {fileID: 11400000}
+  - condition: {fileID: 11400000, guid: 5d08da84b4f664c4890db4f51a1d5086, type: 2}
+    destinationState: {fileID: 11400000, guid: 16deb90229b9bec408b94b3510134c35, type: 2}
   allowSelfTransition: 0
   transitionLockRequired: 1

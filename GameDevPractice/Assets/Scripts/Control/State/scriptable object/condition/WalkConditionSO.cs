@@ -12,8 +12,17 @@ namespace TH.Control.Data
         public override bool Decide(IActionStateController controller)
         {
             if (!controller.Components.TryGet(out NavMeshAgent navMeshAgent)) return false;
-            
-            return navMeshAgent.isOnNavMesh && navMeshAgent.velocity.sqrMagnitude > WalkThreshold;
+
+            return navMeshAgent.isOnNavMesh
+                   && !navMeshAgent.isStopped
+                   && navMeshAgent.hasPath
+                   && !navMeshAgent.pathPending
+                   && navMeshAgent.pathStatus != NavMeshPathStatus.PathInvalid
+                   && navMeshAgent.velocity.sqrMagnitude > WalkThreshold;
+
+
+            // return navMeshAgent.isOnNavMesh 
+            //     && navMeshAgent.velocity.sqrMagnitude > WalkThreshold;
         }
     }
 }

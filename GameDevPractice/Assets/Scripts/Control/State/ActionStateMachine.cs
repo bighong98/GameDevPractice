@@ -11,7 +11,7 @@ namespace TH.Control.State
         [SerializeField] private ActionStateSO initialState;
         [SerializeField] private List<ActionStateTransition> globalTransitions = new();
         
-        public IActionState currentState;
+        [SerializeField] private IActionState currentState; // serialize for debug
         public IActionState remainState; // 상태를 유지할 때 사용하는 더미 상태
 
         [HideInInspector] public float stateTime;
@@ -47,7 +47,9 @@ namespace TH.Control.State
             if (currentState == null) return;
             // 전역 상태 전환 조건 우선 검사
             // -> 만족하는 전환 조건이 있다면 CheckGlobalTransitionsPolling() 내부에서 즉시 상태 전환 실행
-            if (CheckGlobalTransitionsPolling()) return;
+            if (CheckGlobalPollingConditions()) return;
+            // 이벤트에 의해 추가 확인이 필요한 조건 검사
+            if (CheckArmedTransitionsPolling()) return;
             
             currentState.UpdateState(this);
             stateTime += Time.deltaTime;
@@ -55,18 +57,20 @@ namespace TH.Control.State
 
         #region IActionStateController
 
-        public void TransitionToState(IActionState nextState, bool force = false)
+        public void TransitionToState(IActionState nextState, bool ignoreLock = false)
         {
             // RemainState거나 null이면 전환하지 않음
             if (nextState == remainState || nextState == null) return;
             this.Log($"{gameObject.name}: {currentState} -> {nextState}");
             
-            if (!force && _isLocked)
+            if (!ignoreLock && _isLocked)
             {
+                this.Log($"[{gameObject.name}] TransitionToState() - new pendingState updated: ({nextState})", Logg.LoggingMode.Completed);
                 _pendingState = nextState;
                 return;
             }
             
+            _stateArmed.Clear();
             // 기존 상태 event-driven 전환 조건 구독 해제 및 핸들러 정리
             UnbindTransitions();
             // 기존 상태 전환 잠금 이벤트 구독 해제 및 핸들러 정리
@@ -76,26 +80,34 @@ namespace TH.Control.State
             if (currentState.IsNotNull())
                 currentState.ExitState(this);
             
+            
+#if UNITY_EDITOR
+            var prevState = currentState; // 디버깅 로그용 이전 상태 캐싱
+#endif
             // 상태 전환
             currentState = nextState;
             stateTime = 0;
             
+            this.Log($"[{gameObject.name}] TransitionToState({prevState?.GetType().Name} -> {nextState.GetType().Name})"
+                , Logg.LoggingMode.Completed);
+            
+            // 새 상태 진입 로직 실행
+            if (currentState.IsNotNull())
+                currentState.EnterState(this);
+            
+            // 대기 상태, 상태 전환 락(lock) 초기화
             _pendingState = null;
             _isLocked = currentState.TransitionLockRequired;
+            // 상태 전환 lock이 필요하다면 현재 상태 객체(currentState)에게 unlock 이벤트 구독
+            // -> unlock 핸들러 반환받아서 캐싱 -> 상태 전환 이후 핸들러 정리
             if (_isLocked)
             {
                 _transitionUnlockHandler 
                     = currentState.BindTransitionUnlock(this, OnUnlockTransition);
             }
             
-            // 새 상태 진입 로직 실행
-            if (currentState.IsNotNull())
-                currentState.EnterState(this);
             // 새 상태 event-driven 전환 조건 구독
             BindTransitions();
-            
-            this.Log($"[{gameObject.name}] TransitionToState({nextState.GetType().Name})"
-                , Logg.LoggingMode.InProgress);
         }
 
         #endregion
@@ -138,7 +150,6 @@ namespace TH.Control.State
         }
         
         // 글로벌 상태 전환 대응용
-        
         private void BindTransitionList(List<ActionStateTransition> list)
         {
             if (list == null || list.Count == 0) return;
@@ -147,12 +158,19 @@ namespace TH.Control.State
             {
                 var destination = t.DestinationState;
                 if (destination == null) continue;
-
+                // condition null-check
                 if (t.Condition is not {} condition) continue;
-
+                if (!condition.IsNotNull()) continue;
+                // Polling 타입은 이벤트 미지원이므로 스킵
+                if (condition.Measure == StateConditionMeasures.Polling) continue;
+                
                 var token = condition.Bind(
                     controller: this,
-                    onTriggered: () => TransitionToState(destination)
+                    onTriggered: () => HandleConditionTriggered(
+                        condition: condition,
+                        destination: destination,
+                        isGlobal: true,
+                        ignoreForce: true) // 글로벌은 항상 lock 무시
                 );
 
                 if (token != null)
@@ -164,25 +182,27 @@ namespace TH.Control.State
 
         #region Global Transition Handle
 
-        private bool CheckGlobalTransitionsPolling()
+        private bool CheckGlobalPollingConditions()
         {
             if (globalTransitions == null || globalTransitions.Count == 0)
                 return false;
 
             foreach (var t in globalTransitions)
             {
-                // Transition 구조체 내부 참조 유효성 검사
-                if (t is not { DestinationState: { } dest, Condition: { } cond }
-                    || !dest.IsNotNull() || !cond.IsNotNull())
-                    continue;
-                // 조건 검사
+                // ActionStateTransition 구조체 내부 참조 유효성 검사
+                if (t is not { DestinationState: { } dest, 
+                                Condition: { } cond } ) continue;
+                if (!dest.IsNotNull() || !cond.IsNotNull()) continue;
+                // Polling 타입 외에는 프레임 단위 검사x
+                if (cond.Measure != StateConditionMeasures.Polling) continue;
+                // 조건 평가 
                 if (!cond.Decide(this)) continue;
                 // 동일한 상태로의 전환인지 확인 + 동일 상태로의 전환 허락 여부 확인
                 if (currentState == dest && !dest.AllowSelfTransition) continue;
                 
                 // 상태 전환 및 루프 종료
-                // 글로벌 상태 전환 조건은 전환 지연(lock)을 무시함
-                TransitionToState(dest, force: true);
+                // force: true -> 글로벌 상태 전환 조건은 lock 무시
+                TransitionToState(dest, ignoreLock: true);
                 return true; 
             }
 
@@ -221,6 +241,123 @@ namespace TH.Control.State
         
 
         #endregion
+        
+        private struct ArmedTransition
+        {
+            public IActionStateCondition Condition;
+            public IActionState Destination;
+            public bool IgnoreLock;
+        }
+
+        // 상태 전이용 (현재 state에 종속)
+        private readonly List<ArmedTransition> _stateArmed = new();
+
+        // 글로벌 전이용
+        private readonly List<ArmedTransition> _globalArmed = new();
+        
+        public void HandleConditionTriggered(
+            IActionStateCondition condition,
+            IActionState destination,
+            bool isGlobal,
+            bool ignoreForce = false)
+        {
+            if (condition == null || destination == null) return;
+
+            switch (condition.Measure)
+            {
+                case StateConditionMeasures.EventDriven:
+                    TransitionToState(destination, ignoreForce);
+                    break;
+
+                case StateConditionMeasures.EventTriggeredPolling:
+                    if (condition.Decide(this))
+                        TransitionToState(destination, ignoreForce);
+                    break;
+
+                case StateConditionMeasures.Both:
+                {
+                    // armed 등록 (중복 방지)
+                    var list = isGlobal ? _globalArmed : _stateArmed;
+                    for (int i = 0; i < list.Count; i++)
+                    {
+                        if (ReferenceEquals(list[i].Condition, condition) &&
+                            ReferenceEquals(list[i].Destination, destination))
+                        {
+                            // 이미 등록됨 -> force만 갱신하고 종료
+                            var at = list[i];
+                            at.IgnoreLock |= ignoreForce;
+                            list[i] = at;
+                            goto CHECK_IMMEDIATE;
+                        }
+                    }
+
+                    list.Add(new ArmedTransition
+                    {
+                        Condition = condition,
+                        Destination = destination,
+                        IgnoreLock = ignoreForce
+                    });
+
+                    CHECK_IMMEDIATE:
+                    // 트리거 호춸 직후 즉시 1회 Decide 검사
+                    if (condition.Decide(this))
+                        TransitionToState(destination, ignoreForce);
+
+                    break;
+                }
+
+                case StateConditionMeasures.Polling:
+                default:
+                    // Polling-only는 여기로 들어올 일이 없어야 정상 (Bind 안 하므로)
+                    break;
+            }
+        }
+        
+        private bool CheckArmedTransitionsPolling()
+        {
+            // 글로벌 우선
+            // 같은 분류 안에서도 하위 상태 전환 조건(StateConditionSO.conditions) 목록 내부 순서에 의해 우선순위 적용됨
+            return TryConsumeGlobalArmed(_globalArmed) || 
+                   TryConsumeArmed(_stateArmed);
+        }
+
+        private bool TryConsumeArmed(List<ArmedTransition> list)
+        {
+            if (list.Count == 0) return false;
+
+            foreach (var t in list)
+            {
+                if (t.Condition == null || t.Destination == null) continue;
+                if (!t.Condition.Decide(this)) continue;
+
+                // 조건 만족 시 상태 전환 및 루프 종료
+                TransitionToState(t.Destination, t.IgnoreLock);
+                return true;
+            }
+
+            return false;
+        }
+        
+        private bool TryConsumeGlobalArmed(List<ArmedTransition> list)
+        {
+            if (list.Count == 0) return false;
+
+            foreach (var t in list)
+            {
+                if (t.Condition is not { } condition || !condition.IsNotNull()) continue;
+                if (t.Destination is not { } dest|| !dest.IsNotNull()) continue;
+                if (dest == currentState && !currentState.AllowSelfTransition) continue;
+                
+                if (!t.Condition.Decide(this)) continue;
+                
+                // 조건 만족 시 상태 전환 및 루프 종료
+                TransitionToState(t.Destination, t.IgnoreLock);
+                return true;
+            }
+
+            return false;
+        }
+
     }
 }
 

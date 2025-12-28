@@ -54,7 +54,7 @@ namespace TH.SaveLoad
 
         public bool RestoreState(object state)
         {
-            this.Log($"{gameObject.name} - RestoreState", Logg.LoggingMode.InProgress);
+            this.Log($"{gameObject.name} - RestoreState", Logg.LoggingMode.Completed);
             if (state is not Dictionary<string, object> states) return false;
             RestoreState(states);
             return true;

@@ -65,7 +65,7 @@ namespace TH.Item
                 Logg.LogError($"[{gameObject.name}] {nameof(Equipper)} failed to initialize");
                 return;
             }
-
+    
             isInit = true;
             
             fighter.OnEquipWeapon += this.OnEquipWeapon;

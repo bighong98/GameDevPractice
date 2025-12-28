@@ -381,10 +381,14 @@ PrefabInstance:
       propertyPath: m_Material
       value: 
       objectReference: {fileID: 586498608}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 4171815722146848543, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3890092071235492935, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 309936717}
   m_SourcePrefab: {fileID: 100100000, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
 --- !u!1 &271811312
 GameObject:
@@ -485,6 +489,25 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}
+--- !u!1 &309936700 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3890092071235492935, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
+  m_PrefabInstance: {fileID: 241014205}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &309936717
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 309936700}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa3cf0fc06a06e84eb3b569d5b59e2a6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FighterRefactoring
+  target: {fileID: 0}
+  defaultWeapon: {fileID: 11400000, guid: 0a600904131b2d64994bee447b8efe39, type: 2}
 --- !u!1001 &359824845
 PrefabInstance:
   m_ObjectHideFlags: 0

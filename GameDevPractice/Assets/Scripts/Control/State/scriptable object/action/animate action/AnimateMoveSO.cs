@@ -17,6 +17,11 @@ namespace TH.Control.Data
             
             Vector3 velocity = agent.velocity;
             Vector3 localVelocity = trs.InverseTransformDirection(velocity);
+            
+            anim.CrossFade(
+                stateHashName: LocomotionASSHash, 
+                normalizedTransitionDuration: 0.1f, 
+                AnimatorBaseLayer);
             anim.SetFloat(ForwardSpeed, localVelocity.z);
         }
     }

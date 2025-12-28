@@ -14,7 +14,12 @@ namespace TH.Control.Data
         public override void Execute(IActionStateController controller)
         {
             if (!controller.Components.TryGet(out Animator animator)) return;
-            animator.SetTrigger(AttackAnimHash);
+            // animator.SetTrigger(AttackAnimHash);
+            animator.CrossFade(
+                stateHashName: AttackASSHash, 
+                normalizedTransitionDuration: 0.1f, 
+                layer: AnimatorBaseLayer, 
+                normalizedTimeOffset: 0f);
         }
 
         public bool TransitionLockRequired { get; } = true;
@@ -28,41 +33,51 @@ namespace TH.Control.Data
             }
 
             var cts = new CancellationTokenSource();
-            MonitorAnimationAsync(animator, onCompleted, cts.Token).Forget();
+            MonitorAnimationAsync(animator, onCompleted, cts.Token).ContinueWith(Handler);
             
-            return new DisposableDelegate(() =>
+            return new DisposableDelegate(Handler);
+
+            void Handler()
             {
-                cts.Cancel();
+                if (!cts.IsCancellationRequested)
+                    cts.Cancel();
                 cts.Dispose();
-            });
+            }
         }
         
-        private async UniTaskVoid MonitorAnimationAsync(Animator animator, Action onCompleted, CancellationToken token)
+        private async UniTask MonitorAnimationAsync(Animator animator, Action onCompleted, CancellationToken token)
         {
             try
             {
-                await UniTask.Yield(PlayerLoopTiming.Update, cancellationToken: token);
-
+                await UniTask.Yield(PlayerLoopTiming.Update, token).SuppressCancellationThrow();
+                
                 while (true)
                 {
+                    if (token.IsCancellationRequested) break;
                     if (animator == null) return;
-                    //todo: layerIndex 1개 이상 생기면 인덱스 지정
+                    
                     var stateInfo = animator.GetCurrentAnimatorStateInfo(0);
                     
-                    // 모션 캔슬 허용 파라미터가 임계치(CancelAllowThreshold)를 넘었는지
-                    // 애니메이션 진행도가 종료 임계치(AnimationEndThreshold)를 넘었는지
-                    // -> 둘 중 하나라도 만족하면 모션 캔슬 가능 판정
-                    if (animator.GetFloat(CancelAllowHash) > CancelAllowThreshold 
-                        || stateInfo.normalizedTime >= AnimationEndThreshold)
+                    // Attack 상태에서 벗어났으면 종료
+                    if (stateInfo.shortNameHash != AttackASSHash)
                     {
-                        onCompleted?.Invoke();
-                        return; 
+                        Logg.Log($"[{GetType().Name}] MonitorAnimationAsync - exited Attack state", Logg.LoggingMode.Completed);
+                        return;
+                    }
+                    
+                    // 모션 캔슬 가능 조건 체크
+                    if (stateInfo.normalizedTime >= AnimationEndThreshold ||
+                        animator.GetFloat(CancelAllowHash) > CancelAllowThreshold)
+                    {
+                        Logg.Log($"[{GetType().Name}] MonitorAnimationAsync - unlock state transition", Logg.LoggingMode.Completed);
+                        return;
                     }
                     
                     await UniTask.Yield(PlayerLoopTiming.Update, cancellationToken: token).SuppressCancellationThrow();
                 }
             }
             catch (Exception e) { Debug.LogError($"[{name}] Animation monitor error: {e}"); }
+            finally { onCompleted?.Invoke(); }
         }
     }
 }

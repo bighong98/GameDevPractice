@@ -714,17 +714,7 @@ ModelImporter:
       might lower retargeting quality:\nNote: Activate translation DOF on avatar
       to improve retargeting quality.\n\t'B_Spine2' is inbetween humanoid transforms
       and has rotation animation that will be discarded.\n"
-    animationRetargetingWarnings: "\nRetargeting quality report for clip 'Take 001':\n\tLeftUpperArm
-      average position error 29.4 mm and maximum position error 42.6 mm at time 0:19
-      (63.3%) Frame 19\n\tLeftLowerArm average position error 17.5 mm and maximum
-      position error 29.1 mm at time 0:22 (73.3%) Frame 22\n\tLeftHand average position
-      error 14.2 mm and maximum position error 27.1 mm at time 0:23 (76.7%) Frame
-      23\n\tRightUpperArm average position error 28.1 mm and maximum position error
-      44.8 mm at time 0:19 (63.3%) Frame 19\n\tRightLowerArm average position error
-      15.4 mm and maximum position error 24.4 mm at time 0:16 (53.3%) Frame 16\n\tRightHand
-      average position error 7.0 mm and maximum position error 21.8 mm at time 0:16
-      (53.3%) Frame 16\n\tHead average position error 78.2 mm and maximum position
-      error 119.7 mm at time 0:19 (63.3%) Frame 19\n"
+    animationRetargetingWarnings: 
     animationDoRetargetingWarnings: 0
     importAnimatedCustomProperties: 0
     importConstraints: 0
@@ -759,7 +749,50 @@ ModelImporter:
       heightFromFeet: 0
       mirror: 0
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
-      curves: []
+      curves:
+      - name: CancelAllow
+        curve:
+          serializedVersion: 2
+          curve:
+          - serializedVersion: 3
+            time: 0
+            value: 0
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          - serializedVersion: 3
+            time: 0.63
+            value: 0
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          - serializedVersion: 3
+            time: 0.64
+            value: 1
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0.33333334
+            outWeight: 0.33333334
+          - serializedVersion: 3
+            time: 1
+            value: 1
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          preInfinity: 3
+          postInfinity: 3
+          rotationOrder: 4
       events:
       - time: 0.56178176
         functionName: Shoot

@@ -8,8 +8,8 @@ namespace TH.Control.Data
 {
     // 복수의 ConditionSO 조합에 사용 
     // conditions 목록의 모든 조건이 true일 때만 true
-    // -> polling(Decide) 조건끼리, event-driven(Bind) 조건끼리만 적용
-    // -> 둘중 한 쪽이라도 true면 상태 전환됨
+    // -> Polling: 하위 조건의 Bind() 무시
+    // -> EventDriven: 하위 조건의 Decide 무시
     // 절대 conditions 목록에 자기 자신을 포함하지 않을 것
     [CreateAssetMenu(fileName = "ProductConditionSO", menuName = "Scriptable Objects/State Condition/ProductConditionSO")]
     public sealed class ProductConditionSO : ActionStateConditionSO
@@ -20,11 +20,14 @@ namespace TH.Control.Data
         {
             if (controller == null) return false;
             if (conditions == null || conditions.Count == 0) return false;
-
+            if (measure == StateConditionMeasures.EventDriven) return false;
+            
             foreach (var c in conditions)
             {
+                if (c == null) continue;
+                // EventDriven 타입은 조건 평가에서 제외 (무조건 false 반환함)
+                if (c.Measure == StateConditionMeasures.EventDriven) continue;
                 // 조건 중 하나라도 null 이거나 false면 전체 false 반환
-                if (c == null) return false;
                 if (!c.Decide(controller)) return false; 
             }
 
@@ -36,7 +39,8 @@ namespace TH.Control.Data
             // 구독할 이벤트 기반 조건이 없다면 Empty 반환
             if (controller == null || onTriggered == null) return DisposableDelegate.Empty;
             if (conditions == null || conditions.Count == 0) return DisposableDelegate.Empty;
-
+            if (measure == StateConditionMeasures.Polling) return DisposableDelegate.Empty;
+            
             // 어떤 하위 조건이든 트리거되면 전체 AND 재평가 후 true면 fire
             bool fired = false;
             void OnAnyChanged()
@@ -53,7 +57,8 @@ namespace TH.Control.Data
             foreach (var c in conditions)
             {
                 if (c == null) continue;
-
+                if (c.Measure == StateConditionMeasures.Polling) continue;
+                
                 // 이벤트 기반을 지원하지 않는 조건은 Empty를 반환
                 var d = c.Bind(controller, OnAnyChanged);
                 if (d != null)
@@ -85,12 +90,15 @@ namespace TH.Control.Data
             for (int i = conditions.Count - 1; i >= 0; i--)
             {
                 if (conditions[i] == null)
+                {
+                    Logg.LogWarning($"[ProductConditionSO] '{name}' has null child at index {i}. It will be ignored.", this);
                     continue;
+                }
 
                 if (conditions[i] == this)
                 {
                     conditions.RemoveAt(i);
-                    Logg.LogError($"[ConditionAll] '{name}' cannot reference itself.");
+                    Logg.LogError($"[ConditionAll] '{name}' cannot reference itself.", this);
                 }
                 
                 conditions[i].Validate();
