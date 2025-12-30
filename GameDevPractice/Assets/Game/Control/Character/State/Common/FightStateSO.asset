@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 856e2d3a5c9d0b34da515cdd74a384c0, type: 3}
+  m_Name: FightStateSO
+  m_EditorClassIdentifier: Assembly-CSharp::TH.Control.Data.CombatStateSO
+  onEnterActions:
+  - {fileID: 11400000, guid: f74d07e8a295fb9499c63066d465bdb9, type: 2}
+  - {fileID: 11400000, guid: 1ae8a8d9e54a66749944c4318d7c5b1a, type: 2}
+  - {fileID: 11400000, guid: a68038a294969554a9c9b536c112d164, type: 2}
+  updateActions: []
+  onExitActions: []
+  transitions:
+  - condition: {fileID: 11400000, guid: 4cf2e9d6bf42a18449c08ab688bb405a, type: 2}
+    destinationState: {fileID: 11400000}
+  - condition: {fileID: 11400000, guid: 99915f28cdf03fb44b522e2c3679638e, type: 2}
+    destinationState: {fileID: 11400000, guid: 7e7e93bfb3dfa8f40a30639a63aefa01, type: 2}
+  - condition: {fileID: 11400000, guid: 52fb27d837f4fb0499a958b5a49823a0, type: 2}
+    destinationState: {fileID: 11400000, guid: aebd0b6c5f806a346a562df8927ab54d, type: 2}
+  - condition: {fileID: 11400000, guid: 5d08da84b4f664c4890db4f51a1d5086, type: 2}
+    destinationState: {fileID: 11400000, guid: 16deb90229b9bec408b94b3510134c35, type: 2}
+  allowSelfTransition: 0
+  transitionLockRequired: 1

@@ -24,12 +24,12 @@ namespace TH.Control.Data
                 || onTriggered == null)
                 return base.Bind(controller, onTriggered);
 
-            attacker.OnTargetChanged += Handler;
+            attacker.OnTargetSet += Handler;
 
             return new DisposableDelegate(() =>
             {
                 if (attacker.IsNotNull())
-                    attacker.OnTargetChanged -= Handler;
+                    attacker.OnTargetSet -= Handler;
             });
             
             void Handler(Health h) { if (h.IsNotNull()) onTriggered.Invoke(); }

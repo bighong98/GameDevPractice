@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using TH.Control.Data;
 using TH.Utils;
 using UnityEngine;
@@ -11,16 +12,18 @@ namespace TH.Control.State
         [SerializeField] private ActionStateSO initialState;
         [SerializeField] private List<ActionStateTransition> globalTransitions = new();
         
-        [SerializeField] private IActionState currentState; // serialize for debug
+        private IActionState currentState;
         public IActionState remainState; // 상태를 유지할 때 사용하는 더미 상태
 
         [HideInInspector] public float stateTime;
 
         public ComponentProvider Components { get; private set; }
+        public CancellationToken StateToken { get; private set; }
 
         private void Awake()
         {
             Components = new ComponentProvider(gameObject);
+            RenewStateToken();
         }
 
         private void Start()
@@ -32,6 +35,9 @@ namespace TH.Control.State
         
         private void OnEnable()
         {
+            if (_stateTokenSource == null)
+                RenewStateToken();
+            
             if (currentState == null && initialState != null)
                 TransitionToState(initialState);
         }
@@ -40,6 +46,12 @@ namespace TH.Control.State
         {
             // 씬 언로드/비활성화 시 유령 전환 방지
             UnbindTransitions();
+            TryCancelDisposeStateToken();
+        }
+
+        private void OnDestroy()
+        {
+            TryCancelDisposeStateToken();
         }
 
         private void Update()
@@ -59,8 +71,23 @@ namespace TH.Control.State
 
         public void TransitionToState(IActionState nextState, bool ignoreLock = false)
         {
-            // RemainState거나 null이면 전환하지 않음
+            // nextState 유효성 검사
             if (nextState == remainState || nextState == null) return;
+            // initialState 전환 분기 체크
+            // InitialStateSO(초기 상태 복귀용 가짜 StateSO) 사용
+            // -> 현재 ActionStateMachine.initialState로 상태 전환
+            if (nextState is InitialStateSO)
+            {
+                if (initialState == null)
+                {
+                    Logg.LogError($"[{gameObject.name}] TransitionToState - initialState and nextState is invalid", this);
+                    return;
+                }
+                
+                TransitionToState(initialState, ignoreLock);
+                return;
+            }
+            
             this.Log($"{gameObject.name}: {currentState} -> {nextState}");
             
             if (!ignoreLock && _isLocked)
@@ -69,6 +96,8 @@ namespace TH.Control.State
                 _pendingState = nextState;
                 return;
             }
+            
+            RenewStateToken();
             
             _stateArmed.Clear();
             // 기존 상태 event-driven 전환 조건 구독 해제 및 핸들러 정리
@@ -357,6 +386,33 @@ namespace TH.Control.State
 
             return false;
         }
+
+        #region Handle State CTS
+        
+        private CancellationTokenSource _stateTokenSource;
+
+        private void RenewStateToken()
+        {
+            // 이전 토큰은 Cancel, Dispose
+            TryCancelDisposeStateToken();
+            _stateTokenSource = new CancellationTokenSource();
+            StateToken = _stateTokenSource.Token;
+        }
+
+        private void TryCancelDisposeStateToken()
+        {
+            if (_stateTokenSource == null) return;
+
+            try { _stateTokenSource.Cancel(); }
+            catch { /* ignore */ }
+            finally
+            {
+                _stateTokenSource.Dispose();
+                _stateTokenSource = null;
+            }
+        }
+
+        #endregion
 
     }
 }

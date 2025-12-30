@@ -82,6 +82,10 @@ PrefabInstance:
       propertyPath: m_CullingMode
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 1090721780878730714, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
+      propertyPath: defaultWeapon
+      value: 
+      objectReference: {fileID: 11400000, guid: 0a600904131b2d64994bee447b8efe39, type: 2}
     - target: {fileID: 1599618502693370758, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
       propertyPath: uniqueIdentifier
       value: 162307e2-b4cf-4512-b82d-b99c87ba1163
@@ -90,14 +94,38 @@ PrefabInstance:
       propertyPath: characterClass
       value: 2
       objectReference: {fileID: 0}
+    - target: {fileID: 5373889179622131043, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
+      propertyPath: initialState
+      value: 
+      objectReference: {fileID: 11400000, guid: 4ff036bbf49db2f49b1127ba662aa634, type: 2}
+    - target: {fileID: 5373889179622131043, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
+      propertyPath: globalTransitions.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5373889179622131043, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
+      propertyPath: globalTransitions.Array.data[0].condition
+      value: 
+      objectReference: {fileID: 11400000, guid: 6ee183327986dab4184ec78b9b8dab3e, type: 2}
+    - target: {fileID: 5373889179622131043, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
+      propertyPath: globalTransitions.Array.data[0].destinationState
+      value: 
+      objectReference: {fileID: 11400000, guid: dc33e8789b0525041b251428d1cd4b50, type: 2}
     - target: {fileID: 6061633697407881761, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
       propertyPath: m_Name
       value: Enemy
+      objectReference: {fileID: 0}
+    - target: {fileID: 6061633697407881761, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
+      propertyPath: m_Layer
+      value: 12
       objectReference: {fileID: 0}
     - target: {fileID: 6342785507549057401, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
       propertyPath: weapon
       value: 
       objectReference: {fileID: 11400000, guid: 0a600904131b2d64994bee447b8efe39, type: 2}
+    - target: {fileID: 7177356247128519180, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
+      propertyPath: runSpeed
+      value: 4
+      objectReference: {fileID: 0}
     - target: {fileID: 7215275352521821853, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
       propertyPath: characterClass
       value: 2
@@ -154,7 +182,10 @@ PrefabInstance:
       propertyPath: m_Speed
       value: 3
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 1397199764304502419, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
+    - {fileID: 9198958092334245496, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
+    - {fileID: 6342785507549057401, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 8132568554257588984, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
@@ -166,7 +197,7 @@ PrefabInstance:
       addedObject: {fileID: 982514003378047019}
     - targetCorrespondingSourceObject: {fileID: 6061633697407881761, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 3213237654077488569}
+      addedObject: {fileID: -8422029113552395765}
   m_SourcePrefab: {fileID: 100100000, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
 --- !u!1 &431537241663738169 stripped
 GameObject:
@@ -185,7 +216,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 975f9440d450d6d448bcd549fd022a83, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &3213237654077488569
+--- !u!114 &-8422029113552395765
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -194,15 +225,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 431537241663738169}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ebd5ef53763b0e5428867c7fc68f6ab3, type: 3}
+  m_Script: {fileID: 11500000, guid: 15e9987f9f32b394d9ce0be8e90c25a0, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
-  chaseDistance: 5
+  m_EditorClassIdentifier: Assembly-CSharp::TH.Control.AIControllerRefactoring
+  chaseDistance: 10
   suspicionTime: 3
   patrolPath: {fileID: 0}
   waypointTolerance: 2
-  waypointDwellTime: 3
-  patrolSpeedFraction: 0.2
 --- !u!4 &2395544938457194976 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8132568554257588984, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}

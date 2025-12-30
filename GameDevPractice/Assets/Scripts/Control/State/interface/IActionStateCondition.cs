@@ -2,22 +2,33 @@ using System;
 
 namespace TH.Control.State
 {
-    public interface IActionStateCondition
+    public interface IActionStateCondition: IPollingStateCondition, IEventStateCondition
     {
         // 평가가 필요한 조건 (StateConditionMeasures 주석 참고)
         StateConditionMeasures Measure { get; }
-        // polling 방식
-        // Decide 호출 즉시 조건 평가 및 결과 반환
-        bool Decide(IActionStateController controller);
-        // event-driven 방식
-        // onTriggered에 TransitionState()를 전달하여 원하는 시점에 상태 전환 실행
-        // -> .Dispose()로 이벤트 핸들러 포함 내부 클로저 정리 수행할 수 있도록 구현
-        IDisposable Bind(IActionStateController controller, Action onTriggered);
+        
+        // bool Decide(IActionStateController controller);
+        // IDisposable Bind(IActionStateController controller, Action onTriggered);
 
 #if UNITY_EDITOR
         // 수동 OnValidate() 호출 목적
         void Validate();
 #endif
+    }
+
+    public interface IPollingStateCondition
+    {
+        // polling 방식
+        // Decide 호출 즉시 조건 평가 및 결과 반환
+        bool Decide(IActionStateController controller);
+    }
+
+    public interface IEventStateCondition
+    {
+        // event-driven 방식
+        // onTriggered에 TransitionState()를 전달하여 원하는 시점에 상태 전환 실행
+        // -> .Dispose()로 이벤트 핸들러 포함 내부 클로저 정리 수행할 수 있도록 구현
+        IDisposable Bind(IActionStateController controller, Action onTriggered);
     }
     
     public enum StateConditionMeasures

@@ -9,15 +9,12 @@ namespace TH.Combat
     {
         public bool HandleRaycast(IPlayerController caller)
         {
-            this.Log($"({gameObject.name}) - HandleRaycast({caller})", Logg.LoggingMode.InProgress);
-            // if (!TryGetComponent(out IAttacker attacker)
-            //     || !attacker.CanAttack(gameObject, out var targetHealth)) return false;
-            // attacker.Attack(targetHealth);
+            this.Log($"({gameObject.name}) - HandleRaycast({caller})", Logg.LoggingMode.Completed);
 
             if (!caller.Components.TryGet(out IAttacker attacker)) return false;
             if (!attacker.CanAttack(gameObject, out var self)) return false;
             
-            attacker.Attack(self);
+            attacker.SetTarget(self);
             return true;
         }
 

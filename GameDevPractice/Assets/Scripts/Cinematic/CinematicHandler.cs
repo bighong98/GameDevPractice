@@ -48,7 +48,7 @@ namespace TH.Cinematic
 
         private void PausePlayer()
         {
-            player.GetComponent<TH.Core.CharacterActionScheduler>()?.CancelCurrentAction();
+            // player.GetComponent<TH.Core.CharacterActionScheduler>()?.CancelCurrentAction();
             player.GetComponent<TH.Control.PlayerController>().enabled = false;
         }
 

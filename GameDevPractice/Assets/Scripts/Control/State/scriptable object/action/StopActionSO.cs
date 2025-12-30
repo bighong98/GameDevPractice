@@ -9,7 +9,7 @@ namespace TH.Control.Data
     {
         public override void Execute(IActionStateController controller)
         {
-            if (controller.Components.TryGet(out MoverRefactoring mover))
+            if (controller.Components.TryGet(out Mover mover))
             {
                 mover.Stop();
             }

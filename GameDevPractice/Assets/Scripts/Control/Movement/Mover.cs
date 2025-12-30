@@ -1,14 +1,11 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using TH.Core;
-using TH.SaveLoad;
 using TH.Attribute;
+using TH.SaveLoad;
 using TH.Utils;
 using UnityEngine;
 using UnityEngine.AI;
 
-namespace TH.Movement
+namespace TH.Control.Movement
 {
     [Serializable]
     public struct MoverSaveData
@@ -17,59 +14,67 @@ namespace TH.Movement
         public SerializableVector3 rotation;
     }
     
-    public class Mover : MonoBehaviour, IAction, ISavable
+    public class Mover : MonoBehaviour, ISavable, IMover
     {
-        [SerializeField] private float maxSpeed = 6f;
+        [SerializeField] private float walkSpeed = 2f;
+        [SerializeField] private float runSpeed = 6f;
+        [SerializeField] private float speedFraction = 1f;
         
         private NavMeshAgent navMeshAgent;
-        private Animator animator;
         private Health health;
         
-        private static readonly int ForwardSpeed = Animator.StringToHash("forwardSpeed");
+        public event Action OnDestinationSet;
+        public event Action OnArrived;
         
-        public CharacterActionScheduler ActionScheduler { get; private set; }
+        private Vector3 currentDestination = Vector3.zero;
+        private const float distanceTolerance = 2.0f;
 
         private void Awake()
         {
-            navMeshAgent = GetComponent<NavMeshAgent>();
-            animator = GetComponent<Animator>();
-            health = GetComponent<Health>();
-            
-            ActionScheduler = GetComponent<CharacterActionScheduler>();
+            TryGetComponent(out navMeshAgent);
+            TryGetComponent(out health);
         }
 
         private void Update()
         {
-            navMeshAgent.enabled = !health.IsDead;
-            UpdateAnimator();
+            if (health.IsDead) return;
+            if (currentDestination == Vector3.zero) return;
+            
+            float distanceToWaypoint = Vector3.SqrMagnitude(transform.position - currentDestination);
+            if (distanceToWaypoint < distanceTolerance)
+            {
+                OnArrived?.Invoke();
+            }
         }
 
-        public void StartMoveAction(Vector3 dest, float speedFraction = 1f)
+        public void SetDestination(Vector3 destination, bool notify = true)
         {
-            ActionScheduler.StartAction(this);
-            Moveto(dest, speedFraction);
+            if (destination == Vector3.zero) return;
+            
+            currentDestination = destination;
+            if (notify) OnDestinationSet?.Invoke();
         }
-        
-        public void Moveto(Vector3 dest, float speedFraction = 1f)
+
+        public void Move(MoveType moveType = MoveType.Run)
         {
-            navMeshAgent.destination = dest;
-            navMeshAgent.speed = maxSpeed * Mathf.Clamp01(speedFraction);
+            navMeshAgent.destination = currentDestination;
+            navMeshAgent.speed = (moveType == MoveType.Run ? runSpeed : walkSpeed) * Mathf.Clamp01(speedFraction);
             navMeshAgent.isStopped = false;
         }
 
-        public void CancelAction()
+        public void Stop()
         {
             navMeshAgent.isStopped = true;
         }
 
-        private void UpdateAnimator()
-        {
-            Vector3 velocity = navMeshAgent.velocity;
-            Vector3 localVelocity = transform.InverseTransformDirection(velocity);
-            float speed = localVelocity.z;
-            animator.SetFloat(ForwardSpeed, speed);
-        }
+        public void CancelAction() => Stop();
 
+        public void MoveTo(Vector3 destination, MoveType moveType = MoveType.Run, bool notify = true)
+        {
+            SetDestination(destination, notify);
+            Move(moveType);
+        }
+        
         #region ISavable
         
         public object CaptureState()
@@ -100,6 +105,6 @@ namespace TH.Movement
         }
 
         #endregion
-        
     }
 }
+

@@ -8,7 +8,7 @@ namespace TH.Combat
     public interface IAttacker
     {
         event Action OnAttack;
-        event Action<Health> OnTargetChanged;
+        event Action<Health> OnTargetSet;
         event Action OnAttackReady;
         
         bool IsTargetInRange { get; }
@@ -16,7 +16,7 @@ namespace TH.Combat
         Health Target { get; }
 
         void Attack();
-        void Attack(Health target);
+        void SetTarget(Health target);
         bool CanAttack(GameObject combatTarget, out Health targetHealth);
     }
 }

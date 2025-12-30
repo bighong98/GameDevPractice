@@ -34,7 +34,7 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
             return;
         }
         
-        shootingWeaponOwner.OnTargetChanged += SetTarget;
+        shootingWeaponOwner.OnTargetSet += SetTarget;
         shootingWeaponOwner.OnAttack += Shoot;
 
         if (owner is Component c && c.TryGetComponent(out IStatHolder statHolder))

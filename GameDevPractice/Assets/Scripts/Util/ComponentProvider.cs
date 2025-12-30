@@ -39,6 +39,11 @@ namespace TH.Utils
             value = null;
             return false;
         }
+
+        public void Register<T>(T instance) where T : class
+        {
+            _cache[typeof(T)] = instance;
+        }
     }
 }
 

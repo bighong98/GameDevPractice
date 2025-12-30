@@ -6,7 +6,8 @@ using UnityEngine;
 
 namespace TH.Control.Data
 {
-    public abstract class ActionStateSO : ScriptableObject, IActionState
+    [CreateAssetMenu(fileName = "ActionStateSO", menuName = "Scriptable Objects/CharacterState/ActionStateSO")]
+    public class ActionStateSO : ScriptableObject, IActionState
     {
         [Header("Actions")]
         [SerializeField] private List<CharacterActionSO> onEnterActions; // 진입 시 1회
@@ -193,7 +194,7 @@ namespace TH.Control.Data
 
 #if UNITY_EDITOR
 
-        private void OnValidate()
+        protected virtual void OnValidate()
         {
             int lockActionCount =
                 CountTransitionLockActions(onEnterActions) +

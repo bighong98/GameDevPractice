@@ -199,9 +199,6 @@ namespace TH.Attribute
             IsDead = true;
             OnDead?.Invoke();
             
-            if (TryGetComponent(out CharacterActionScheduler cas))
-                cas.CancelCurrentAction();
-            
             animator.ResetTrigger(ReviveAnimHash);
             animator.SetTrigger(DieAnimHash);
 

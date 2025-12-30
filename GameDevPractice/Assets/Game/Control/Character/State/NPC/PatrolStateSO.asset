@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de5c1923785b0104a907e61c43e6cc79, type: 3}
+  m_Name: PatrolStateSO
+  m_EditorClassIdentifier: Assembly-CSharp::TH.Control.Data.PatrolStateSO
+  onEnterActions:
+  - {fileID: 11400000, guid: 81c49f06e0fa7ed4dbfad3d52bfcb47f, type: 2}
+  updateActions:
+  - {fileID: 11400000, guid: 36f3e6bc2976551408b1cf79527feca9, type: 2}
+  - {fileID: 11400000, guid: fa6c49b098404cc449013816ddd04dcf, type: 2}
+  onExitActions:
+  - {fileID: 11400000, guid: c9502975d051df14aa8f8419e1e08784, type: 2}
+  transitions:
+  - condition: {fileID: 11400000, guid: 52fb27d837f4fb0499a958b5a49823a0, type: 2}
+    destinationState: {fileID: 11400000, guid: aebd0b6c5f806a346a562df8927ab54d, type: 2}
+  allowSelfTransition: 0
+  transitionLockRequired: 0

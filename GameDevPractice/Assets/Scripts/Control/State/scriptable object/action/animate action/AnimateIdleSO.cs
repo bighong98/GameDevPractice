@@ -11,6 +11,10 @@ namespace TH.Control.Data
         {
             if (!controller.Components.TryGet(out Animator animator)) return;
             
+            animator.CrossFade(
+                stateHashName: LocomotionASSHash,
+                normalizedTransitionDuration: 0.1f,
+                layer: AnimatorBaseLayer);
             animator.SetFloat(ForwardSpeed, 0f);
         }
     }

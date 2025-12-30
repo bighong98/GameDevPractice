@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 73f0782e769b69a45a09ad472fb8428e, type: 3}
+  m_Name: StrayStateSO
+  m_EditorClassIdentifier: Assembly-CSharp::TH.Control.Data.ActionStateSO
+  onEnterActions:
+  - {fileID: 11400000, guid: 938e2b725bd3348459aa6c156b1cfffb, type: 2}
+  - {fileID: 11400000, guid: d8a51050e6bf8ae47873aac1d15d0d99, type: 2}
+  updateActions: []
+  onExitActions: []
+  transitions:
+  - condition: {fileID: 11400000, guid: 800710661b6edd34aa8e50a4ac48fa2f, type: 2}
+    destinationState: {fileID: 11400000, guid: 7e7e93bfb3dfa8f40a30639a63aefa01, type: 2}
+  - condition: {fileID: 11400000, guid: 52fb27d837f4fb0499a958b5a49823a0, type: 2}
+    destinationState: {fileID: 11400000, guid: aebd0b6c5f806a346a562df8927ab54d, type: 2}
+  allowSelfTransition: 0
+  transitionLockRequired: 0

@@ -12,9 +12,6 @@ GameObject:
   - component: {fileID: 3354075843136056318}
   - component: {fileID: 8849654639277009064}
   - component: {fileID: 216005970898446488}
-  - component: {fileID: 1397199764304502419}
-  - component: {fileID: 9198958092334245496}
-  - component: {fileID: 6342785507549057401}
   - component: {fileID: 7584443095867729444}
   - component: {fileID: -4321172655345262780}
   - component: {fileID: 1599618502693370758}
@@ -22,6 +19,9 @@ GameObject:
   - component: {fileID: -2450599115419663989}
   - component: {fileID: 7215275352521821853}
   - component: {fileID: 3578163855223342188}
+  - component: {fileID: 1090721780878730714}
+  - component: {fileID: 7177356247128519180}
+  - component: {fileID: 5373889179622131043}
   m_Layer: 6
   m_Name: Character
   m_TagString: Untagged
@@ -136,46 +136,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &1397199764304502419
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6061633697407881761}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0d1ea906e7a3c904a93fe0a3efe02143, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &9198958092334245496
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6061633697407881761}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b41919cd30f969e4cb7b181cef6773dc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  maxSpeed: 6
---- !u!114 &6342785507549057401
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6061633697407881761}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5a9ef25fc28979e4e97060e2978e518d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  timeBetweenAttacks: 1
-  defaultWeapon: {fileID: 11400000, guid: 0a600904131b2d64994bee447b8efe39, type: 2}
-  target: {fileID: 0}
 --- !u!114 &7584443095867729444
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -238,7 +198,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 26e8151728f9ba345ab23baf8c706be7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RPG.Item.Equipper
-  fighter: {fileID: 6342785507549057401}
   rightHandTransform: {fileID: 0}
   leftHandTransform: {fileID: 0}
 --- !u!114 &-2450599115419663989
@@ -288,3 +247,47 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ccfe7bfb240a9a44f9ea33600c8edd5b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TH.Item.EquipmentHolder
+--- !u!114 &1090721780878730714
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6061633697407881761}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa3cf0fc06a06e84eb3b569d5b59e2a6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FighterRefactoring
+  target: {fileID: 0}
+  defaultWeapon: {fileID: 0}
+--- !u!114 &7177356247128519180
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6061633697407881761}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bdd2503e2fe5ee0408f24be7b7c958cc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TH.Control.Movement.MoverRefactoring
+  walkSpeed: 2
+  runSpeed: 6
+  speedFraction: 1
+--- !u!114 &5373889179622131043
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6061633697407881761}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c38ccd8ebc91c547969be971fe77214, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TH.Control.State.ActionStateMachine
+  initialState: {fileID: 0}
+  globalTransitions: []
+  stateTime: 0
