@@ -334,33 +334,33 @@ private void Init()
             switch (format)
             {
                 case ProgressTextFormat.LoadingAssetsIn:
-                    _sb.Append("loading assets in ");
+                    _sb.Append("리소스 로드 중 (");
                     _sb.Append(raw);
-                    _sb.Append("...");
+                    _sb.Append(")...");
                     break;
 
                 case ProgressTextFormat.LoadingScene:
-                    _sb.Append("loading scene ");
+                    _sb.Append("씬 로딩 중 (");
                     _sb.Append(raw);
-                    _sb.Append("...");
+                    _sb.Append(")...");
                     break;
 
                 case ProgressTextFormat.UnloadingScene:
-                    _sb.Append("unloading scene ");
+                    _sb.Append("씬 언로드 중 (");
                     _sb.Append(raw);
-                    _sb.Append("...");
+                    _sb.Append(")...");
                     break;
 
                 case ProgressTextFormat.PreloadingLabel:
-                    _sb.Append("preloading label ");
+                    _sb.Append("리소스 로드 중 (label: ");
                     _sb.Append(raw);
-                    _sb.Append("...");
+                    _sb.Append(")...");
                     break;
 
                 case ProgressTextFormat.Initializing:
-                    _sb.Append("initializing ");
+                    _sb.Append("시작 중 (");
                     _sb.Append(raw);
-                    _sb.Append("...");
+                    _sb.Append(")...");
                     break;
 
                 case ProgressTextFormat.Raw:

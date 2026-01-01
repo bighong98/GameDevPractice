@@ -128,7 +128,7 @@ namespace TH.Attribute.Stat
                 return stat;
             }
             
-            Logg.LogError($"[{gameObject.name}] Invalid stat type requested: {statType}. Available stats: {string.Join(", ", stats.Keys)}");
+            Logg.LogError($"[{gameObject.name}] Invalid stat type requested: {statType}. Available stats: {string.Join(", ", stats.Keys)} - scene: {gameObject.scene.name}", this);
             return null;
         }
 

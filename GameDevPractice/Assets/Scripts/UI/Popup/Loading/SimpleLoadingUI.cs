@@ -32,12 +32,12 @@ public class SimpleLoadingUI : MonoBehaviour, ILoadingUI
 
         if (handleText == null)
         {
-            handleText = Util.FindChild<TextMeshProUGUI>(gameObject, "handleText", recursive: true);
+            handleText = Util.FindChild<TextMeshProUGUI>(gameObject, "progressRatioText", recursive: true);
         }
         
         if (progressingTaskText == null)
         {
-            progressingTaskText = Util.FindChild<TextMeshProUGUI>(gameObject, "progressingTaskText", recursive: true);
+            progressingTaskText = Util.FindChild<TextMeshProUGUI>(gameObject, "progressReportText", recursive: true);
         }
     }
 
