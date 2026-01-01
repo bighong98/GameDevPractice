@@ -40,14 +40,6 @@ namespace TH.Utils
         {
             return (_enabled & mode) != 0; // Default도 동일 규칙: _enabled에 Default가 포함돼야 출력
         }
-
-        [System.Diagnostics.Conditional("UNITY_EDITOR")]
-        public static void Log(this object sender, object msg, LoggingMode mode = LoggingMode.Default)
-        {
-            if (msg is string stringMsg)
-                msg = $"[{sender.GetType().Name}] {stringMsg}";
-            Log(msg, mode);
-        }
         
         [System.Diagnostics.Conditional("UNITY_EDITOR")]
         public static void Log(object msg, LoggingMode mode = LoggingMode.Default)
@@ -63,6 +55,31 @@ namespace TH.Utils
 
         [System.Diagnostics.Conditional("UNITY_EDITOR")]
         public static void LogError(object msg, UnityEngine.Object context = null) => Debug.LogError(msg, context);
+        
+        // Extension Version
+        [System.Diagnostics.Conditional("UNITY_EDITOR")]
+        public static void Log(this object sender, object msg, LoggingMode mode = LoggingMode.Default)
+        {
+            if (msg is string stringMsg)
+                msg = $"[{sender.GetType().Name}] {stringMsg}";
+            Log(msg, mode);
+        }
+        
+        [System.Diagnostics.Conditional("UNITY_EDITOR")]
+        public static void LogWarning(this object sender, object msg, UnityEngine.Object context = null)
+        {
+            if (msg is string stringMsg)
+                msg = $"[{sender.GetType().Name}] {stringMsg}";
+            LogWarning(msg, context);
+        }
+        
+        [System.Diagnostics.Conditional("UNITY_EDITOR")]
+        public static void LogError(this object sender, object msg, UnityEngine.Object context = null)
+        {
+            if (msg is string stringMsg)
+                msg = $"[{sender.GetType().Name}] {stringMsg}";
+            LogError(msg, context);
+        }
     }
 
 }

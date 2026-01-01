@@ -23,7 +23,7 @@ namespace TH.Control.Movement
         private NavMeshAgent navMeshAgent;
         private Health health;
         
-        public event Action OnDestinationSet;
+        public event Action OnDestinationSet;   
         public event Action OnArrived;
         
         private Vector3 currentDestination = Vector3.zero;

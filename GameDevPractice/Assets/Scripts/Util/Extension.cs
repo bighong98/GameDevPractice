@@ -3,7 +3,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using TH.UI;
 using TH.Utils;
 
@@ -15,12 +14,6 @@ public static class Extension
     {
         return Util.GetOrAddComponent<T>(go);
     }
-    
-    // public static void BindEvent(this GameObject go, Action action = null, Action<BaseEventData> dragAction = null,
-    //     Enums.UIEvent type = Enums.UIEvent.Click)
-    // {
-    //     BaseUI.BindEvent(go, action, dragAction, type);
-    // }
 
     public static Vector2 GetVectorTwo(this Vector3 vector)
     {
