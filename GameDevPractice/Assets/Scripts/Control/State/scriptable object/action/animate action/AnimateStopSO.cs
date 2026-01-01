@@ -16,12 +16,10 @@ namespace TH.Control.Data
             if (!controller.Components.TryGet(out Animator animator)) return;
             
             // animator 트리거 리셋
-            animator.ResetTrigger(AttackAnimHash);
             animator.ResetTrigger(DieAnimHash);
             animator.ResetTrigger(ReviveAnimHash);
             // 움직임에 영향을 주는 모든 animator 파라미터 덮어쓰기
             animator.SetFloat(ForwardSpeed, 0f);
-            animator.SetTrigger(StopAttack);
         }
     }
 }

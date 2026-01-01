@@ -19,7 +19,7 @@ namespace TH.Control.Data
         protected static readonly int LocomotionASSHash =  Animator.StringToHash("Locomotion");
         protected static readonly int DeathASSHash =  Animator.StringToHash("Death");
         
-        protected const float CancelAllowThreshold = 0.5f;
+        protected const float CancelAllowThreshold = 0.9f;
         protected const float AnimationEndThreshold = 0.95f;
     }
 }

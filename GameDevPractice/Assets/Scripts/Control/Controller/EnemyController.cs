@@ -4,14 +4,13 @@ using TH.Combat;
 using TH.Core.Service;
 using TH.Utils;
 using TH.Control.Movement;
-using TH.Control.State;
 using UnityEngine;
 
 namespace TH.Control
 {
     public class EnemyController : MonoBehaviour, ISightHandler
     {
-        [SerializeField] private float chaseDistance = 20f;
+        [SerializeField] private float chaseDistance = 50f;
         [SerializeField] private PatrolPath patrolPath; // need to connect by inspector
         [SerializeField] private float waypointTolerance = 2f;
         
@@ -23,11 +22,13 @@ namespace TH.Control
         private PlayerController player;
         
         private LazyValue<Vector3> guardPosition;
-        private int currentWaypointIndex = 0;
+        
         private Health playerHealth;
 
-        public float SightThreshold => chaseDistance;
+        public float SightThreshold { get; private set; }
         private IGameScanner<Health> scanner;
+
+        private readonly float cd;
         
         private void Awake()
         {
@@ -41,6 +42,8 @@ namespace TH.Control
             
             // LayerMask mask =  LayerMask.GetMask("Character", "Ally");
             // scanner = new GameScanner<Health>(this, mask);
+
+            SightThreshold = chaseDistance * chaseDistance; // 거리 비교에 SqrMagnitude 사용하기 때문에 제곱값 사용
         }
         
         private void Start()
@@ -74,7 +77,6 @@ namespace TH.Control
                 attacker.SetTarget(null);
             }
         }
-
         
         private void OnEnable()
         {
@@ -90,6 +92,10 @@ namespace TH.Control
             if (!mover.IsNotNull()) return;
             mover.OnArrived -= SetNextDestination;
         }
+
+        #region Patrol Behaviour (WayPoint)
+
+        private int currentWaypointIndex = 0;
         
         private Vector3 GetDefaultGuardPosition()
         {
@@ -107,6 +113,8 @@ namespace TH.Control
         {
             mover.SetDestination(guardPosition.Value);
         }
+
+        #endregion
         
         private void SetNextDestination()
         {
@@ -122,13 +130,13 @@ namespace TH.Control
             GoToWayPoint();
         }
 
-        private bool IsInSight => Vector3.SqrMagnitude(player.transform.position - transform.position) < chaseDistance;
+        private bool IsInSight => Vector3.SqrMagnitude(player.transform.position - transform.position) < SightThreshold;
 
 #if UNITY_EDITOR
-        private void OnDrawGizmosSelected() // method called by Unity
+        private void OnDrawGizmosSelected() 
         {
             Gizmos.color = Color.blue;
-            Gizmos.DrawWireSphere(transform.position, Mathf.Sqrt(chaseDistance));
+            Gizmos.DrawWireSphere(transform.position, chaseDistance);
         }
 #endif
         

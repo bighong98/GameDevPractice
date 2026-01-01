@@ -228,7 +228,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 15e9987f9f32b394d9ce0be8e90c25a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TH.Control.AIControllerRefactoring
-  chaseDistance: 50
+  chaseDistance: 8
   patrolPath: {fileID: 0}
   waypointTolerance: 2
 --- !u!4 &2395544938457194976 stripped
