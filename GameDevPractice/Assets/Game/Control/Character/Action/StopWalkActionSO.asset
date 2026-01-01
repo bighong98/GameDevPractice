@@ -10,5 +10,5 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c89559bcdec68e3478e458d4f5398199, type: 3}
-  m_Name: StopActionSO
+  m_Name: StopWalkActionSO
   m_EditorClassIdentifier: Assembly-CSharp::TH.Control.Data.StopActionSO

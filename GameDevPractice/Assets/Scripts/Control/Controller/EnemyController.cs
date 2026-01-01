@@ -11,8 +11,7 @@ namespace TH.Control
 {
     public class EnemyController : MonoBehaviour, ISightHandler
     {
-        [SerializeField] private float chaseDistance = 10f;
-        // [SerializeField] private float suspicionTime = 3f; // 아직 적용x
+        [SerializeField] private float chaseDistance = 20f;
         [SerializeField] private PatrolPath patrolPath; // need to connect by inspector
         [SerializeField] private float waypointTolerance = 2f;
         
@@ -125,11 +124,14 @@ namespace TH.Control
 
         private bool IsInSight => Vector3.SqrMagnitude(player.transform.position - transform.position) < chaseDistance;
 
+#if UNITY_EDITOR
         private void OnDrawGizmosSelected() // method called by Unity
         {
             Gizmos.color = Color.blue;
-            Gizmos.DrawWireSphere(transform.position, chaseDistance);
+            Gizmos.DrawWireSphere(transform.position, Mathf.Sqrt(chaseDistance));
         }
+#endif
+        
     }
 }
 

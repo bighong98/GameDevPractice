@@ -4,8 +4,8 @@ using UnityEngine;
 
 namespace TH.Control.Data
 {
-    [CreateAssetMenu(fileName = "StopActionSO", menuName = "Scriptable Objects/CharacterAction/StopActionSO")]
-    public class StopActionSO : CharacterActionSO
+    [CreateAssetMenu(fileName = "StopWalkActionSO", menuName = "Scriptable Objects/CharacterAction/StopWalkActionSO")]
+    public class StopWalkActionSO : CharacterActionSO
     {
         public override void Execute(IActionStateController controller)
         {

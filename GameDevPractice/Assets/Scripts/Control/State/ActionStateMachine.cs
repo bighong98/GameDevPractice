@@ -118,7 +118,7 @@ namespace TH.Control.State
             stateTime = 0;
             
             this.Log($"[{gameObject.name}] TransitionToState({prevState?.GetType().Name} -> {nextState.GetType().Name})"
-                , Logg.LoggingMode.Completed);
+                , Logg.LoggingMode.InProgress);
             
             // 새 상태 진입 로직 실행
             if (currentState.IsNotNull())

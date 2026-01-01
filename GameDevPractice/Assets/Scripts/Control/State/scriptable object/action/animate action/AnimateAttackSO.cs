@@ -10,11 +10,10 @@ namespace TH.Control.Data
     [CreateAssetMenu(fileName = "AnimateAttackSO", menuName = "Scriptable Objects/CharacterAction/AnimateAction/AnimateAttackSO")]
     public class AnimateAttackSO : CharacterActionSO, IStateTransitionLock
     {
-        private static readonly int AttackAnimHash = Animator.StringToHash("attack");
         public override void Execute(IActionStateController controller)
         {
             if (!controller.Components.TryGet(out Animator animator)) return;
-            // animator.SetTrigger(AttackAnimHash);
+            
             animator.CrossFade(
                 stateHashName: AttackASSHash, 
                 normalizedTransitionDuration: 0.1f, 
