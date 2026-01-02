@@ -76,6 +76,7 @@ Material:
     - _CastShadows: 1
     - _Cull: 2
     - _DstBlend: 10
+    - _DstBlendAlpha: 10
     - _EnableExternalAlpha: 0
     - _QueueControl: 0
     - _QueueOffset: 0
@@ -83,6 +84,7 @@ Material:
     - _Ratio: 1
     - _Rotation: 180
     - _SrcBlend: 5
+    - _SrcBlendAlpha: 1
     - _Surface: 1
     - _Width: 0.05
     - _ZTest: 4
