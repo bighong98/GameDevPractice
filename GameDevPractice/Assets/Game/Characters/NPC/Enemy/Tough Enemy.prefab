@@ -2226,6 +2226,10 @@ PrefabInstance:
       value: Tough Enemy
       objectReference: {fileID: 0}
     - target: {fileID: 873599889185342099, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}
+      propertyPath: type
+      value: 
+      objectReference: {fileID: 11400000, guid: a56e5f7b10291f1409a114ece6db5ae6, type: 2}
+    - target: {fileID: 873599889185342099, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}
       propertyPath: typeRef.m_AssetGUID
       value: a56e5f7b10291f1409a114ece6db5ae6
       objectReference: {fileID: 0}

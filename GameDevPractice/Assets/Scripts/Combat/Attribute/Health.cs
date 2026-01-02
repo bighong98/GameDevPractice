@@ -20,7 +20,6 @@ namespace TH.Attribute
         private LazyValue<float> maxHp;
         private LazyValue<float> hp;
         
-        private Animator animator;
         private IStatHolder statHolder;
         private ILevel levelHolder;
         private bool hasMutableLevel;
@@ -46,19 +45,14 @@ namespace TH.Attribute
 
         private IFloatingTextSpawner textSpawner;
         
-        private static readonly int DieAnimHash = Animator.StringToHash("die");
-        private static readonly int ReviveAnimHash = Animator.StringToHash("revive");
+        // private static readonly int DieAnimHash = Animator.StringToHash("die");
+        // private static readonly int ReviveAnimHash = Animator.StringToHash("revive");
 
 
         private void Awake()
         {
-            animator = GetComponent<Animator>();
-            statHolder = GetComponent<IStatHolder>();
-            if (TryGetComponent(out ILevel iLevel))
-            {
-                levelHolder = iLevel;
-                hasMutableLevel = true;
-            }
+            TryGetComponent(out statHolder);
+            hasMutableLevel = TryGetComponent(out levelHolder);
 
             textSpawner = ServiceLocator.Get<IFloatingTextSpawner>();
 
@@ -198,9 +192,6 @@ namespace TH.Attribute
             
             IsDead = true;
             OnDead?.Invoke();
-            
-            animator.ResetTrigger(ReviveAnimHash);
-            animator.SetTrigger(DieAnimHash);
 
             if (lastAttacker is Component c && c.TryGetComponent(out IExperience xp))
             {
@@ -212,8 +203,6 @@ namespace TH.Attribute
         {
             if (!IsDead) return;
             IsDead = false;
-            animator.ResetTrigger(DieAnimHash);
-            animator.SetTrigger(ReviveAnimHash);
             OnRevived?.Invoke();
         }
 

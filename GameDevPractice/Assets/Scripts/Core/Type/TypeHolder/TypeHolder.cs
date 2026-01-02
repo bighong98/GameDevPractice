@@ -38,22 +38,19 @@ namespace TH.Resource
         private void Awake()
         {
             if (isInit) return; // 이미 OnCreateFromPool()이 실행된 경우 실행x
+            
             token = destroyCancellationToken;
-            // ResourceManager에게 리소스 로드 완료 후 초기화 작업 예약
-            ResourceManager.Instance.WaitForPreLoadOnlyOnce(() =>
-            { 
-                GetTypeFromAssetRef().ContinueWith(() =>
-                {
-                    if (token.IsCancellationRequested) return;
-                    if (addToPool)
-                        AddToPool(); // 필요시 자동으로 오브젝트 풀에 등록
-                    // 오브젝트 풀 이벤트 수동 호출
-                    OnCreateFromPool();
-                    OnGetFromPool();
-                });
-                // 종속 컴포넌트(ITypeDependent)에 타입 데이터 전달
-                DeliverTypeData();
+            GetTypeFromAssetRef().ContinueWith(() =>
+            {
+                if (token.IsCancellationRequested) return;
+                if (addToPool)
+                    AddToPool(); // 필요시 자동으로 오브젝트 풀에 등록
+                // 오브젝트 풀 이벤트 수동 호출
+                OnCreateFromPool();
+                OnGetFromPool();
             });
+            // 종속 컴포넌트(ITypeDependent)에 타입 데이터 전달
+            DeliverTypeData();
         }
 
         // Addressables에서 ScriptableObject 타입 데이터를 비동기 로드
@@ -100,21 +97,11 @@ namespace TH.Resource
         // 로드된 타입 데이터를 ITypeDependent 인터페이스를 구현한 모든 컴포넌트에 전달
         private void DeliverTypeData()
         {
-            GetTypeAsync().ContinueWith((data) =>
+            if (token.IsCancellationRequested) return;
+            foreach (var dependent in GetComponents<ITypeDependent>())
             {
-                if (data == null)
-                {
-                    Logg.LogError($"[{name}.{nameof(GetType)}.{nameof(DeliverTypeData)}] " +
-                                  $"failed to load from assetRefT '{typeRef}'");
-                    return;
-                }
-
-                if (token.IsCancellationRequested) return;
-                foreach (var dependent in GetComponents<ITypeDependent>())
-                {
-                    dependent.ReceiveType(data);
-                }
-            });
+                dependent.ReceiveType(type);
+            }
         }
 
         // TypeSO에 지정된 prefab을 기반으로 오브젝트 풀을 생성/등록

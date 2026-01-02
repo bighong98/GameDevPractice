@@ -2435,6 +2435,14 @@ PrefabInstance:
       propertyPath: uniqueIdentifier
       value: player
       objectReference: {fileID: 0}
+    - target: {fileID: -2450599115419663989, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
+      propertyPath: type
+      value: 
+      objectReference: {fileID: 11400000, guid: f99a9c8d0583cc04d9cb6f82405b6c9e, type: 2}
+    - target: {fileID: -2450599115419663989, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
+      propertyPath: typeRef.m_AssetGUID
+      value: f99a9c8d0583cc04d9cb6f82405b6c9e
+      objectReference: {fileID: 0}
     - target: {fileID: 1599618502693370758, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
       propertyPath: isGlobal
       value: 1

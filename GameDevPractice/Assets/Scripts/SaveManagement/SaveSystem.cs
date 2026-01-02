@@ -491,7 +491,7 @@ namespace TH.SaveLoad
             }
             else if (currentSceneEntry != null)
             {
-                Logg.LogWarning($"[SaveSystem] No saved data for scene '{currentSceneEntry?.key}'");
+                Logg.Log($"[SaveSystem] No saved data for scene '{currentSceneEntry?.key}'", Logg.LoggingMode.Completed);
             }
             // 글로벌(특정 씬에 종속되지 않는) 세이브 데이터 추가
             if (data.globalData is { Count: > 0 } globEntries)
@@ -499,7 +499,7 @@ namespace TH.SaveLoad
                 Logg.Log($"[SaveSystem] GetEntryFromSave - globEntries.Count: {globEntries.Count}", Logg.LoggingMode.Completed);
                 entries.AddRange(globEntries);
             } 
-            else Logg.LogWarning("[SaveSystem] No saved global data");
+            else Logg.Log("[SaveSystem] No saved global data", Logg.LoggingMode.Completed);
         }
 
         private void ExtractSaveData(List<SavableEntry> entries, Dictionary<string, Dictionary<string, object>> grouped)
@@ -559,7 +559,7 @@ namespace TH.SaveLoad
                 if (!stateGroup.TryGetValue(entity.UniqueIdentifier,
                         out var states))
                 {
-                    Logg.LogWarning($"[{GetType().Name}] ApplyState - there is no state group for {entity.UniqueIdentifier}");
+                    Logg.Log($"[{GetType().Name}] ApplyState - there is no state group for {entity.UniqueIdentifier}", Logg.LoggingMode.Completed);
                     continue;
                 }
                 entity.RestoreState(states);
