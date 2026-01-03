@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd5c3a4c771c4d60ae99be4226218f35, type: 3}
+  m_Name: EditPartDataContainer_HairStyle
+  m_EditorClassIdentifier: 
+  _type: 9
+  _sexId: 0
+  _partDataList:
+  - {fileID: 11400000, guid: f032d586c40c6458d9649e0ef283c537, type: 2}
+  - {fileID: 11400000, guid: ebf907f51867e4d9b824a2096de6c792, type: 2}
+  - {fileID: 11400000, guid: 2348ccc3c79c226438891f0fea060f6a, type: 2}

@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 44bc1e46807ac49f99d5423e0eb9620e
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 317283
+  packageName: P09_Modular_Humanoid_Lite
+  packageVersion: 2025.12.28
+  assetPath: Assets/P09_Modular_Humanoid/Scenes/DemoScene_Data/Demo_Prefab/UI/Rotate_Button.prefab
+  uploadId: 839916

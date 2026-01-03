@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 8aab52745c63d1448a1b4991c6e73c75
+TextScriptImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 317283
+  packageName: P09_Modular_Humanoid_Lite
+  packageVersion: 2025.12.28
+  assetPath: Assets/P09_Modular_Humanoid/Shader_installer/Readme.html
+  uploadId: 839916

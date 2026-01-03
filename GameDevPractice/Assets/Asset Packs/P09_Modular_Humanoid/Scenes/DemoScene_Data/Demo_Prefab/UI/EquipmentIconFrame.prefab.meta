@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 246dea5a920c5450e8d0f818ccd92679
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 317283
+  packageName: P09_Modular_Humanoid_Lite
+  packageVersion: 2025.12.28
+  assetPath: Assets/P09_Modular_Humanoid/Scenes/DemoScene_Data/Demo_Prefab/UI/EquipmentIconFrame.prefab
+  uploadId: 839916

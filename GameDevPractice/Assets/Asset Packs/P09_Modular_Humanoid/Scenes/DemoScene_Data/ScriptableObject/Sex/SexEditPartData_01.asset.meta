@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: b5ec539608a654b4283b32ccd9cb4981
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 317283
+  packageName: P09_Modular_Humanoid_Lite
+  packageVersion: 2025.12.28
+  assetPath: Assets/P09_Modular_Humanoid/Scenes/DemoScene_Data/ScriptableObject/Sex/SexEditPartData_01.asset
+  uploadId: 839916

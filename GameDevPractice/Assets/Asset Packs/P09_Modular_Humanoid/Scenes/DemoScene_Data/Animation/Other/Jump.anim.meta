@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: d8e8a1641a6d98d47a41d154d4e0dd48
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 317283
+  packageName: P09_Modular_Humanoid_Lite
+  packageVersion: 2025.12.28
+  assetPath: Assets/P09_Modular_Humanoid/Scenes/DemoScene_Data/Animation/Other/Jump.anim
+  uploadId: 839916

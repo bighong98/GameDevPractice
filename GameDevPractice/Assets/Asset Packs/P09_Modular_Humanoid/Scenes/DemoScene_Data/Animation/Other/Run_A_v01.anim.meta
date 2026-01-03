@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 679d50964d0785b43a63d7197fb33abd
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 317283
+  packageName: P09_Modular_Humanoid_Lite
+  packageVersion: 2025.12.28
+  assetPath: Assets/P09_Modular_Humanoid/Scenes/DemoScene_Data/Animation/Other/Run_A_v01.anim
+  uploadId: 839916
