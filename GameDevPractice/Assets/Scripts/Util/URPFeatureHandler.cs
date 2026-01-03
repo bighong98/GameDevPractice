@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace TH.Utils
 {
-    public static class URPRendererFeatureHandler
+    public static class URPFeatureHandler
     {
         // --- 캐싱 데이터 ---
         private static UniversalRenderPipelineAsset _cachedPipelineAsset;
@@ -108,7 +108,7 @@ namespace TH.Utils
         /// <summary>
         /// (최적화됨) 해시값을 사용하여 Feature를 찾습니다.
         /// </summary>
-        public static bool GetRendererFeature<T>(int featureHash, out T feature) where T : ScriptableRendererFeature
+        public static bool TryGetFeature<T>(int featureHash, out T feature) where T : ScriptableRendererFeature
         {
             feature = null;
             RefreshCacheIfNeeded();
@@ -123,10 +123,10 @@ namespace TH.Utils
         /// <summary>
         /// (최적화됨) 해시값을 사용하여 Feature 활성 상태를 변경합니다.
         /// </summary>
-        public static bool SetRendererFeatureActive<T>(int featureHash, bool isActive) where T : ScriptableRendererFeature
+        public static bool SetFeatureActive<T>(int featureHash, bool isActive) where T : ScriptableRendererFeature
         {
             // 내부적으로 RefreshCacheIfNeeded 호출됨
-            if (!GetRendererFeature<T>(featureHash, out var feature)) return false;
+            if (!TryGetFeature<T>(featureHash, out var feature)) return false;
             if (feature.isActive == isActive) return true;
             
             feature.SetActive(isActive);
@@ -138,17 +138,17 @@ namespace TH.Utils
         // 2. STRING 기반 메서드 (편의성 버전 - 내부적으로 해시 변환 후 호출)
         // ==================================================================================
 
-        public static bool GetRendererFeature<T>(string featureName, out T feature) where T : ScriptableRendererFeature
+        public static bool TryGetFeature<T>(string featureName, out T feature) where T : ScriptableRendererFeature
         {
             // 문자열 -> 해시 변환 후 int 버전 호출
             int hash = StringToHash(featureName);
-            return GetRendererFeature(hash, out feature);
+            return TryGetFeature(hash, out feature);
         }
 
-        public static bool SetRendererFeatureActive<T>(string featureName, bool isActive) where T : ScriptableRendererFeature
+        public static bool SetFeatureActive<T>(string featureName, bool isActive) where T : ScriptableRendererFeature
         {
             int hash = StringToHash(featureName);
-            return SetRendererFeatureActive<T>(hash, isActive);
+            return SetFeatureActive<T>(hash, isActive);
         }
 
         /// <summary>

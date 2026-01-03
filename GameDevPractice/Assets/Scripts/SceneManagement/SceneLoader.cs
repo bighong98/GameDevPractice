@@ -10,6 +10,7 @@ using UnityEngine.SceneManagement;
 using TH.Resource;
 using TH.Utils;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 
 namespace TH.SceneManagement
 {
@@ -47,7 +48,7 @@ namespace TH.SceneManagement
         bool bootSceneUnLoaded;
 #endif
         
-private void Init()
+        private void Init()
         {
             // 이벤트 내부 빈 객체로 초기화 (NRE 방지)
             OnBeforeSceneChanged = _ => UniTask.CompletedTask; 
@@ -508,6 +509,22 @@ private void Init()
             bootSceneUnLoaded = true;
         }
 #endif
+
+        #endregion
+
+        #region Full Screen Effect
+
+        private static readonly int FullScreenFeatureHash = URPFeatureHandler.StringToHash("FullScreenPassRendererFeature");
+
+        private void DisableFullScreenEffect()
+        {
+            URPFeatureHandler.SetFeatureActive<FullScreenPassRendererFeature>(FullScreenFeatureHash, false);
+        }
+
+        private void EnableFullScreenEffect()
+        {
+            URPFeatureHandler.SetFeatureActive<FullScreenPassRendererFeature>(FullScreenFeatureHash, true);
+        }
 
         #endregion
     }

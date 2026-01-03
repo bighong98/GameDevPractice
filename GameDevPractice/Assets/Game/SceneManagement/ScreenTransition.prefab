@@ -13,11 +13,11 @@ GameObject:
   - component: {fileID: 2139305452412108300}
   - component: {fileID: 7191392871886549760}
   - component: {fileID: 4506535621526324102}
-  - component: {fileID: 7844604710066705923}
   - component: {fileID: 4031974407994630807}
   - component: {fileID: 1923957855270394338}
+  - component: {fileID: 2393387976206145948}
   m_Layer: 0
-  m_Name: Fader
+  m_Name: ScreenTransition
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -63,7 +63,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 0
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 800
   m_TargetDisplay: 0
 --- !u!114 &2139305452412108300
 MonoBehaviour:
@@ -117,20 +117,6 @@ CanvasGroup:
   m_Interactable: 0
   m_BlocksRaycasts: 0
   m_IgnoreParentGroups: 0
---- !u!114 &7844604710066705923
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3309982565073643817}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6852bbae28f27e34c8912ac36d4a3865, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  canvas: {fileID: 0}
-  canvasGroup: {fileID: 0}
 --- !u!222 &4031974407994630807
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -169,3 +155,17 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &2393387976206145948
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3309982565073643817}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 22d7838de3d14a942b6b7da7b8bfa5a8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TH.UI.ScreenTransitionUI
+  canvas: {fileID: 3464635159396898392}
+  canvasGroup: {fileID: 4506535621526324102}
