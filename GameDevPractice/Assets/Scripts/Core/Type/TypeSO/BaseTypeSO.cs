@@ -39,7 +39,7 @@ namespace TH.Resource
 
         protected static async UniTask<T> GetStateFromAssetReference<T>(AssetReference assetReference, CancellationToken token = default) where T : UnityEngine.Object
         {
-            if (!IsAssetRefAssigned(assetReference)) return default;
+            if (!IsAssetRefAssigned(assetReference)) return null;
 
             return await ResourceManager.Instance.ExtractAssetRefAsync<T>(assetReference, token);
         }

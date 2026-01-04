@@ -27,12 +27,14 @@ namespace TH.Resource
         private readonly Dictionary<string, Queue<Action>> reservedPreLoadTasks = new();
         
         #region Enums
-        // 내부 프리로드 라벨 (실제 어드레서블 라벨 이름과 동일해야함)
+        // 어드레서블 프리로드 라벨
+        // 반드시 동일한 이름의 어드레서블 라벨이 존재해야함
         enum PreLoadLabels
         {
             PreLoad_First,
-            PreLoad_Data,
-            PreLoad_Catalog,
+            PreLoad_Asset,
+            PreLoad_DataSO,
+            PreLoad_CatalogSO,
             PreLoad_Prefab,
             PreLoad_Last,
         }
@@ -272,6 +274,7 @@ namespace TH.Resource
                 resource = cachedResource;
                 return true;
             }
+            
             resource = null;
             return false;
         }
@@ -299,12 +302,14 @@ namespace TH.Resource
 
         #region Progress
 
-        // 라벨별 가중치 설정 (합계가 1.0일 필요 없음 - 전체 PreLoad 완료 시 70%가 되도록 설계)
+        // 라벨별 가중치
         private static readonly Dictionary<string, float> LabelWeights = new()
         {
             { nameof(PreLoadLabels.PreLoad_First), 0.10f },
-            { nameof(PreLoadLabels.PreLoad_Data), 0.40f },
-            { nameof(PreLoadLabels.PreLoad_Catalog), 0.30f },
+            { nameof(PreLoadLabels.PreLoad_Asset), 0.10f },
+            { nameof(PreLoadLabels.PreLoad_DataSO), 0.30f },
+            { nameof(PreLoadLabels.PreLoad_CatalogSO), 0.30f },
+            { nameof(PreLoadLabels.PreLoad_Prefab), 0.10f },
             { nameof(PreLoadLabels.PreLoad_Last), 0.20f },
         };
         

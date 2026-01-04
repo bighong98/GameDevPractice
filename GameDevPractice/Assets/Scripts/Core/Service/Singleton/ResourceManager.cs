@@ -50,27 +50,14 @@ namespace TH.Core.Service
         // 이미 어드레서블 로드가 완료된 리소스 참조 반환 (어드레서블 키 사용)
         public bool TryLoad<T>(string key, out T resource) where T : UnityEngine.Object
         {
-            if (resourceLoader.TryLoad<T>(key, out var result))
-            {
-                resource = result;
-                return true;
-            }
-
-            resource = null;
-            return false;
+            return resourceLoader.TryLoad(key, out resource);
         }
         
         // 이미 어드레서블 로드가 완료된 리소스 참조 반환 (AssetReference 사용)
         public bool TryLoad<T>(AssetReference assetRef, out T resource) where T : UnityEngine.Object
         {
-            if (resourceLoader.TryLoad<T>(assetRef, out var result))
-            {
-                resource = result;
-                return true;
-            }
-
-            resource = null;
-            return false;
+            this.Log($"TryLoad: {assetRef.AssetGUID} - {typeof(T).Name}", Logg.LoggingMode.Completed);
+            return resourceLoader.TryLoad(assetRef, out resource);
         }
 
         // 필요한 리소스가 프리팹인 경우에 사용
@@ -93,6 +80,7 @@ namespace TH.Core.Service
         // 캐시 미스(=사전 로딩이 되지 않았을 경우) 시 직접 비동기 로드 실행
         public async UniTask<T> ExtractAssetRefAsync<T>(AssetReference assetRef, CancellationToken token = default) where T : UnityEngine.Object
         {
+            this.Log($"ExtractAssetRefAsync: {assetRef.AssetGUID} - {typeof(T).Name}", Logg.LoggingMode.Completed);
             if (resourceLoader.TryLoad<T>(assetRef, out var result))
             {
                 return result;

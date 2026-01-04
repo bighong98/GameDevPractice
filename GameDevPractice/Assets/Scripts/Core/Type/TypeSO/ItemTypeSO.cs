@@ -25,8 +25,12 @@ namespace TH.Resource
 
         public override async UniTask InitializeAsync(CancellationToken token = default)
         {
-            await base.InitializeAsync(token);
-            ItemUseSfx = await GetStateFromAssetReference(itemUseSFXReference, token);
+            try
+            {
+                await base.InitializeAsync(token);
+                ItemUseSfx = await GetStateFromAssetReference(itemUseSFXReference, token);
+            }
+            catch (Exception e) {this.LogError($"Exception occured while InitializeAsync - {e}", this);}
             Logg.Log($"[{GetType().Name}, {nameString}] InitializeAsync() - HasItemUseSFX: {HasItemUseSfx}, ItemUseSFX: {ItemUseSfx}", Logg.LoggingMode.Completed); 
         }
 

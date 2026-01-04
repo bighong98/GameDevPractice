@@ -72,7 +72,7 @@ MonoBehaviour:
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f789862f7288d4a4a83d3a5a1383e21b
-    m_Address: CharacterTypeCatalogSO
+    m_Address: CharacterDataCatalogSO
     m_ReadOnly: 0
     m_SerializedLabels:
     - PreLoad_Catalog

@@ -465,7 +465,7 @@ namespace TH.SaveLoad
             }
             else
             {
-                Logg.LogWarning($"[{GetType().Name}] RestoreState() - 현재 씬의 엔티티 없음 (currentSceneEntry: {currentSceneEntry})");
+                this.Log($"[{GetType().Name}] RestoreState() - 현재 씬의 엔티티 없음 (currentSceneEntry: {currentSceneEntry})", Logg.LoggingMode.Completed);
             }
             
             this.Log($"LoadedStateCache 업데이트 시작", Logg.LoggingMode.Completed);

@@ -12,9 +12,9 @@ public class CharacterDataCatalogSO : ScriptableObject, IAsyncInitializer
     
     public async UniTask InitializeAsync(CancellationToken token)
     {
-        foreach (var a in list)
+        foreach (var assetRef in list)
         {
-            if (a is IAsyncInitializer asyncInitializer)
+            if (assetRef is IAsyncInitializer asyncInitializer)
                 await asyncInitializer.InitializeAsync(token);
         }
     }
