@@ -17,6 +17,7 @@ namespace TH.Item
     {
         private IEquipmentHolder equipHolder;
         private IFighter fighter; // serialize for debug
+        [SerializeField] private Transform bodyRootTransform;
         [SerializeField] private Transform rightHandTransform;
         [SerializeField] private Transform leftHandTransform;
 
@@ -32,11 +33,15 @@ namespace TH.Item
         
         private void Awake()
         {
-            if (Util.FindChild(gameObject, DefaultRootName, recursive: true) is not { } root)
+            if (bodyRootTransform == null)
+                bodyRootTransform = Util.FindChild<Transform>(gameObject, DefaultRootName, recursive: true);
+            if (bodyRootTransform == null)
             {
                 Logg.Log($"failed to find root for hand: {gameObject.name}");
                 return;
             }
+
+            var root = bodyRootTransform.gameObject;
             
             if (rightHandTransform == null && 
                 Util.FindChildContainName<Transform>(root, DefaultRightHandContainerName, true, false) is {} rResult)

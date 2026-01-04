@@ -96,13 +96,6 @@ namespace TH.Core
             UserInput.QuickSlot.Disable();
             UserInput.UI.Disable();
 
-            // userInput.Global.RemoveCallbacks(this);
-            // userInput.Player.RemoveCallbacks(this);
-            // userInput.UI.RemoveCallbacks(this);
-            //
-            // userInput?.Disable();
-            // userInput?.Dispose();
-
             return UniTask.CompletedTask;
         }
 
