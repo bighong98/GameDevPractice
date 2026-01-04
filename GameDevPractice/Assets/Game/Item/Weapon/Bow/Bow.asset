@@ -33,7 +33,7 @@ MonoBehaviour:
     value: 15
   weaponType: 0
   weaponAnimatorOverride: {fileID: 22100000, guid: d790194a637262f45a1ea9df7bf7fdad, type: 2}
-  EquippedPrefab: {fileID: 8076619319902921802, guid: 347289ade72adaf4e91172386d9fab9a, type: 3}
+  EquippedPrefab: {fileID: 8076619319902921802, guid: 6dd5bc81c7e17b74c8c5782a5824dd91, type: 3}
   damage: 10
   range: 8
   hand: 1

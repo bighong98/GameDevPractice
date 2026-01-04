@@ -21,6 +21,8 @@ namespace TH.Item
         [SerializeField] private Transform rightHandTransform;
         [SerializeField] private Transform leftHandTransform;
 
+        [SerializeField] private bool ignoreLocalPosition = false;
+        
         private bool isInit = false;
         private WeaponTypeHolder currentWeapon;
         private readonly Dictionary<WeaponTypeSO, ObjectPool<IPoolObject>> weaponPools = new();
@@ -33,11 +35,19 @@ namespace TH.Item
         
         private void Awake()
         {
+            FindAvatarAnchors();
+
+            TryGetComponent(out equipHolder);
+            TryGetComponent(out fighter);
+        }
+
+        private void FindAvatarAnchors()
+        {
             if (bodyRootTransform == null)
                 bodyRootTransform = Util.FindChild<Transform>(gameObject, DefaultRootName, recursive: true);
             if (bodyRootTransform == null)
             {
-                Logg.Log($"failed to find root for hand: {gameObject.name}");
+                this.LogError($"failed to find avatar root");
                 return;
             }
 
@@ -58,9 +68,6 @@ namespace TH.Item
                 leftGo.SetParent(lResult, worldPositionStays: false);
                 leftHandTransform = leftGo;
             }
-
-            TryGetComponent(out equipHolder);
-            TryGetComponent(out fighter);
         }
 
         private void Start()
@@ -120,36 +127,188 @@ namespace TH.Item
             }
         }
 
-        private void DeSpawnWeapon()
-        {
-            if (currentWeapon != null && weaponPools.TryGetValue(currentWeapon.Type, out var pool))
-            {
-                pool.Release(currentWeapon);
-            }
-        }
+        // private void DeSpawnWeapon()
+        // {
+        //     if (currentWeapon != null && weaponPools.TryGetValue(currentWeapon.Type, out var pool))
+        //     {
+        //         pool.Release(currentWeapon);
+        //     }
+        // }
+        //
+        // private bool SpawnWeapon(WeaponTypeSO weaponType)
+        // {
+        //     if (!isInit) return false;
+        //     
+        //     if (!weaponPools.TryGetValue(weaponType, out var weaponPool))
+        //     {
+        //         weaponPool = PoolManager.Instance.GetPool(
+        //             weaponType.EquippedPrefab, 
+        //             GetHandGrip(weaponType), 
+        //             registerPool: false);
+        //         weaponPools[weaponType] = weaponPool; // 풀 딕셔너리에 신규 풀 등록
+        //     }
+        //     
+        //     if (weaponPool is { } pool && pool.Get() is WeaponTypeHolder result)
+        //     {
+        //         result.owner = fighter;
+        //         currentWeapon = result;
+        //         return true;
+        //     }
+        //
+        //     return false;
+        // }
 
+        private readonly Dictionary<WeaponTypeHolder, List<(Transform, Vector3, Quaternion)>> _cachedLocalTransforms = new();
+        // private bool SpawnWeapon(WeaponTypeSO weaponType)
+        // {
+        //     if (!isInit) return false;
+        //
+        //     if (!weaponPools.TryGetValue(weaponType, out var weaponPool))
+        //     {
+        //         weaponPool = PoolManager.Instance.GetPool(
+        //             weaponType.EquippedPrefab,
+        //             GetHandGrip(weaponType),
+        //             registerPool: false);
+        //
+        //         weaponPools[weaponType] = weaponPool;
+        //     }
+        //
+        //     if (weaponPool is not { } pool || pool.Get() is not WeaponTypeHolder result)
+        //         return false;
+        //
+        //     result.owner = fighter;
+        //     currentWeapon = result;
+        //
+        //     if (ignoreLocalPosition)
+        //     {
+        //         var list = new List<(Transform, Vector3, Quaternion)>();
+        //         var root = result.transform;
+        //
+        //         // 자기 자신 제외, 모든 자식 대상으로 캐싱
+        //         foreach (var t in root.GetComponentsInChildren<Transform>(includeInactive: true))
+        //         {
+        //             if (t == root) continue;
+        //
+        //             list.Add((t, t.localPosition, t.localRotation));
+        //             t.localPosition = Vector3.zero;
+        //             // t.localRotation = Quaternion.identity;
+        //             t.localRotation = Quaternion.Euler(0f, 0f, -180f);
+        //         }   
+        //
+        //         _cachedLocalTransforms[result] = list;
+        //     }
+        //
+        //     return true;
+        // }
+        //
+        //
+        // private void DeSpawnWeapon()
+        // {
+        //     if (currentWeapon == null) return;
+        //
+        //     // ignoreLocalPosition 케이스였다면 원복
+        //     if (ignoreLocalPosition && _cachedLocalTransforms.TryGetValue(currentWeapon, out var cached))
+        //     {
+        //         foreach (var (t, pos, rot) in cached)
+        //         {
+        //             if (!t) continue;
+        //             t.localPosition = pos;
+        //             t.localRotation = rot;
+        //         }
+        //         _cachedLocalTransforms.Remove(currentWeapon);
+        //     }
+        //
+        //     if (weaponPools.TryGetValue(currentWeapon.Type, out var pool))
+        //     {
+        //         pool.Release(currentWeapon);
+        //     }
+        //
+        //     currentWeapon = null;
+        // }
+        
         private bool SpawnWeapon(WeaponTypeSO weaponType)
         {
             if (!isInit) return false;
-            
+
             if (!weaponPools.TryGetValue(weaponType, out var weaponPool))
             {
                 weaponPool = PoolManager.Instance.GetPool(
-                    weaponType.EquippedPrefab, 
-                    GetHandGrip(weaponType), 
+                    weaponType.EquippedPrefab,
+                    GetHandGrip(weaponType),
                     registerPool: false);
-                weaponPools[weaponType] = weaponPool; // 풀 딕셔너리에 신규 풀 등록
-            }
-            
-            if (weaponPool is { } pool && pool.Get() is WeaponTypeHolder result)
-            {
-                result.owner = fighter;
-                currentWeapon = result;
-                return true;
+
+                weaponPools[weaponType] = weaponPool;
             }
 
-            return false;
+            if (weaponPool is not { } pool || pool.Get() is not EquippedWeapon result)
+                return false;
+
+            result.owner = fighter;
+            currentWeapon = result;
+
+            if (!ignoreLocalPosition) return true;
+            
+            var root = result.transform;
+
+            // 1) 자식 로컬 트랜스폼 캐싱
+            var cached = new List<(Transform, Vector3, Quaternion)>();
+            foreach (var t in root.GetComponentsInChildren<Transform>(includeInactive: true))
+            {
+                if (t == root) continue;
+                cached.Add((t, t.localPosition, t.localRotation));
+            }
+            _cachedLocalTransforms[result] = cached;
+
+            // 2) handle/modeling은 보정에 쓰이므로 "제로잉 대상에서 제외"
+            var modeling = result.Model;
+            var handle = result.Handle;
+
+            // 3) 루트는 건드리지 않고, modeling의 localPosition/localRotation만 조정해서
+            //    handle이 grip(=root의 부모) 기준으로 (0, identity)에 오도록 보정
+            if (!modeling || !handle) return true;
+                
+            // handle의 "modeling 로컬 기준" 위치/회전 (현재 포즈 1회 계산)
+            var handlePosInModeling = modeling.InverseTransformPoint(handle.position);
+            var handleRotInModeling = Quaternion.Inverse(modeling.rotation) * handle.rotation;
+
+            // 목표:
+            // (modelingLocalRot * handleRotInModeling) == identity
+            // (modelingLocalPos + modelingLocalRot * handlePosInModeling) == zero
+            var modelingLocalRot = Quaternion.Inverse(handleRotInModeling);
+            modeling.localRotation = modelingLocalRot;
+            modeling.localPosition = -(modelingLocalRot * handlePosInModeling);
+
+            result.transform.localRotation = Quaternion.Euler(0f, 0f, -180f);
+            
+            return true;
         }
+        
+        private void DeSpawnWeapon()
+        {
+            if (currentWeapon == null) return;
+
+            // 캐시가 있으면(= ignoreLocalPosition 케이스였으면) 원복
+            if (_cachedLocalTransforms.TryGetValue(currentWeapon, out var cached))
+            {
+                foreach (var (t, pos, rot) in cached)
+                {
+                    if (!t) continue;
+                    t.localPosition = pos;
+                    t.localRotation = rot;
+                }
+                _cachedLocalTransforms.Remove(currentWeapon);
+            }
+
+            if (weaponPools.TryGetValue(currentWeapon.Type, out var pool))
+            {
+                pool.Release(currentWeapon);
+            }
+
+            currentWeapon = null;
+        }
+
+
+
 
         private Transform GetHandGrip(WeaponTypeSO weapon)
         {

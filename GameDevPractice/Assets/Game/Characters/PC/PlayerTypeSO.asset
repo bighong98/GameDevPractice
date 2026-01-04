@@ -15,14 +15,11 @@ MonoBehaviour:
   prefab: {fileID: 4641656488832625914, guid: 7d316606e40584a4fbf760ebdbd62c6d, type: 3}
   nameString: player
   sprite: {fileID: 0}
-  showInMinimap: 0
-  minimapSprite: {fileID: 0}
-  minimapSpriteColor: {r: 1, g: 1, b: 1, a: 1}
   characterType: 1
   characterBaseStats: {fileID: 11400000, guid: c46e71df86a1f764c87b6be0160beae4, type: 2}
   height: 0
   startingLevel: 1
   defaultEquipments:
   - {fileID: 11400000, guid: 0a600904131b2d64994bee447b8efe39, type: 2}
-  - {fileID: 11400000, guid: 24a647810f57bb345a370aa349b7758c, type: 2}
+  - {fileID: 11400000, guid: 2fb8efb1b192ee345b6e53c7761aa529, type: 2}
   levelUpEffect: {fileID: 672893909101835284, guid: 94089ecaec66ba248b810e3bfaf74600, type: 3}

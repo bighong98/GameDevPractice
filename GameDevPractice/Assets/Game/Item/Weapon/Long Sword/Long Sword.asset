@@ -32,7 +32,7 @@ MonoBehaviour:
     calculation: 0
     value: 15
   weaponType: 0
-  weaponAnimatorOverride: {fileID: 22100000, guid: ddf091039e8f962438c2ba39bce080b0, type: 2}
+  weaponAnimatorOverride: {fileID: 22100000, guid: bad3b4482a681fb4bb377898a52a866d, type: 2}
   EquippedPrefab: {fileID: 8466340430826345119, guid: e1c637a337d952d4eb438a72be1b848d, type: 3}
   damage: 10
   range: 4

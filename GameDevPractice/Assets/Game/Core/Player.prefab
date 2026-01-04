@@ -467,6 +467,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &3387050129380328739
 GameObject:
@@ -588,6 +589,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &3545824102582147707
 GameObject:
@@ -837,6 +839,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &4015776560746045838
 GameObject:
@@ -1300,6 +1303,7 @@ SkinnedMeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   serializedVersion: 2
   m_Quality: 0
   m_UpdateWhenOffscreen: 0
@@ -1449,6 +1453,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &5396158130442786052
 GameObject:
@@ -1656,6 +1661,7 @@ SkinnedMeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   serializedVersion: 2
   m_Quality: 0
   m_UpdateWhenOffscreen: 0
@@ -2027,6 +2033,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &7174363071906987806
 GameObject:
@@ -2442,6 +2449,10 @@ PrefabInstance:
     - target: {fileID: -2450599115419663989, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
       propertyPath: typeRef.m_AssetGUID
       value: f99a9c8d0583cc04d9cb6f82405b6c9e
+      objectReference: {fileID: 0}
+    - target: {fileID: -193848170717944432, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
+      propertyPath: ignoreLocalPosition
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1599618502693370758, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
       propertyPath: isGlobal

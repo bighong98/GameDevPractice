@@ -125,13 +125,21 @@ PrefabInstance:
       propertyPath: m_Name
       value: P09_Female Variant_testing
       objectReference: {fileID: 0}
+    - target: {fileID: 6232391279289285959, guid: bc16c90bc84bc34418c16d554a2ef43f, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 6232391279289285959, guid: bc16c90bc84bc34418c16d554a2ef43f, type: 3}
+      propertyPath: m_TagString
+      value: Player
+      objectReference: {fileID: 0}
     - target: {fileID: 6716615772924798973, guid: bc16c90bc84bc34418c16d554a2ef43f, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6716615772924798973, guid: bc16c90bc84bc34418c16d554a2ef43f, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 1.5
       objectReference: {fileID: 0}
     - target: {fileID: 6716615772924798973, guid: bc16c90bc84bc34418c16d554a2ef43f, type: 3}
       propertyPath: m_LocalPosition.z

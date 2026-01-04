@@ -15,13 +15,6 @@ MonoBehaviour:
   m_GroupName: Character Data
   m_GUID: ae3812f07b177484cbc394c6beec7393
   m_SerializeEntries:
-  - m_GUID: 042d09f210d6148459ab45f9efb98205
-    m_Address: PlayerTypeSO_Testing
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - PreLoad_Data
-    - Scriptable Object
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 9475cc137199d7f4290a14c8b92ac824
     m_Address: Enemy
     m_ReadOnly: 0
