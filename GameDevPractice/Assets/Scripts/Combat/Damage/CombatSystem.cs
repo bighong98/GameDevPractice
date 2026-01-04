@@ -15,7 +15,7 @@ public sealed class CombatSystem : ICombatSystem
         this.damageCalc = damageCalc;
         resourceLoader.OnLabelResourcesLoadedAll += (label) =>
         {
-            if (!string.Equals(label, "PreLoad")) return;
+            if (!string.Equals(label, Constants.PreLoadLabel)) return;
             if (!resourceLoader.TryLoad("DamageRuleSO", out damageRule))
                 Logg.LogError($"[CombatSystem] failed to load DamageRuleSO");
         };

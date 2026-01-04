@@ -30,10 +30,11 @@ namespace TH.Resource
         // 내부 프리로드 라벨 (실제 어드레서블 라벨 이름과 동일해야함)
         enum PreLoadLabels
         {
-            PreLoad1,
-            PreLoad2,
-            PreLoad3,
-            PreLoad,
+            PreLoad_First,
+            PreLoad_Data,
+            PreLoad_Catalog,
+            PreLoad_Prefab,
+            PreLoad_Last,
         }
         // 라벨별 로드 상태
         enum LoadStatus
@@ -301,10 +302,10 @@ namespace TH.Resource
         // 라벨별 가중치 설정 (합계가 1.0일 필요 없음 - 전체 PreLoad 완료 시 70%가 되도록 설계)
         private static readonly Dictionary<string, float> LabelWeights = new()
         {
-            { nameof(PreLoadLabels.PreLoad1), 0.20f },
-            { nameof(PreLoadLabels.PreLoad2), 0.10f },
-            { nameof(PreLoadLabels.PreLoad3), 0.10f },
-            { nameof(PreLoadLabels.PreLoad), 0.30f },
+            { nameof(PreLoadLabels.PreLoad_First), 0.20f },
+            { nameof(PreLoadLabels.PreLoad_Data), 0.10f },
+            { nameof(PreLoadLabels.PreLoad_Catalog), 0.10f },
+            { nameof(PreLoadLabels.PreLoad_Last), 0.30f },
         };
         
         // 전체 진행도 broadcaster 및 캐시

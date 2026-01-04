@@ -19,77 +19,77 @@ MonoBehaviour:
     m_Address: UI_ItemTooltip.prefab
     m_ReadOnly: 0
     m_SerializedLabels:
-    - PreLoad
+    - PreLoad_Prefab
     - UI
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 1bfea1188da51f44e9a32ec6be370c0a
     m_Address: TooltipUI.prefab
     m_ReadOnly: 0
     m_SerializedLabels:
-    - PreLoad
+    - PreLoad_Prefab
     - UI
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 57c170d5560197d418b8f2778b1b8949
     m_Address: FloatingText
     m_ReadOnly: 0
     m_SerializedLabels:
-    - PreLoad
+    - PreLoad_Prefab
     - UI
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 74bd640d5d22cca46bd8e0648a556856
     m_Address: InventoryUI.prefab_testing
     m_ReadOnly: 0
     m_SerializedLabels:
-    - PreLoad
+    - PreLoad_Prefab
     - UI
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 8bafa41b79bef5f4db386b34f11bf6e8
     m_Address: OptionMenuUI
     m_ReadOnly: 0
     m_SerializedLabels:
-    - PreLoad
+    - PreLoad_Prefab
     - UI
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 92c94e40c2f05a543bdf17eb37b930f5
     m_Address: QuestionPopupUI.prefab
     m_ReadOnly: 0
     m_SerializedLabels:
-    - PreLoad
+    - PreLoad_Prefab
     - UI
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: ac05670feee7784439f9920a05bdf52d
     m_Address: DamageText
     m_ReadOnly: 0
     m_SerializedLabels:
-    - PreLoad
+    - PreLoad_Prefab
     - UI
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: c91010d41f187134caba9eec03a0960d
     m_Address: InvenSlotUI
     m_ReadOnly: 0
     m_SerializedLabels:
-    - PreLoad
+    - PreLoad_Prefab
     - UI
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f0650dbdd7aec814fbf453b181436bfe
     m_Address: DetailedItemTooltipUI.prefab
     m_ReadOnly: 0
     m_SerializedLabels:
-    - PreLoad
+    - PreLoad_Prefab
     - UI
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f4b6d0ae00e87324ebb263cc752bab4b
     m_Address: GameSceneUI.prefab
     m_ReadOnly: 0
     m_SerializedLabels:
-    - PreLoad
+    - PreLoad_Prefab
     - UI
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f6906a1adbf05c24ca9a75cf746146f1
     m_Address: InventoryUI.prefab
     m_ReadOnly: 0
     m_SerializedLabels:
-    - PreLoad
+    - PreLoad_Prefab
     - UI
     FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0

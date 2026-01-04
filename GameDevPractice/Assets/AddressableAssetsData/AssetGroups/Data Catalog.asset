@@ -10,65 +10,72 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
-  m_Name: General Data
+  m_Name: Data Catalog
   m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
-  m_GroupName: General Data
+  m_GroupName: Data Catalog
   m_GUID: 23253a76be3db4f4ea9a8ecdeda81285
   m_SerializeEntries:
   - m_GUID: 32f5e9ec55ccdb04b83ed9329574eaf4
     m_Address: DamageRuleSO
     m_ReadOnly: 0
     m_SerializedLabels:
-    - PreLoad
+    - PreLoad_Catalog
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 400ea88918460cb4b9b2378b2eda7018
     m_Address: UICanvasSettingSO
     m_ReadOnly: 0
     m_SerializedLabels:
-    - PreLoad
+    - PreLoad_Catalog
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 62995c9fc2d3e694c88ffa854f08dcc4
     m_Address: ProgressionSO.asset
     m_ReadOnly: 0
     m_SerializedLabels:
-    - PreLoad
+    - PreLoad_Catalog
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 8051607782521b445aca898dd7939ac5
     m_Address: FloatingTextCatalogSO
     m_ReadOnly: 0
     m_SerializedLabels:
-    - PreLoad
+    - PreLoad_Catalog
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 98114aaf19af4f24fb27baa83aa4e847
     m_Address: InventorySFXCatalogSO
     m_ReadOnly: 0
     m_SerializedLabels:
-    - PreLoad
+    - PreLoad_Catalog
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: c103c515aed6ba14383298fb644ee5f8
     m_Address: InventoryTestDataSO
     m_ReadOnly: 0
     m_SerializedLabels:
-    - PreLoad
+    - PreLoad_Catalog
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: d2ba8464bee1e95408984d72020c209f
     m_Address: SceneCatalogSO
     m_ReadOnly: 0
     m_SerializedLabels:
-    - PreLoad1
+    - PreLoad_Catalog
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: eb92a25e250ce7b4c85b8d4b730bee5e
     m_Address: SceneUIListSO
     m_ReadOnly: 0
     m_SerializedLabels:
-    - PreLoad
+    - PreLoad_Catalog
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f789862f7288d4a4a83d3a5a1383e21b
+    m_Address: CharacterTypeCatalogSO
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_Catalog
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
