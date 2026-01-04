@@ -43,6 +43,13 @@ MonoBehaviour:
     - PreLoad_Data
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9c28bcdec3e86fb4dbee350fb3cc7f89
+    m_Address: Long Sword
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_Data
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: ba2aeaf5da86ad943b7448d84aa19f98, type: 2}
   m_SchemaSet:

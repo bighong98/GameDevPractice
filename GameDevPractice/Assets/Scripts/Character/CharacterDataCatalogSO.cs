@@ -5,8 +5,8 @@ using TH.Character.Data;
 using TH.Resource;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "CharacterTypeCatalogSO", menuName = "Scriptable Objects/Catalog/CharacterTypeCatalogSO")]
-public class CharacterTypeCatalogSO : ScriptableObject, IAsyncInitializer
+[CreateAssetMenu(fileName = "CharacterDataCatalogSO", menuName = "Scriptable Objects/Catalog/CharacterDataCatalogSO")]
+public class CharacterDataCatalogSO : ScriptableObject, IAsyncInitializer
 {
     [SerializeField] private List<AssetReferenceCharacterSO> list = new List<AssetReferenceCharacterSO>();
     

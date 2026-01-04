@@ -15,22 +15,29 @@ MonoBehaviour:
   m_GroupName: Character Data
   m_GUID: ae3812f07b177484cbc394c6beec7393
   m_SerializeEntries:
+  - m_GUID: 042d09f210d6148459ab45f9efb98205
+    m_Address: PlayerTypeSO_Testing
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_Data
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 9475cc137199d7f4290a14c8b92ac824
-    m_Address: Enemy.asset
+    m_Address: Enemy
     m_ReadOnly: 0
     m_SerializedLabels:
     - PreLoad_Data
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a56e5f7b10291f1409a114ece6db5ae6
-    m_Address: Tough Enemy.asset
+    m_Address: Tough Enemy
     m_ReadOnly: 0
     m_SerializedLabels:
     - PreLoad_Data
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f99a9c8d0583cc04d9cb6f82405b6c9e
-    m_Address: PlayerTypeSO.asset
+    m_Address: PlayerTypeSO
     m_ReadOnly: 0
     m_SerializedLabels:
     - PreLoad_Data
