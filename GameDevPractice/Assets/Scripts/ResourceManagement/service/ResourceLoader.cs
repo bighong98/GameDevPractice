@@ -302,10 +302,10 @@ namespace TH.Resource
         // 라벨별 가중치 설정 (합계가 1.0일 필요 없음 - 전체 PreLoad 완료 시 70%가 되도록 설계)
         private static readonly Dictionary<string, float> LabelWeights = new()
         {
-            { nameof(PreLoadLabels.PreLoad_First), 0.20f },
-            { nameof(PreLoadLabels.PreLoad_Data), 0.10f },
-            { nameof(PreLoadLabels.PreLoad_Catalog), 0.10f },
-            { nameof(PreLoadLabels.PreLoad_Last), 0.30f },
+            { nameof(PreLoadLabels.PreLoad_First), 0.10f },
+            { nameof(PreLoadLabels.PreLoad_Data), 0.40f },
+            { nameof(PreLoadLabels.PreLoad_Catalog), 0.30f },
+            { nameof(PreLoadLabels.PreLoad_Last), 0.20f },
         };
         
         // 전체 진행도 broadcaster 및 캐시

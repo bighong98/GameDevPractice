@@ -291,6 +291,54 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 254039593025759401, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
+      propertyPath: Radius
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 254039593025759401, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
+      propertyPath: TargetOffset.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 254039593025759401, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
+      propertyPath: RadialAxis.Range.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 254039593025759401, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
+      propertyPath: HorizontalAxis.Wrap
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 254039593025759401, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
+      propertyPath: HorizontalAxis.Value
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 254039593025759401, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
+      propertyPath: HorizontalAxis.Center
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 254039593025759401, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
+      propertyPath: TrackerSettings.BindingMode
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 254039593025759401, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
+      propertyPath: VerticalAxis.Recentering.Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 254039593025759401, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
+      propertyPath: TrackerSettings.PositionDamping.x
+      value: 1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 254039593025759401, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
+      propertyPath: TrackerSettings.PositionDamping.y
+      value: 1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 254039593025759401, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
+      propertyPath: TrackerSettings.PositionDamping.z
+      value: 1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 254039593025759401, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
+      propertyPath: HorizontalAxis.Recentering.Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 622067757119891522, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
       propertyPath: m_Enabled
       value: 1
@@ -335,37 +383,41 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1124533054093345323, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
+      propertyPath: m_ControllerManager.Controllers.Array.data[2].Input.Gain
+      value: -10
+      objectReference: {fileID: 0}
     - target: {fileID: 1242973261433662622, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
       propertyPath: m_LocalPosition.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1255362798127666925, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 4.1491976
+      value: 9.05244
       objectReference: {fileID: 0}
     - target: {fileID: 1255362798127666925, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 14.142137
+      value: 13.727922
       objectReference: {fileID: 0}
     - target: {fileID: 1255362798127666925, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 3.6728878
+      value: 4.2098894
       objectReference: {fileID: 0}
     - target: {fileID: 1255362798127666925, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.9241795
+      value: 0.9322159
       objectReference: {fileID: 0}
     - target: {fileID: 1255362798127666925, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0.33934113
+      value: 0.36190176
       objectReference: {fileID: 0}
     - target: {fileID: 1255362798127666925, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0.16458395
+      value: -0.0007388402
       objectReference: {fileID: 0}
     - target: {fileID: 1255362798127666925, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0.06043209
+      value: 0.00028683018
       objectReference: {fileID: 0}
     - target: {fileID: 1792789254835162768, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
       propertyPath: m_LocalPosition.x
@@ -390,6 +442,14 @@ PrefabInstance:
     - target: {fileID: 2732349921281003810, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
       propertyPath: m_Enabled
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3786535783881817468, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
+      propertyPath: Lookahead.Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3786535783881817468, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
+      propertyPath: Lookahead.IgnoreY
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3890092071235492935, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
       propertyPath: m_IsActive
