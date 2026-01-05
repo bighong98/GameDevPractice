@@ -18,17 +18,13 @@ namespace TH.Resource
         // 실제 ScriptableObject 타입 데이터 (직접 참조 또는 Addressable 로드 결과)
         // 인스펙터로 type을 직접 등록할 경우 typeRef에 의한 비동기 로드가 작동하지 않음에 주의 (덮어쓰기 x)
         [SerializeField] private T type; 
-        public AssetReferenceT<T> typeRef; // Addressable 에셋 참조 (런타임 로드용)
+        [SerializeField] private AssetReferenceT<T> typeRef; // Addressable 에셋 참조 (런타임 로드용)
+        [SerializeField] private bool addToPool; // 씬에 배치된 오브젝트 오브젝트 풀에 합류 여부
         
         public GameObject Origin { get; set; } // 오브젝트 풀링 적용시 원본 프리팹 참조 저장 목적. setter가 있지만 PoolingManager 이외
-
         public T Type => type;
-        public BaseTypeSO BaseType => Type; // BaseTypeSO 인터페이스 접근용
 
         private bool isInit; // 최초 1회 초기화 여부 (OnCreateFromPool()에서 갱신)
-        [SerializeField] [Tooltip("씬에 배치되어 생성된 경우, 자동으로 오브젝트 풀에 등록할지 여부 (원본 프리팹과 동일한 경우에만 사용)")] 
-        private bool addToPool;
-        
         private CancellationToken token; // 게임오브젝트 파괴 감지 토큰
         
         // IPoolObject Event
