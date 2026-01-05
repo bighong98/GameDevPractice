@@ -31,12 +31,12 @@ namespace TH.Resource
         // 반드시 동일한 이름의 어드레서블 라벨이 존재해야함
         enum PreLoadLabels
         {
-            PreLoad_First,
-            PreLoad_Asset,
-            PreLoad_DataSO,
-            PreLoad_CatalogSO,
-            PreLoad_Prefab,
-            PreLoad_Last,
+            PreLoad_First, // 구분 무시하고 가장 처음에 로드해야할 리소스
+            PreLoad_Asset, // 일반 에셋 (AudioClip, Texture, Material, etc)
+            PreLoad_DataSO, // 데이터 컨테이너 Scriptable Object
+            PreLoad_CatalogSO, // DataSO의 목록(AssetReference 형태)을 가지고 있는 Scriptable Object
+            PreLoad_Prefab, // 프리팹 (내부 필드로 AssetReference 타입이 없는 경우 Asset으로 둬도 무방)
+            PreLoad_Last, // 가장 마지막에 로드할 필요가 있는 리소스
         }
         // 라벨별 로드 상태
         enum LoadStatus

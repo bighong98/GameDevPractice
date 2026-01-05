@@ -19,7 +19,7 @@ MonoBehaviour:
     m_Address: punchHitSFX
     m_ReadOnly: 0
     m_SerializedLabels:
-    - PreLoad_Data
+    - PreLoad_Asset
     - SFX
     - Sound
     FlaggedDuringContentUpdateRestriction: 0
@@ -27,7 +27,7 @@ MonoBehaviour:
     m_Address: potionDrinkSFX
     m_ReadOnly: 0
     m_SerializedLabels:
-    - PreLoad_Data
+    - PreLoad_Asset
     - SFX
     - Sound
     FlaggedDuringContentUpdateRestriction: 0
@@ -35,7 +35,7 @@ MonoBehaviour:
     m_Address: SwordHitSFX
     m_ReadOnly: 0
     m_SerializedLabels:
-    - PreLoad_Data
+    - PreLoad_Asset
     - SFX
     - Sound
     FlaggedDuringContentUpdateRestriction: 0
@@ -43,7 +43,7 @@ MonoBehaviour:
     m_Address: SortingSFX
     m_ReadOnly: 0
     m_SerializedLabels:
-    - PreLoad_Data
+    - PreLoad_Asset
     - SFX
     - Sound
     FlaggedDuringContentUpdateRestriction: 0
@@ -51,7 +51,7 @@ MonoBehaviour:
     m_Address: fireballHitSFX
     m_ReadOnly: 0
     m_SerializedLabels:
-    - PreLoad_Data
+    - PreLoad_Asset
     - SFX
     - Sound
     FlaggedDuringContentUpdateRestriction: 0

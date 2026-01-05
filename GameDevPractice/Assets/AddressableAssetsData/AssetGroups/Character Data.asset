@@ -19,21 +19,21 @@ MonoBehaviour:
     m_Address: Enemy
     m_ReadOnly: 0
     m_SerializedLabels:
-    - PreLoad_Data
+    - PreLoad_DataSO
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a56e5f7b10291f1409a114ece6db5ae6
     m_Address: Tough Enemy
     m_ReadOnly: 0
     m_SerializedLabels:
-    - PreLoad_Data
+    - PreLoad_DataSO
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f99a9c8d0583cc04d9cb6f82405b6c9e
     m_Address: PlayerTypeSO
     m_ReadOnly: 0
     m_SerializedLabels:
-    - PreLoad_Data
+    - PreLoad_DataSO
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
