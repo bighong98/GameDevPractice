@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using TH.Core.Input;
 using TH.UI;
 using TH.Utils;
 using UnityEngine;
@@ -12,7 +13,7 @@ namespace TH.Core
 {
     [Preserve]
     public sealed class InputManager : Singleton<InputManager>, ISingleton,
-        UserInput.IPlayerActions, UserInput.IGlobalActions, UserInput.IUIActions, UserInput.IQuickSlotActions
+        UserInput.IPlayerActions, UserInput.IGlobalActions, UserInput.IUIActions, UserInput.IQuickSlotActions, UserInput.ICamActions
     {
         private InputManager()
         {
@@ -78,6 +79,7 @@ namespace TH.Core
             UserInput.Global.SetCallbacks(this);
             UserInput.QuickSlot.SetCallbacks(this);
             UserInput.UI.SetCallbacks(this);
+            UserInput.Cam.SetCallbacks(this);
         }
 
         private void Init()
@@ -90,11 +92,7 @@ namespace TH.Core
 
         public UniTask BeforeSceneLoad(CancellationToken externalToken)
         {
-            UserInput.Global.Disable();
-            UserInput.Player.Disable();
-        
-            UserInput.QuickSlot.Disable();
-            UserInput.UI.Disable();
+            DisableAllActionMaps();
 
             return UniTask.CompletedTask;
         }
@@ -120,6 +118,11 @@ namespace TH.Core
             
             OnSelected?.Invoke(currentPointerPos);
             Logg.Log($"[InputManager] OnSelect Invoked ({currentPointerPos})", Logg.LoggingMode.Completed);
+        }
+
+        public void OnZoom(InputAction.CallbackContext context)
+        {
+            
         }
 
         public void OnDragScreen(InputAction.CallbackContext context)
@@ -306,6 +309,15 @@ namespace TH.Core
             if (!actionMap.enabled)
                 actionMap.Enable();
         }
+        
+        private void DisableAllActionMaps()
+        {
+            UserInput.Global.Disable();
+            UserInput.Player.Disable();
+        
+            UserInput.QuickSlot.Disable();
+            UserInput.UI.Disable();
+        }
 
         public void EnableUIActionMap()
         {
@@ -358,6 +370,65 @@ namespace TH.Core
             }
 
             return true;
+        }
+
+        #endregion
+
+        #region IApplicationLifecycleListener
+
+        private IApplicationLifecycleListener _lifecycle;
+        private bool _isFocused = true;
+        private bool _isPausedByOS = false;
+        private bool _isPointerInView = true;
+
+        private bool IsPointerValid => _isFocused && !_isPausedByOS && _isPointerInView;
+
+        public void RegisterListener(IApplicationLifecycleListener listener)
+        {
+            if (listener == null) throw new ArgumentNullException(nameof(listener));
+
+            // 중복 등록 방지 (같은 인스턴스면 무시)
+            if (ReferenceEquals(_lifecycle, listener))
+                return;
+
+            // 기존 리스너가 있으면 해제
+            if (_lifecycle != null)
+            {
+                _lifecycle.OnFocusChanged -= HandleFocusChanged;
+                _lifecycle.OnPauseChanged -= HandlePauseChanged;
+                _lifecycle.OnPointerInGameViewChanged -= HandlePointerInViewChanged;
+            }
+
+            _lifecycle = listener;
+
+            _lifecycle.OnFocusChanged += HandleFocusChanged;
+            _lifecycle.OnPauseChanged += HandlePauseChanged;
+            _lifecycle.OnPointerInGameViewChanged += HandlePointerInViewChanged;
+            
+            _isFocused = Application.isFocused;
+            _isPausedByOS = false;
+            _isPointerInView = true;
+        }
+
+        private void HandleFocusChanged(bool hasFocus)
+        {
+            _isFocused = hasFocus;
+            //todo: 게임 포커스 대응 로직 추가
+        }
+
+        private void HandlePauseChanged(bool pause)
+        {
+            _isPausedByOS = pause;
+            //todo: 어플리케이션 정지/해제 대응 로직 추가
+        }
+
+        private void HandlePointerInViewChanged(bool inView)
+        {
+            _isPointerInView = inView;
+            if (_isPointerInView)
+                UserInput.Cam.Enable();
+            else 
+                UserInput.Cam.Disable();
         }
 
         #endregion
