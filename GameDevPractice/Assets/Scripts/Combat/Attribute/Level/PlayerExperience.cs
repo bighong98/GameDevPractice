@@ -192,7 +192,7 @@ namespace TH.Attribute
 
             if (GetCurrLevel is { } level && GetCurrXp is { } xp)
             {
-                this.Log($"- ({gameObject.name}) CaptureState invoked - level: {level}), xp: {xp}", Logg.LoggingMode.Completed);
+                this.Log($"- ({gameObject.name}) CaptureState invoked - level: {level}), xp: {xp}", Logg.LoggingMode.InProgress);
                 return new PlayerLevelXpData(level, xp);
             }
 

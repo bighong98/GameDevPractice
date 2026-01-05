@@ -47,6 +47,8 @@ namespace TH.SaveLoad
             catalogResolved = catalogResolveTCS.Task.Preserve();
             LoadSceneCatalogAsync().Forget();
 
+            LoadAsync(GetSaveFileName()).Forget(); //todo: 세이브파일 관리 기능 추가 후 제거
+            
             sceneLoader.OnBeforeSceneChanged += OnBeforeSceneChanged;
             sceneLoader.OnAfterSceneChanged += OnAfterSceneChanged;
         }
@@ -133,12 +135,12 @@ namespace TH.SaveLoad
 
         public async UniTask SaveAsync(string saveFile, SceneEntry sceneEntry = null)
         {
-            this.Log($"===== SaveAsync() 시작 ===== saveFile: {saveFile}, sceneEntry: {(sceneEntry != null ? sceneEntry.key : "NULL")}");
-            this.Log($"SaveAsync 조건체크 - isLoading: {isLoading}, ioSemaphore.CurrentCount: {ioSemaphore.CurrentCount}");
+            this.Log($"===== SaveAsync() 시작 ===== saveFile: {saveFile}, sceneEntry: {(sceneEntry != null ? sceneEntry.key : "NULL")}", Logg.LoggingMode.InProgress);
+            this.Log($"SaveAsync 조건체크 - isLoading: {isLoading}, ioSemaphore.CurrentCount: {ioSemaphore.CurrentCount}", Logg.LoggingMode.InProgress);
             
             if (isLoading || ioSemaphore.CurrentCount == 0)
             {
-                Logg.Log($"[SaveSystem] ioSemaphore.CurrentCount: {ioSemaphore.CurrentCount}", Logg.LoggingMode.Completed);
+                Logg.Log($"[SaveSystem] ioSemaphore.CurrentCount: {ioSemaphore.CurrentCount}", Logg.LoggingMode.InProgress);
                 CoalesceSave(saveFile, sceneEntry);
                 return;
             }
@@ -162,7 +164,7 @@ namespace TH.SaveLoad
                 { 
                     this.Log($"SaveCoreAsync 호출 - saveFile: {saveFile}");
                     await SaveCoreAsync(saveFile, sceneEntry); 
-                    this.Log($"SaveCoreAsync 완료");
+                    this.Log($"SaveCoreAsync 완료", Logg.LoggingMode.InProgress);
                 }
                 catch (Exception e) 
                 { 
@@ -274,10 +276,10 @@ namespace TH.SaveLoad
         
         private async UniTask SaveCoreAsync(string saveFile, SceneEntry sceneEntry = null)
         {
-            this.Log($"SaveCoreAsync() 시작 - saveFile: {saveFile}", Logg.LoggingMode.Completed);
+            this.Log($"SaveCoreAsync() 시작 - saveFile: {saveFile}", Logg.LoggingMode.InProgress);
             // 세이브 데이터를 저장할 세이브 파일 데이터 컨테이너 생성
             SaveFileData data = LoadFile(saveFile);
-            this.Log($"LoadFile 완료 - data: (globalData.Count: {data.globalData.Count}, lastSceneEntry: {data.lastSceneEntry?.key}, sceneData.Count: {data.sceneData.Count})", Logg.LoggingMode.Completed);
+            this.Log($"LoadFile 완료 - data: (globalData.Count: {data.globalData.Count}, lastSceneEntry: {data.lastSceneEntry?.key}, sceneData.Count: {data.sceneData.Count})", Logg.LoggingMode.InProgress);
             // 세이브 데이터(SavableEntry) 목록 생성
             List<SavableEntry> sceneSaveEntries = new List<SavableEntry>();
             List<SavableEntry> globalSaveEntries = new List<SavableEntry>();
@@ -290,7 +292,7 @@ namespace TH.SaveLoad
             if (TryGetSceneSavables(sceneEntry, out var sceneEntities ))
                 AddSaveEntries(sceneSaveEntries, sceneEntities);
             AddSaveEntries(globalSaveEntries, GlobalEntities.Values);
-            this.Log($"CaptureState 완료 - sceneEntries: {sceneSaveEntries.Count}, globalEntries: {globalSaveEntries.Count}", Logg.LoggingMode.Completed);
+            this.Log($"CaptureState 완료 - sceneEntries: {sceneSaveEntries.Count}, globalEntries: {globalSaveEntries.Count}", Logg.LoggingMode.InProgress);
             
             // 직렬화된 데이터를 컨테이너(SaveFileData)에 저장 
             if (data.sceneData != null && sceneEntry != null)
@@ -300,7 +302,7 @@ namespace TH.SaveLoad
             
             // 세이브 데이터 파일로 저장
             SaveFile(saveFile, data);
-            this.Log($"SaveCoreAsync() 완료", Logg.LoggingMode.Completed);
+            this.Log($"SaveCoreAsync() 완료", Logg.LoggingMode.InProgress);
         }
         
         private async UniTask LoadCoreAsync(string saveFile, SceneEntry currentSceneEntry = null)
@@ -316,7 +318,7 @@ namespace TH.SaveLoad
 
             await UniTask.SwitchToMainThread();
             RestoreState(data, currentSceneEntry);
-            this.Log($"LoadCoreAsync() 완료", Logg.LoggingMode.Completed);
+            this.Log($"LoadCoreAsync({saveFile}, {currentSceneEntry?.key}) 완료", Logg.LoggingMode.InProgress);
         }
         
         private void Delete(string saveFile)
@@ -330,6 +332,9 @@ namespace TH.SaveLoad
 
         private async UniTask OnAfterSceneChanged(CancellationToken externalToken)
         {
+            if (string.IsNullOrEmpty(GetSaveFileName()))
+                return;
+            // 씬 전환 후 자동 로드 + 저장
             externalToken.ThrowIfCancellationRequested();
             await LoadAsync(GetSaveFileName());
             await SaveAsync(GetSaveFileName());
@@ -337,6 +342,9 @@ namespace TH.SaveLoad
         
         private async UniTask OnBeforeSceneChanged(CancellationToken externalToken)
         {
+            if (string.IsNullOrEmpty(GetSaveFileName()))
+                return;
+            // 씬 전환 전 자동 저장
             externalToken.ThrowIfCancellationRequested();
             await SaveAsync(GetSaveFileName());
         } 
@@ -435,25 +443,25 @@ namespace TH.SaveLoad
             this.Log($"RestoreState(SaveFileData) 시작");
             List<SavableEntry> entries = new(); // 세이브 데이터 리스트 생성
             currentSceneEntry ??= sceneCatalog.GetCurrentSceneEntry(); // 현재 씬 정보 캡처
-            this.Log($"scene Entry: {currentSceneEntry} - {currentSceneEntry?.key}", Logg.LoggingMode.Completed);
+            this.Log($"scene Entry: {currentSceneEntry} - {currentSceneEntry?.key}", Logg.LoggingMode.InProgress);
             // entries에 세이브 엔트리 목록 반영
             GetEntryFromSave(data, entries, currentSceneEntry);
-            this.Log($"GetEntryFromSave 완료 - currentSceneEntry: {currentSceneEntry}, entries: {entries.Count}", Logg.LoggingMode.Completed);
+            this.Log($"GetEntryFromSave 완료 - currentSceneEntry: {currentSceneEntry}, entries: {entries.Count}", Logg.LoggingMode.InProgress);
             string entryFromSave = "";
             foreach (var e in entries)
             {
                 entryFromSave += $"\n({e.id} - {e.typeName})";
             }
-            this.Log($"GetEntryFromSave (entries.id - entries.typeName): {entryFromSave}", Logg.LoggingMode.Completed);
+            this.Log($"GetEntryFromSave (entries.id - entries.typeName): {entryFromSave}", Logg.LoggingMode.InProgress);
             
             // <고유 식별자, 고유 객체의 <타입, 세이브 데이터>> 딕셔너리 생성 (grouped)
             var grouped = new Dictionary<string, Dictionary<string, object>>(entries.Count); 
             // json to runtime data 파싱 -> grouped에 등록
             ExtractSaveData(entries, grouped);
-            this.Log($"ExtractSaveData 완료 - currentSceneEntry: {currentSceneEntry}, grouped keys: {grouped.Count}", Logg.LoggingMode.Completed);
+            this.Log($"ExtractSaveData 완료 - currentSceneEntry: {currentSceneEntry}, grouped keys: {grouped.Count}", Logg.LoggingMode.InProgress);
             
             // 파싱된 런타임 데이터 반영 (글로벌)
-            this.Log($"글로벌 엔티티 복원 시작 - GlobalEntities: {GlobalEntities.Count}", Logg.LoggingMode.Completed);
+            this.Log($"글로벌 엔티티 복원 시작 - GlobalEntities: {GlobalEntities.Count}", Logg.LoggingMode.InProgress);
             ApplyState(GlobalEntities.Values, grouped);
             
             // 파싱된 런타임 데이터 반영 (현재 씬)
@@ -461,20 +469,20 @@ namespace TH.SaveLoad
                 SceneEntities.TryGetValue(currentSceneEntry, out var sceneSavables))
             {
                 ApplyState(sceneSavables.Values, grouped);
-                this.Log($"씬 엔티티 복원 완료 - count: {sceneSavables.Count}");
+                this.Log($"씬 엔티티 복원 완료 - count: {sceneSavables.Count}",  Logg.LoggingMode.InProgress);
             }
             else
             {
-                this.Log($"[{GetType().Name}] RestoreState() - 현재 씬의 엔티티 없음 (currentSceneEntry: {currentSceneEntry})", Logg.LoggingMode.Completed);
+                this.Log($"[{GetType().Name}] RestoreState() - 현재 씬의 엔티티 없음 (currentSceneEntry: {currentSceneEntry})", Logg.LoggingMode.InProgress);
             }
             
-            this.Log($"LoadedStateCache 업데이트 시작", Logg.LoggingMode.Completed);
+            this.Log($"LoadedStateCache 업데이트 시작", Logg.LoggingMode.InProgress);
             foreach (var (id, stateDict) in grouped)
             {
                 // 기존 데이터가 있으면 덜어쓰기, 없으면 추가
                 LoadedStateCache[id] = stateDict;
             }
-            this.Log($"RestoreState(SaveFileData) 완료", Logg.LoggingMode.Completed);
+            this.Log($"RestoreState(SaveFileData) 완료", Logg.LoggingMode.InProgress);
         }
 
 
@@ -568,151 +576,13 @@ namespace TH.SaveLoad
 
         #endregion
         
-        #region File I/O (LoadFile, SaveFile)
-
-        private SaveFileData LoadFile(string saveFile)
-        {
-            this.Log($"LoadFile() 시작 - saveFile: {saveFile}");
-            string path = GetPathFromSaveFile(saveFile);
-            this.Log($"파일 경로: {path}");
-            if (!File.Exists(path))
-            {
-                this.Log($"파일 없음 - 새 SaveFileData 반환");
-                return new SaveFileData();
-            }
-            
-            this.Log($"[SaveSystem] 파일 존재 - 읽기 시도");
-            try
-            {
-                // json -> 런타임 데이터로 파싱 시도
-                string json = File.ReadAllText(path);
-                var data = JsonSerialization.FromJson<SaveFileData>(json);
-                // Json 역직렬화 후 null 체크 및 초기화
-                data.globalData ??= new List<SavableEntry>();
-                data.sceneData ??= new Dictionary<string, List<SavableEntry>>();
-                return data; 
-            }
-            catch (Exception e)
-            {
-                // 세이브파일 파싱 실패 시 빈 세이브 파일 생성 및 반환
-                Debug.LogError($"[SaveSystem] Failed to load file {path}: {e.Message}");
-                return new SaveFileData();
-            }
-        }
+        private readonly ISaveFileHandler saveFileHandler = new SaveFileHandler();
         
-        private void SaveFile(string saveFile, SaveFileData data)
-        {
-            this.Log($"SaveFile() 시작 - saveFile: {saveFile}");
-            string path = GetPathFromSaveFile(saveFile);
-            this.Log($"저장 경로: {path}");
-            // 디렉토리 확보
-            var dir  = Path.GetDirectoryName(path);
-            if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
-                Directory.CreateDirectory(dir);
-            
-            // var tmp = path + "." + Guid.NewGuid().ToString("N") + ".tmp"; // 임시 파일명
-            // var bak = path + ".bak"; // 백업 파일명
-            
-            var tmp = Path.Combine(dir ?? "", $".{Path.GetFileName(path)}.{Guid.NewGuid():N}.tmp");
-            var bak = path + ".bak";
+        SaveFileData LoadFile(string saveFile) => saveFileHandler.LoadFile(saveFile);
+        void SaveFile(string saveFile, SaveFileData data) => saveFileHandler.SaveFile(saveFile, data);
 
-            string json;
-            this.Log($"JSON 직렬화 시작");
-            try
-            {
-                // json 직렬화 시도
-                json = JsonSerialization.ToJson(
-                    data,
-                    new JsonSerializationParameters
-                    {
-                        DisableSerializedReferences = true
-                    });
-            }
-            catch (Exception e)
-            {
-                Logg.LogError($"[{nameof(SaveSystem)}.{nameof(SaveFile)}()] JsonSerialization failed {e}");
-                return; // 데이터 직렬화 실패 시 중지
-            }
-            
-            this.Log($"JSON 직렬화 완료 - 길이: {json.Length} chars");
-            this.Log($"임시 파일 쓰기 시작");
-            try
-            {
-                using var fs = new FileStream(tmp, FileMode.Create, FileAccess.Write, FileShare.None);
-                using var sw = new StreamWriter(fs);
-                sw.Write(json);
-                sw.Flush();
-                fs.Flush(true);
-            }
-            catch (Exception e)
-            {
-                Logg.LogError($"[{nameof(SaveSystem)}.{nameof(SaveFile)}()] Writing tmp failed: {tmp}, {e}");
-                return; // tmp 파일 생성 실패 시 중지
-            }
-            
-            this.Log($"[SaveSystem] 임시 파일 쓰기 완료");
-            // 3) Replace 시도
-            this.Log($"[SaveSystem] 파일 교체 시도");
-            // (path = tmp)
-            try
-            {
-                if (File.Exists(path)) // 성공 시: bak = path, path = tmp 으로 교체
-                    File.Replace(tmp, path, bak);   
-                else File.Move(tmp, path); // 실패 시 : path에 저장
-            }
-            catch (Exception e)
-            {
-                Logg.Log($"[SaveSystem.SaveFile] Replace fallback: {e.Message}", Logg.LoggingMode.Completed);
-                try
-                {
-                    // 백업 시도
-                    if (File.Exists(path))
-                    {
-                        // 백업 실패 시 throw 하지 않고 그대로 overwrite 시도
-                        try { File.Copy(path, bak, overwrite: true); } catch { }
-                        try { File.Delete(path); } catch { }
-                    }
-
-                    // Move가 막히면 Copy(overwrite)
-                    try { File.Move(tmp, path); }
-                    catch { File.Copy(tmp, path, overwrite: true); File.Delete(tmp); }
-                }
-                catch (Exception fbEx) { Logg.LogError($"[SaveSystem.SaveFile] Fallback failed: {fbEx}"); }
-            }
-            this.Log($"[SaveSystem] SaveFile() 완료");
-        }
-
-        // 경로 생성 (임시)
-        private string GetPathFromSaveFile(string saveFile)
-        {
-            return Path.Combine(Application.persistentDataPath, saveFile + ".sav");
-        }
-        
-        #endregion
-
-        #region SaveFile name cache (임시)
-
-        // 추후 세이브 시스템 확장을 고려하여 세이브 파일명 캐시 관리
-
-        private string lastUsedSaveFileName;
-        private string GetSaveFileName()
-        {
-            return string.IsNullOrEmpty(lastUsedSaveFileName) 
-                ? Constants.DefaultSaveFile : lastUsedSaveFileName;
-        }
-
-        private void CacheSaveFileName(string saveFileName)
-        {
-            if (string.IsNullOrEmpty(saveFileName))
-            {
-                Logg.LogWarning($"[{GetType().Name}] saveFileName is null or empty");
-                return;
-            }
-            lastUsedSaveFileName = saveFileName;
-        }
-        
-        
-        #endregion
+        string GetSaveFileName() => saveFileHandler.GetSaveFileName();
+        string GetPathFromSaveFile(string saveFile) => saveFileHandler.GetPathFromSaveFile(saveFile);
         
         #region Method Info
 
