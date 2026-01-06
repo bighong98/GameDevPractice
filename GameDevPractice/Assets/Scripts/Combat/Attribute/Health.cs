@@ -193,7 +193,9 @@ namespace TH.Attribute
             IsDead = true;
             OnDead?.Invoke();
 
-            if (lastAttacker is Component c && c.TryGetComponent(out IExperience xp))
+            if (lastAttacker is Component c && 
+                c.IsNotNull() &&
+                c.TryGetComponent(out IExperience xp))
             {
                 xp.GainXp(rewardXp.Value);
             }

@@ -16,7 +16,8 @@ namespace TH.SaveLoad
         
         private static readonly Dictionary<string, SavableEntity> GlobalLookup = new Dictionary<string, SavableEntity>();
         private static readonly Dictionary<string, string> SavedTypeLookup = new Dictionary<string, string>(); // (ISavable 구현 클래스 이름, 세이브 데이터 저장 객체 이름) -> RestoreState()에서 사용 목적
-        private static ISaveSystem saveSystem;
+        // private static ISaveSystem saveSystem;
+        private static ISaveEntityRegistry saveEntityRegistry;
         
         private readonly List<ISavable> savables = new();
         
@@ -29,22 +30,17 @@ namespace TH.SaveLoad
         private void Awake()
         {
             RebuildSavableList();
-            
-            saveSystem ??= ServiceLocator.Get<ISaveSystem>();
-            // global 세이브 객체는 세이브 시스템에 등록 즉시 상태 저장
-            // saveSystem.RegisterEntity(this, isGlobal, destroyCancellationToken);
+            saveEntityRegistry = ServiceLocator.Get<ISaveEntityRegistry>();
         }
 
         private void Start()
         {
-            saveSystem.RegisterEntity(this, isGlobal, destroyCancellationToken);
+            saveEntityRegistry.RegisterEntity(this, isGlobal, destroyCancellationToken);
         }
 
         private void OnDestroy()
         {
             savables.Clear();
-            if (IsRegistered && !isGlobal)
-                saveSystem?.UnRegisterEntity(this);
         }
         
         object ISavable.CaptureState()

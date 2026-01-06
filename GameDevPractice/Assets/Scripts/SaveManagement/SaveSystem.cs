@@ -2,11 +2,11 @@ using System;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Collections.Generic;
-using System.Reflection;
+
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
-using Unity.Serialization.Json;
+
 using TH.SceneManagement;
 using TH.Resource;
 using TH.Utils;
@@ -15,19 +15,17 @@ namespace TH.SaveLoad
 {
     public class SaveSystem : ISaveSystem
     {
-        private static readonly Dictionary<Type, MethodInfo> CachedMethodInfos = new();
-        private static readonly Dictionary<string, Type> CachedTypes = new();
-        private static readonly Dictionary<string, Dictionary<string, object>> LoadedStateCache = new(); // Non-MB 클래스 데이터
-
-        private static readonly Dictionary<SceneEntry, Dictionary<string, ISavableEntity>> SceneEntities = new();
-        private static readonly Dictionary<string, ISavableEntity> GlobalEntities = new();
         
         // outer services
         private readonly IResourceLoader resourceLoader;
         private readonly ISceneLoader sceneLoader;
         private readonly ISaveFileHandler saveFileHandler;
+        private readonly ISaveEntityRegistry entityRegistry;
         
-        private readonly ConcurrentQueue<Action<SceneEntry>> catalogPending = new();
+        // sub classes
+        private readonly SaveTypeResolver typeResolver;
+        private readonly SaveStateSerializer stateSerializer;
+        
         private readonly UniTaskCompletionSource<SceneCatalogSO> catalogResolveTCS = new();
         private readonly UniTask<SceneCatalogSO> catalogResolved;
         private SceneCatalogSO sceneCatalog;
@@ -41,11 +39,21 @@ namespace TH.SaveLoad
         private string requestedSaveFile;
         private SceneEntry requestedSceneEntry;
 
-        public SaveSystem(ISceneLoader sceneLoader, IResourceLoader resourceLoader, ISaveFileHandler saveFileHandler)
+        public SaveSystem(ISceneLoader sceneLoader, IResourceLoader resourceLoader, 
+            ISaveFileHandler saveFileHandler, ISaveEntityRegistry saveEntityRegistry)
         {
+            // outer services 참조 캐싱
             this.sceneLoader = sceneLoader;
             this.resourceLoader = resourceLoader;
             this.saveFileHandler = saveFileHandler;
+            this.entityRegistry = saveEntityRegistry;
+            
+            // entity registry 내부 의존성 주입
+            entityRegistry.SetCatalogAccessor(() => sceneCatalog);
+            
+            // inner sub classes 초기화
+            typeResolver = new SaveTypeResolver();
+            stateSerializer = new SaveStateSerializer(typeResolver);
 
             catalogResolved = catalogResolveTCS.Task.Preserve();
             LoadSceneCatalogAsync().Forget();
@@ -92,11 +100,9 @@ namespace TH.SaveLoad
             }
 
             await UniTask.SwitchToMainThread();
-            var entry = sceneCatalog.GetCurrentSceneEntry();
-            while (catalogPending.TryDequeue(out var job))
-            {
-                job?.Invoke(entry);
-            }
+            // SceneCatalog 준비 완료 후 EntityRegistry의 대기 등록 작업 처리
+            var currentEntry = sceneCatalog.GetCurrentSceneEntry();
+            entityRegistry.ProcessPendingRegistrations(currentEntry);
         }
 
         private async UniTask WaitForCatalog(CancellationToken token = default)
@@ -109,11 +115,17 @@ namespace TH.SaveLoad
         
         #region Load Last Scene
         
-        public async UniTask LoadLastScene(string saveFile)
+        public async UniTask LoadLastScene(string saveFile = null)
         {
             try
             {
-                if (LoadFile(saveFile) is not { } data) return;
+                // 별도의 세이브 파일명을 지정하지 않은 경우 saveFileHandler로부터 받아옴
+                // 현재 세이브 파일 우선 적용 (없을 시 생성, 세부 정책은 saveFileHandler 내부 구현 참고)
+                if (string.IsNullOrEmpty(saveFile))
+                    saveFile = GetSaveFileName();
+
+                if (LoadFile(saveFile) is not { } data)
+                    throw new IOException($"failed to load saveFile:({saveFile})");
 
                 // 메인 쓰레드 환경, scene catalog 보장
                 await UniTask.SwitchToMainThread();
@@ -125,7 +137,7 @@ namespace TH.SaveLoad
                     
                 await sceneLoader.LoadSceneAsync(key);
             }
-            catch (Exception e) { Logg.LogWarning($"[{GetType().Name}] exception while LoadLastScene - {e}"); }
+            catch (Exception e) { Logg.LogError($"[{GetType().Name}] exception while LoadLastScene - {e}"); }
             finally
             {
                 this.Log($"LoadLastScene() 종료", Logg.LoggingMode.Completed);
@@ -136,14 +148,14 @@ namespace TH.SaveLoad
         
         #region Save/Load/Delete (public API)
 
-        public async UniTask SaveAsync(string saveFile, SceneEntry sceneEntry = null)
+        public async UniTask SaveAsync(string saveFile = null, SceneEntry sceneEntry = null)
         {
-            this.Log($"===== SaveAsync() 시작 ===== saveFile: {saveFile}, sceneEntry: {(sceneEntry != null ? sceneEntry.key : "NULL")}", Logg.LoggingMode.InProgress);
-            this.Log($"SaveAsync 조건체크 - isLoading: {isLoading}, ioSemaphore.CurrentCount: {ioSemaphore.CurrentCount}", Logg.LoggingMode.InProgress);
+            this.Log($"===== SaveAsync() 시작 ===== saveFile: {saveFile}, sceneEntry: {(sceneEntry != null ? sceneEntry.key : "NULL")}", Logg.LoggingMode.Completed);
+            this.Log($"SaveAsync 조건체크 - isLoading: {isLoading}, ioSemaphore.CurrentCount: {ioSemaphore.CurrentCount}", Logg.LoggingMode.Completed);
             
             if (isLoading || ioSemaphore.CurrentCount == 0)
             {
-                Logg.Log($"[SaveSystem] ioSemaphore.CurrentCount: {ioSemaphore.CurrentCount}", Logg.LoggingMode.InProgress);
+                Logg.Log($"[SaveSystem] ioSemaphore.CurrentCount: {ioSemaphore.CurrentCount}", Logg.LoggingMode.Completed);
                 CoalesceSave(saveFile, sceneEntry);
                 return;
             }
@@ -162,12 +174,16 @@ namespace TH.SaveLoad
                     sceneEntry = requestedSceneEntry ?? sceneEntry;
                     ResetSaveRequest();
                 }
+                // 별도의 세이브 파일명을 지정하지 않은 경우 saveFileHandler로부터 받아옴
+                // 현재 세이브 파일 우선 적용 (없을 시 생성, 세부 정책은 saveFileHandler 내부 구현 참고)
+                else if (string.IsNullOrEmpty(saveFile))
+                    saveFile = GetSaveFileName(); 
                 
                 try 
                 { 
                     this.Log($"SaveCoreAsync 호출 - saveFile: {saveFile}");
                     await SaveCoreAsync(saveFile, sceneEntry); 
-                    this.Log($"SaveCoreAsync 완료", Logg.LoggingMode.InProgress);
+                    this.Log($"SaveCoreAsync 완료", Logg.LoggingMode.Completed);
                 }
                 catch (Exception e) 
                 { 
@@ -201,8 +217,13 @@ namespace TH.SaveLoad
             });
         }
 
-        public async UniTask LoadAsync(string saveFile)
+        public async UniTask LoadAsync(string saveFile = null)
         {
+            // 별도의 세이브 파일명을 지정하지 않은 경우 saveFileHandler로부터 받아옴
+            // 현재 세이브 파일 우선 적용 (없을 시 생성, 세부 정책은 saveFileHandler 내부 구현 참고)
+            if (string.IsNullOrEmpty(saveFile))
+                saveFile = GetSaveFileName();
+            
             this.Log($"===== LoadAsync() 시작 ===== saveFile: {saveFile}");
             await RunExclusive(async () =>
             {
@@ -279,10 +300,10 @@ namespace TH.SaveLoad
         
         private async UniTask SaveCoreAsync(string saveFile, SceneEntry sceneEntry = null)
         {
-            this.Log($"SaveCoreAsync() 시작 - saveFile: {saveFile}", Logg.LoggingMode.InProgress);
+            this.Log($"SaveCoreAsync() 시작 - saveFile: {saveFile}", Logg.LoggingMode.Completed);
             // 세이브 데이터를 저장할 세이브 파일 데이터 컨테이너 생성
             SaveFileData data = LoadFile(saveFile);
-            this.Log($"LoadFile 완료 - data: (globalData.Count: {data.globalData.Count}, lastSceneEntry: {data.lastSceneEntry?.key}, sceneData.Count: {data.sceneData.Count})", Logg.LoggingMode.InProgress);
+            this.Log($"LoadFile 완료 - data: (globalData.Count: {data.globalData.Count}, lastSceneEntry: {data.lastSceneEntry?.key}, sceneData.Count: {data.sceneData.Count})", Logg.LoggingMode.Completed);
             // 세이브 데이터(SavableEntry) 목록 생성
             List<SavableEntry> sceneSaveEntries = new List<SavableEntry>();
             List<SavableEntry> globalSaveEntries = new List<SavableEntry>();
@@ -292,10 +313,10 @@ namespace TH.SaveLoad
             
             // 등록된 세이브 대상(ISavable)들의 데이터 직렬화 수행
             // 직렬화된 데이터(SavableEntry)를 씬 데이터(씬에 종속된 오브젝트), 글로벌(씬과 무관한 오브젝트, 서비스) 데이터로 구분하여 캐싱
-            if (TryGetSceneSavableEntries(sceneEntry, out var sceneEntities ))
+            if (entityRegistry.TryGetSceneSavableEntries(sceneEntry, out var sceneEntities))
                 AddSaveEntries(sceneSaveEntries, sceneEntities);
-            AddSaveEntries(globalSaveEntries, GlobalEntities.Values);
-            this.Log($"CaptureState 완료 - sceneEntries: {sceneSaveEntries.Count}, globalEntries: {globalSaveEntries.Count}", Logg.LoggingMode.InProgress);
+            AddSaveEntries(globalSaveEntries, entityRegistry.GetGlobalEntities());
+            this.Log($"CaptureState 완료 - sceneEntries: {sceneSaveEntries.Count}, globalEntries: {globalSaveEntries.Count}", Logg.LoggingMode.Completed);
             
             // 직렬화된 데이터를 컨테이너(SaveFileData)에 저장 
             if (data.sceneData != null && sceneEntry != null)
@@ -305,8 +326,9 @@ namespace TH.SaveLoad
             
             // 세이브 데이터 파일로 저장
             SaveFile(saveFile, data);
-            this.Log($"SaveCoreAsync() 완료", Logg.LoggingMode.InProgress);
+            this.Log($"SaveCoreAsync() 완료", Logg.LoggingMode.Completed);
         }
+        
         
         private async UniTask LoadCoreAsync(string saveFile, SceneEntry currentSceneEntry = null)
         {
@@ -321,7 +343,7 @@ namespace TH.SaveLoad
 
             await UniTask.SwitchToMainThread();
             RestoreState(data, currentSceneEntry);
-            this.Log($"LoadCoreAsync({saveFile}, {currentSceneEntry?.key}) 완료", Logg.LoggingMode.InProgress);
+            this.Log($"LoadCoreAsync({saveFile}, {currentSceneEntry?.key}) 완료", Logg.LoggingMode.Completed);
         }
         
         private void Delete(string saveFile)
@@ -343,7 +365,7 @@ namespace TH.SaveLoad
             await SaveAsync(GetSaveFileName());
         }
         
-        private async UniTask OnBeforeSceneChanged(CancellationToken externalToken)
+private async UniTask OnBeforeSceneChanged(CancellationToken externalToken)
         {
             if (string.IsNullOrEmpty(GetSaveFileName()))
                 return;
@@ -358,17 +380,7 @@ namespace TH.SaveLoad
 
         // 씬에 존재하는 모든 SavableEntity의 상태 수집, 저장데이터에 반영
 
-        private bool TryGetSceneSavableEntries(SceneEntry targetSceneEntry, out ICollection<ISavableEntity> entityCollection)
-        {
-            if (targetSceneEntry != null
-                && SceneEntities.TryGetValue(targetSceneEntry, out var sceneSavables))
-            {
-                entityCollection = sceneSavables.Values;
-                return true;
-            }
-            entityCollection = null;
-            return false;
-        } 
+         
 
         private void AddSaveEntries(ICollection<SavableEntry> entryCollection, ICollection<ISavableEntity> entities)
         {
@@ -380,64 +392,8 @@ namespace TH.SaveLoad
             
             foreach (var entity in entities)
             {
-                AddSavableEntry(entryCollection, entity);
+                stateSerializer.SerializeEntity(entryCollection, entity);
             }
-        }
-
-        private void AddSavableEntry(ICollection<SavableEntry> entryCollection, ISavableEntity entity)
-        {
-            try
-            {
-                if (!entity.IsNotNull())
-                {
-                    Logg.LogWarning($"[{GetType().Name}] AddNewEntry - entity is destroyed");
-                    return;
-                }
-                if (entity.CaptureState() is not { } capturedStates) return;
-
-                if (capturedStates is Dictionary<string, object> stateDict)
-                {
-                    foreach (var (typeName, state) in stateDict)
-                    {
-                        CaptureEntry(entryCollection, entity, typeName, state);
-                    }
-                }
-                else
-                {
-                    var typeName = capturedStates.GetType().AssemblyQualifiedName;
-                    CaptureEntry(entryCollection, entity, typeName, capturedStates);
-                }
-            }
-            catch (Exception e) { Debug.LogError($"[SaveSystem] error occured while AddEntries() - {e}");}
-        }
-
-        private void CaptureEntry(
-            ICollection<SavableEntry> entryCollection, 
-            ISavableEntity entity, string typeName, object state)
-        {
-            if (GetTypeByName(typeName) is not { } type) return;
-            SerializeSavableEntry(entryCollection, state, entity.UniqueIdentifier, type, typeName);
-        }
-
-        private static void SerializeSavableEntry(
-            ICollection<SavableEntry> entryCollection,
-            object state, string identifier, Type type, string typeName)
-        {
-            try
-            {
-                string json = JsonSerialization.ToJson(state, new JsonSerializationParameters
-                {
-                    SerializedType = type,
-                });
-
-                entryCollection.Add(new SavableEntry
-                {
-                    id = identifier,
-                    typeName = typeName,
-                    jsonPayload = json
-                });
-            }
-            catch (Exception e) { Debug.LogError($"[SaveSystem] Failed to serialize {typeName}: {e.Message}"); }
         }
 
         // SavableEntity 에 상태 복원
@@ -446,46 +402,46 @@ namespace TH.SaveLoad
             this.Log($"RestoreState(SaveFileData) 시작");
             List<SavableEntry> entries = new(); // 세이브 데이터 리스트 생성
             currentSceneEntry ??= sceneCatalog.GetCurrentSceneEntry(); // 현재 씬 정보 캡처
-            this.Log($"scene Entry: {currentSceneEntry} - {currentSceneEntry?.key}", Logg.LoggingMode.InProgress);
+            this.Log($"scene Entry: {currentSceneEntry} - {currentSceneEntry?.key}", Logg.LoggingMode.Completed);
             // entries에 세이브 엔트리 목록 반영
             GetEntryFromSave(data, entries, currentSceneEntry);
-            this.Log($"GetEntryFromSave 완료 - currentSceneEntry: {currentSceneEntry}, entries: {entries.Count}", Logg.LoggingMode.InProgress);
+            this.Log($"GetEntryFromSave 완료 - currentSceneEntry: {currentSceneEntry}, entries: {entries.Count}", Logg.LoggingMode.Completed);
             string entryFromSave = "";
             foreach (var e in entries)
             {
                 entryFromSave += $"\n({e.id} - {e.typeName})";
             }
-            this.Log($"GetEntryFromSave (entries.id - entries.typeName): {entryFromSave}", Logg.LoggingMode.InProgress);
+            this.Log($"GetEntryFromSave (entries.id - entries.typeName): {entryFromSave}", Logg.LoggingMode.Completed);
             
             // <고유 식별자, 고유 객체의 <타입, 세이브 데이터>> 딕셔너리 생성 (grouped)
             var grouped = new Dictionary<string, Dictionary<string, object>>(entries.Count); 
             // json to runtime data 파싱 -> grouped에 등록
-            ExtractSaveData(entries, grouped);
-            this.Log($"ExtractSaveData 완료 - currentSceneEntry: {currentSceneEntry}, grouped keys: {grouped.Count}", Logg.LoggingMode.InProgress);
+            stateSerializer.DeserializeEntries(entries, grouped);
+            this.Log($"ExtractSaveData 완료 - currentSceneEntry: {currentSceneEntry}, grouped keys: {grouped.Count}", Logg.LoggingMode.Completed);
             
             // 파싱된 런타임 데이터 반영 (글로벌)
-            this.Log($"글로벌 엔티티 복원 시작 - GlobalEntities: {GlobalEntities.Count}", Logg.LoggingMode.InProgress);
-            ApplyState(GlobalEntities.Values, grouped);
+            this.Log($"글로벌 엔티티 복원 시작 - GlobalEntities: {entityRegistry.GetGlobalEntities().Count}", Logg.LoggingMode.Completed);
+            ApplyState(entityRegistry.GetGlobalEntities(), grouped);
             
             // 파싱된 런타임 데이터 반영 (현재 씬)
             if (currentSceneEntry != null &&
-                SceneEntities.TryGetValue(currentSceneEntry, out var sceneSavables))
+                entityRegistry.TryGetSceneSavableEntries(currentSceneEntry, out var sceneSavables))
             {
-                ApplyState(sceneSavables.Values, grouped);
-                this.Log($"씬 엔티티 복원 완료 - count: {sceneSavables.Count}",  Logg.LoggingMode.InProgress);
+                ApplyState(sceneSavables, grouped);
+                this.Log($"씬 엔티티 복원 완료 - count: {sceneSavables.Count}",  Logg.LoggingMode.Completed);
             }
             else
             {
-                this.Log($"[{GetType().Name}] RestoreState() - 현재 씬의 엔티티 없음 (currentSceneEntry: {currentSceneEntry})", Logg.LoggingMode.InProgress);
+                this.Log($"[{GetType().Name}] RestoreState() - 현재 씬의 엔티티 없음 (currentSceneEntry: {currentSceneEntry})", Logg.LoggingMode.Completed);
             }
             
-            this.Log($"LoadedStateCache 업데이트 시작", Logg.LoggingMode.InProgress);
+            this.Log($"LoadedStateCache 업데이트 시작", Logg.LoggingMode.Completed);
             foreach (var (id, stateDict) in grouped)
             {
                 // 기존 데이터가 있으면 덜어쓰기, 없으면 추가
-                LoadedStateCache[id] = stateDict;
+                entityRegistry.UpdateStateCache(id, stateDict);
             }
-            this.Log($"RestoreState(SaveFileData) 완료", Logg.LoggingMode.InProgress);
+            this.Log($"RestoreState(SaveFileData) 완료", Logg.LoggingMode.Completed);
         }
 
 
@@ -512,49 +468,7 @@ namespace TH.SaveLoad
             } 
             else Logg.Log("[SaveSystem] No saved global data", Logg.LoggingMode.Completed);
         }
-
-        private void ExtractSaveData(List<SavableEntry> entries, Dictionary<string, Dictionary<string, object>> grouped)
-        {
-            foreach (var entry in entries)
-            {
-                // 타입명으로 데이터 타입 조회(or 리플렉션 생성)
-                if (GetTypeByName(entry.typeName) is not { } type) 
-                {
-                    Logg.LogError($"[{nameof(SaveSystem)}.ExtractSaveData()] Type not found: {entry.typeName}");
-                    continue;
-                }
-
-                object state; // 런타임 타입 세이브 데이터
-                try
-                {
-                    // json-> 런타임 세이브 데이터 생성
-                    state = GetMethodByType(type)?.Invoke(null, new object[]
-                    {
-                        entry.jsonPayload,
-                        new JsonSerializationParameters { SerializedType = type }
-                    });
-
-                    if (state == null)
-                    {
-                        Logg.LogError($"[{nameof(SaveSystem)}.ExtractSaveData()] FromJson Method missing for: {type.FullName}");
-                        continue;
-                    }
-                }
-                catch (Exception e)
-                {
-                    Logg.LogError($"[SaveSystem] Restore failed for {entry.typeName}: {e}");
-                    continue;
-                }
-                // 고유 객체별 세이브 데이터 딕셔너리 조회
-                if (!grouped.TryGetValue(entry.id, out var dict))
-                {
-                    dict = new Dictionary<string, object>(); 
-                    grouped[entry.id] = dict; // 딕셔너리에 없으면 신규 등록
-                }
-
-                dict[entry.typeName] = state; // 해당 객체의 (데이터 타입명-데이터) 저장
-            }
-        }
+        
 
         private void ApplyState(IEnumerable<ISavableEntity> entities,
             IReadOnlyDictionary<string, Dictionary<string, object>> stateGroup)
@@ -588,184 +502,5 @@ namespace TH.SaveLoad
         string GetPathFromSaveFile(string saveFile) => saveFileHandler.GetPathFromSaveFile(saveFile);
 
         #endregion
-        
-        #region Method Info
-
-        private static readonly Dictionary<string, Type> BuiltinAliasTypes = new(StringComparer.Ordinal)
-        {
-            ["bool"] = typeof(bool),
-            ["byte"] = typeof(byte),
-            ["sbyte"] = typeof(sbyte),
-            ["char"] = typeof(char),
-            ["decimal"] = typeof(decimal),
-            ["double"] = typeof(double),
-            ["float"] = typeof(float),
-            ["int"] = typeof(int),
-            ["uint"] = typeof(uint),
-            ["long"] = typeof(long),
-            ["ulong"] = typeof(ulong),
-            ["short"] = typeof(short),
-            ["ushort"] = typeof(ushort),
-            ["string"] = typeof(string),
-        };
-
-        private static readonly MethodInfo FromJsonOpenGeneric = 
-            typeof(JsonSerialization).GetMethod(
-                "FromJson",
-                BindingFlags.Public | BindingFlags.Static, 
-                null,
-                new[] { typeof(string), typeof(JsonSerializationParameters) }, 
-                null
-                );
-        
-        // 리플렉션 기반 Type to MethodInfo
-        private MethodInfo GetMethodByType(Type type)
-        {
-            if (type == null) return null;
-            
-            if (CachedMethodInfos.TryGetValue(type, out var result))
-            {
-                return result;
-            }
-
-            try
-            {
-                var method = FromJsonOpenGeneric.MakeGenericMethod(type);
-                CachedMethodInfos[type] = method;
-                return method;
-            }
-            catch (Exception e)
-            {
-                Logg.LogError($"[{nameof(SaveSystem)}] MakeGenericMethod failed: {type.FullName}, {e.Message}");
-                return null;
-            }
-        }
-
-        // 리플렉션 기반 Name to Type
-        private Type GetTypeByName(string typeName)
-        {
-            if (string.IsNullOrEmpty(typeName)) return null;
-            
-            if (CachedTypes.TryGetValue(typeName, out var t)) return t;
-
-            if (BuiltinAliasTypes.TryGetValue(typeName, out var aliasType))
-            {
-                CachedTypes[typeName] = aliasType;
-                return aliasType;
-            }
-
-            var type = GetTypeFromAssembly(typeName);
-
-            CachedTypes[typeName] = type;
-            return type;
-        }
-
-        private static Type GetTypeFromAssembly(string typeName)
-        {
-            var type = Type.GetType(typeName);
-            if (type != null) return type;
-            
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) // 추후 불필요해지면 삭제 고려
-            {
-                type = assembly.GetType(typeName);
-                if (type != null) break;
-            }
-
-            if (type == null)
-            {
-                Logg.LogWarning($"[SaveSystem] GetTypeFromAssembly({typeName}) result is null");
-            }
-
-            return type;
-        }
-
-        #endregion
-
-        #region Register/UnRegister Entity
-
-        public void RegisterEntity(ISavableEntity entity, bool saveImmediately = false, CancellationToken token = default)
-        {
-            var id = entity.UniqueIdentifier;
-            this.Log($"RegisterEntity({entity.GetType()}) - id: {id}, IsGlobal: {entity.IsGlobal}"
-                + $"{(entity.IsNotNull() && entity is Component c ? ", from scene:"+ c.gameObject.scene.name : string.Empty )}"
-                , Logg.LoggingMode.Completed);
-
-            if (entity.IsGlobal)
-            {
-                // 덮어쓰기 적용
-                // 글로벌 ISavable 구현 객체는 자체적으로 IsRegistered 기준으로 중복 등록 방지 필요
-                GlobalEntities[id] = entity;
-                
-                if (entity.IsNotNull() && LoadedStateCache.TryGetValue(id, out var stateDict))
-                {
-                    entity.RestoreState(stateDict);
-                }
-
-                entity.IsRegistered = true;
-                return;
-            }
-
-            if (sceneCatalog == null)
-            {
-                catalogPending.Enqueue(entry => AddSceneSavableEntity(entry, entity, token));
-                return;
-            }
-
-            if (!sceneCatalog.TryGetSceneEntry(entity.TargetScene, out var sceneEntry)
-                && !sceneCatalog.TryGetCurrentSceneEntry(out sceneEntry))
-            {
-                Logg.LogWarning($"RegisterEntity({entity.GetType()}) - SceneEntry {sceneEntry} not found");
-                return;
-            }
-            
-            AddSceneSavableEntity(sceneEntry, entity, token);
-        }
-
-        public void UnRegisterEntity(ISavableEntity entity, CancellationToken token = default)
-        {
-            var id = entity.UniqueIdentifier;
-
-            if (entity.IsGlobal)
-            {
-                GlobalEntities.Remove(id);
-                entity.IsRegistered = false;
-                this.Log($"UnRegisterEntity - entity: ({entity.GetType()}/{id}), IsGlobal: {entity.IsGlobal}", Logg.LoggingMode.Completed);
-                return;
-            }
-
-            if (!sceneCatalog.IsNotNull() || !sceneCatalog.TryGetCurrentSceneEntry(out var currSceneEntry))
-                return;
-            
-            if (!SceneEntities.TryGetValue(currSceneEntry, out var dict))
-                return;
-
-            entity.IsRegistered = false;
-            dict.Remove(id);
-            this.Log($"UnRegisterEntity - entity: ({entity.GetType()}/{id}), IsGlobal: {entity.IsGlobal}", Logg.LoggingMode.Completed);
-        }
-        
-        private static void AddSceneSavableEntity(SceneEntry sceneEntry, ISavableEntity entity, CancellationToken token)
-        {
-            if (token.IsCancellationRequested || sceneEntry == null || !entity.IsNotNull()) return;
-
-            if (!SceneEntities.TryGetValue(sceneEntry, out var dict))
-            {
-                dict = new Dictionary<string, ISavableEntity>();
-                SceneEntities[sceneEntry] = dict;
-            }
-
-            dict.TryAdd(entity.UniqueIdentifier, entity);
-
-            if (LoadedStateCache.TryGetValue(entity.UniqueIdentifier, out var stateDict))
-            {
-                entity.RestoreState(stateDict);
-            }
-
-            entity.IsRegistered = true;
-            Logg.Log($"[SaveSystem] SceneEntity({entity.GetType()}, {entity.UniqueIdentifier}) is added in sceneEntry: {sceneEntry}", Logg.LoggingMode.Completed);
-        }
-
-        #endregion
-        
     }
 }

@@ -40,11 +40,13 @@ namespace TH.Core.Service
             ServiceLocator.Register<ISceneLoader>( sp => 
                 new SceneLoader(sp.Get<IResourceLoader>()));
             ServiceLocator.Register<ISaveFileHandler>(new SaveFileHandler());
+            ServiceLocator.Register<ISaveEntityRegistry>(new SaveEntityRegistry());
             ServiceLocator.Register<ISaveSystem>(sp => 
                 new SaveSystem(
                     sp.Get<ISceneLoader>(),
                     sp.Get<IResourceLoader>(),
-                    sp.Get<ISaveFileHandler>()));
+                    sp.Get<ISaveFileHandler>(),
+                    sp.Get<ISaveEntityRegistry>()));
             ServiceLocator.Register<IRaycastHandler>( sp =>
                 new RaycastHandler(sp.Get<ISceneLoader>()));
             ServiceLocator.Register<IDamageCalculator>(new DamageCalculator());
@@ -55,7 +57,9 @@ namespace TH.Core.Service
             ServiceLocator.Register<IPlayerStorage>(sp => 
                 new PlayerStorage(
                     sp.Get<IResourceLoader>(),
-                    sp.Get<ISaveSystem>()));
+                    /* sp.Get<ISaveSystem>() */
+                    sp.Get<ISaveEntityRegistry>()
+                    ));
             ServiceLocator.Register<IQuickStorage>(new PlayerQuickStorage());
             ServiceLocator.Register<IGameItemTransfer>(new GameItemTransfer());
             ServiceLocator.Register<IGameItemConsumer>(new GameItemConsumer());
