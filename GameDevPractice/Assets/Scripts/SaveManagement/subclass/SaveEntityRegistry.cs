@@ -3,11 +3,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Linq;
-
 using TH.Resource;
 using UnityEngine;
-
-using TH.SceneManagement;
 using TH.Utils;
 
 namespace TH.SaveLoad

@@ -231,9 +231,8 @@ namespace TH.Attribute
         public bool RestoreState(object state)
         {
             if (state is not HealthSaveData data) return false;
-            //todo: MaxHp 최초 초기화보다 먼저 실행될 경우 체력값 세이브 적용이 누락될 수 있음
             this.Log($"[{gameObject.name}]RestoreState for Health: hp to {data.hp}" ,Logg.LoggingMode.Completed); 
-            SetHp(data.hp);
+            SetHp(data.hp, modifyMax: true);
 
             return true;
         }

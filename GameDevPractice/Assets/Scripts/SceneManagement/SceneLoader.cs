@@ -184,6 +184,7 @@ namespace TH.SceneManagement
                 await UniTask.Yield();
                 this.Log($"OnAfterSceneChanged starts - scene: {result.Scene.name}", Logg.LoggingMode.Completed);
                 // 이전 씬 언로드 및 씬 전환 이벤트 호출
+                // 씬 언로드와 함께 실행되는 이벤트 메서드(OnDestroy, etc)가 호출되는 시점엔 이미 활성 씬이 바뀐 상태임에 주의
                 await UniTask.WhenAll(
                     UnloadPreviousSceneAsync(token),
                     OnAfterSceneChanged.InvokeAllThrottledAsync(token),
@@ -191,6 +192,7 @@ namespace TH.SceneManagement
                 );
                 CloseAfterPhase();
                 OnSceneChanged?.Invoke(result.Scene);
+                await UniTask.DelayFrame(60, cancellationToken: token);
             }
             catch (Exception e)
             {
