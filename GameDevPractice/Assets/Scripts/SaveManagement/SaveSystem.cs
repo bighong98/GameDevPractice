@@ -22,8 +22,10 @@ namespace TH.SaveLoad
         private static readonly Dictionary<SceneEntry, Dictionary<string, ISavableEntity>> SceneEntities = new();
         private static readonly Dictionary<string, ISavableEntity> GlobalEntities = new();
         
+        // outer services
         private readonly IResourceLoader resourceLoader;
         private readonly ISceneLoader sceneLoader;
+        private readonly ISaveFileHandler saveFileHandler;
         
         private readonly ConcurrentQueue<Action<SceneEntry>> catalogPending = new();
         private readonly UniTaskCompletionSource<SceneCatalogSO> catalogResolveTCS = new();
@@ -39,10 +41,11 @@ namespace TH.SaveLoad
         private string requestedSaveFile;
         private SceneEntry requestedSceneEntry;
 
-        public SaveSystem(ISceneLoader sceneLoader, IResourceLoader resourceLoader)
+        public SaveSystem(ISceneLoader sceneLoader, IResourceLoader resourceLoader, ISaveFileHandler saveFileHandler)
         {
             this.sceneLoader = sceneLoader;
             this.resourceLoader = resourceLoader;
+            this.saveFileHandler = saveFileHandler;
 
             catalogResolved = catalogResolveTCS.Task.Preserve();
             LoadSceneCatalogAsync().Forget();
@@ -131,7 +134,7 @@ namespace TH.SaveLoad
 
         #endregion
         
-        #region Save/Load/Delete (Async + public)
+        #region Save/Load/Delete (public API)
 
         public async UniTask SaveAsync(string saveFile, SceneEntry sceneEntry = null)
         {
@@ -272,7 +275,7 @@ namespace TH.SaveLoad
 
         #endregion
 
-        #region Save/Load/Delete Core (private)
+        #region Save/Load/Delete (private Core)
         
         private async UniTask SaveCoreAsync(string saveFile, SceneEntry sceneEntry = null)
         {
@@ -289,7 +292,7 @@ namespace TH.SaveLoad
             
             // 등록된 세이브 대상(ISavable)들의 데이터 직렬화 수행
             // 직렬화된 데이터(SavableEntry)를 씬 데이터(씬에 종속된 오브젝트), 글로벌(씬과 무관한 오브젝트, 서비스) 데이터로 구분하여 캐싱
-            if (TryGetSceneSavables(sceneEntry, out var sceneEntities ))
+            if (TryGetSceneSavableEntries(sceneEntry, out var sceneEntities ))
                 AddSaveEntries(sceneSaveEntries, sceneEntities);
             AddSaveEntries(globalSaveEntries, GlobalEntities.Values);
             this.Log($"CaptureState 완료 - sceneEntries: {sceneSaveEntries.Count}, globalEntries: {globalSaveEntries.Count}", Logg.LoggingMode.InProgress);
@@ -355,7 +358,7 @@ namespace TH.SaveLoad
 
         // 씬에 존재하는 모든 SavableEntity의 상태 수집, 저장데이터에 반영
 
-        private bool TryGetSceneSavables(SceneEntry targetSceneEntry, out ICollection<ISavableEntity> entityCollection)
+        private bool TryGetSceneSavableEntries(SceneEntry targetSceneEntry, out ICollection<ISavableEntity> entityCollection)
         {
             if (targetSceneEntry != null
                 && SceneEntities.TryGetValue(targetSceneEntry, out var sceneSavables))
@@ -377,11 +380,11 @@ namespace TH.SaveLoad
             
             foreach (var entity in entities)
             {
-                AddNewEntry(entryCollection, entity);
+                AddSavableEntry(entryCollection, entity);
             }
         }
 
-        private void AddNewEntry(ICollection<SavableEntry> entryCollection, ISavableEntity entity)
+        private void AddSavableEntry(ICollection<SavableEntry> entryCollection, ISavableEntity entity)
         {
             try
             {
@@ -575,14 +578,16 @@ namespace TH.SaveLoad
         }
 
         #endregion
-        
-        private readonly ISaveFileHandler saveFileHandler = new SaveFileHandler();
-        
+
+        #region Save File I/O (ISaveFileHandler)
+
         SaveFileData LoadFile(string saveFile) => saveFileHandler.LoadFile(saveFile);
         void SaveFile(string saveFile, SaveFileData data) => saveFileHandler.SaveFile(saveFile, data);
 
         string GetSaveFileName() => saveFileHandler.GetSaveFileName();
         string GetPathFromSaveFile(string saveFile) => saveFileHandler.GetPathFromSaveFile(saveFile);
+
+        #endregion
         
         #region Method Info
 

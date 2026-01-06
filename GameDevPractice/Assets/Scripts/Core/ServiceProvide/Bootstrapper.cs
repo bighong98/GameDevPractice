@@ -39,10 +39,12 @@ namespace TH.Core.Service
             ServiceLocator.Register<IResourceLoader>(new ResourceLoader());
             ServiceLocator.Register<ISceneLoader>( sp => 
                 new SceneLoader(sp.Get<IResourceLoader>()));
+            ServiceLocator.Register<ISaveFileHandler>(new SaveFileHandler());
             ServiceLocator.Register<ISaveSystem>(sp => 
                 new SaveSystem(
                     sp.Get<ISceneLoader>(),
-                    sp.Get<IResourceLoader>()));
+                    sp.Get<IResourceLoader>(),
+                    sp.Get<ISaveFileHandler>()));
             ServiceLocator.Register<IRaycastHandler>( sp =>
                 new RaycastHandler(sp.Get<ISceneLoader>()));
             ServiceLocator.Register<IDamageCalculator>(new DamageCalculator());
