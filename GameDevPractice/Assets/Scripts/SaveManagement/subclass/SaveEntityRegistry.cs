@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Linq;
+using Cysharp.Threading.Tasks;
 using TH.Resource;
 using UnityEngine;
 using TH.Utils;
@@ -29,10 +30,6 @@ namespace TH.SaveLoad
         
         // SceneCatalog 접근용 (외부에서 주입)
         private Func<SceneCatalogSO> getCatalog;
-        
-        public SaveEntityRegistry()
-        {
-        }
         
         /// <summary>
         /// SceneCatalog 접근자 설정. SaveSystem 초기화 시 호출됩니다.

@@ -379,23 +379,27 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1255362798127666925, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.9335853
+      value: 0.93376863
       objectReference: {fileID: 0}
     - target: {fileID: 1255362798127666925, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0.3427948
+      value: 0.34230024
       objectReference: {fileID: 0}
     - target: {fileID: 1255362798127666925, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0.09805149
+      value: 0.098054886
       objectReference: {fileID: 0}
     - target: {fileID: 1255362798127666925, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0.036002643
+      value: -0.035944887
       objectReference: {fileID: 0}
     - target: {fileID: 2466537272173059495, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
       propertyPath: m_Name
       value: Core
+      objectReference: {fileID: 0}
+    - target: {fileID: 3786535783881817468, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
+      propertyPath: Composition.DeadZone.Enabled
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

@@ -45,10 +45,6 @@ namespace TH.Attribute
         private LazyValue<float> rewardXp;
 
         private IFloatingTextSpawner textSpawner;
-        
-        // private static readonly int DieAnimHash = Animator.StringToHash("die");
-        // private static readonly int ReviveAnimHash = Animator.StringToHash("revive");
-
 
         private void Awake()
         {

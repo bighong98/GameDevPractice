@@ -91,6 +91,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!195 &8849654639277009064
 NavMeshAgent:
@@ -171,7 +172,7 @@ CapsuleCollider:
   m_Radius: 0.5
   m_Height: 2
   m_Direction: 1
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Center: {x: 0, y: 1, z: 0}
 --- !u!114 &1599618502693370758
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -198,8 +199,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 26e8151728f9ba345ab23baf8c706be7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RPG.Item.Equipper
+  bodyRootTransform: {fileID: 0}
   rightHandTransform: {fileID: 0}
   leftHandTransform: {fileID: 0}
+  ignoreLocalPosition: 0
 --- !u!114 &-2450599115419663989
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -1,4 +1,7 @@
+using System;
+using Cysharp.Threading.Tasks;
 using TH.Core.Service;
+using TH.Utils;
 using UnityEngine;
 
 namespace TH.SceneManagement
@@ -9,6 +12,7 @@ namespace TH.SceneManagement
     {
         [SerializeField] private PortalInfoSO info;
         [SerializeField] private Transform spawnPoint;
+        private Collider coll;
         
         public PortalInfoSO PortalInfo => info;
         public Transform SpawnPoint => spawnPoint;
@@ -25,7 +29,18 @@ namespace TH.SceneManagement
                 spawnPoint = Util.FindChild<Transform>(gameObject, "SpawnPoint");
             }
 
-            ValidatePortal();
+            if (TryGetComponent(out coll))
+                coll.enabled = false;
+        }
+
+        private async void Start()
+        {
+            try
+            {
+                await UniTask.DelayFrame(60);
+                ValidatePortal();
+            }
+            catch (Exception e) { this.LogError($"{e}", context: this);}
         }
         
         private void OnTriggerEnter(Collider other)
@@ -41,10 +56,13 @@ namespace TH.SceneManagement
         {
             if (info is { destinationScene: { } dest, destinationPortal: { } destPortalData }
                 && dest.IsNotNull()
-                && destPortalData.IsNotNull()) return;
-            
-            if (TryGetComponent(out Collider coll))
-                coll.enabled = false;
+                && destPortalData.IsNotNull())
+            {
+                coll.enabled = true;
+                return;
+            }
+
+            coll.enabled = false;
         }
     }
 }

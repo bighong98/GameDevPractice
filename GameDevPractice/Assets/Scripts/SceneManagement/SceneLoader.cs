@@ -19,6 +19,7 @@ namespace TH.SceneManagement
         // 씬 전환 이벤트
         public event Func<CancellationToken, UniTask> OnBeforeSceneChanged;
         public event Func<CancellationToken, UniTask> OnAfterSceneChanged;
+        public event Func<CancellationToken, UniTask> OnLastSceneChanged;
         public event Action<Scene> OnSceneChanged;
         
         // 외부 서비스, 리소스
@@ -52,7 +53,8 @@ namespace TH.SceneManagement
         {
             // 이벤트 내부 빈 객체로 초기화 (NRE 방지)
             OnBeforeSceneChanged = _ => UniTask.CompletedTask; 
-            OnAfterSceneChanged = _ => UniTask.CompletedTask; 
+            OnAfterSceneChanged = _ => UniTask.CompletedTask;
+            OnLastSceneChanged = _ => UniTask.CompletedTask;
 #if UNITY_EDITOR
             // 에디터 환경일 경우 플레이 시점 씬 캐시
             bootScene = SceneManager.GetActiveScene();
@@ -192,7 +194,11 @@ namespace TH.SceneManagement
                 );
                 CloseAfterPhase();
                 OnSceneChanged?.Invoke(result.Scene);
-                await UniTask.DelayFrame(60, cancellationToken: token);
+
+                await UniTask.WhenAll(
+                    OnLastSceneChanged.InvokeAllThrottledAsync(token),
+                    UniTask.DelayFrame(60, cancellationToken: token)
+                );
             }
             catch (Exception e)
             {

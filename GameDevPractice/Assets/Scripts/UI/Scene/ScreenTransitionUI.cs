@@ -24,7 +24,7 @@ namespace TH.UI
             if (ServiceLocator.Get<ISceneLoader>() is { } sceneLoader)
             {
                 sceneLoader.OnBeforeSceneChanged += FadeOut;
-                sceneLoader.OnAfterSceneChanged += FadeIn;
+                sceneLoader.OnLastSceneChanged += FadeIn;
             }
         }
 

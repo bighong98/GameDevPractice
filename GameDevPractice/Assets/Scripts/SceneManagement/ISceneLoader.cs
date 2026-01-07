@@ -16,6 +16,7 @@ namespace TH.SceneManagement
         // 씬 전환 이벤트
         event Func<CancellationToken, UniTask> OnBeforeSceneChanged;
         event Func<CancellationToken, UniTask> OnAfterSceneChanged;
+        event Func<CancellationToken, UniTask> OnLastSceneChanged;
         event Action<Scene> OnSceneChanged;
         // 씬 전환 오퍼레이션 게이트
         SceneTransitionGate CreateBeforeGate();

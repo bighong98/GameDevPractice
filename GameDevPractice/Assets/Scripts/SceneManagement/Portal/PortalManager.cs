@@ -43,6 +43,7 @@ namespace TH.SceneManagement
 
         public void OperatePortal(PortalInfoSO portalInfo)
         {
+            Logg.Log($"[PortalManager] OperatePortal ({portalInfo.name} -> {portalInfo.destinationPortal.name})", Logg.LoggingMode.Completed , context:portalInfo);
             //todo: destination.destinationScene 유효성 검사 추가
             if (portalInfo == null || portalInfo.destinationPortal == null)
             {
@@ -77,7 +78,11 @@ namespace TH.SceneManagement
         private void OnSceneChanged(Scene scene)
         {
             if (!pendingTeleport) return;
-            if (!TryFindDestinationPortal(out var destinationPortal)) return;
+            if (!TryFindDestinationPortal(out var destinationPortal))
+            {
+                Logg.LogWarning($"[PortalManager] OnSceneChange - failed to find Destination Portal", context: destinationPortalInfo);
+                return;
+            }
             
             TeleportPlayer(destinationPortal);
         }
@@ -85,7 +90,12 @@ namespace TH.SceneManagement
         private bool TryFindDestinationPortal(out Transform destination)
         {
             destination = null;
-            if (portals.Count == 0) return false;
+            if (portals.Count == 0)
+            {
+                Logg.LogWarning($"[PortalManager] TryFindDestinationPortal " +
+                                $"- there is no portal in current scene");
+                return false;
+            }
 
             foreach (var portal in portals)
             {
@@ -120,7 +130,7 @@ namespace TH.SceneManagement
             player.transform.rotation = destination.rotation;
             navMeshAgent.enabled = true;
             
-            Logg.Log($"[PortalManager] TeleportPlayer({destination.position}, {destination.rotation})", Logg.LoggingMode.InProgress);
+            Logg.Log($"[PortalManager] TeleportPlayer({destination.position}, {destination.rotation})", Logg.LoggingMode.Completed);
 
             pendingTeleport = false;
             destinationPortalInfo = null;
