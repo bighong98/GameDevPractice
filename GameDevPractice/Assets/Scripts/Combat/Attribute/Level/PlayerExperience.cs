@@ -81,7 +81,7 @@ namespace TH.Attribute
                 LevelUpEffectAction = () =>
                 {
                     if (transform == null) return;
-                    PoolManager.Instance.GetFromPool<SimplePooledParticlePlayer>(playerInfo.levelUpEffect, null, transform.position);
+                    PoolManager.Instance.GetFromPool<SimplePooledParticlePlayer>(playerInfo.levelUpEffect, transform, transform.position);
                 };
             }
         }

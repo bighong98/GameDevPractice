@@ -17,11 +17,20 @@ namespace TH.Core.Pool
             TopParent = parent;
         }
 
-        public Transform GetPoolContainer(GameObject prefab, Type type)
+public Transform GetPoolContainer(GameObject prefab, Type type)
         {
+            // 기존 컨테이너가 있고 유효하면 반환
             if (PoolContainerDictionary.TryGetValue(prefab, out var existingPoolContainer))
             {
-                return existingPoolContainer;
+                // 컨테이너가 파괴되었으면 딕셔너리에서 제거하고 새로 생성
+                if (existingPoolContainer == null)
+                {
+                    PoolContainerDictionary.Remove(prefab);
+                }
+                else
+                {
+                    return existingPoolContainer;
+                }
             }
             
             GameObject newPoolContainer = new GameObject($"{prefab.name}");
@@ -29,11 +38,20 @@ namespace TH.Core.Pool
             return PoolContainerDictionary[prefab] = newPoolContainer.transform;
         }
         
-        private Transform GetTypePoolContainer(Type type)
+private Transform GetTypePoolContainer(Type type)
         {
+            // 기존 타입 컨테이너가 있고 유효하면 반환
             if (TypeContainerDictionary.TryGetValue(type, out var existingTypeContainer))
             {
-                return existingTypeContainer;
+                // 컨테이너가 파괴되었으면 딕셔너리에서 제거하고 새로 생성
+                if (existingTypeContainer == null)
+                {
+                    TypeContainerDictionary.Remove(type);
+                }
+                else
+                {
+                    return existingTypeContainer;
+                }
             }
             
             GameObject newTypeContainer = new GameObject($"{type.Name}s");

@@ -203,11 +203,18 @@ namespace TH.Core.Service
         // 오브젝트를 풀에 반납
         // IPoolObject.Origin을 기준으로 소속 풀을 탐색
         // Origin은 반드시 prefab 게임 오브젝트여야 함
-        public void ReleaseFromPool(IPoolObject obj)
+public void ReleaseFromPool(IPoolObject obj, bool releaseToDefaultContainer = false)
         {
             if (obj == null)
             {
                 Logg.LogError($"[{nameof(PoolManager)}.{nameof(ReleaseFromPool)}] Object is null");
+                return;
+            }
+            
+            // Unity 객체가 이미 파괴되었는지 확인 (부모가 파괴되면서 같이 파괴된 경우)
+            if (obj is UnityEngine.Object unityObj && unityObj == null)
+            {
+                Logg.LogWarning($"[{nameof(PoolManager)}.{nameof(ReleaseFromPool)}] Object has been destroyed (possibly parent was destroyed)");
                 return;
             }
             
@@ -221,6 +228,13 @@ namespace TH.Core.Service
             {
                 Logg.LogWarning($"[{nameof(PoolManager)}.{nameof(ReleaseFromPool)}] Pool not found for origin: {obj.Origin.name}");
                 return;
+            }
+            
+            // 기본 컨테이너로 부모 변경 후 풀에 반납
+            if (releaseToDefaultContainer && obj is Component component)
+            {
+                var defaultContainer = poolContainer.GetPoolContainer(obj.Origin, CacheAndGetType(obj.Origin));
+                component.transform.SetParent(defaultContainer, worldPositionStays: false);
             }
 
             pool.Release(obj);

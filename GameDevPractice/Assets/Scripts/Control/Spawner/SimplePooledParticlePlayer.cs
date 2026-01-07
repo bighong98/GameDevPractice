@@ -29,12 +29,10 @@ public class SimplePooledParticlePlayer : MonoBehaviour, IPoolObject
 
     private void OnParticleSystemStopped()
     {
-        // PoolingManager.Instance.ReleaseFromPool(this);
-        PoolManager.Instance.ReleaseFromPool(this);
+        PoolManager.Instance.ReleaseFromPool(this, releaseToDefaultContainer: true);
     }
 
     public GameObject Origin { get; set; }
-    // public PoolKey PoolKey { get; set; }
 
     public void OnCreateFromPool()
     {
@@ -59,9 +57,7 @@ public class SimplePooledParticlePlayer : MonoBehaviour, IPoolObject
 
     public void ReleaseSelf()
     {
-        // if (gameObject.activeSelf && Origin != null)
-        //     PoolingManager.Instance.ReleaseFromPool(this);
         if (gameObject.activeSelf && Origin != null)
-            PoolManager.Instance.ReleaseFromPool(this);
+            PoolManager.Instance.ReleaseFromPool(this, releaseToDefaultContainer: true);
     }
 }
