@@ -13,6 +13,7 @@ namespace TH.Attribute
     [Serializable]
     public struct HealthSaveData
     {
+        public float maxHp;
         public float hp;
     }
     public class Health : MonoBehaviour, IDamageable, IHealable, ISavable
@@ -116,7 +117,7 @@ namespace TH.Attribute
         private void SetHp(float amount, bool modifyMax = false)
         {
             if (modifyMax) SetMaxHp(amount, byForce: true);
-            SetCurrentHp(amount, byForce: true);
+            else SetCurrentHp(amount, byForce: true);
         }
  
         // 현재 체력 조정
@@ -127,7 +128,7 @@ namespace TH.Attribute
             
             if (!maxHp.TryGet(out var max) || max.IsEqualFloat(0f))
             {
-                Logg.LogWarning($"[{gameObject.name}.{nameof(SetCurrentHp)}]Max Hp is less or equal to 0. failed to set HP");
+                this.LogWarning($"({gameObject.name}, {nameof(SetCurrentHp)}) - Max Hp is less or equal to 0. failed to set HP");
                 Die(); // 최대 체력이 세팅되어있지 않다면 사망 처리
                 return;
             }
@@ -224,15 +225,18 @@ namespace TH.Attribute
             
             return new HealthSaveData
             {
-                hp = hp.Value
+                hp = hp.Value,
+                maxHp = maxHp.Value,
             };
         }
 
         public bool RestoreState(object state)
         {
             if (state is not HealthSaveData data) return false;
-            this.Log($"[{gameObject.name}]RestoreState for Health: hp to {data.hp}" ,Logg.LoggingMode.Completed); 
-            SetHp(data.hp, modifyMax: true);
+            this.Log($"[{gameObject.name}]RestoreState for Health: (maxHp: {data.maxHp}, hp: {data.hp})", Logg.LoggingMode.Completed); 
+            
+            SetMaxHp(data.maxHp, byForce: true);
+            SetCurrentHp(data.hp, byForce: true);
 
             return true;
         }

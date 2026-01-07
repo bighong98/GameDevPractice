@@ -801,6 +801,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 653c97bd88b4b084d87714542c43ee5a, type: 3}
+--- !u!4 &548063073 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8098874167255327764, guid: 5f2413f6eb536cc4db8daabb6d71a29d, type: 3}
+  m_PrefabInstance: {fileID: 1297776105}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &576119136 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 465096, guid: f65a7bee03bbc4542a4af2c67922b549, type: 3}
@@ -1523,6 +1528,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 11400000, guid: c5969c1849098d7449eb13124d74336d, type: 2}
     - target: {fileID: 8063112104861481351, guid: 5f2413f6eb536cc4db8daabb6d71a29d, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8063112104861481351, guid: 5f2413f6eb536cc4db8daabb6d71a29d, type: 3}
       propertyPath: destination.sceneName
       value: Sandbox2
       objectReference: {fileID: 0}
@@ -1538,6 +1547,14 @@ PrefabInstance:
       propertyPath: m_LocalPosition.z
       value: 3
       objectReference: {fileID: 0}
+    - target: {fileID: 8858394443868996100, guid: 5f2413f6eb536cc4db8daabb6d71a29d, type: 3}
+      propertyPath: info
+      value: 
+      objectReference: {fileID: 11400000, guid: c5969c1849098d7449eb13124d74336d, type: 2}
+    - target: {fileID: 8858394443868996100, guid: 5f2413f6eb536cc4db8daabb6d71a29d, type: 3}
+      propertyPath: spawnPoint
+      value: 
+      objectReference: {fileID: 548063073}
     - target: {fileID: 8963691957439885939, guid: 5f2413f6eb536cc4db8daabb6d71a29d, type: 3}
       propertyPath: m_Name
       value: Portal

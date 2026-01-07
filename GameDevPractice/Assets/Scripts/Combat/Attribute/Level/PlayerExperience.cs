@@ -192,7 +192,7 @@ namespace TH.Attribute
 
             if (GetCurrLevel is { } level && GetCurrXp is { } xp)
             {
-                this.Log($"- ({gameObject.name}) CaptureState invoked - level: {level}), xp: {xp}", Logg.LoggingMode.InProgress);
+                this.Log($"- ({gameObject.name}) CaptureState invoked - level: {level}), xp: {xp}", Logg.LoggingMode.Completed);
                 return new PlayerLevelXpData(level, xp);
             }
 
@@ -204,7 +204,7 @@ namespace TH.Attribute
             this.Log($"- ({gameObject.name}) RestoreState invoked", Logg.LoggingMode.Completed);
             if (state is PlayerLevelXpData { } data)
             {
-                this.Log($"- ({gameObject.name}) RestoreState invoked - SetLevel({data.level}), SetXp({data.xp})", Logg.LoggingMode.InProgress);
+                this.Log($"- ({gameObject.name}) RestoreState invoked - SetLevel({data.level}), SetXp({data.xp})", Logg.LoggingMode.Completed);
                 SetLevel(data.level);
                 SetXp(data.xp);
                 return true;

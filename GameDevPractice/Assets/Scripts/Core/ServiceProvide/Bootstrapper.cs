@@ -66,6 +66,11 @@ namespace TH.Core.Service
             ServiceLocator.Register<IFloatingTextSpawner>(sp => 
                 new FloatingTextSpawner(sp.Get<IResourceLoader>()));
             ServiceLocator.Register<IPlayerHolder>(new PlayerHolder());
+            ServiceLocator.Register<IPortalManager>(sp => 
+                new PortalManager(
+                    sp.Get<ISceneLoader>(),
+                    sp.Get<IPlayerHolder>()
+                    ));
         }
 
         private static async UniTask InitializeAsync()

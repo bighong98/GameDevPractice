@@ -1,16 +1,18 @@
 using Cysharp.Threading.Tasks;
 using UnityEngine;
-using TH.SaveLoad;
 using TH.Core.Service;
 
 namespace TH.SceneManagement
 {
     [RequireComponent(typeof(Collider))]
     [RequireComponent(typeof(Rigidbody))]
-    public class Portal : MonoBehaviour
+    public class Portal : MonoBehaviour, IPortal
     {
         [SerializeField] private PortalInfoSO info;
         [SerializeField] private Transform spawnPoint;
+
+        public PortalInfoSO PortalInfo => info;
+        public Transform SpawnPoint => spawnPoint;
 
         private void Awake()
         {

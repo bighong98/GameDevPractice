@@ -42,9 +42,9 @@ namespace TH.Utils
         }
         
         [System.Diagnostics.Conditional("UNITY_EDITOR")]
-        public static void Log(object msg, LoggingMode mode = LoggingMode.Default)
+        public static void Log(object msg, LoggingMode mode = LoggingMode.Default, UnityEngine.Object context = null)
         {
-            if (ShouldLog(mode)) Debug.Log(msg);
+            if (ShouldLog(mode)) Debug.Log(msg, context);
         }
         
         [System.Diagnostics.Conditional("UNITY_EDITOR")]

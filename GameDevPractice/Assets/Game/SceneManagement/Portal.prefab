@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 7641280697070465874}
   - component: {fileID: 6786911371270695730}
   - component: {fileID: 5683346577492181683}
-  - component: {fileID: 8063112104861481351}
+  - component: {fileID: 8858394443868996100}
   m_Layer: 0
   m_Name: Portal
   m_TagString: Untagged
@@ -83,7 +83,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &8063112104861481351
+--- !u!114 &8858394443868996100
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -92,11 +92,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 8963691957439885939}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 70332287262b5604b853a666f347aa60, type: 3}
+  m_Script: {fileID: 11500000, guid: 429a8c4510e2cfd4eacd53a890d746c2, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TH.SceneManagement.Portal
+  m_EditorClassIdentifier: Assembly-CSharp::TH.SceneManagement.PortalRefactoring
   info: {fileID: 0}
-  spawnPoint: {fileID: 8098874167255327764}
+  spawnPoint: {fileID: 0}
 --- !u!1 &9000093922994249221
 GameObject:
   m_ObjectHideFlags: 0

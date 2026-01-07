@@ -1,10 +1,11 @@
+using System;
 using System.Collections;
 using TH.UI;
 using TH.Utils;
 using TMPro;
 using UnityEngine;
 
-public class InvenSlotUI : BaseSlotUI, IInvenSlotUI
+public sealed class InvenSlotUI : BaseSlotUI, IInvenSlotUI
 {
     #region Enums
 
@@ -19,6 +20,14 @@ public class InvenSlotUI : BaseSlotUI, IInvenSlotUI
     {
         base.Awake();
         BindTMPText(typeof(TMPTexts));
+    }
+
+    private void OnDisable()
+    {
+        if (_fadeCoroutine == null) return;
+        
+        StopCoroutine(_fadeCoroutine);
+        _fadeCoroutine = null;
     }
 
     public void SetAmount(int amount)
@@ -46,6 +55,7 @@ public class InvenSlotUI : BaseSlotUI, IInvenSlotUI
     }
 
     #region IHighlightableSlotUI
+    
     private Coroutine _fadeCoroutine;
     private int currentHighlightType;
     public override void Highlight() => Highlight((int)SlotHighlightType.Select);
@@ -76,7 +86,8 @@ public class InvenSlotUI : BaseSlotUI, IInvenSlotUI
 
     public void UnHighlightWithFade(int type, float duration = 0.5f)
     {
-        if (!gameObject.activeSelf) return;
+        // if (!gameObject.activeSelf || !gameObject.activeInHierarchy) return;
+        if (!isActiveAndEnabled) return;
         if (currentHighlightType != type) return;
         if (_fadeCoroutine != null)
         {
