@@ -67,6 +67,7 @@ namespace TH.Resource
                     $"[{gameObject.name}.{nameof(InitializeTypeAsync)}] invalid AssetReference for type data");
             
             ResourceManager.Instance.TryLoad(typeRef, out type);
+            this.Log($"InitializeType() - result: {type}", Logg.LoggingMode.Completed);
         }
 
         // Addressables에서 ScriptableObject 타입 데이터를 비동기 로드
@@ -135,8 +136,7 @@ namespace TH.Resource
             // 오브젝트 풀 생성 시도
             if (Origin == null) Origin = prefabData;
             PoolManager.Instance.GetPool(prefab: prefabData);
-            Logg.Log($"[{GetType().Name}.{nameof(AddToPool)}()] " +
-                     $"Origin == prefabData: {Origin == prefabData}", Logg.LoggingMode.Completed);
+            this.Log($"AddToPool - Origin == prefabData: {Origin == prefabData}", Logg.LoggingMode.Completed);
         }
 
         #region Pool Method (IPoolObject)
@@ -169,9 +169,13 @@ namespace TH.Resource
         
         public virtual void ReleaseSelf()
         {
+            this.Log($"ReleaseSelf() invoked", Logg.LoggingMode.Completed);
             if (token.IsCancellationRequested) return;
             if (gameObject.activeSelf && Origin != null)
+            {
+                this.Log($"ReleaseSelf - Origin: {Origin}", Logg.LoggingMode.Completed);
                 PoolManager.Instance.ReleaseFromPool(this);
+            }
         }
 
         #endregion

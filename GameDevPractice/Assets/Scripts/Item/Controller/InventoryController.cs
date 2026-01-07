@@ -26,8 +26,6 @@ namespace TH.Item
         private IPlayerInventoryUI pInvenUI;
         // sub popup
         private UI_ItemTooltip itemTooltip;
-
-        
         
         // 드래그 상태 추적
         private bool isDragging = false;
@@ -39,7 +37,6 @@ namespace TH.Item
         // outer service
         private IGameItemTransfer itemTransfer;
         private IGameItemConsumer itemConsumer;
-
         
         private void Awake()
         {
@@ -363,6 +360,7 @@ namespace TH.Item
         
         private void OnSlotItemTryUsed(IGameItemStorage storage, IGameItemSlot slot)
         {
+            this.Log($"OnSlotItemTryUsed - storage{storage}, slot: {slot}", Logg.LoggingMode.Completed);
             if (slot is not { HasItem: true, GetItem: { } item, GetItemInfo: { } itemData }) return;
             if (!itemData.isUsable) return;
 

@@ -33,16 +33,21 @@ namespace TH.Control
             switch (interact)
             {
                 case IDropItem dropItem:
-                    if (itemBuilder.GetItemFromData(dropItem.ItemData, dropItem.Amount) is not { } item) return;
-                    if ((dropItem.UseImmediately && playerStorage.TryStoreAndUse(item))
-                        || (!dropItem.UseImmediately && playerStorage.TryStore(item)))
-                    {
-                        dropItem.Interact();
-                    }
+                    StoreDropItem(dropItem);
                     break;
                 //todo: 필요한 상호작용 추가
                 default:
                     break;
+            }
+        }
+
+        private void StoreDropItem(IDropItem dropItem)
+        {
+            if (itemBuilder.GetItemFromData(dropItem.ItemData, dropItem.Amount) is not { } item) return;
+            if ((dropItem.UseImmediately && playerStorage.TryStoreAndUse(item))
+                || (!dropItem.UseImmediately && playerStorage.TryStore(item)))
+            {
+                dropItem.Interact();
             }
         }
     }

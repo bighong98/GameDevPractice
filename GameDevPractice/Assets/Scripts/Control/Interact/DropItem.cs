@@ -32,6 +32,7 @@ namespace TH.Control
 
         public void Interact()
         {
+            this.Log($"Interact() invoked", Logg.LoggingMode.Completed);
             holder.ReleaseSelf();
         }
     }

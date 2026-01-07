@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using TH.Item;
 using TH.Core.Pool;
+using TH.Utils;
 
 namespace TH.Resource
 {

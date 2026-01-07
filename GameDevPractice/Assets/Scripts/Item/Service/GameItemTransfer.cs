@@ -252,7 +252,7 @@ namespace TH.Item
         public void TransferOrSwap(IGameItemStorage source, IGameItemSlot sourceSlot,
             IGameItemStorage destination)
         {
-            Logg.Log($"[{nameof(GameItemTransfer)}] TransferOrSwap({source}, {sourceSlot}, {destination})", Logg.LoggingMode.InProgress);
+            this.Log($"TransferOrSwap({source}, {sourceSlot}, {destination})", Logg.LoggingMode.Completed);
 
             if (!ValidateSlotWithItem(sourceSlot, source))
                 return;

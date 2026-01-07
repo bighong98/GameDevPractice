@@ -42,7 +42,6 @@ namespace TH.Item
             resourceLoader.OnLabelResourcesLoadedAll += (label) =>
             {
                 if (!string.Equals(label, Constants.PreLoadLabel)) return;
-                // saveSystem.RegisterEntity(this);
                 saveEntityRegistry.RegisterEntity(this);
                 LoadTestData(resourceLoader);
             };
@@ -58,10 +57,12 @@ namespace TH.Item
 
         private const string InventoryTestDataSOKey = "InventoryTestDataSO";
         private bool isTestDataLoaded = false;
+        private bool _hasRestoredState = false;
+
         
         private void LoadTestData(IResourceLoader resourceLoader)
         {
-            if (isTestDataLoaded) return;
+            if (isTestDataLoaded || _hasRestoredState) return;
             
             if (!resourceLoader.TryLoad<InventoryTestDataSO>(InventoryTestDataSOKey, out var testData))
             {
@@ -233,6 +234,7 @@ namespace TH.Item
         {
             if (!TryStore(item, out var storedSlot)) return false;
             
+            this.Log($"TryStoreAndUse({item}) - Store succeed. call OnItemTryUsed.Invoke({storedSlot})", Logg.LoggingMode.Completed);
             OnItemTryUsed?.Invoke(storedSlot);
             return true;
         }
@@ -1132,6 +1134,8 @@ namespace TH.Item
 
         public bool RestoreState(object state)
         {
+            _hasRestoredState = true;
+
             this.Log($"RestoreState", Logg.LoggingMode.Completed);
 
             Clear();
