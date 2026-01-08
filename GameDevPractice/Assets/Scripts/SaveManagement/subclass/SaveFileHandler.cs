@@ -23,24 +23,12 @@ namespace TH.SaveLoad
         
         #endregion
         
-        #region Fields
-        
         private readonly string _saveRootDirectory;
         private readonly List<SaveFileInfo> _saveFileList;
         private string _lastUsedSaveFileName;
         
-        #endregion
-        
-        #region Properties
-        
-        /// <summary>
-        /// 존재하는 모든 세이브 파일 목록 (읽기 전용)
-        /// </summary>
+        // 존재하는 모든 세이브 파일 목록 (읽기 전용)
         public IReadOnlyList<SaveFileInfo> SaveFiles => _saveFileList;
-        
-        #endregion
-        
-        #region Constructor
         
         public SaveFileHandler()
         {
@@ -52,8 +40,6 @@ namespace TH.SaveLoad
             
             this.Log($"SaveFileHandler 초기화 완료 - 루트 경로: {_saveRootDirectory}, 발견된 세이브 파일: {_saveFileList.Count}개");
         }
-        
-        #endregion
         
         #region Directory Initialization
         
@@ -87,7 +73,7 @@ namespace TH.SaveLoad
         
         #endregion
         
-        #region ISaveFileHandler - Core Save/Load
+        #region ISaveFileHandler - Save/Load File I/O
 
         public SaveFileData LoadFile(string saveFile)
         {
@@ -188,8 +174,8 @@ namespace TH.SaveLoad
                     if (File.Exists(path))
                     {
                         // 백업 실패 시 throw 하지 않고 그대로 overwrite 시도
-                        try { File.Copy(path, bak, overwrite: true); } catch { }
-                        try { File.Delete(path); } catch { }
+                        try { File.Copy(path, bak, overwrite: true); } catch (Exception copyException) { Logg.LogWarning(copyException); }
+                        try { File.Delete(path); } catch (Exception deleteException) { Logg.LogWarning(deleteException); }
                     }
 
                     // Move가 막히면 Copy(overwrite)
@@ -270,19 +256,17 @@ namespace TH.SaveLoad
                 {
                     string slotName = Path.GetFileName(slotDir);
                     string saveFilePath = Path.Combine(slotDir, slotName + SaveFileExtension);
+
+                    if (!File.Exists(saveFilePath)) continue;
                     
-                    if (File.Exists(saveFilePath))
-                    {
-                        var fileInfo = new FileInfo(saveFilePath);
+                    var fileInfo = new FileInfo(saveFilePath);
+                    var saveInfo = new SaveFileInfo(
+                        fileName: slotName,
+                        saveDate: fileInfo.LastWriteTime,
+                        filePath: saveFilePath
+                    );
                         
-                        var saveInfo = new SaveFileInfo(
-                            fileName: slotName,
-                            saveDate: fileInfo.LastWriteTime,
-                            filePath: saveFilePath
-                        );
-                        
-                        _saveFileList.Add(saveInfo);
-                    }
+                    _saveFileList.Add(saveInfo);
                 }
                 
                 // 슬롯 번호 오름차순 정렬
@@ -377,8 +361,41 @@ namespace TH.SaveLoad
             }
             return 0; // 파싱 실패 시 0 반환
         }
+
+
+        /// <summary>
+        /// 지정된 SceneEntry로 초기화된 새 세이브 파일 생성
+        /// </summary>
+        /// <param name="defaultSceneEntry">초기 lastSceneEntry로 설정할 씬 엔트리</param>
+        /// <returns>생성된 세이브 파일명</returns>
+        public string CreateEmptySaveFile(SceneEntry defaultSceneEntry)
+        {
+            // 다음 사용 가능한 슬롯 번호 확보
+            int slotNumber = GetNextAvailableSlotNumber();
+            string saveFileName = GetSaveFileNameFromSlot(slotNumber);
+            
+            // 슬롯 디렉토리 확보
+            EnsureSlotDirectory(saveFileName);
+            
+            // 새 SaveFileData 생성 (lastSceneEntry = defaultSceneEntry)
+            var data = new SaveFileData
+            {
+                lastSceneEntry = defaultSceneEntry,
+                sceneData = new Dictionary<string, List<SavableEntry>>(),
+                globalData = new List<SavableEntry>()
+            };
+            
+            // 파일 저장
+            SaveFile(saveFileName, data);
+            
+            this.Log($"새 세이브 파일 생성 완료: {saveFileName}, defaultScene: {defaultSceneEntry?.key ?? "null"}", Logg.LoggingMode.Completed);
+            
+            return saveFileName;
+        }
+
         
         #endregion
+        
     }
 }
 

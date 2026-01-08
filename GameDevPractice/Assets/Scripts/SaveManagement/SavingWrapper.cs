@@ -2,6 +2,7 @@ using System;
 using Cysharp.Threading.Tasks;
 using TH.Core;
 using TH.Core.Service;
+using TH.SceneManagement;
 using UnityEngine;
 using TH.Resource;
 using TH.Utils;
@@ -10,16 +11,22 @@ namespace TH.SaveLoad
 {
     public class SavingWrapper : MonoBehaviour
     {
+        [SerializeField] private bool loadMainMenuInEditor;
+
+        private const string SceneCatalogKey = "SceneCatalogSO";
+
         private ISaveSystem saveSystem;
+        private IResourceLoader resourceLoader;
+        private ISceneLoader sceneLoader;
+        private SceneCatalogSO sceneCatalog;
         
         private void Awake()
         {
             saveSystem = ServiceLocator.Get<ISaveSystem>();
-            
-            if (ServiceLocator.Get<IResourceLoader>() is {} resourceLoader)
-            {
-                resourceLoader.WaitForPreLoad(Constants.PreLoadLabel, Init);
-            }
+            resourceLoader = ServiceLocator.Get<IResourceLoader>();
+            sceneLoader = ServiceLocator.Get<ISceneLoader>();
+
+            resourceLoader.WaitForPreLoad(Constants.PreLoadLabel, Init);
         }
 
         private void OnEnable()
@@ -40,16 +47,54 @@ namespace TH.SaveLoad
         {
             if (label != Constants.PreLoadLabel) return;
             
-            Logg.Log($"[SavingWrapper] Init() invoked");
-            LoadLastScene().Forget();
+            this.Log($"Init() invoked");
+            LoadStartupScene().Forget();
         }
         
-        private async UniTask LoadLastScene()
+        private async UniTask LoadStartupScene()
         {
             await UniTask.Yield(); // 1 프레임 지연 (Awake()에서 실행됨으로써 발생 가능한 fader 초기화 순서 오류 방지)
+            if (ShouldLoadMainMenu())
+            {
+                await LoadMainMenuScene();
+                return;
+            }
+
             await saveSystem.LoadLastScene();
         }
         
+        private bool ShouldLoadMainMenu()
+        {
+#if UNITY_EDITOR
+            return loadMainMenuInEditor;
+#else
+            return true;
+#endif
+        }
+
+        private async UniTask LoadMainMenuScene()
+        {
+            if (resourceLoader == null || sceneLoader == null)
+            {
+                Logg.LogWarning("[SavingWrapper] missing services. Falling back to LoadLastScene.");
+                await saveSystem.LoadLastScene();
+                return;
+            }
+
+            if (sceneCatalog == null)
+                sceneCatalog = await resourceLoader.LoadAsync<SceneCatalogSO>(SceneCatalogKey);
+            
+            var mainMenuEntry = sceneCatalog.GetMainMenuSceneEntry();
+            if (mainMenuEntry.sceneRef == null)
+            {
+                Logg.LogWarning("[SavingWrapper] main menu scene not configured. Falling back to LoadLastScene.");
+                await saveSystem.LoadLastScene();
+                return;
+            }
+
+            await sceneLoader.LoadSceneAsync(mainMenuEntry.sceneRef);
+        }
+
         private void SaveCall() => Save().Forget();
         private void LoadCall() => Load().Forget();
 

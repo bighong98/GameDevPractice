@@ -34,7 +34,6 @@ namespace TH.Item
         private int GetEndIdx => Mathf.Min(capacity, slots.Count) - 1; // return value -1 means not initialized or cleared 
         private bool IsValidSlotIdx(int index) => index >= 0 && index <= GetEndIdx;
         
-        // public PlayerStorage(IResourceLoader resourceLoader, ISaveSystem saveSystem)
         public PlayerStorage(IResourceLoader resourceLoader, ISaveEntityRegistry saveEntityRegistry)
         {
             Init();

@@ -15,6 +15,7 @@ namespace TH.SaveLoad
 {
     public class SaveSystem : ISaveSystem
     {
+
         
         // outer services
         private readonly IResourceLoader resourceLoader;
@@ -58,7 +59,7 @@ namespace TH.SaveLoad
             catalogResolved = catalogResolveTCS.Task.Preserve();
             LoadSceneCatalogAsync().Forget();
 
-            LoadAsync(GetSaveFileName()).Forget(); //todo: 세이브파일 관리 기능 추가 후 제거
+            // LoadAsync(GetSaveFileName()).Forget(); //todo: 세이브파일 관리 기능 추가 후 제거
             
             sceneLoader.OnBeforeSceneChanged += OnBeforeSceneChanged;
             sceneLoader.OnAfterSceneChanged += OnAfterSceneChanged;
@@ -111,6 +112,17 @@ namespace TH.SaveLoad
             await catalogResolved.AttachExternalCancellation(token);
         }
 
+        private bool IsMainMenuSceneEntry(SceneEntry sceneEntry)
+        {
+            return sceneCatalog != null && sceneCatalog.IsMainMenuSceneEntry(sceneEntry);
+        }
+
+        private static bool IsSaveTargetScene(SceneEntry sceneEntry)
+        {
+            return sceneEntry != null && sceneEntry.SaveTargetScene;
+        }
+
+
         #endregion
         
         #region Load Last Scene
@@ -132,7 +144,14 @@ namespace TH.SaveLoad
                 await WaitForCatalog();
 
                 // 저장된 씬이 없다면 디폴트 씬으로 이동
-                if (data.lastSceneEntry is not { sceneRef: { } key })
+                var lastSceneEntry = data.lastSceneEntry;
+                if (!IsSaveTargetScene(lastSceneEntry) || IsMainMenuSceneEntry(lastSceneEntry))
+                    lastSceneEntry = null;
+
+                object key;
+                if (lastSceneEntry is { sceneRef: { } sceneRef })
+                    key = sceneRef;
+                else
                     key = sceneCatalog.GetDefaultSceneEntry().sceneRef;
                     
                 await sceneLoader.LoadSceneAsync(key);
@@ -310,19 +329,26 @@ namespace TH.SaveLoad
             
             await UniTask.SwitchToMainThread();
             sceneEntry ??= sceneCatalog.GetCurrentSceneEntry();
+            if (sceneEntry != null && !IsSaveTargetScene(sceneEntry))
+            {
+                this.Log($"SaveCoreAsync skipped - sceneEntry is not save target: {sceneEntry?.key}", Logg.LoggingMode.Completed);
+                return;
+            }
+            var sceneEntryForSave = IsMainMenuSceneEntry(sceneEntry) ? null : sceneEntry;
             
             // 등록된 세이브 대상(ISavable)들의 데이터 직렬화 수행
             // 직렬화된 데이터(SavableEntry)를 씬 데이터(씬에 종속된 오브젝트), 글로벌(씬과 무관한 오브젝트, 서비스) 데이터로 구분하여 캐싱
-            if (entityRegistry.TryGetSceneSavableEntries(sceneEntry, out var sceneEntities))
+            if (entityRegistry.TryGetSceneSavableEntries(sceneEntryForSave, out var sceneEntities))
                 AddSaveEntries(sceneSaveEntries, sceneEntities);
             AddSaveEntries(globalSaveEntries, entityRegistry.GetGlobalEntities());
             this.Log($"CaptureState 완료 - sceneEntries: {sceneSaveEntries.Count}, globalEntries: {globalSaveEntries.Count}", Logg.LoggingMode.Completed);
             
             // 직렬화된 데이터를 컨테이너(SaveFileData)에 저장 
-            if (data.sceneData != null && sceneEntry != null)
-                data.sceneData[sceneEntry.sceneId] = sceneSaveEntries;
+            if (data.sceneData != null && sceneEntryForSave != null)
+                data.sceneData[sceneEntryForSave.sceneId] = sceneSaveEntries;
             data.globalData = globalSaveEntries;
-            data.lastSceneEntry = sceneEntry;
+            if (sceneEntryForSave != null)
+                data.lastSceneEntry = sceneEntryForSave;
             
             // 세이브 데이터 파일로 저장
             SaveFile(saveFile, data);
@@ -342,6 +368,12 @@ namespace TH.SaveLoad
             }
 
             await UniTask.SwitchToMainThread();
+            currentSceneEntry ??= sceneCatalog.GetCurrentSceneEntry();
+            if (currentSceneEntry != null && !IsSaveTargetScene(currentSceneEntry))
+            {
+                this.Log($"LoadCoreAsync skipped - sceneEntry is not save target: {currentSceneEntry?.key}", Logg.LoggingMode.Completed);
+                return;
+            }
             RestoreState(data, currentSceneEntry);
             this.Log($"LoadCoreAsync({saveFile}, {currentSceneEntry?.key}) 완료", Logg.LoggingMode.Completed);
         }
@@ -355,33 +387,46 @@ namespace TH.SaveLoad
 
         #region ISceneLoader Event handler
 
+        private async UniTask OnBeforeSceneChanged(CancellationToken externalToken)
+        {
+            if (string.IsNullOrEmpty(GetSaveFileName()))
+                return;
+            // 씬 전환 전 자동 저장
+            externalToken.ThrowIfCancellationRequested();
+            await WaitForCatalog(externalToken);
+            
+            var currentSceneEntry = sceneCatalog.GetCurrentSceneEntry();
+            if (currentSceneEntry == null || !IsSaveTargetScene(currentSceneEntry))
+            {
+                this.Log($"OnBeforeSceneChanged skipped - sceneEntry is not save target: {currentSceneEntry?.key}", Logg.LoggingMode.Completed);
+                return;
+            }
+            await SaveAsync(GetSaveFileName());
+        }
         private async UniTask OnAfterSceneChanged(CancellationToken externalToken)
         {
             if (string.IsNullOrEmpty(GetSaveFileName()))
                 return;
             // 씬 전환 후 자동 로드 + 저장
             externalToken.ThrowIfCancellationRequested();
+            await WaitForCatalog(externalToken);
+           
+            var currentSceneEntry = sceneCatalog.GetCurrentSceneEntry();
+            if (currentSceneEntry == null || !IsSaveTargetScene(currentSceneEntry))
+            {
+                this.Log($"OnAfterSceneChanged skipped - sceneEntry is not save target: {currentSceneEntry?.key}", Logg.LoggingMode.Completed);
+                return;
+            }
+            // 씬 전환 후 자동 로드 및 저장
             await LoadAsync(GetSaveFileName());
             await SaveAsync(GetSaveFileName());
         }
-        
-private async UniTask OnBeforeSceneChanged(CancellationToken externalToken)
-        {
-            if (string.IsNullOrEmpty(GetSaveFileName()))
-                return;
-            // 씬 전환 전 자동 저장
-            externalToken.ThrowIfCancellationRequested();
-            await SaveAsync(GetSaveFileName());
-        } 
 
         #endregion
         
         #region State (CaptureState, RestoreState)
 
         // 씬에 존재하는 모든 SavableEntity의 상태 수집, 저장데이터에 반영
-
-         
-
         private void AddSaveEntries(ICollection<SavableEntry> entryCollection, ICollection<ISavableEntity> entities)
         {
             if (entryCollection == null || entities == null)

@@ -66,8 +66,17 @@ public static class Extension
     #nullable enable
     public static bool IsNotNull<T>([NotNullWhen(true)] this T? obj) where T : class
     {
-        if (obj is null) return false; // 가리키는 참조가 없는 경우 
-        if (obj is UnityEngine.Object unityObject) return unityObject != null;
+        if (obj is null) return false; // 가리키는 참조(Managed Heap)가 없는 경우 false 반환
+        if (obj is UnityEngine.Object unityObject) return unityObject != null; // 유니티 오버라이드 대응
         return true;
     }
+    #nullable restore
+    #nullable enable
+    public static bool IsNull<T>([NotNullWhen(false)] this T? obj) where T : class
+    {
+        if (obj is null) return true; // 가리키는 참조(Managed Heap)가 없는 경우 true 반환
+        if (obj is UnityEngine.Object unityObject) return unityObject == null; // 유니티 오버라이드 대응
+        return false;
+    }
+    #nullable restore
 }

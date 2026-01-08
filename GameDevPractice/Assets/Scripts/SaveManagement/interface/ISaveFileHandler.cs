@@ -67,6 +67,14 @@ namespace TH.SaveLoad
         /// </summary>
         string GetSaveFileNameFromSlot(int slotNumber);
         
+        /// <summary>
+        /// 지정된 SceneEntry로 초기화된 새 세이브 파일 생성
+        /// </summary>
+        /// <param name="defaultSceneEntry">초기 lastSceneEntry로 설정할 씬 엔트리</param>
+        /// <returns>생성된 세이브 파일명</returns>
+        string CreateEmptySaveFile(SceneEntry defaultSceneEntry);
+
+        
         #endregion
     }
 }

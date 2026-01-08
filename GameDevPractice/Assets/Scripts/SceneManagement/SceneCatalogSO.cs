@@ -18,6 +18,7 @@ namespace TH.Resource
     {
         [SerializeField] private List<SceneEntry> entries = new();
         [SerializeField] private SceneEntry defaultSceneEntry;
+        [SerializeField] private SceneEntry mainMenuSceneEntry;
 
 #if UNITY_EDITOR
         private void OnValidate()
@@ -49,6 +50,13 @@ namespace TH.Resource
                 defaultSceneEntry.key = Util.GetAddressKeyInEditor(defaultSceneRef);
                 dirty = true;
             }
+            
+            if (mainMenuSceneEntry.sceneRef is { } mainMenuSceneRef)
+            {
+                mainMenuSceneEntry.sceneId = mainMenuSceneRef.AssetGUID;
+                mainMenuSceneEntry.key = Util.GetAddressKeyInEditor(mainMenuSceneRef);
+                dirty = true;
+            }
 
             if (dirty)
                 UnityEditor.EditorUtility.SetDirty(this);
@@ -60,14 +68,34 @@ namespace TH.Resource
 #if UNITY_EDITOR
             // 에디터 환경: 플레이 모드 진입 시점 씬 엔트리 반환
             var guid = PlayModeSceneCache.GetCachedGuid();
+            this.Log($"GetDefaultSceneEntry - guid: {guid}", Logg.LoggingMode.Completed);
+
             if (!string.IsNullOrEmpty(guid))
             {
                 var e = FindByGuid(guid);
-                if (e != null) return e;
+                if (e != null && !IsMainMenuSceneEntry(e)) {
+                    this.Log($"GetDefaultSceneEntry return {e.key}", Logg.LoggingMode.Completed);
+                    return e;}
             }
 #endif
             // 빌드 환경: 기본 씬 엔트리 반환
             return defaultSceneEntry;
+        }
+
+        public SceneEntry GetMainMenuSceneEntry()
+        {
+            return mainMenuSceneEntry;
+        }
+
+        public bool IsMainMenuSceneEntry(SceneEntry sceneEntry)
+        {
+            if (sceneEntry == null || mainMenuSceneEntry == null)
+                return false;
+
+            if (!string.IsNullOrEmpty(sceneEntry.sceneId) && sceneEntry.sceneId == mainMenuSceneEntry.sceneId)
+                return true;
+
+            return !string.IsNullOrEmpty(sceneEntry.key) && sceneEntry.key == mainMenuSceneEntry.key;
         }
         
         public bool TryGetSceneEntry(Scene scene, out SceneEntry sceneEntry)

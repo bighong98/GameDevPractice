@@ -11,6 +11,7 @@ namespace TH.SaveLoad
         public string key;
         public string sceneId;
         public AssetReferenceScene sceneRef;
+        public bool SaveTargetScene = true;
 
         public SceneEntry() {}
         public SceneEntry(AssetReferenceScene sceneRef)

@@ -13,6 +13,16 @@ MonoBehaviour:
   m_Name: SceneCatalogSO
   m_EditorClassIdentifier: Assembly-CSharp::SceneCatalogSO
   entries:
+  - key: MainMenuScene
+    sceneId: 353490b24b861ad41871862ed7b93f75
+    sceneRef:
+      m_AssetGUID: 353490b24b861ad41871862ed7b93f75
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 1
+      sceneName: MainMenuScene
+    SaveTargetScene: 0
   - key: Sandbox
     sceneId: cbcc82c65a311f84994a9d24cf0b2546
     sceneRef:
@@ -22,6 +32,7 @@ MonoBehaviour:
       m_SubObjectGUID: 
       m_EditorAssetChanged: 0
       sceneName: Sandbox
+    SaveTargetScene: 1
   - key: Sandbox2
     sceneId: b88032d70465029478a4718851aeceff
     sceneRef:
@@ -31,6 +42,7 @@ MonoBehaviour:
       m_SubObjectGUID: 
       m_EditorAssetChanged: 1
       sceneName: Sandbox2
+    SaveTargetScene: 1
   defaultSceneEntry:
     key: Sandbox
     sceneId: cbcc82c65a311f84994a9d24cf0b2546
@@ -41,3 +53,15 @@ MonoBehaviour:
       m_SubObjectGUID: 
       m_EditorAssetChanged: 0
       sceneName: Sandbox
+    SaveTargetScene: 1
+  mainMenuSceneEntry:
+    key: MainMenuScene
+    sceneId: 353490b24b861ad41871862ed7b93f75
+    sceneRef:
+      m_AssetGUID: 353490b24b861ad41871862ed7b93f75
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 1
+      sceneName: MainMenuScene
+    SaveTargetScene: 0
