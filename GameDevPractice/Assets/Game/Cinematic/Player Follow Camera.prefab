@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 2028596335765454518}
   - component: {fileID: 6186847598349890935}
   - component: {fileID: 2823857570014986721}
+  - component: {fileID: 7935801609325134867}
   m_Layer: 0
   m_Name: Player Follow Camera
   m_TagString: Untagged
@@ -268,3 +269,16 @@ MonoBehaviour:
         DecelTime: 0
   PlayerIndex: -1
   AutoEnableInputs: 1
+--- !u!114 &7935801609325134867
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3188763098889343814}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6467e089006659c4cab18cb3a2c979ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  resetOnSceneLoad: 1

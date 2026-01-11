@@ -971,11 +971,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2028596335765454518, guid: 49b6fd16630d3a44e83d913a946ff735, type: 3}
       propertyPath: Composition.DeadZone.Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2823857570014986721, guid: 49b6fd16630d3a44e83d913a946ff735, type: 3}
+      propertyPath: IgnoreTimeScale
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2823857570014986721, guid: 49b6fd16630d3a44e83d913a946ff735, type: 3}
       propertyPath: m_ControllerManager.Controllers.Array.data[2].Input.Gain
-      value: -1.5
+      value: -6
       objectReference: {fileID: 0}
     - target: {fileID: 2823857570014986721, guid: 49b6fd16630d3a44e83d913a946ff735, type: 3}
       propertyPath: m_ControllerManager.Controllers.Array.data[2].Driver.AccelTime
@@ -986,6 +990,14 @@ PrefabInstance:
       value: 0.1
       objectReference: {fileID: 0}
     - target: {fileID: 3111415650746018659, guid: 49b6fd16630d3a44e83d913a946ff735, type: 3}
+      propertyPath: Radius
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 3111415650746018659, guid: 49b6fd16630d3a44e83d913a946ff735, type: 3}
+      propertyPath: RadialAxis.Wrap
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3111415650746018659, guid: 49b6fd16630d3a44e83d913a946ff735, type: 3}
       propertyPath: RadialAxis.Value
       value: 2
       objectReference: {fileID: 0}
@@ -994,12 +1006,20 @@ PrefabInstance:
       value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 3111415650746018659, guid: 49b6fd16630d3a44e83d913a946ff735, type: 3}
+      propertyPath: VerticalAxis.Wrap
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3111415650746018659, guid: 49b6fd16630d3a44e83d913a946ff735, type: 3}
       propertyPath: VerticalAxis.Value
       value: 45
       objectReference: {fileID: 0}
     - target: {fileID: 3111415650746018659, guid: 49b6fd16630d3a44e83d913a946ff735, type: 3}
       propertyPath: VerticalAxis.Center
       value: 45
+      objectReference: {fileID: 0}
+    - target: {fileID: 3111415650746018659, guid: 49b6fd16630d3a44e83d913a946ff735, type: 3}
+      propertyPath: TrackerSettings.PositionDamping.z
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3188763098889343814, guid: 49b6fd16630d3a44e83d913a946ff735, type: 3}
       propertyPath: m_Name
@@ -1011,31 +1031,31 @@ PrefabInstance:
       objectReference: {fileID: 6738371793040901048}
     - target: {fileID: 4161482689268028711, guid: 49b6fd16630d3a44e83d913a946ff735, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -2.3640292
+      value: -1.7760726
       objectReference: {fileID: 0}
     - target: {fileID: 4161482689268028711, guid: 49b6fd16630d3a44e83d913a946ff735, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 15.643697
+      value: 9.985282
       objectReference: {fileID: 0}
     - target: {fileID: 4161482689268028711, guid: 49b6fd16630d3a44e83d913a946ff735, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -11.044095
+      value: -8.297322
       objectReference: {fileID: 0}
     - target: {fileID: 4161482689268028711, guid: 49b6fd16630d3a44e83d913a946ff735, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.93816674
+      value: 0.9374743
       objectReference: {fileID: 0}
     - target: {fileID: 4161482689268028711, guid: 49b6fd16630d3a44e83d913a946ff735, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0.34447697
+      value: 0.33201686
       objectReference: {fileID: 0}
     - target: {fileID: 4161482689268028711, guid: 49b6fd16630d3a44e83d913a946ff735, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0.032230567
+      value: 0.09844404
       objectReference: {fileID: 0}
     - target: {fileID: 4161482689268028711, guid: 49b6fd16630d3a44e83d913a946ff735, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0.0118344445
+      value: -0.034865044
       objectReference: {fileID: 0}
     - target: {fileID: 4161482689268028711, guid: 49b6fd16630d3a44e83d913a946ff735, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -1069,7 +1089,8 @@ PrefabInstance:
       propertyPath: AvoidObstacles.MinimumOcclusionTime
       value: 0.5
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 7935801609325134867, guid: 49b6fd16630d3a44e83d913a946ff735, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
