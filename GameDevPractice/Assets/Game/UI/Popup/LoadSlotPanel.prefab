@@ -395,16 +395,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 63ab9593d9b090d448c44e03ac4e448c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TH.UI.LoadSlotPanelUI
-  loadSlotWindow: {fileID: 6557894748735679453}
-  loadSlotHeader: {fileID: 4952652660070890596}
-  loadSlotTitle: {fileID: 443315351125045085}
-  loadSlotScrollRect: {fileID: 7743156392105594356}
-  loadSlotViewport: {fileID: 9133946596221400004}
+  uiRenderType: 0
+  escapable: 1
+  pauseRequired: 1
+  closeOnOuterBackgroundClick: 1
+  contentArea: {fileID: 6557894748735679453}
+  placePointerPosition: 0
+  duplicatedPopupHandle: 1
+  anchorWorldObject: 0
+  playEnterAnimation: 0
+  enterAnimation: 0
+  playExitAnimation: 0
+  exitAnimation: 0
   loadSlotContent: {fileID: 7440666308665412553}
   loadSlotTemplate: {fileID: 1510741992892734138, guid: 2aeb302ac13579f4789542d4d83f4040, type: 3}
-  loadSlotTemplateLabel: {fileID: 0}
   loadSlotEmptyLabel: {fileID: 8037892543571636080}
-  loadSlotFooter: {fileID: 2603665376195301924}
   loadSlotCloseButton: {fileID: 4124085076252787217}
 --- !u!1 &2340460608593024275
 GameObject:
@@ -641,14 +646,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.2, g: 0.2, b: 0.2, a: 0.9}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: 27124d9a84022fb4c934552437a56ce7, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -758,10 +763,10 @@ RectTransform:
   - {fileID: 2603665376195301924}
   m_Father: {fileID: 7366317794028282877}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 700, y: 520}
+  m_SizeDelta: {x: -1220, y: -560}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &8186108294915715521
 CanvasRenderer:
@@ -784,14 +789,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.08, g: 0.08, b: 0.08, a: 0.95}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: b1ba10fb0ef5949459d04022c2b96e75, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -859,10 +864,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 6453929232529582675}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: -180, y: -44}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7696925502204023377
 CanvasRenderer:
@@ -892,10 +897,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Close
+  m_text: "\uB2EB\uAE30"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: f6d6b904a4f1f3d43b31e22f66f65bbf, type: 2}
+  m_sharedMaterial: {fileID: 2686309706199086286, guid: f6d6b904a4f1f3d43b31e22f66f65bbf, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -996,10 +1001,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 4952652660070890596}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 200, y: 50}
+  m_SizeDelta: {x: -452, y: -2}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4789082915136292268
 CanvasRenderer:
@@ -1029,7 +1034,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Load Game
+  m_text: "\uBD88\uB7EC\uC624\uAE30"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 3226a6fb1c1d7bd4295b53a675f0bf5b, type: 2}
   m_sharedMaterial: {fileID: 2686309706199086286, guid: 3226a6fb1c1d7bd4295b53a675f0bf5b, type: 2}
@@ -1038,8 +1043,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+    rgba: 4278190080
+  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:

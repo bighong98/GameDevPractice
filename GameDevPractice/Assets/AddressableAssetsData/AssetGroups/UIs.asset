@@ -43,6 +43,13 @@ MonoBehaviour:
     - PreLoad_Prefab
     - UI
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8aa63baa8eb8d7b43bc219b70f06f61f
+    m_Address: LoadSlotPanel
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_Prefab
+    - UI
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 8bafa41b79bef5f4db386b34f11bf6e8
     m_Address: OptionMenuUI
     m_ReadOnly: 0
@@ -66,6 +73,13 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: c91010d41f187134caba9eec03a0960d
     m_Address: InvenSlotUI
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_Prefab
+    - UI
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e68de1593022e1b418f2849708380dc0
+    m_Address: MainMenuUI
     m_ReadOnly: 0
     m_SerializedLabels:
     - PreLoad_Prefab

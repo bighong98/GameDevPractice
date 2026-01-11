@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
+using TH.Core.Service;
 using TH.Utils;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace TH.UI
 {
-    public class MainMenuUI : BaseUI
+    public class MainMenuUI : SceneUI
     {
         #region Enum
 
@@ -41,7 +42,8 @@ namespace TH.UI
 
         [SerializeField] private GameObject loadSlotPanelPrefab;
         [SerializeField] private LoadSlotPanelUI loadSlotPanelUI;
-        private bool loadSlotEventsHooked;
+
+        private const string loadSlotPanelKey = "LoadSlotPanel";
 
         protected override void Awake()
         {
@@ -53,15 +55,6 @@ namespace TH.UI
             BindMenuButton(Buttons.Btn_Continue, ContinueGameAsync);
             BindMenuButton(Buttons.Btn_Load, LoadGameAsync);
             BindMenuButton(Buttons.Btn_Quit, QuitGameAsync);
-
-            ResolveLoadSlotPanelUI();
-        }
-
-        private void OnEnable()
-        {
-            var panel = ResolveLoadSlotPanelUI();
-            if (panel != null)
-                panel.HideLoadSlotPanel();
         }
 
         private void BindMenuButton(Buttons button, Action action)
@@ -113,42 +106,10 @@ namespace TH.UI
         public void ShowLoadSlots(IReadOnlyList<SaveSlotViewData> slots)
         {
             this.Log($"ShowLoadSlots() slots.Count: {slots.Count}", Logg.LoggingMode.Completed);
-            var panel = ResolveLoadSlotPanelUI();
-            if (panel == null)
-                return;
 
+            var panel = UIManager.Instance.ShowPopupUI<LoadSlotPanelUI>(loadSlotPanelKey);
+            panel.SlotSelected += HandleSlotSelected;
             panel.ShowLoadSlots(slots);
-        }
-
-        private LoadSlotPanelUI ResolveLoadSlotPanelUI()
-        {
-            if (loadSlotPanelUI != null)
-            {
-                EnsureLoadSlotEvents();
-                return loadSlotPanelUI;
-            }
-
-            if (loadSlotPanelPrefab == null)
-                return null;
-
-            var parent = GetComponentInParent<Canvas>()?.transform ?? transform;
-            var panelGo = Instantiate(loadSlotPanelPrefab, parent);
-            panelGo.name = loadSlotPanelPrefab.name;
-            loadSlotPanelUI = panelGo.GetComponent<LoadSlotPanelUI>();
-            if (loadSlotPanelUI == null)
-                loadSlotPanelUI = panelGo.AddComponent<LoadSlotPanelUI>();
-
-            EnsureLoadSlotEvents();
-            return loadSlotPanelUI;
-        }
-
-        private void EnsureLoadSlotEvents()
-        {
-            if (loadSlotPanelUI == null || loadSlotEventsHooked)
-                return;
-
-            loadSlotPanelUI.SlotSelected += HandleSlotSelected;
-            loadSlotEventsHooked = true;
         }
 
         private void HandleSlotSelected(string saveFile)

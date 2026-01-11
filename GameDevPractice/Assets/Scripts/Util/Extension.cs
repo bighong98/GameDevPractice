@@ -35,6 +35,7 @@ public static class Extension
         return Util.IsEqualFloat(a, b);
     }
 
+    // event 타입 델리게이트 일괄 정리 목적 확장 메서드
     public static T ClearDelegate<T>(this T del) where T : Delegate
     {
         if (del == null) return null;

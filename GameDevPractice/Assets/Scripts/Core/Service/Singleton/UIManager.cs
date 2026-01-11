@@ -78,7 +78,7 @@ namespace TH.Core.Service
             InputManager.Instance.OnSingleClicked += OnPopupOutSideSelected;
         }
 
-        private const string UIRootName = "UI_Root";
+        private const string UIRootName = "UIs";
         // UI 컨테이너 초기 설정 (UI_Root 생성 및 캔버스 계층 구조 생성)
         // Scene, AnchoredOverlay, Popup 3가지 타입의 캔버스를 생성
         private void SetUIContainer()

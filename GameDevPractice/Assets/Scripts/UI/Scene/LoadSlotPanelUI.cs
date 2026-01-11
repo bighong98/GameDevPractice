@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using TH.Core.Service;
 using TH.Utils;
 using TMPro;
 using UnityEngine;
@@ -7,19 +8,20 @@ using UnityEngine.UI;
 
 namespace TH.UI
 {
-    public class LoadSlotPanelUI : MonoBehaviour
+    public class LoadSlotPanelUI : PopupUI
     {
         [SerializeField] private RectTransform loadSlotContent;
         [SerializeField] private GameObject loadSlotTemplate;
         [SerializeField] private TMP_Text loadSlotEmptyLabel;
         [SerializeField] private Button loadSlotCloseButton;
 
-        private readonly List<GameObject> loadSlotEntries = new();
+        private readonly List<LoadSlotUI> loadSlotEntries = new();
 
         public event Action<string> SlotSelected;
 
-        private void Awake()
+        protected override void Awake()
         {
+            base.Awake();
             HookLoadSlotEvents();
         }
 
@@ -34,18 +36,13 @@ namespace TH.UI
             gameObject.SetActive(true);
         }
 
-        public void HideLoadSlotPanel()
-        {
-            gameObject.SetActive(false);
-        }
-
         private void HookLoadSlotEvents()
         {
             if (loadSlotCloseButton == null)
                 return;
 
             loadSlotCloseButton.onClick.RemoveAllListeners();
-            loadSlotCloseButton.onClick.AddListener(HideLoadSlotPanel);
+            loadSlotCloseButton.onClick.AddListener(ClosePopupUI);
         }
 
         private void PopulateLoadSlotList(IReadOnlyList<MainMenuUI.SaveSlotViewData> slots)
@@ -61,26 +58,31 @@ namespace TH.UI
             foreach (var saveInfo in slots)
             {
                 string saveFile = saveInfo.SaveFileName;
-                var slotGo = Instantiate(loadSlotTemplate, loadSlotContent);
-                slotGo.name = $"Slot_{saveFile}";
-                slotGo.SetActive(true);
+                var slotUI = PoolManager.Instance.GetFromPool<LoadSlotUI>(
+                    loadSlotTemplate,
+                    loadSlotContent,
+                    worldPositionStays: false);
+                if (slotUI == null)
+                    continue;
 
-                var button = slotGo.GetComponent<Button>();
+                slotUI.gameObject.name = $"Slot_{saveFile}";
+
+                var button = slotUI.SlotBotton;
                 if (button != null)
                 {
                     button.onClick.RemoveAllListeners();
                     button.onClick.AddListener(() =>
                     {
-                        HideLoadSlotPanel();
+                        ClosePopupUI();
                         SlotSelected?.Invoke(saveFile);
                     });
                 }
 
-                var label = slotGo.GetComponentInChildren<TMP_Text>(true);
+                var label = slotUI.LabelText;
                 if (label != null)
                     label.text = saveInfo.DisplayName;
 
-                loadSlotEntries.Add(slotGo);
+                loadSlotEntries.Add(slotUI);
             }
         }
 
@@ -89,7 +91,7 @@ namespace TH.UI
             foreach (var entry in loadSlotEntries)
             {
                 if (entry != null)
-                    Destroy(entry);
+                    PoolManager.Instance.ReleaseFromPool(entry);
             }
             loadSlotEntries.Clear();
         }

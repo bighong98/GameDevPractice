@@ -39,3 +39,16 @@ MonoBehaviour:
       m_SubObjectType: 
       m_SubObjectGUID: 
       m_EditorAssetChanged: 0
+  - scene:
+      m_AssetGUID: 353490b24b861ad41871862ed7b93f75
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+      sceneName: MainMenuScene
+    sceneUI:
+      m_AssetGUID: e68de1593022e1b418f2849708380dc0
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0

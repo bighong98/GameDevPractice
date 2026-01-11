@@ -19,7 +19,7 @@ namespace TH.Core.Service
 
         private const int DefaultCapacity = 10; // 풀 초기 생성 개수(생성 직후 실제 생성되진 않고 필요 시 lazy하게 생성됨)
         private const int DefaultMaxSize = 100; // 풀 상한 (초과 시 Release 대신 Destroy 로직 수행)
-        private const string PoolRootName = "Pool_Root";
+        private const string PoolRootName = "Object Pools";
         
         private PoolManager()
         {
