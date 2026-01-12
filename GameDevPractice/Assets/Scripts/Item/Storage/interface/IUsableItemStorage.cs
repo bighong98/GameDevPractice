@@ -1,6 +1,5 @@
 using System;
 using TH.Resource;
-using UnityEngine;
 
 namespace TH.Item
 {
@@ -8,6 +7,11 @@ namespace TH.Item
     public interface IUsableItemStorage : IGameItemStorage
     {
         event Action<IGameItemSlot> OnItemTryUsed; 
+        bool TryUse(ItemTypeSO itemInfo, object user = null, int amount = 1);
+    }
+
+    public interface IStoreAndUse : IUsableItemStorage
+    {
         bool TryStoreAndUse(IGameItem item, object user = null); // 저장과 동시에 아이템 사용 시도
         bool TryStoreAndUse(IGameItem item, int index, object user = null); // + 저장할 슬롯 특정
     }

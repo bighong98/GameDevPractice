@@ -1,4 +1,3 @@
-using TH.Combat;
 using TH.Core;
 using TH.Core.Service;
 using TH.Item;
@@ -14,55 +13,25 @@ using UnityEngine;
 public class QuickSlotController : MonoBehaviour
 {
     [SerializeField] private QuickSlotPanelUI panelUI;
+    
     // 연결된 저장소 (Model)
     private IPlayerStorage playerStorage;
+    private IEquipmentHolder equipmentHolder;
     private IQuickStorage quickStorage;
+    
     // 외부 서비스     
-    private IGameItemConsumer itemConsumer;
     private IPlayerHolder playerHolder;
 
-    
-    private void SubscribeInputEvents()
-    {
-        if (Util.IsQuitting) return;
-        
-        UnsubscribeInputEvents();
-
-        InputManager.Instance.OnQuickSlot1Pressed += OnQuickSlot1Input;
-        InputManager.Instance.OnQuickSlot2Pressed += OnQuickSlot2Input;
-        InputManager.Instance.OnQuickSlot3Pressed += OnQuickSlot3Input;
-        InputManager.Instance.OnQuickSlot4Pressed += OnQuickSlot4Input;
-        InputManager.Instance.OnQuickSlot5Pressed += OnQuickSlot5Input;
-    }
-
-    private void UnsubscribeInputEvents()
-    {
-        if (Util.IsQuitting) return;
-        
-        InputManager.Instance.OnQuickSlot1Pressed -= OnQuickSlot1Input;
-        InputManager.Instance.OnQuickSlot2Pressed -= OnQuickSlot2Input;
-        InputManager.Instance.OnQuickSlot3Pressed -= OnQuickSlot3Input;
-        InputManager.Instance.OnQuickSlot4Pressed -= OnQuickSlot4Input;
-        InputManager.Instance.OnQuickSlot5Pressed -= OnQuickSlot5Input;
-    }
-
-
-    private void OnQuickSlot1Input() => UseQuickSlot(0);
-    private void OnQuickSlot2Input() => UseQuickSlot(1);
-    private void OnQuickSlot3Input() => UseQuickSlot(2);
-    private void OnQuickSlot4Input() => UseQuickSlot(3);
-    private void OnQuickSlot5Input() => UseQuickSlot(4);
-
-
-    
     private void Awake()
     {
         playerStorage = ServiceLocator.Get<IPlayerStorage>();
         quickStorage  = ServiceLocator.Get<IQuickStorage>();
-        itemConsumer = ServiceLocator.Get<IGameItemConsumer>();
         playerHolder = ServiceLocator.Get<IPlayerHolder>();
-        
+
         playerHolder.OnPlayerInstanceUpdated += UpdatePlayerInstance;
+        var currentPlayer = playerHolder.GetPlayerInstance;
+        if (currentPlayer != null)
+            UpdatePlayerInstance(currentPlayer);
         if (panelUI == null)
             TryGetComponent(out panelUI);
 
@@ -92,11 +61,15 @@ public class QuickSlotController : MonoBehaviour
             playerStorage.OnStorageChanged += HandleInventoryStorageChanged;
         }
 
+        if (equipmentHolder != null)
+        {
+            equipmentHolder.OnSlotChanged -= HandleEquipmentSlotChanged;
+            equipmentHolder.OnSlotChanged += HandleEquipmentSlotChanged;
+        }
+
         SubscribeInputEvents();
     }
 
-    
-        
     private void OnDisable()
     {
         if (quickStorage != null)
@@ -108,6 +81,11 @@ public class QuickSlotController : MonoBehaviour
         if (playerStorage != null)
         {
             playerStorage.OnStorageChanged -= HandleInventoryStorageChanged;
+        }
+
+        if (equipmentHolder != null)
+        {
+            equipmentHolder.OnSlotChanged -= HandleEquipmentSlotChanged;
         }
 
         UnsubscribeInputEvents();
@@ -168,6 +146,37 @@ public class QuickSlotController : MonoBehaviour
             cStorage.OnCountableAmountModified -= HandleInventoryCountableAmountChanged;
     }
 
+    private void SubscribeInputEvents()
+    {
+        if (Util.IsQuitting) return;
+        
+        UnsubscribeInputEvents();
+
+        InputManager.Instance.OnQuickSlot1Pressed += OnQuickSlot1Input;
+        InputManager.Instance.OnQuickSlot2Pressed += OnQuickSlot2Input;
+        InputManager.Instance.OnQuickSlot3Pressed += OnQuickSlot3Input;
+        InputManager.Instance.OnQuickSlot4Pressed += OnQuickSlot4Input;
+        InputManager.Instance.OnQuickSlot5Pressed += OnQuickSlot5Input;
+    }
+
+    private void UnsubscribeInputEvents()
+    {
+        if (Util.IsQuitting) return;
+        
+        InputManager.Instance.OnQuickSlot1Pressed -= OnQuickSlot1Input;
+        InputManager.Instance.OnQuickSlot2Pressed -= OnQuickSlot2Input;
+        InputManager.Instance.OnQuickSlot3Pressed -= OnQuickSlot3Input;
+        InputManager.Instance.OnQuickSlot4Pressed -= OnQuickSlot4Input;
+        InputManager.Instance.OnQuickSlot5Pressed -= OnQuickSlot5Input;
+    }
+
+
+    private void OnQuickSlot1Input() => UseQuickSlot(0);
+    private void OnQuickSlot2Input() => UseQuickSlot(1);
+    private void OnQuickSlot3Input() => UseQuickSlot(2);
+    private void OnQuickSlot4Input() => UseQuickSlot(3);
+    private void OnQuickSlot5Input() => UseQuickSlot(4);
+
     #endregion
 
     #region Public API
@@ -178,18 +187,14 @@ public class QuickSlotController : MonoBehaviour
     {
         if (quickStorage == null || playerStorage == null) return;
         if (!IsValidQuickIndex(quickIndex)) return;
-        
-        if (playerInstance is not { Initialized: true }) 
-            UpdatePlayerInstance(playerHolder.GetPlayerInstance);
 
         if (!quickStorage.TryGetItem(quickIndex, out var item)
             || item is not { IsValid: true, GetItemInfo: {} itemInfo })
             return;
-        
-        if (!itemConsumer.TryConsume(playerStorage, itemInfo, playerInstance.Value, 1))
-            return;
 
-        DrawSlot(quickIndex);
+        bool used = TryUseQuickSlotItem(itemInfo);
+        if (used)
+            DrawSlot(quickIndex);
     }
 
     #endregion
@@ -236,6 +241,12 @@ public class QuickSlotController : MonoBehaviour
     {
         RefreshAllSlots();
     }
+
+    private void HandleEquipmentSlotChanged(IGameItemSlot slot)
+    {
+        RefreshAllSlots();
+    }
+
 
     private void HandleInventoryCountableAmountChanged(ItemTypeSO data, int amount)
     {
@@ -312,8 +323,27 @@ public class QuickSlotController : MonoBehaviour
 
         if (!quickStorage.TryGetItem(quickIndex, out var slotItem)
             || slotItem is not {GetItemInfo: {} itemInfo}
-            || !itemInfo.IsNotNull()
-            || !TryGetTotalAmount(itemInfo, out var totalAmount))
+            || !itemInfo.IsNotNull())
+        {
+            slotUI.Clear();
+            return;
+        }
+
+        if (itemInfo.itemType == Enums.ItemType.Equipment)
+        {
+            if (!IsEquipmentAvailable(itemInfo))
+            {
+                slotUI.Clear();
+                slotUI.HideIcon();
+                return;
+            }
+
+            slotUI.Clear(); // hide amount text
+            slotUI.SetIcon(itemInfo.sprite);
+            return;
+        }
+
+        if (!TryGetTotalAmount(itemInfo, out var totalAmount))
         {
             slotUI.Clear();
             return;
@@ -357,25 +387,73 @@ public class QuickSlotController : MonoBehaviour
             && cStorage.TryGetCountableAmount(itemInfo, out amount);
     }
 
-    // Handle Player Instance (maintain valid reference)
-    private LazyValue<IHealable> playerInstance = null;
-    
-    private void UpdatePlayerInstance(object player)
+    private bool IsEquipmentAvailable(ItemTypeSO itemInfo)
     {
-        playerInstance ??= new LazyValue<IHealable>(() => GetPlayerInstance(playerHolder.GetPlayerInstance));
-        playerInstance.Value = GetPlayerInstance(player);
-        Logg.Log($"[{GetType().Name}] playerInstance.Value: {playerInstance.Value}", Logg.LoggingMode.Completed);
+        bool result = TryFindSlot(playerStorage, itemInfo, out _)
+            || TryFindSlot(equipmentHolder, itemInfo, out _);
+        
+        if (!result)
+            this.Log($"IsEquipmentAvailable(itemInfo: {itemInfo.nameString}) is false", Logg.LoggingMode.Completed);
+
+        return result;
     }
 
-    private IHealable GetPlayerInstance(object player)
+    private bool TryUseQuickSlotItem(ItemTypeSO itemInfo)
     {
-        if (!player.IsNotNull() || player is not Component c || !c.TryGetComponent<IHealable>(out var p))
-        {
-            Logg.LogError($"[{GetType().Name}] failed to Get Player Instance");
-            return null;
-        }
-        return p;
+        if (playerStorage == null) return false;
+        if (itemInfo == null) return false;
+
+        return playerStorage is IUsableItemStorage usableStorage
+            && usableStorage.TryUse(itemInfo, amount: useAmount);
     }
+
+
+    private bool TryFindSlot(IGameItemStorage storage, ItemTypeSO itemInfo, out IGameItemSlot foundSlot)
+    {
+        foundSlot = null;
+        if (storage == null || itemInfo == null) return false;
+
+        foreach (var slot in storage.ItemSlots)
+        {
+            if (slot is { IsAccessible: true, HasItem: true, GetItemInfo: {} slotItemInfo }
+                && slotItemInfo == itemInfo)
+            {
+                foundSlot = slot;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
+    private void UpdatePlayerInstance(object player)
+    {
+        UpdateEquipmentHolder(player);
+    }
+
+    private void UpdateEquipmentHolder(object player)
+    {
+        var previousHolder = equipmentHolder;
+        IEquipmentHolder newHolder = null;
+
+        if (player is Component c && c.TryGetComponent(out IEquipmentHolder found))
+            newHolder = found;
+
+        if (previousHolder == newHolder) return;
+
+        if (previousHolder != null)
+            previousHolder.OnSlotChanged -= HandleEquipmentSlotChanged;
+
+        equipmentHolder = newHolder;
+
+        if (equipmentHolder != null)
+        {
+            equipmentHolder.OnSlotChanged -= HandleEquipmentSlotChanged;
+            equipmentHolder.OnSlotChanged += HandleEquipmentSlotChanged;
+        }
+    }
+
 
     #endregion
 

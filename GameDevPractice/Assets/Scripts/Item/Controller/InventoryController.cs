@@ -358,7 +358,7 @@ namespace TH.Item
             UpdateStorageUICapacity(storageUI, capacity);
         }
         
-        private void OnSlotItemTryUsed(IGameItemStorage storage, IGameItemSlot slot)
+        private void OnSlotItemTryUsed(IUsableItemStorage storage, IGameItemSlot slot)
         {
             this.Log($"OnSlotItemTryUsed - storage{storage}, slot: {slot}", Logg.LoggingMode.Completed);
             if (slot is not { HasItem: true, GetItem: { } item, GetItemInfo: { } itemData }) return;
@@ -367,9 +367,10 @@ namespace TH.Item
             IGameItemStorage dest = storage == pStorage ? pEquipHolder : pStorage;
             
             switch (item.Type)
-            {
+            { 
                 case Enums.ItemType.Countable:
-                    itemConsumer.TryConsume(storage, slot, playerHealth, 1);
+                    if (storage is not IConsumableItemStorage consumableStorage) return;
+                    itemConsumer.TryConsume(consumableStorage, slot, playerHealth, 1);
                     break;
                 case Enums.ItemType.Equipment:
                     itemTransfer.TransferOrSwap(storage, slot, dest);
@@ -462,10 +463,10 @@ namespace TH.Item
 
         private void OnSlotSubClicked(ISubClickableStorageUI targetUI, int index)
         {
-            if (GetStorageFromUI(targetUI) is not { } storage) return;
+            if (GetStorageFromUI(targetUI) is not IUsableItemStorage storage) return;
             if (!storage.TryGetItemSlot(index, out var slot)) return;
             if (slot.GetItemInfo is not {isUsable: true}) return;
-            
+
             HandleItemUse(storage, slot);
         }
 
@@ -655,7 +656,7 @@ namespace TH.Item
 
         #region Control Storage
 
-        private void HandleItemUse(IGameItemStorage storage, IGameItemSlot slot)
+        private void HandleItemUse(IUsableItemStorage storage, IGameItemSlot slot)
         {
             OnSlotItemTryUsed(storage, slot);
         }
@@ -751,11 +752,11 @@ namespace TH.Item
                 removeButton: new ButtonInfo(null,
                     itemInfo.itemType == Enums.ItemType.Special ? null : () => { ShowRemoveConfirmPopup(targetStorage, targetSlot); }),
                 useButton: new ButtonInfo(GetUseButtonText(targetStorage, itemInfo),
-                    itemInfo.isUsable ? () =>
+                    itemInfo.isUsable && targetStorage is IUsableItemStorage usableStorage ? () =>
                     {
-                        HandleItemUse(targetStorage, targetSlot); // 아이템 사용 효과 처리 (소비/장착/장착해제 등)
+                        HandleItemUse(usableStorage, targetSlot); // 아이템 사용 효과 처리 (소비/장착/장착해제 등)
                         if (popup is {} validPopup) validPopup.ClosePopupUI(); // 이후 팝업 닫기
-                    } : null // 사용할 수 없는 아이템의 경우 사용 버튼 비활성화
+                    } : null // 사용할 수 없는 아이템이거나 아이템 사용이 불가능한 저장소인 경우 사용 버튼 비활성화
                 ),
                 divideButton: new ButtonInfo<int>(DefaultDivideText,
                     itemInfo.itemType == Enums.ItemType.Countable ? (expected) =>

@@ -17,8 +17,7 @@ namespace TH.Item
         private void NotifySlotChanged(IGameItemSlot slot)
         {
             Logg.Log($"[PlayerStorage] NotifySlotChanged({slot} - {slot.Index})", Logg.LoggingMode.Completed);
-            slot.SetVisibility(IsVisibleByFilter(slot, CurrentFilter));
-            OnSlotChanged?.Invoke(slot);
+            eventBatcher?.NotifySlotChanged(slot.Index);
         }
 
         private IGameItemSlot GetSlot(int index)

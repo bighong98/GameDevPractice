@@ -7,7 +7,7 @@ using TH.Resource;
 
 namespace TH.Item
 {
-    public sealed class EquipmentHolder : MonoBehaviour, IEquipmentHolder, ITypeDependent
+    public sealed class EquipmentHolder : MonoBehaviour, IEquipmentHolder, ITypeDependent, IStorageEventBatcher
     {
         public event EventHandler<EquipArgs> OnEquipmentChanged;
         public event Action<IGameItemSlot> OnSlotChanged;
@@ -18,15 +18,18 @@ namespace TH.Item
 
         public int Capacity => DefaultSlotNums;
         private const int DefaultSlotNums = (int)Enums.EquippedItemSlotType.Max;
+
+        private IStorageEventBatcher eventBatcher;
         
         private void Awake()
         {
+            InitializeEventBatcher();
             FillEquipmentSlots();
         }
 
         private void Start()
         {
-            OnStorageChanged?.Invoke(); // todo: 기본 장비, 저장 장비 착용 로직 추가 후 호출 시점 조정
+            NotifyStorageChanged(); // todo: 기본 장비, 저장 장비 착용 로직 추가 후 호출 시점 조정
         }
 
         #region Initialization
@@ -40,8 +43,23 @@ namespace TH.Item
             }
         }
 
+        private void InitializeEventBatcher()
+        {
+            eventBatcher = new StorageEventBatcher(NotifySlotChangedImmediate, NotifyStorageChangedImmediate);
+        }
+
         #endregion
-        
+
+        #region IStorageEventBatcher
+
+        public void BeginEventBatch() => eventBatcher?.BeginEventBatch();
+        public void EndEventBatch() => eventBatcher?.EndEventBatch();
+        private void NotifyStorageChanged() => eventBatcher?.NotifyStorageChanged();
+        void IStorageEventBatcher.NotifySlotChanged(int index) => eventBatcher?.NotifySlotChanged(index);
+        void IStorageEventBatcher.NotifyStorageChanged() => eventBatcher?.NotifyStorageChanged();
+
+        #endregion
+
         #region Get(Item, Slot)
         
         public bool TryGetItem(int index, out IGameItem item)
@@ -239,7 +257,18 @@ namespace TH.Item
 
         private void NotifySlotChanged(int index)
         {
+            eventBatcher?.NotifySlotChanged(index);
+        }
+
+        private void NotifySlotChangedImmediate(int index)
+        {
+            if (!IsValidSlotIdx(index)) return;
             OnSlotChanged?.Invoke(equipments[index]);
+        }
+
+        private void NotifyStorageChangedImmediate()
+        {
+            OnStorageChanged?.Invoke();
         }
 
         #endregion

@@ -29,6 +29,8 @@ namespace TH.Core
         public UserInput.PlayerActions PlayerActions => UserInput.Player;
         public UserInput.QuickSlotActions QuickSlotActions => UserInput.QuickSlot;
         public UserInput.UIActions UIActions => UserInput.UI;
+        public UserInput.CamActions CamActions => UserInput.Cam;
+
         // Cached Pointer Position
         public Vector2 PointerPos => currentPointerPos;
         
@@ -329,6 +331,18 @@ namespace TH.Core
         {
             if (UIActions.enabled)
                 UIActions.Disable();
+        }
+
+        public void EnableCamActionMap()
+        {
+            if (!CamActions.enabled)
+                CamActions.Enable();
+        }
+
+        public void DisableCamActionMap()
+        {
+            if (CamActions.enabled)
+                CamActions.Disable();
         }
 
         #endregion

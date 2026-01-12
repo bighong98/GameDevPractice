@@ -11,7 +11,7 @@ using UnityEngine.SceneManagement;
 
 namespace TH.Item
 {
-    public sealed partial class PlayerStorage : IPlayerStorage, ISavableEntity
+    public sealed partial class PlayerStorage : IPlayerStorage, ISavableEntity, IStorageEventBatcher
     {
         public event Action<IGameItemSlot> OnSlotChanged; // Use NotifySlotChanged instead of direct invoke
         public event Action OnStorageChanged;
@@ -33,6 +33,7 @@ namespace TH.Item
         private readonly IRearrangeableStorageService rearrangeService;
         private readonly IConsumableStorageService consumableService;
         private readonly IReplaceableStorageService replaceService;
+        private readonly IStorageEventBatcher eventBatcher;
 
         public int Capacity => capacity;
         private int capacity;
@@ -92,6 +93,8 @@ namespace TH.Item
                 UpdateCountableDict,
                 CacheRemove,
                 NotifySlotChanged);
+
+            eventBatcher = new StorageEventBatcher(NotifySlotChangedImmediate, NotifyStorageChangedImmediate);
 
             Init();
 

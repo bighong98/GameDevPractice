@@ -42,7 +42,7 @@ namespace TH.Item
                 TryStore(itemBuilder.GetItemFromData(item.GetItemInfo, item.GetAmount));
             }
             
-            OnStorageChanged?.Invoke();
+            NotifyStorageChanged();
             
             return true;
         }

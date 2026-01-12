@@ -1,4 +1,5 @@
-﻿using TH.Utils;
+﻿using TH.Resource;
+using TH.Utils;
 
 namespace TH.Item
 {
@@ -15,6 +16,10 @@ namespace TH.Item
             return true;
         }
 
+        #endregion
+
+        #region IStoreAndUse
+
         public bool TryStoreAndUse(IGameItem item, int index, object user = null)
         {
             if (!TryStore(item, index)) return false;
@@ -22,8 +27,19 @@ namespace TH.Item
             OnItemTryUsed?.Invoke(slots[index]);
             return true;
         }
+
+        public bool TryUse(ItemTypeSO itemInfo, object user = null, int amount = 1)
+        {
+            if (itemInfo == null || !itemInfo.IsNotNull())
+                return false;
+
+            if (!TryFindSlot(itemInfo, out var slot))
+                return false;
+
+            OnItemTryUsed?.Invoke(slot);
+            return true;
+        }
         
         #endregion
     }
 }
-

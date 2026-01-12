@@ -361,6 +361,7 @@ namespace TH.Core.Service
             
             // UI 액션맵 활성화 (ESC 등의 입력 받기)
             InputManager.Instance.EnableUIActionMap();
+            InputManager.Instance.DisableCamActionMap();
             
             Logg.Log($"[{GetType().Name}.{nameof(ShowPopupUI)}()] new Popup. name: {popup.name} popupStack.Count: {popupStacks.Count}", 
                     Logg.LoggingMode.Completed);
@@ -402,6 +403,7 @@ namespace TH.Core.Service
             if (popupStacks.Count == 0)
             {
                 InputManager.Instance.DisableUIActionMap();
+                InputManager.Instance.EnableCamActionMap();
             }
 
             return true;

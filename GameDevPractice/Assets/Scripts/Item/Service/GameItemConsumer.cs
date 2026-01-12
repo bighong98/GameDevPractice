@@ -7,14 +7,14 @@ namespace TH.Item
 {
     public interface IGameItemConsumer
     {
-        bool TryConsume(IGameItemStorage storage,IGameItemSlot slot,object user = null,int amount = 1);
-        bool TryConsume(IGameItemStorage storage, ItemTypeSO itemInfo, object user = null, int amount = 1);
+        bool TryConsume(IConsumableItemStorage storage,IGameItemSlot slot,object user = null,int amount = 1);
+        bool TryConsume(IConsumableItemStorage storage, ItemTypeSO itemInfo, object user = null, int amount = 1);
     }
 
     public class GameItemConsumer : IGameItemConsumer
     {
         public bool TryConsume(
-            IGameItemStorage storage,
+            IConsumableItemStorage storage,
             IGameItemSlot slot,
             object user = null,
             int amount = 1)
@@ -30,8 +30,7 @@ namespace TH.Item
             var ctx = new ItemUseContext(user, info, useAmount);
 
             // 3) 저장소 내부 아이템 소비 처리
-            if (storage is not IConsumableItemStorage consumeStorage
-                || !consumeStorage.TryConsume(slot, useAmount))
+            if (!storage.TryConsume(slot, useAmount))
                 return false;
 
             // 4) 연결된 Effect들 실행
@@ -60,7 +59,7 @@ namespace TH.Item
             return true;
         }
 
-        public bool TryConsume(IGameItemStorage storage, ItemTypeSO itemInfo, object user = null, int amount = 1)
+        public bool TryConsume(IConsumableItemStorage storage, ItemTypeSO itemInfo, object user = null, int amount = 1)
         {
             // 1) 아이템 데이터 유효성 검사
             if (!itemInfo.IsNotNull() || !itemInfo.isUsable)
@@ -71,8 +70,7 @@ namespace TH.Item
             var ctx = new ItemUseContext(user, itemInfo, useAmount);
 
             // 3) 저장소 내부 아이템 소비 처리
-            if (storage is not IConsumableItemStorage consumeStorage
-                || !consumeStorage.TryConsume(itemInfo, useAmount))
+            if (!storage.TryConsume(itemInfo, useAmount))
                 return false;
 
             // 4) 연결된 Effect들 실행

@@ -1,4 +1,6 @@
-﻿namespace TH.Item
+﻿using TH.Resource;
+
+namespace TH.Item
 {
     public sealed partial class PlayerStorage
     {
@@ -26,6 +28,25 @@
             }
 
             itemSlot = default;
+            return false;
+        }
+
+        private bool TryFindSlot(ItemTypeSO itemInfo, out IGameItemSlot foundSlot)
+        {
+            foundSlot = null;
+            if (itemInfo == null)
+                return false;
+
+            foreach (var slot in slots)
+            {
+                if (slot is { IsAccessible: true, HasItem: true, GetItemInfo: {} slotItemInfo }
+                    && slotItemInfo == itemInfo)
+                {
+                    foundSlot = slot;
+                    return true;
+                }
+            }
+
             return false;
         }
 

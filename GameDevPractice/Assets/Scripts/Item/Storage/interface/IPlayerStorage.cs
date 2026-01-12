@@ -1,7 +1,3 @@
-using UnityEngine;
-using System;
-using TH.Item.Storage;
-
 
 namespace TH.Item.Storage
 {
@@ -10,11 +6,11 @@ namespace TH.Item.Storage
         IFilterableStorage, 
         IMutableCapacity, 
         IRearrangeableStorage,
-        IUsableItemStorage,
         ICountableItemStorage,
         IConsumableItemStorage,
         IDividableStorage,
-        IReplaceableStorage
+        IReplaceableStorage,
+        IStoreAndUse
     {
         
     }

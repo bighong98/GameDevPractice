@@ -1,4 +1,5 @@
-
+﻿
+using System.Collections.Generic;
 using TH.Item.Storage;
 using TH.Utils;
 
@@ -7,6 +8,29 @@ namespace TH.Item
     public class GameItemTransfer : IGameItemTransfer
     {
         #region Private Helper Methods
+
+        private static List<IStorageEventBatcher> BeginEventBatch(params object[] storages)
+        {
+            var batchers = new List<IStorageEventBatcher>();
+            foreach (var storage in storages)
+            {
+                if (storage is not IStorageEventBatcher batcher) continue;
+                if (batchers.Contains(batcher)) continue;
+                batcher.BeginEventBatch();
+                batchers.Add(batcher);
+            }
+
+            return batchers;
+        }
+
+        private static void EndEventBatch(List<IStorageEventBatcher> batchers)
+        {
+            if (batchers == null) return;
+            foreach (var batcher in batchers)
+            {
+                batcher.EndEventBatch();
+            }
+        }
 
         
         // 슬롯 유효성 검사
@@ -109,11 +133,13 @@ namespace TH.Item
             int sourceSlotIndex, int destSlotIndex, out bool rollbackAttempted)
         {
             rollbackAttempted = false;
+            var batchers = BeginEventBatch(replaceSource, replaceDest);
 
             // 1) sourceSlot에서 아이템을 꺼내기
             if (!replaceSource.TryTakeOut(sourceSlotIndex, out var sourceItem))
             {
                 Logg.LogError($"[{nameof(GameItemTransfer)}] Failed to take out source item for Swap (idx {sourceSlotIndex})");
+                EndEventBatch(batchers);
                 return false;
             }
 
@@ -124,6 +150,7 @@ namespace TH.Item
                 if (!replaceSource.TryReplaceAt(sourceItem, sourceSlotIndex, out _))
                     Logg.LogError($"[{nameof(GameItemTransfer)}] Swap rollback failed on source after destination take-out failure");
                 rollbackAttempted = true;
+                EndEventBatch(batchers);
                 return false;
             }
 
@@ -140,6 +167,7 @@ namespace TH.Item
                     Logg.LogError($"[{nameof(GameItemTransfer)}] Swap rollback failed (source-existing)");
 
                 rollbackAttempted = true;
+                EndEventBatch(batchers);
                 return false;
             }
 
@@ -159,10 +187,12 @@ namespace TH.Item
                     Logg.LogError($"[{nameof(GameItemTransfer)}] Swap rollback: failed to restore sourceItem to source");
 
                 rollbackAttempted = true;
+                EndEventBatch(batchers);
                 return false;
             }
 
             // Swap 성공
+            EndEventBatch(batchers);
             return true;
         }
 
@@ -175,25 +205,33 @@ namespace TH.Item
             if (!ValidateSlotWithItem(slot, source)) 
                 return;
 
-            var item = slot.GetItem;
-
-            if (TryStoreToReferenceStorage(destination, item))
-                return;
-
-            if (!TryGetReplaceableStorage(source, out var replaceSource))
-                return;
-
-            int srcIndex = slot.Index;
-
-            // 1) 출발지(source)에서 꺼내기
-            if (!TryTakeOutAndVerify(replaceSource, srcIndex, item, out var taken))
-                return;
-
-            // 2) 도착지(destination)에 저장 시도
-            if (!destination.TryStore(taken))
+            var batchers = BeginEventBatch(source, destination);
+            try
             {
-                // 실패 시 원복 시도
-                TryRollbackToSlot(replaceSource, taken, srcIndex);
+                var item = slot.GetItem;
+
+                if (TryStoreToReferenceStorage(destination, item))
+                    return;
+
+                if (!TryGetReplaceableStorage(source, out var replaceSource))
+                    return;
+
+                int srcIndex = slot.Index;
+
+                // 1) 출발지(source)에서 꺼내기
+                if (!TryTakeOutAndVerify(replaceSource, srcIndex, item, out var taken))
+                    return;
+
+                // 2) 도착지(destination)에 저장
+                if (!destination.TryStore(taken))
+                {
+                    // 실패 -> 원상복구 시도
+                    TryRollbackToSlot(replaceSource, taken, srcIndex);
+                }
+            }
+            finally
+            {
+                EndEventBatch(batchers);
             }
         }
 
@@ -208,41 +246,49 @@ namespace TH.Item
             if (!ValidateSlotAccessible(destSlot, destination))
                 return;
 
-            var sourceItem = sourceSlot.GetItem;
-            int sourceSlotIndex = sourceSlot.Index;
-            int destSlotIndex = destSlot.Index;
-
-            // 같은 저장소인 경우 IRearrangeableStorage.TryTransferItem 으로 저장소 내부 아이템 이동 처리
-            if (ReferenceEquals(source, destination) && source is IRearrangeableStorage reArrangeStorage)
+            var batchers = BeginEventBatch(source, destination);
+            try
             {
-                if (!reArrangeStorage.TryTransferItem(sourceSlot, destSlot))
-                    Logg.LogError($"[{nameof(GameItemTransfer)}] Internal Transfer via IRearrangeableStorage failed ({sourceSlotIndex} -> {destSlotIndex})");
-                return;
+                var sourceItem = sourceSlot.GetItem;
+                int sourceSlotIndex = sourceSlot.Index;
+                int destSlotIndex = destSlot.Index;
+
+                // 같은 저장소일 경우 IRearrangeableStorage.TryTransferItem 로 저장소 내부 아이템 이동 처리
+                if (ReferenceEquals(source, destination) && source is IRearrangeableStorage reArrangeStorage)
+                {
+                    if (!reArrangeStorage.TryTransferItem(sourceSlot, destSlot))
+                        Logg.LogError($"[{nameof(GameItemTransfer)}] Internal Transfer via IRearrangeableStorage failed ({sourceSlotIndex} -> {destSlotIndex})");
+                    return;
+                }
+
+                if (TryStoreToReferenceStorage(destination, sourceItem, destSlotIndex))
+                    return;
+
+                // 새로운 다른 저장소일 경우
+                // destination 저장소에서 destSlot에 sourceItem 저장 가능한지 검사
+                if (!destination.CanStore(sourceItem, destSlotIndex))
+                {
+                    // 저장 불가능한 아이템인 경우 or dest가 아이템을 저장 불가능 상태인 경우 중지
+                    return;
+                }
+
+                if (!TryGetReplaceableStorage(source, out var rSource))
+                    return;
+
+                // 출발지에서 꺼내기
+                if (!TryTakeOutAndVerify(rSource, sourceSlotIndex, sourceItem, out var taken))
+                    return;
+
+                // 도착지로 저장
+                if (!destination.TryStore(taken, destSlotIndex))
+                {
+                    // 저장 실패 -> 원상복구
+                    TryRollbackToSlot(rSource, taken, sourceSlotIndex);
+                }
             }
-
-            if (TryStoreToReferenceStorage(destination, sourceItem, destSlotIndex))
-                return;
-
-            // 서로 다른 저장소인 경우
-            // destination 저장소의 destSlot에 sourceItem 저장 가능 여부 검사
-            if (!destination.CanStore(sourceItem, destSlotIndex))
+            finally
             {
-                // 저장 불가능한 아이템인 경우 or dest가 아이템 저장 불가 상태인 경우 중지
-                return;
-            }
-
-            if (!TryGetReplaceableStorage(source, out var rSource))
-                return;
-
-            // 출발지에서 꺼내기
-            if (!TryTakeOutAndVerify(rSource, sourceSlotIndex, sourceItem, out var taken))
-                return;
-
-            // 도착지의 지정 슬롯에 저장
-            if (!destination.TryStore(taken, destSlotIndex))
-            {
-                // 저장 실패 -> 원래 자리로 원복 시도
-                TryRollbackToSlot(rSource, taken, sourceSlotIndex);
+                EndEventBatch(batchers);
             }
         }
 
@@ -257,75 +303,82 @@ namespace TH.Item
             if (!ValidateSlotWithItem(sourceSlot, source))
                 return;
 
-            var sourceItem = sourceSlot.GetItem;
-            int srcIndex = sourceSlot.Index;
-
-            // 1) Swap 가능 (양쪽 모두 IReplaceableStorage 구현)
-            if (source is IReplaceableStorage replaceSource && destination is IReplaceableStorage replaceDest)
+            var batchers = BeginEventBatch(source, destination);
+            try
             {
-                // dest 쪽에서 교체 가능한 슬롯을 하나 찾으면서 기존 아이템을 확보
-                if (!replaceDest.TryReplace(sourceItem, out var storedSlot, out var destExisting))
+                var sourceItem = sourceSlot.GetItem;
+                int srcIndex = sourceSlot.Index;
+
+                // 1) Swap 가능(양쪽 모두 IReplaceableStorage 구현)
+                if (source is IReplaceableStorage replaceSource && destination is IReplaceableStorage replaceDest)
                 {
-                    // 수용할 슬롯 자체를 못 찾은 경우
-                    Logg.Log($"[{nameof(GameItemTransfer)}] TransferOrSwap failed to store item into target storage ({destination})");
+                    // dest 쪽에 교체 가능한 슬롯을 찾으면서 기존 아이템을 확보
+                    if (!replaceDest.TryReplace(sourceItem, out var storedSlot, out var destExisting))
+                    {
+                        // 비어있는 슬롯을 못찾은 경우
+                        Logg.Log($"[{nameof(GameItemTransfer)}] TransferOrSwap failed to store item into target storage ({destination})");
+                        return;
+                    }
+
+                    int destIndex = storedSlot.Index;
+
+                    // 출발지에서 실제 아이템 꺼내기
+                    if (!TryTakeOutAndVerify(replaceSource, srcIndex, sourceItem, out var removed))
+                    {
+                        // 제거 실패 -> 방금 dest 저장한 것 롤백
+                        Logg.LogWarning($"[{nameof(GameItemTransfer)}] Failed to remove source item during TransferOrSwap. Rolling back target slot");
+                        RollbackDestSlot(destination, destExisting, sourceItem, destIndex);
+                        return;
+                    }
+
+                    // 기존 dest 아이템이 없었다면 단순 이동으로 종료
+                    if (destExisting == null)
+                        return;
+
+                    // destExisting -> sourceSlot로 저장 (Swap)
+                    if (replaceSource.TryReplaceAt(destExisting, srcIndex, out var srcExisting) && srcExisting == null)
+                        return;
+
+                    // Swap 실패 -> 전체 롤백 시도
+                    Logg.LogWarning($"[{nameof(GameItemTransfer)}] Swap failed, trying rollback");
+                    bool restoredSource = replaceSource.TryReplaceAt(removed, srcIndex, out _);
+
+                    // dest 롤백: 현재 destIndex 슬롯에 있던 sourceItem 제거하고 destExisting 복원
+                    if (!replaceDest.TryReplaceAt(destExisting, destIndex, out var rollbackTaken2) ||
+                        !sourceItem.IsEqual(rollbackTaken2, ItemComparerExtension.ItemCompareMode.CompareInstance))
+                    {
+                        Logg.LogError($"[{nameof(GameItemTransfer)}] Rollback of target slot failed during TransferOrSwap (Swap branch)");
+                    }
+
+                    if (!restoredSource)
+                        Logg.LogError($"[{nameof(GameItemTransfer)}] failed to roll back item from TransferOrSwap({source}, {sourceSlot}, {destination})");
+
                     return;
                 }
 
-                int destIndex = storedSlot.Index;
+                if (TryStoreToReferenceStorage(destination, sourceItem))
+                    return;
 
-                // 출발지에서 실제 아이템 꺼내기
-                if (!TryTakeOutAndVerify(replaceSource, srcIndex, sourceItem, out var removed))
+                // 2) Swap 불가능한 경우
+                // -> Swap 없이, CanStore 체크 후 Transfer 실행
+                if (!destination.CanStore(sourceItem))
+                    return;
+
+                if (!TryGetReplaceableStorage(source, out var replaceableSource))
+                    return;
+
+                if (!TryTakeOutAndVerify(replaceableSource, srcIndex, sourceItem, out var taken))
+                    return;
+
+                if (!destination.TryStore(taken))
                 {
-                    // 제거 실패 -> 방금 dest 에 저장한 것 롤백
-                    Logg.LogWarning($"[{nameof(GameItemTransfer)}] Failed to remove source item during TransferOrSwap. Rolling back target slot");
-                    RollbackDestSlot(destination, destExisting, sourceItem, destIndex);
-                    return;
+                    // 실패 -> 원상복구
+                    TryRollbackToSlot(replaceableSource, taken, srcIndex);
                 }
-
-                // 기존 dest에 아이템이 없었다면 단순 이동으로 종료
-                if (destExisting == null)
-                    return;
-
-                // destExisting 을 sourceSlot에 저장 (Swap)
-                // Swap 성공 시 종료
-                if (replaceSource.TryReplaceAt(destExisting, srcIndex, out var srcExisting) && srcExisting == null)
-                    return;
-
-                // Swap 실패 -> 전체 롤백 시도
-                Logg.LogWarning($"[{nameof(GameItemTransfer)}] Swap failed, trying rollback");
-                bool restoredSource = replaceSource.TryReplaceAt(removed, srcIndex, out _);
-
-                // dest 롤백: 현재 destIndex 슬롯 에 있는 sourceItem 을 제거하고 destExisting 복원
-                if (!replaceDest.TryReplaceAt(destExisting, destIndex, out var rollbackTaken2) ||
-                    !sourceItem.IsEqual(rollbackTaken2, ItemComparerExtension.ItemCompareMode.CompareInstance))
-                {
-                    Logg.LogError($"[{nameof(GameItemTransfer)}] Rollback of target slot failed during TransferOrSwap (Swap branch)");
-                }
-
-                if (!restoredSource)
-                    Logg.LogError($"[{nameof(GameItemTransfer)}] failed to roll back item from TransferOrSwap({source}, {sourceSlot}, {destination})");
-
-                return;
             }
-
-            if (TryStoreToReferenceStorage(destination, sourceItem))
-                return;
-
-            // 2) Swap 불가한 경우
-            // -> Swap 하지 않고, CanStore 정책 확인 후 단방향 Transfer만 수행
-            if (!destination.CanStore(sourceItem))
-                return;
-
-            if (!TryGetReplaceableStorage(source, out var replaceableSource))
-                return;
-
-            if (!TryTakeOutAndVerify(replaceableSource, srcIndex, sourceItem, out var taken))
-                return;
-
-            if (!destination.TryStore(taken))
+            finally
             {
-                // 실패 시 원복 시도
-                TryRollbackToSlot(replaceableSource, taken, srcIndex);
+                EndEventBatch(batchers);
             }
         }
 
@@ -337,95 +390,101 @@ namespace TH.Item
             Logg.Log($"[{nameof(GameItemTransfer)}] TransferOrSwap (<{source}, {sourceSlot}> - <{destination}, {destSlot}>) ",
                 Logg.LoggingMode.Completed);
 
-            // 기본 유효성 검증
+            // 기본 유효성 검사
             if (!(sourceSlot?.HasItem ?? false))
             {
                 Logg.LogError($"[{nameof(GameItemTransfer)}] sourceSlot is empty - TransferOrSwap(<{source}, {sourceSlot}> - <{destination}, {destSlot}>)");
                 return;
             }
 
-            // 도착 슬롯이 비어있으면 단방향 이동
-            if (!(destSlot?.HasItem ?? false))
+            var batchers = BeginEventBatch(source, destination);
+            try
             {
-                Transfer(source, sourceSlot, destination, destSlot);
-                return;
-            }
-
-            int sourceSlotIndex = sourceSlot.Index;
-            int destSlotIndex = destSlot.Index;
-
-            // 1) 같은 저장소 내부 처리
-            if (ReferenceEquals(source, destination))
-            {
-                // 1-a) 동일 Countable 이면 병합 시도 → ICountableItemStorage에 위임
-                if (source is ICountableItemStorage countableStorage &&
-                    sourceSlot is
-                    {
-                        IsAccessible: true,
-                        HasItem: true,
-                        GetItem: { Type: Enums.ItemType.Countable } sourceItem
-                    } &&
-                    destSlot is
-                    {
-                        IsAccessible: true,
-                        HasItem: true,
-                        GetItem: { Type: Enums.ItemType.Countable } destItem
-                    } &&
-                    sourceItem.IsEqual(destItem, ItemComparerExtension.ItemCompareMode.CompareData))
+                // 도착 슬롯이 비어있으면 그냥 이동
+                if (!(destSlot?.HasItem ?? false))
                 {
-                    if (!countableStorage.TryMergeStacks(sourceSlotIndex, destSlotIndex))
-                        Logg.LogError($"[{nameof(GameItemTransfer)}] TryMergeStacks failed on same storage ({sourceSlotIndex} -> {destSlotIndex})");
+                    Transfer(source, sourceSlot, destination, destSlot);
                     return;
                 }
 
-                // 1-b) 그 외에는 IRearrangeableStorage 가 있으면 내부 재배치/스왑으로 처리
-                if (source is IRearrangeableStorage rearr)
+                int sourceSlotIndex = sourceSlot.Index;
+                int destSlotIndex = destSlot.Index;
+
+                // 1) 동일 저장소 내부 처리
+                if (ReferenceEquals(source, destination))
                 {
-                    if (!rearr.TryTransferItem(sourceSlot, destSlot))
-                        Logg.LogError($"[{nameof(GameItemTransfer)}] Internal TransferOrSwap via IRearrangeableStorage failed");
+                    // 1-a) 동일 Countable 이면 병합 시도 (ICountableItemStorage 구현)
+                    if (source is ICountableItemStorage countableStorage &&
+                        sourceSlot is
+                        {
+                            IsAccessible: true,
+                            HasItem: true,
+                            GetItem: { Type: Enums.ItemType.Countable } sourceItem
+                        } &&
+                        destSlot is
+                        {
+                            IsAccessible: true,
+                            HasItem: true,
+                            GetItem: { Type: Enums.ItemType.Countable } destItem
+                        } &&
+                        sourceItem.IsEqual(destItem, ItemComparerExtension.ItemCompareMode.CompareData))
+                    {
+                        if (!countableStorage.TryMergeStacks(sourceSlotIndex, destSlotIndex))
+                            Logg.LogError($"[{nameof(GameItemTransfer)}] TryMergeStacks failed on same storage ({sourceSlotIndex} -> {destSlotIndex})");
+                        return;
+                    }
+
+                    // 1-b) 기존에 IRearrangeableStorage 가 있으면 내부 재배치 로직으로 처리
+                    if (source is IRearrangeableStorage rearr)
+                    {
+                        if (!rearr.TryTransferItem(sourceSlot, destSlot))
+                            Logg.LogError($"[{nameof(GameItemTransfer)}] Internal TransferOrSwap via IRearrangeableStorage failed");
+                        return;
+                    }
+                }
+
+                // 2) 양쪽 모두 IReplaceableStorage 구현 시 Swap
+                if (source is IReplaceableStorage replaceSource && destination is IReplaceableStorage replaceDest)
+                {
+                    TrySwap(replaceSource, replaceDest, sourceSlotIndex, destSlotIndex, out _);
                     return;
                 }
+
+                // 3) 하나라도 IReplaceableStorage 가 아닌 경우
+                if (!ValidateSlotWithItem(sourceSlot, source))
+                    return;
+
+                var srcItem = sourceSlot.GetItem;
+
+                if (TryStoreToReferenceStorage(destination, srcItem, destSlotIndex))
+                    return;
+
+                if (!destination.CanStore(srcItem, destSlotIndex))
+                    return; 
+
+                if (!TryGetReplaceableStorage(source, out var repSource))
+                    return;
+
+                if (!TryTakeOutAndVerify(repSource, sourceSlotIndex, srcItem, out var moved))
+                    return;
+
+                if (!destination.TryStore(moved, destSlotIndex))
+                {
+                    // 실패 -> 원상복구
+                    TryRollbackToSlot(repSource, moved, sourceSlotIndex);
+                }
             }
-
-            // 2) 양쪽 모두 IReplaceableStorage 를 구현했다면 -> IReplaceableStorage 기반 Swap
-            if (source is IReplaceableStorage replaceSource && destination is IReplaceableStorage replaceDest)
+            finally
             {
-                TrySwap(replaceSource, replaceDest, sourceSlotIndex, destSlotIndex, out _);
-                return;
-            }
-
-            // 3) 둘 중 하나라도 IReplaceableStorage 가 아닌 경우
-            // -> Swap 하지 않고, CanStore 정책 확인 후 단방향 Transfer만 수행
-            if (!ValidateSlotWithItem(sourceSlot, source))
-                return;
-
-            var srcItem = sourceSlot.GetItem;
-
-            if (TryStoreToReferenceStorage(destination, srcItem, destSlotIndex))
-                return;
-
-            // destination이 아이템 추가 저장 가능 여부 확인
-            // 저장슬롯이 전부 차있고, 스토리지 내부 규칙상 덮어쓰기 불가한 경우 등이 해당
-            if (!destination.CanStore(srcItem, destSlotIndex))
-                return; 
-
-            if (!TryGetReplaceableStorage(source, out var repSource))
-                return;
-
-            // 단방향 이동 처리
-            if (!TryTakeOutAndVerify(repSource, sourceSlotIndex, srcItem, out var moved))
-                return;
-
-            if (!destination.TryStore(moved, destSlotIndex))
-            {
-                // 실패 시 원복
-                TryRollbackToSlot(repSource, moved, sourceSlotIndex);
+                EndEventBatch(batchers);
             }
         }
 
         public bool CanTransfer(IGameItemSlot sourceSlot, IGameItemStorage destination)
         {
-            if (sourceSlot is not { IsAccessible: true, IsValid: true, GetItem: { } sourceItem })
+            if (sourceSlot is not { IsAccessible: true, HasItem: true, GetItem: { } sourceItem })
+                return false;
+            if (destination == null)
                 return false;
 
             return destination.CanStore(sourceItem);
@@ -433,10 +492,12 @@ namespace TH.Item
 
         public bool CanTransfer(IGameItemSlot sourceSlot, IGameItemStorage destination, IGameItemSlot destSlot)
         {
-            if (sourceSlot is not { IsAccessible: true, IsValid: true, GetItem: { } sourceItem })
+            if (sourceSlot is not { IsAccessible: true, HasItem: true, GetItem: { } sourceItem })
+                return false;
+            if (destination == null)
                 return false;
 
-            return destination.CanStore(sourceItem, destSlot?.Index ?? -1); // destSlot: null 이면 무조건 실패하도록 -1
+            return destination.CanStore(sourceItem, destSlot?.Index ?? -1);
         }
     }
 }

@@ -55,7 +55,9 @@ public class EquipSlotUI : BaseSlotUI, IEquipmentSlotUI
             StopCoroutine(_fadeCoroutine);
             _fadeCoroutine = null;
         }
-        _fadeCoroutine = StartCoroutine(CoUnHighlightFade(type, duration));
+        if (gameObject.activeInHierarchy)
+            _fadeCoroutine = StartCoroutine(CoUnHighlightFade(type, duration));
+        else UnHighlight(type);
     }
 
     private IEnumerator CoUnHighlightFade(int type, float duration)
