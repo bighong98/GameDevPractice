@@ -33,6 +33,7 @@ namespace TH.Item.Storage
         {
             Enums.ItemType.Countable,
             Enums.ItemType.Single,
+            Enums.ItemType.Equipment
         };
 
         public PlayerQuickStorage()

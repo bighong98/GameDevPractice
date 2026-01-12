@@ -17,7 +17,7 @@ namespace TH.Core.Pool
             TopParent = parent;
         }
 
-public Transform GetPoolContainer(GameObject prefab, Type type)
+        public Transform GetPoolContainer(GameObject prefab, Type type)
         {
             // 기존 컨테이너가 있고 유효하면 반환
             if (PoolContainerDictionary.TryGetValue(prefab, out var existingPoolContainer))
@@ -38,7 +38,7 @@ public Transform GetPoolContainer(GameObject prefab, Type type)
             return PoolContainerDictionary[prefab] = newPoolContainer.transform;
         }
         
-private Transform GetTypePoolContainer(Type type)
+        private Transform GetTypePoolContainer(Type type)
         {
             // 기존 타입 컨테이너가 있고 유효하면 반환
             if (TypeContainerDictionary.TryGetValue(type, out var existingTypeContainer))

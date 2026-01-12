@@ -73,7 +73,7 @@ public class QuickSlotController : MonoBehaviour
 
     private void Start()
     {
-        RefreshAllSlots(); 
+        RefreshAllSlots();
     }
 
     private void OnEnable()
@@ -178,11 +178,14 @@ public class QuickSlotController : MonoBehaviour
     {
         if (quickStorage == null || playerStorage == null) return;
         if (!IsValidQuickIndex(quickIndex)) return;
+        
+        if (playerInstance is not { Initialized: true }) 
+            UpdatePlayerInstance(playerHolder.GetPlayerInstance);
 
         if (!quickStorage.TryGetItem(quickIndex, out var item)
             || item is not { IsValid: true, GetItemInfo: {} itemInfo })
             return;
-
+        
         if (!itemConsumer.TryConsume(playerStorage, itemInfo, playerInstance.Value, 1))
             return;
 
@@ -355,7 +358,7 @@ public class QuickSlotController : MonoBehaviour
     }
 
     // Handle Player Instance (maintain valid reference)
-    private LazyValue<IHealable> playerInstance;
+    private LazyValue<IHealable> playerInstance = null;
     
     private void UpdatePlayerInstance(object player)
     {
