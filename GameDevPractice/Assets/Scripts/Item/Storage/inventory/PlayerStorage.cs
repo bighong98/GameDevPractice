@@ -5,9 +5,6 @@ using TH.Utils;
 using UnityEngine;
 using TH.Resource;
 using TH.Item.Storage;
-using System.Linq;
-using UnityEngine.SceneManagement;
-
 
 namespace TH.Item
 {
@@ -46,9 +43,11 @@ namespace TH.Item
         
         public PlayerStorage(IResourceLoader resourceLoader, ISaveEntityRegistry saveEntityRegistry)
         {
+            // 내부 캐시 생성
             countableCache = new CountableAmountCache(RaiseCountableAmountModified);
             itemIndexCache = new ItemIndexCache(IsValidSlotIdx, GetSlot, () => GetEndIdx);
             
+            // 내부 서비스 모듈 생성 (+ 생성자 의존성 주입)
             countableService = new CountableStorageService(
                 IsValidSlotIdx,
                 () => GetEndIdx,

@@ -4,6 +4,7 @@ using TH.SaveLoad;
 using TH.Utils;
 using UnityEngine;
 using TH.Resource;
+using TH.Item.Storage;
 
 namespace TH.Item
 {

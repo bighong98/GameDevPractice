@@ -2,7 +2,7 @@ using TH.Resource;
 using TH.Utils;
 using UnityEngine;
 
-namespace TH.Item
+namespace TH.Item.Storage
 {
     public sealed class CountableStorageService : ICountableStorageService
     {

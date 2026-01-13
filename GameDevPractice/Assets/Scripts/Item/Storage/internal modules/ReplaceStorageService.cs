@@ -1,7 +1,7 @@
 using TH.Resource;
 using TH.Utils;
 
-namespace TH.Item
+namespace TH.Item.Storage
 {
     public sealed class ReplaceStorageService : IReplaceableStorageService
     {

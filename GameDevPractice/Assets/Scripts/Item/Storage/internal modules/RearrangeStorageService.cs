@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace TH.Item
+namespace TH.Item.Storage
 {
     public sealed class RearrangeStorageService : IRearrangeableStorageService
     {

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace TH.Item
+namespace TH.Item.Storage
 {
     public sealed class StorageEventBatcher : IStorageEventBatcher
     {

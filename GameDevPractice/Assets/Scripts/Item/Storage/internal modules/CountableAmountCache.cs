@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using TH.Resource;
 
-namespace TH.Item
+namespace TH.Item.Storage
 {
     public sealed class CountableAmountCache
     {
