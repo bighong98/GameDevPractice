@@ -218,6 +218,12 @@ public class QuickSlotPanelUI : BaseUI, IStorageUI<QuickSlotUI>, IDraggableStora
         slotUIs[index].Highlight(highlightType);
     }
 
+    public void HighlightEquippingSlot(int index)
+    {
+        if (!IsValidSlotIdx(index)) return;
+        slotUIs[index].HighlightEquipping();
+    }
+
     public void UnHighlightSlot(int index)
     {
         if (!IsValidSlotIdx(index)) return;
@@ -228,6 +234,12 @@ public class QuickSlotPanelUI : BaseUI, IStorageUI<QuickSlotUI>, IDraggableStora
     {
         if (!IsValidSlotIdx(index)) return;
         slotUIs[index].UnHighlight(highlightType);
+    }
+
+    public void UnHighlightEquippingSlot(int index)
+    {
+        if (!IsValidSlotIdx(index)) return;
+        slotUIs[index].UnHighlightEquipping();
     }
 
     public void UnHighlightSlotWithFade(int index, int highlightType, float duration = 0.5f)

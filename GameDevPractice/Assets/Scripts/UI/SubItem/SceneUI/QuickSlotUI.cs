@@ -2,6 +2,7 @@ using System.Collections;
 using TH.UI;
 using TH.Utils;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class QuickSlotUI : BaseSlotUI, IHighlightableSlotUI
 {
@@ -13,6 +14,8 @@ public class QuickSlotUI : BaseSlotUI, IHighlightableSlotUI
     }
 
     #endregion
+
+    [SerializeField] private Image equippingHighlightImage;
 
     protected override void Awake()
     {
@@ -45,6 +48,7 @@ public class QuickSlotUI : BaseSlotUI, IHighlightableSlotUI
         if (GetTMPText((int)TMPTexts.ItemAmountText) is {} t)
             t.enabled = false;
         UnHighlight();
+        UnHighlightEquipping();
     }
 
     #region IHighlightableSlotUI
@@ -52,6 +56,11 @@ public class QuickSlotUI : BaseSlotUI, IHighlightableSlotUI
     private int currentHighlightType;
     public override void Highlight() => Highlight((int)SlotHighlightType.Select);
 
+    public override void UnHighlight()
+    {
+        base.UnHighlight();
+    }
+    
     public void Highlight(int type)
     {
         if (GetImage((int)Images.HighLightImage) is {} highlightImage && highlightImage.IsNotNull())
@@ -113,6 +122,18 @@ public class QuickSlotUI : BaseSlotUI, IHighlightableSlotUI
         }
 
         _fadeCoroutine = null;
+    }
+
+    public void HighlightEquipping()
+    {
+        if (equippingHighlightImage != null)
+            equippingHighlightImage.enabled = true;
+    }
+
+    public void UnHighlightEquipping()
+    {
+        if (equippingHighlightImage != null)
+            equippingHighlightImage.enabled = false;
     }
 
     #endregion

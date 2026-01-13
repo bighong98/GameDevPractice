@@ -325,33 +325,44 @@ public class QuickSlotController : MonoBehaviour
             || slotItem is not {GetItemInfo: {} itemInfo}
             || !itemInfo.IsNotNull())
         {
-            slotUI.Clear();
+            slotUI.Clear(); // 아이템 개수 텍스트 숨기기
+            panelUI.UnHighlightEquippingSlot(quickIndex);
             return;
         }
 
+        // 퀵슬롯 등록 아이템이 장비 아이템인 경우
         if (itemInfo.itemType == Enums.ItemType.Equipment)
         {
             if (!IsEquipmentAvailable(itemInfo))
             {
-                slotUI.Clear();
-                slotUI.HideIcon();
+                slotUI.Clear(); // 아이템 개수 텍스트 숨기기
+                slotUI.HideIcon(); // 아이콘 숨기기
+                panelUI.UnHighlightEquippingSlot(quickIndex);
                 return;
             }
 
-            slotUI.Clear(); // hide amount text
+            slotUI.Clear(); // 아이템 개수 텍스트 숨기기
             slotUI.SetIcon(itemInfo.sprite);
+            
+            // 장착 중인 장비 표시
+            if (TryFindSlot(equipmentHolder, itemInfo, out _))
+                panelUI.HighlightEquippingSlot(quickIndex);
+            else
+                panelUI.UnHighlightEquippingSlot(quickIndex);
             return;
         }
 
         if (!TryGetTotalAmount(itemInfo, out var totalAmount))
         {
             slotUI.Clear();
+            panelUI.UnHighlightEquippingSlot(quickIndex);
             return;
         }
 
         Logg.Log($"[{GetType().Name}.DrawSlot({quickIndex})] SetAmount({totalAmount})", Logg.LoggingMode.Completed);
         slotUI.SetIcon(itemInfo.sprite);
         slotUI.SetAmount(totalAmount);
+        panelUI.UnHighlightEquippingSlot(quickIndex);
     }
 
     private void DrawSlot(int quickIndex, int itemAmount)

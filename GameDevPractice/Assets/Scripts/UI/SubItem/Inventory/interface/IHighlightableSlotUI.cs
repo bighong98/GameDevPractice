@@ -16,6 +16,7 @@ namespace TH.UI
         Select,
         Warn,
         Modified,
+        Equipping,
     }
 }
 

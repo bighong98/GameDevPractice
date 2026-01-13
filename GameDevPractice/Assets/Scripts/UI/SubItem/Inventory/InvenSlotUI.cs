@@ -22,8 +22,9 @@ public sealed class InvenSlotUI : BaseSlotUI, IInvenSlotUI
         BindTMPText(typeof(TMPTexts));
     }
 
-    private void OnDisable()
+    protected override void OnDisable()
     {
+        base.OnDisable();
         if (_fadeCoroutine == null) return;
         
         StopCoroutine(_fadeCoroutine);
