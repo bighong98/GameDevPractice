@@ -135,7 +135,7 @@ namespace TH.Item
         {
             if (equipments[index] is {IsAccessible: true} slot) // 슬롯이 접근 가능하고 비어있는지 확인
             {
-                bool result = (!slot.HasItem || TryRemoveItem(index)) && slot.TryStore(item); // 기존 아이템 제거 시도 및 
+                bool result = (!slot.HasItem || TryRemoveItem(index)) && slot.TryStore(item); // 기존 아이템 제거 시도 및 새 아이템 저장
                 if (result) NotifyEquip(item, index); // 아이템 장착 이벤트 호출
                 
                 return result; // 결과 반환

@@ -29,6 +29,11 @@ public abstract class BaseSlotUI : BaseUI, ISlotUI, IPoolObject
         BindImage(typeof(Images));
     }
 
+    protected virtual void OnDisable()
+    {
+        UnHighlight();
+    }
+
     public void SetIndex(int index)
     {
         this.index = index;
