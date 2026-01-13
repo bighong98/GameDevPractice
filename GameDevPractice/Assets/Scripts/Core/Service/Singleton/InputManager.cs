@@ -1,9 +1,12 @@
+
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using TH.Core.Input;
 using TH.UI;
 using TH.Utils;
+
+using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Scripting;
@@ -89,7 +92,8 @@ namespace TH.Core
             // default: GlobalActions, PlayerActions, QuickSlotActions 활성화
             UserInput.Global.Enable();
             UserInput.QuickSlot.Enable();
-            UserInput.Player.Enable(); 
+            UserInput.Player.Enable();
+            EnableCamActionMap();
         }
 
         public UniTask BeforeSceneLoad(CancellationToken externalToken)
@@ -319,6 +323,7 @@ namespace TH.Core
         
             UserInput.QuickSlot.Disable();
             UserInput.UI.Disable();
+            DisableCamActionMap();
         }
 
         public void EnableUIActionMap()
@@ -337,10 +342,14 @@ namespace TH.Core
         {
             if (!CamActions.enabled)
                 CamActions.Enable();
+
+            SetCinemachineInputControllersEnabled(true);
         }
 
         public void DisableCamActionMap()
         {
+            SetCinemachineInputControllersEnabled(false);
+
             if (CamActions.enabled)
                 CamActions.Disable();
         }
@@ -374,7 +383,30 @@ namespace TH.Core
 
         #endregion
         
-        #region Helper Methods
+        
+        private static void SetCinemachineInputControllersEnabled(bool enabled)
+        {
+            var controllers = CinemachineInputAxisControllerRegistry.Controllers;
+            if (controllers == null || controllers.Count == 0)
+                return;
+
+            foreach (var controller in controllers)
+            {
+                if (controller == null)
+                    continue;
+
+                controller.enabled = enabled;
+                var axes = controller.Controllers;
+                for (int i = 0; i < axes.Count; i++)
+                {
+                    var axis = axes[i];
+                    axis.Enabled = enabled;
+                    axes[i] = axis;
+                }
+            }
+        }
+
+#region Helper Methods
 
         private static bool IsWithoutModifiers()
         {
@@ -440,9 +472,9 @@ namespace TH.Core
         {
             _isPointerInView = inView;
             if (_isPointerInView)
-                UserInput.Cam.Enable();
+                EnableCamActionMap();
             else 
-                UserInput.Cam.Disable();
+                DisableCamActionMap();
         }
 
         #endregion

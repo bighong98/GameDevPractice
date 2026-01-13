@@ -978,6 +978,10 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2823857570014986721, guid: 49b6fd16630d3a44e83d913a946ff735, type: 3}
+      propertyPath: AutoEnableInputs
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2823857570014986721, guid: 49b6fd16630d3a44e83d913a946ff735, type: 3}
       propertyPath: m_ControllerManager.Controllers.Array.data[2].Input.Gain
       value: -6
       objectReference: {fileID: 0}
@@ -1093,8 +1097,28 @@ PrefabInstance:
     - {fileID: 7935801609325134867, guid: 49b6fd16630d3a44e83d913a946ff735, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3188763098889343814, guid: 49b6fd16630d3a44e83d913a946ff735, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8436951194453186159}
   m_SourcePrefab: {fileID: 100100000, guid: 49b6fd16630d3a44e83d913a946ff735, type: 3}
+--- !u!1 &354584260336521356 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3188763098889343814, guid: 49b6fd16630d3a44e83d913a946ff735, type: 3}
+  m_PrefabInstance: {fileID: 2930576330630218698}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &8436951194453186159
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 354584260336521356}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f41f568acc65a34db7a8b1c035360fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TH.Core.Input.CinemachineInputAxisControllerRegistry
 --- !u!4 &1255362798127666925 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4161482689268028711, guid: 49b6fd16630d3a44e83d913a946ff735, type: 3}
