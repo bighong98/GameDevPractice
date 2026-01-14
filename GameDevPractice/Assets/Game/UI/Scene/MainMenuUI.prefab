@@ -66,6 +66,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TH.UI.MainMenuController
   view: {fileID: 4119901813924064031}
+  testBgm: {fileID: 8300000, guid: f8bcd29e5e9e4ec429f513dd24ec2bfb, type: 3}
 --- !u!1 &7400893010337130913
 GameObject:
   m_ObjectHideFlags: 0

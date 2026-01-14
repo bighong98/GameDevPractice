@@ -37,6 +37,7 @@ namespace TH.UI
         public event Action NewGameRequested;
         public event Action ContinueRequested;
         public event Action LoadRequested;
+        public event Action OptionRequested;
         public event Action QuitRequested;
         public event Action<string> LoadSlotSelected;
 
@@ -51,10 +52,11 @@ namespace TH.UI
 
             BindButton(typeof(Buttons));
 
-            BindMenuButton(Buttons.Btn_NewGame, StartNewGameAsync);
-            BindMenuButton(Buttons.Btn_Continue, ContinueGameAsync);
-            BindMenuButton(Buttons.Btn_Load, LoadGameAsync);
-            BindMenuButton(Buttons.Btn_Quit, QuitGameAsync);
+            BindMenuButton(Buttons.Btn_NewGame, OnStartButtonClicked);
+            BindMenuButton(Buttons.Btn_Continue, OnContinueButtonClicked);
+            BindMenuButton(Buttons.Btn_Options, OnOptionButtonClicked);
+            BindMenuButton(Buttons.Btn_Load, OnLoadButtonClicked);
+            BindMenuButton(Buttons.Btn_Quit, OnQuitButtonClicked);
         }
 
         private void BindMenuButton(Buttons button, Action action)
@@ -83,22 +85,27 @@ namespace TH.UI
                 target.interactable = interactable;
         }
 
-        private void StartNewGameAsync()
+        private void OnStartButtonClicked()
         {
             NewGameRequested?.Invoke();
         }
 
-        private void ContinueGameAsync()
+        private void OnContinueButtonClicked()
         {
             ContinueRequested?.Invoke();
         }
 
-        private void LoadGameAsync()
+        private void OnLoadButtonClicked()
         {
             LoadRequested?.Invoke();
         }
 
-        private void QuitGameAsync()
+        private void OnOptionButtonClicked()
+        {
+            OptionRequested?.Invoke();
+        }
+
+        private void OnQuitButtonClicked()
         {
             QuitRequested?.Invoke();
         }

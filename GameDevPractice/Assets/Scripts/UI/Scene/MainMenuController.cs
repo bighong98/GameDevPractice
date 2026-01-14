@@ -13,7 +13,9 @@ namespace TH.UI
     public class MainMenuController : MonoBehaviour
     {
         [SerializeField] private MainMenuUI view;
+        [SerializeField] private AudioClip testBgm;
 
+        // 외부 서비스 (ServiceLocator로 주입)
         private ISaveSystem saveSystem;
         private ISaveFileHandler saveFileHandler;
         
@@ -32,13 +34,47 @@ namespace TH.UI
                 TryGetComponent(out view);
         }
 
-
         private void Start()
         {
             catalogResolved = catalogResolveTCS.Task.Preserve();
             LoadSceneCatalogAsync().Forget();
+
+            if (testBgm != null)
+            {
+                SoundManager.Instance.Play(Enums.AudioType.Bgm, testBgm);
+            }
         }
-        
+
+        private void OnEnable()
+        {
+            if (view == null)
+                return;
+
+            view.NewGameRequested += HandleNewGameRequested;
+            view.ContinueRequested += HandleContinueRequested;
+            view.LoadRequested += HandleLoadRequested;
+            view.OptionRequested += HandleOptionRequested;
+            view.QuitRequested += HandleQuitRequested;
+            view.LoadSlotSelected += HandleLoadSlotSelected;
+
+            RefreshSaveState();
+        }
+
+        private void OnDisable()
+        {
+            if (view == null)
+                return;
+
+            view.NewGameRequested -= HandleNewGameRequested;
+            view.ContinueRequested -= HandleContinueRequested;
+            view.LoadRequested -= HandleLoadRequested;
+            view.OptionRequested -= HandleOptionRequested;
+            view.QuitRequested -= HandleQuitRequested;
+            view.LoadSlotSelected -= HandleLoadSlotSelected;
+        }
+
+        #region Initialization
+
         private async UniTask LoadSceneCatalogAsync()
         {
             try
@@ -59,32 +95,7 @@ namespace TH.UI
             await catalogResolved;
         }
 
-
-        private void OnEnable()
-        {
-            if (view == null)
-                return;
-
-            view.NewGameRequested += HandleNewGameRequested;
-            view.ContinueRequested += HandleContinueRequested;
-            view.LoadRequested += HandleLoadRequested;
-            view.QuitRequested += HandleQuitRequested;
-            view.LoadSlotSelected += HandleLoadSlotSelected;
-
-            RefreshSaveState();
-        }
-
-        private void OnDisable()
-        {
-            if (view == null)
-                return;
-
-            view.NewGameRequested -= HandleNewGameRequested;
-            view.ContinueRequested -= HandleContinueRequested;
-            view.LoadRequested -= HandleLoadRequested;
-            view.QuitRequested -= HandleQuitRequested;
-            view.LoadSlotSelected -= HandleLoadSlotSelected;
-        }
+        #endregion
 
         private void RefreshSaveState()
         {
@@ -97,11 +108,50 @@ namespace TH.UI
             view.SetLoadButtonEnabled(hasSave);
         }
 
+        #region Handle UI Events
+
         private void HandleNewGameRequested()
         {
             this.Log($"HandleNewGameRequested invoked", Logg.LoggingMode.InProgress);
             StartNewGameAsync().Forget();
         }
+
+        private void HandleContinueRequested()
+        {
+            ContinueGameAsync().Forget();
+        }
+
+        private void HandleLoadRequested()
+        {
+            if (saveFileHandler == null || view == null)
+                return;
+
+            saveFileHandler.RefreshSaveFileList();
+            var slots = BuildSlotViewData(saveFileHandler.SaveFiles);
+            view.ShowLoadSlots(slots);
+        }
+
+        private void HandleLoadSlotSelected(string saveFile)
+        {
+            if (string.IsNullOrEmpty(saveFile))
+                return;
+
+            LoadFromSlotAsync(saveFile).Forget();
+        }
+
+        private void HandleOptionRequested()
+        {
+            UIManager.Instance.ShowOptionMenu();
+        }
+
+        private void HandleQuitRequested()
+        {
+            QuitGameAsync().Forget();
+        }
+
+        #endregion
+        
+        #region Core 
 
         private async UniTask StartNewGameAsync()
         {
@@ -123,11 +173,6 @@ namespace TH.UI
             await saveSystem.LoadLastScene(saveFile);
         }
 
-        private void HandleContinueRequested()
-        {
-            ContinueGameAsync().Forget();
-        }
-
         private async UniTask ContinueGameAsync()
         {
             if (saveSystem == null || saveFileHandler == null)
@@ -144,20 +189,27 @@ namespace TH.UI
             await saveSystem.LoadLastScene(saveFile);
         }
 
+        private async UniTask LoadFromSlotAsync(string saveFile)
+        {
+            if (saveSystem == null)
+                return;
+
+            await saveSystem.LoadLastScene(saveFile);
+        }
+
+        private async UniTask QuitGameAsync()
+        {
+            await GameSceneManager.Instance.QuitGame();
+        }
+
+        #endregion
+        
+        #region Helper Methods
+
         private string GetMostRecentSaveFileName()
         {
             var recent = saveFileHandler.GetMostRecentSaveFile();
             return recent.HasValue ? recent.Value.FileName : null;
-        }
-
-        private void HandleLoadRequested()
-        {
-            if (saveFileHandler == null || view == null)
-                return;
-
-            saveFileHandler.RefreshSaveFileList();
-            var slots = BuildSlotViewData(saveFileHandler.SaveFiles);
-            view.ShowLoadSlots(slots);
         }
 
         private static List<MainMenuUI.SaveSlotViewData> BuildSlotViewData(IReadOnlyList<SaveFileInfo> saveFiles)
@@ -172,30 +224,8 @@ namespace TH.UI
             return slots;
         }
 
-        private void HandleLoadSlotSelected(string saveFile)
-        {
-            if (string.IsNullOrEmpty(saveFile))
-                return;
+        #endregion
 
-            LoadFromSlotAsync(saveFile).Forget();
-        }
-
-        private async UniTask LoadFromSlotAsync(string saveFile)
-        {
-            if (saveSystem == null)
-                return;
-
-            await saveSystem.LoadLastScene(saveFile);
-        }
-
-        private void HandleQuitRequested()
-        {
-            QuitGameAsync().Forget();
-        }
-
-        private async UniTask QuitGameAsync()
-        {
-            await GameSceneManager.Instance.QuitGame();
-        }
+        
     }
 }

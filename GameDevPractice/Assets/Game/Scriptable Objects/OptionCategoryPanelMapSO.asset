@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c65bb35c1bb31da4db14e828c8e47a1d, type: 3}
+  m_Name: OptionCategoryPanelMapSO
+  m_EditorClassIdentifier: Assembly-CSharp::OptionCategoryPanelMapSO
+  categoryButtonTemplate: {fileID: 4801843772811348024, guid: f09a265d62bb6d248bc0f6cf6407ab3f, type: 3}
+  entries:
+  - category: 0
+    label: "\uC74C\uB7C9"
+    panelPrefab: {fileID: 645695070661365118, guid: 6b6361df851732c4bb1499d9a78f399d, type: 3}
+  - category: 1
+    label: "\uD14C\uC2A4\uD2B8"
+    panelPrefab: {fileID: 645695070661365118, guid: 070387744288da24e94d33f8d9169de2, type: 3}

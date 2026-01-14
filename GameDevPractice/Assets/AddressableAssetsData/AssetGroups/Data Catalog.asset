@@ -15,6 +15,14 @@ MonoBehaviour:
   m_GroupName: Data Catalog
   m_GUID: 23253a76be3db4f4ea9a8ecdeda81285
   m_SerializeEntries:
+  - m_GUID: 1f83942423df5e7408d461722fc9d9d2
+    m_Address: SoundVolumeGroupMapSO
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    - Sound
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 32f5e9ec55ccdb04b83ed9329574eaf4
     m_Address: DamageRuleSO
     m_ReadOnly: 0
@@ -34,6 +42,13 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - PreLoad_CatalogSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 777527bcfd206474f9b1685d8c2df576
+    m_Address: OptionCategoryPanelMapSO
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 8051607782521b445aca898dd7939ac5

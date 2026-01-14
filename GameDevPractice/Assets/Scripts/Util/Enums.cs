@@ -21,12 +21,25 @@ public static class Enums
         Effect,
         Max
     }
+    
+    public enum VolumeGroup
+    {
+        Master,
+        Bgm,
+        Effect
+    }
 
     public enum UIRenderType
     {
         ScreenOverlay,
         ScreenCamera,
         WorldSpace,
+    }
+
+    public enum OptionCategory
+    {
+        Sound,
+        Blank,
     }
     
     public enum UIEvent

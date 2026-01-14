@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using TH.Resource;
+using TH.Utils;
 using UnityEngine;
 using UnityEngine.Scripting;
 
@@ -13,17 +14,31 @@ namespace TH.Core.Service
     {
         private readonly AudioSource[] audioSources = new AudioSource[(int)Enums.AudioType.Max];
         private readonly Dictionary<string, AudioClip> audioClips = new ();
+        private readonly float[] baseVolumes = new float[(int)Enums.AudioType.Max];
+        private readonly Dictionary<Enums.VolumeGroup, float> groupVolumes = new ();
+        private readonly Dictionary<Enums.VolumeGroup, Enums.AudioType[]> groupToAudioTypes = new ();
+        private readonly Dictionary<Enums.AudioType, Enums.VolumeGroup> audioTypeToGroup = new ();
+        private readonly UniTaskCompletionSource<SoundVolumeGroupMapSO> volumeGroupMapResolveTCS = new ();
+        private readonly UniTask<SoundVolumeGroupMapSO> volumeGroupMapResolved;
         
         private const string SoundRootName = "Sounds";
         private const string SoundSuffix = ".wav";
         private const string VolumeSuffix = "Volume";
         private const float DefaultVolume = 0.2f;
         private const float DefaultPitch = 1.0f;
+        private const string VolumeGroupMapKey = "SoundVolumeGroupMapSO";
+        
+        private SoundVolumeGroupMapSO volumeGroupMap;
         
         private SoundManager()
         {
             var soundRoot = CreateRoot();
             SetAudioSource(soundRoot);
+            InitializeGroupVolumes();
+            BuildDefaultMappings();
+            volumeGroupMapResolved = volumeGroupMapResolveTCS.Task.Preserve();
+            LoadVolumeGroupMapAsync().Forget();
+            ApplyAllVolumes();
         }
 
         #region Initialization
@@ -44,8 +59,8 @@ namespace TH.Core.Service
                 GameObject go = new GameObject { name = soundTypeNames[i] };
                 audioSources[i] = go.AddComponent<AudioSource>(); // 오디오 재생용 컴포넌트 부착
                 audioSources[i].spatialBlend = 0; // todo: 거리 비례 사운드 전달 필요시 수정 필요
-                // PlayerPrefs.GetFloat($"{soundTypeNames[i]}{VolumeSuffix}", DefaultVolume); // PlayerPrefs로부터 볼륨 사용자 설정 불러오기. 저장된 설정이 없으면 DefaultVolume 적용
-                audioSources[i].volume = DefaultVolume;
+                baseVolumes[i] = PlayerPrefs.GetFloat($"{soundTypeNames[i]}{VolumeSuffix}", DefaultVolume);
+                audioSources[i].volume = baseVolumes[i];
                 go.transform.SetParent(soundRoot); 
             }
 
@@ -53,11 +68,161 @@ namespace TH.Core.Service
             audioSources[(int)Enums.AudioType.SubBgm].loop = true;
         }
 
+        private void InitializeGroupVolumes()
+        {
+            foreach (Enums.VolumeGroup group in Enum.GetValues(typeof(Enums.VolumeGroup)))
+            {
+                groupVolumes[group] = PlayerPrefs.GetFloat($"{group}{VolumeSuffix}", 1f);
+            }
+        }
+
+        private async UniTask LoadVolumeGroupMapAsync()
+        {
+            try
+            {
+                var resourceLoader = ServiceLocator.Get<IResourceLoader>();
+                if (resourceLoader == null || string.IsNullOrEmpty(VolumeGroupMapKey))
+                {
+                    volumeGroupMapResolveTCS.TrySetResult(null);
+                    Logg.Log("[SoundManager] LoadVolumeGroupMapAsync completed - using default mapping (no loader/key)", Logg.LoggingMode.Completed);
+                    return;
+                }
+
+                volumeGroupMap = await resourceLoader.LoadAsync<SoundVolumeGroupMapSO>(VolumeGroupMapKey);
+                volumeGroupMapResolveTCS.TrySetResult(volumeGroupMap);
+
+                BuildMappings(volumeGroupMap);
+                ApplyAllVolumes();
+                Logg.Log($"[SoundManager] LoadVolumeGroupMapAsync completed - map: {(volumeGroupMap != null ? volumeGroupMap.name : "NULL")}", Logg.LoggingMode.Completed, context: volumeGroupMap);
+            }
+            catch (Exception e)
+            {
+                volumeGroupMapResolveTCS.TrySetException(e);
+                BuildDefaultMappings();
+                ApplyAllVolumes();
+                Logg.LogWarning($"[SoundManager] LoadVolumeGroupMapAsync completed - fallback to default mapping ({e.GetType().Name})");
+#if UNITY_EDITOR
+                throw;
+#endif
+            }
+        }
+
+        public async UniTask WaitForVolumeGroupMap(CancellationToken token = default)
+        {
+            if (volumeGroupMap != null) return;
+            await volumeGroupMapResolved.AttachExternalCancellation(token);
+        }
+
+        private void BuildMappings(SoundVolumeGroupMapSO map)
+        {
+            groupToAudioTypes.Clear();
+            audioTypeToGroup.Clear();
+
+            if (map == null || map.Entries == null || map.Entries.Count == 0)
+            {
+                BuildDefaultMappings();
+                return;
+            }
+
+            foreach (var entry in map.Entries)
+            {
+                if (entry == null || entry.audioTypes == null || entry.audioTypes.Count == 0) continue;
+
+                var types = new Enums.AudioType[entry.audioTypes.Count];
+                for (int i = 0; i < entry.audioTypes.Count; i++)
+                {
+                    types[i] = entry.audioTypes[i];
+                }
+
+                groupToAudioTypes[entry.group] = types;
+                foreach (var audioType in types)
+                {
+                    audioTypeToGroup[audioType] = entry.group;
+                }
+            }
+        }
+
+        private void BuildDefaultMappings()
+        {
+            groupToAudioTypes.Clear();
+            audioTypeToGroup.Clear();
+
+            var bgmTypes = new[] { Enums.AudioType.Bgm, Enums.AudioType.SubBgm };
+            var effectTypes = new[] { Enums.AudioType.Effect };
+
+            groupToAudioTypes[Enums.VolumeGroup.Bgm] = bgmTypes;
+            groupToAudioTypes[Enums.VolumeGroup.Effect] = effectTypes;
+
+            foreach (var t in bgmTypes)
+            {
+                audioTypeToGroup[t] = Enums.VolumeGroup.Bgm;
+            }
+
+            foreach (var t in effectTypes)
+            {
+                audioTypeToGroup[t] = Enums.VolumeGroup.Effect;
+            }
+        }
+
+        private void ApplyAllVolumes()
+        {
+            for (int i = 0; i < (int)Enums.AudioType.Max; i++)
+            {
+                ApplyFinalVolume((Enums.AudioType)i);
+            }
+        }
+
+        private void ApplyGroupVolume(Enums.VolumeGroup group)
+        {
+            if (group == Enums.VolumeGroup.Master)
+            {
+                ApplyAllVolumes();
+                return;
+            }
+
+            if (groupToAudioTypes.TryGetValue(group, out var types))
+            {
+                foreach (var type in types)
+                {
+                    ApplyFinalVolume(type);
+                }
+
+                return;
+            }
+
+            foreach (var pair in audioTypeToGroup)
+            {
+                if (pair.Value == group)
+                {
+                    ApplyFinalVolume(pair.Key);
+                }
+            }
+        }
+
+        private Enums.VolumeGroup ResolveGroup(Enums.AudioType type)
+        {
+            return audioTypeToGroup.TryGetValue(type, out var group) ? group : Enums.VolumeGroup.Master;
+        }
+
+        private void ApplyFinalVolume(Enums.AudioType type)
+        {
+            float master = groupVolumes.TryGetValue(Enums.VolumeGroup.Master, out var masterVolume) ? masterVolume : 1f;
+            float group = groupVolumes.TryGetValue(ResolveGroup(type), out var groupVolume) ? groupVolume : 1f;
+            audioSources[(int)type].volume = Mathf.Clamp01(baseVolumes[(int)type] * master * group);
+        }
+
         #endregion
 
         public void ChangeSoundVolume(Enums.AudioType type, float value)
         {
-            audioSources[(int)type].volume = Mathf.Clamp(value, 0f, 1f);
+            baseVolumes[(int)type] = Mathf.Clamp01(value);
+            ApplyFinalVolume(type);
+        }
+
+        public void SetGroupVolume(Enums.VolumeGroup group, float value)
+        {
+            groupVolumes[group] = Mathf.Clamp01(value);
+            ApplyGroupVolume(group);
         }
         
         #region Play

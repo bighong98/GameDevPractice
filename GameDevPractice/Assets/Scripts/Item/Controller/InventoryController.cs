@@ -612,7 +612,13 @@ namespace TH.Item
         
         private void RefreshStorageUI(IGameItemStorage storage)
         {
+            if (storage.IsNull() || storage.ItemSlots is not {} itemSlots)
+            {
+                this.LogWarning($"RefreshStorageUI - invalid storage instance or itemSlot is not initialized", context: this);
+                return;
+            }
             if (GetUIFromStorage(storage) is not { } storageUI) return;
+            
             foreach (var slot in storage.ItemSlots)
             {
                 var index = slot.Index;

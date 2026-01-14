@@ -40,9 +40,6 @@ namespace TH.Core.Service
         private const string SceneCatalogSOKey = "SceneCatalogSO";
         private const string SceneUIListSOKey = "SceneUIListSO";
         private const string UICanvasSettingSOKey = "UICanvasSettingSO";
-        private const string TooltipUIPrefabKey = "TooltipUI.prefab";
-        private const string OptionMenuUIKey = "OptionMenuUI";
-
 
         // default value
         private const int DefaultReadyMadePopupCount = 1; // 팝업용 오브젝트 풀 생성 시 초기 생성 개수
@@ -634,14 +631,18 @@ namespace TH.Core.Service
         
         #region Frequently Used UI
 
-        private void ShowOptionMenu()
+        private const string TooltipUIPrefabKey = "TooltipUI.prefab";
+        private const string OptionMenuUIKey = "OptionMenuUI";
+        private const string InventoryUIKey = "InventoryUI.prefab";
+
+        public void ShowOptionMenu()
         {
             ShowPopupUI<OptionMenuUI>(OptionMenuUIKey);
         }
 
         private void ShowInventoryUI()
         {
-            ShowPopupUI<InventoryUI>("InventoryUI.prefab");
+            ShowPopupUI<InventoryUI>(InventoryUIKey);
         }
         
         // // Tooltip (현재 미사용)

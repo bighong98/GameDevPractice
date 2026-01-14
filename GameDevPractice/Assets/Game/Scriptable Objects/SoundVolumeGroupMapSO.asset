@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d51739bc6a1b6d54c9fa9ae443096b6d, type: 3}
+  m_Name: SoundVolumeGroupMapSO
+  m_EditorClassIdentifier: Assembly-CSharp::TH.Core.Service.SoundVolumeGroupMapSO
+  entries:
+  - group: 0
+    label: "\uB9C8\uC2A4\uD130"
+    audioTypes: 000000000100000002000000
+  - group: 1
+    label: "\uBC30\uACBD \uC74C\uC545"
+    audioTypes: 0000000001000000
+  - group: 2
+    label: "\uD6A8\uACFC\uC74C"
+    audioTypes: 02000000
