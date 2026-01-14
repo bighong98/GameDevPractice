@@ -97,12 +97,11 @@ namespace TH.Item
 
             Init();
 
-            resourceLoader.OnLabelResourcesLoadedAll += (label) =>
+            resourceLoader.WaitForPreLoad(Constants.PreLoadLabel, () =>
             {
-                if (!string.Equals(label, Constants.PreLoadLabel)) return;
                 saveEntityRegistry.RegisterEntity(this);
                 LoadTestData(resourceLoader);
-            };
+            });
         }
 
         #region Initialization

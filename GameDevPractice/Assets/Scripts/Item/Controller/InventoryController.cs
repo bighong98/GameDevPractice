@@ -25,7 +25,7 @@ namespace TH.Item
         // view
         private IPlayerInventoryUI pInvenUI;
         // sub popup
-        private UI_ItemTooltip itemTooltip;
+        private ItemTooltipUI itemTooltip;
         
         // 드래그 상태 추적
         private bool isDragging = false;
@@ -258,7 +258,7 @@ namespace TH.Item
             // 아이템 툴팁 UI 로드
             if (ResourceManager.Instance.Instantiate("UI_ItemTooltip.prefab", transform) is { } tooltipObj)
             {
-                itemTooltip = tooltipObj.GetComponent<UI_ItemTooltip>();
+                itemTooltip = tooltipObj.GetComponent<ItemTooltipUI>();
                 itemTooltip.HideTooltip();
             }
         }
@@ -423,11 +423,9 @@ namespace TH.Item
             // 아이템이 있는 슬롯일 경우 아이템 툴팁 출력
             if (GetStorageFromUI(target) is { } result &&
                 result.TryGetItemSlot(index, out var slot) &&
-                slot is {HasItem: true, IsAccessible: true})
+                slot is {HasItem: true, IsAccessible: true, GetItem: {} item})
             {
-                // itemTooltip.MoveTooltip(MonoInputManager.Instance.PointerPos); 
-                itemTooltip.MoveTooltip(InputManager.Instance.PointerPos); 
-                itemTooltip.ShowTooltip(slot);
+                itemTooltip.ShowTooltipAt(InputManager.Instance.PointerPos, item); 
             }
             else itemTooltip.HideTooltip(); // 아이템이 없는 슬롯일 경우 툴팁 비활성화
         }
@@ -741,7 +739,7 @@ namespace TH.Item
         #endregion
 
         #region Sub Popup
-
+        const string ItemTooltipPopupKey = "ItemTooltipPopupUI";
         private void ShowDetailedTooltip(IGameItemStorage storage, IGameItemSlot slot)
         {
             if (slot is not { IsAccessible: true, HasItem: true, GetItem: { } item, GetItemInfo: {} itemInfo}) return;
@@ -750,7 +748,7 @@ namespace TH.Item
             var targetSlot = slot; 
             var slotCTS = AddNewItemModifyProgress(targetSlot);
             // 팝업 출력 시도
-            if (UIManager.Instance.ShowPopupUI<DetailedItemTooltipUI>() is not { } popup) return;
+            if (UIManager.Instance.ShowPopupUI<ItemTooltipPopupUI>(ItemTooltipPopupKey) is not { } popup) return;
             // 팝업 CTS 체인 결합 및 내용 입력
             popup.ChainPopupCTS(slotCTS.Token);
             popup.SetTooltip(

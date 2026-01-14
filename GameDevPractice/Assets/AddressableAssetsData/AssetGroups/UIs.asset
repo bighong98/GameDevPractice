@@ -78,6 +78,13 @@ MonoBehaviour:
     - PreLoad_Prefab
     - UI
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c931fcd4c65b32043a65a7cf05728d7a
+    m_Address: ItemTooltipPopupUI
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_Prefab
+    - UI
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e68de1593022e1b418f2849708380dc0
     m_Address: MainMenuUI
     m_ReadOnly: 0

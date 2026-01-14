@@ -12,7 +12,9 @@ using UnityEngine;
 // PlayerStorage(사용자 소지 아이템 모델) <-> PlayerQuickStorage 중계
 public class QuickSlotController : MonoBehaviour
 {
-    [SerializeField] private QuickSlotPanelUI panelUI;
+    
+    private ItemTooltipUI quickSlotTooltip;
+[SerializeField] private QuickSlotPanelUI panelUI;
     
     // 연결된 저장소 (Model)
     private IPlayerStorage playerStorage;
@@ -37,7 +39,9 @@ public class QuickSlotController : MonoBehaviour
 
         InitializeEventRegistries();
         BindStorageEvents(playerStorage);
-        BindStorageUIEvents(panelUI);
+        
+        LoadItemTooltipUI();
+BindStorageUIEvents(panelUI);
     }
 
     private void Start()
@@ -88,7 +92,9 @@ public class QuickSlotController : MonoBehaviour
             equipmentHolder.OnSlotChanged -= HandleEquipmentSlotChanged;
         }
 
-        UnsubscribeInputEvents();
+        
+        quickSlotTooltip?.HideTooltip();
+UnsubscribeInputEvents();
     }
 
     private void OnDestroy()
@@ -99,7 +105,11 @@ public class QuickSlotController : MonoBehaviour
         _hoverExitRegistry.Clear();
         _clickRegistry.Clear();
 
-        UnBindStorageEvents(playerStorage);
+        
+
+        if (quickSlotTooltip != null && quickSlotTooltip.gameObject != null)
+            Destroy(quickSlotTooltip.gameObject);
+UnBindStorageEvents(playerStorage);
     }
 
     #region Initialization
@@ -119,6 +129,16 @@ public class QuickSlotController : MonoBehaviour
             remover: (ui, handler) => ui.OnSlotClicked -= handler
         );
     }
+
+private void LoadItemTooltipUI()
+    {
+        if (ResourceManager.Instance.Instantiate("UI_ItemTooltip.prefab", transform) is { } tooltipObj)
+        {
+            quickSlotTooltip = tooltipObj.GetComponent<ItemTooltipUI>();
+            quickSlotTooltip.HideTooltip();
+        }
+    }
+
 
     private void BindStorageUIEvents(IStorageUI storageUI)
     {
@@ -272,12 +292,28 @@ public class QuickSlotController : MonoBehaviour
     {
         if (targetUI is not IHighlightableStorageUI highlightableUI) return;
         highlightableUI.UnHighlightSlot(lastHighlightedSlotIndex);
+
+        IGameItem hoveredItem = null;
         if (quickStorage.TryGetItem(index, out var slotItem)
-            && slotItem is {IsValid: true})
+            && slotItem is { IsValid: true })
         {
             highlightableUI.HighlightSlot(index);
             lastHighlightedSlotIndex = index;
+            hoveredItem = slotItem;
         }
+
+        if (quickSlotTooltip != null)
+        {
+            if (hoveredItem.IsNotNull())
+            {
+                quickSlotTooltip.ShowTooltipAt(InputManager.Instance.PointerPos, hoveredItem);
+            }
+            else
+            {
+                quickSlotTooltip.HideTooltip();
+            }
+        }
+
         Logg.Log($"[{GetType().Name}] OnSlotHovered({index}) invoked", Logg.LoggingMode.Completed);
     }
 
@@ -288,13 +324,14 @@ public class QuickSlotController : MonoBehaviour
             highlightableUI.UnHighlightSlot(lastHighlightedSlotIndex);
         highlightableUI.UnHighlightSlot(index);
         lastHighlightedSlotIndex = -1;
+        quickSlotTooltip?.HideTooltip();
         Logg.Log($"[{GetType().Name}] OffSlotHovered({index}) invoked", Logg.LoggingMode.Completed);
     }
 
     private void OnSlotClicked(IClickableStorageUI targetUI, int index)
     {
         Logg.Log($"[{GetType().Name}] OnSlotClicked({index}) invoked", Logg.LoggingMode.Completed);
-
+        quickSlotTooltip?.HideTooltip();
         UseQuickSlot(index);
     }
 

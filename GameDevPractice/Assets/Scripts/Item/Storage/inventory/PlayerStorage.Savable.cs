@@ -30,20 +30,23 @@ namespace TH.Item
 
         public bool RestoreState(object state)
         {
-            _hasRestoredState = true;
-
             this.Log($"RestoreState", Logg.LoggingMode.Completed);
 
             Clear();
-            
+
             List<IGameItem> items = ExtractSaveData(state);
-            foreach (var item in items)
+            _hasRestoredState = items is { Count: > 0 };
+
+            if (items is { Count: > 0 })
             {
-                TryStore(itemBuilder.GetItemFromData(item.GetItemInfo, item.GetAmount));
+                foreach (var item in items)
+                {
+                    TryStore(itemBuilder.GetItemFromData(item.GetItemInfo, item.GetAmount));
+                }
             }
-            
+
             NotifyStorageChanged();
-            
+
             return true;
         }
 

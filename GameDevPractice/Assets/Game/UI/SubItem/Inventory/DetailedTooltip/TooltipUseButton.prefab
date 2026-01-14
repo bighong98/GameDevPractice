@@ -14,12 +14,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 498451220464002147, guid: 778cb8db32d7188459c167c91fc59635, type: 3}
       propertyPath: m_fontSize
-      value: 20
+      value: 16.1
       objectReference: {fileID: 0}
     - target: {fileID: 498451220464002147, guid: 778cb8db32d7188459c167c91fc59635, type: 3}
       propertyPath: m_fontAsset
       value: 
-      objectReference: {fileID: 11400000, guid: 6a92fd3b8fe6188468ddd7d978c2ee91, type: 2}
+      objectReference: {fileID: 11400000, guid: f6d6b904a4f1f3d43b31e22f66f65bbf, type: 2}
     - target: {fileID: 498451220464002147, guid: 778cb8db32d7188459c167c91fc59635, type: 3}
       propertyPath: m_fontSizeMax
       value: 20
@@ -31,7 +31,7 @@ PrefabInstance:
     - target: {fileID: 498451220464002147, guid: 778cb8db32d7188459c167c91fc59635, type: 3}
       propertyPath: m_sharedMaterial
       value: 
-      objectReference: {fileID: 4118353011660254800, guid: 6a92fd3b8fe6188468ddd7d978c2ee91, type: 2}
+      objectReference: {fileID: 2686309706199086286, guid: f6d6b904a4f1f3d43b31e22f66f65bbf, type: 2}
     - target: {fileID: 1017178100996967063, guid: 778cb8db32d7188459c167c91fc59635, type: 3}
       propertyPath: m_Name
       value: TooltipUseButton
@@ -62,11 +62,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9187275184116820956, guid: 778cb8db32d7188459c167c91fc59635, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 80
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 9187275184116820956, guid: 778cb8db32d7188459c167c91fc59635, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 40
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 9187275184116820956, guid: 778cb8db32d7188459c167c91fc59635, type: 3}
       propertyPath: m_LocalPosition.x

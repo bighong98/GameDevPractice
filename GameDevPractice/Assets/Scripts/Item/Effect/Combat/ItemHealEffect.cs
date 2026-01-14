@@ -4,7 +4,7 @@ using TH.Item;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "ItemHealEffect", menuName = "Scriptable Objects/Type/ItemEffect/ItemHealEffect")]
-public class ItemHealEffect : ItemEffectBase
+public class ItemHealEffect : ItemEffectBase, IItemEffectTooltipInfo
 {
     [SerializeField] int healAmount;
     [SerializeField] float healRatio;
@@ -30,5 +30,30 @@ public class ItemHealEffect : ItemEffectBase
         if (healByRatio) target.HealRatio(healRatio, healByForce);
 
         return true;
+    }
+
+    public string GetTooltipSummary()
+    {
+        return BuildTooltipText();
+    }
+
+    public string GetTooltipDetail()
+    {
+        return BuildTooltipText();
+    }
+
+    private string BuildTooltipText()
+    {
+        bool healByAmount = healAmount > 0;
+        bool healByRatio = healRatio > 0;
+
+        if (healByAmount && healByRatio)
+            return $"Heal {healAmount} (+{healRatio * 100f:0.##}%)";
+        if (healByAmount)
+            return $"Heal {healAmount}";
+        if (healByRatio)
+            return $"Heal +{healRatio * 100f:0.##}%";
+
+        return "Heal";
     }
 }

@@ -107,10 +107,15 @@ namespace TH.UI
 
         public bool GetMouseScreenPosition(RectTransform rect, Vector2 pos, out Vector2 result)
         {
+            var canvas = rect != null ? rect.GetComponentInParent<Canvas>() : null;
+            var camera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay
+                ? canvas.worldCamera
+                : null;
+
             return RectTransformUtility.ScreenPointToLocalPointInRectangle(
                 rect,
                 pos,
-                null,
+                camera,
                 out result
             );
         }
