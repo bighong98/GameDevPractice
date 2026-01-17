@@ -95,7 +95,7 @@ namespace TH.Core.Service
             }
 
             // 팝업 풀에서 닫기 처리
-            if (popupPools.TryGetValue(popup.GetType(), out var popupPool))
+            if (uiPools.TryGetValue(popup.GetType(), out var popupPool))
             {
                 ClosePopupInternal(popup, popupPool, waitForAnimation);
             }
@@ -157,35 +157,15 @@ namespace TH.Core.Service
         // 중복 정책 캐싱
         private T GetPopupInstance<T>(Type type, string uiName) where T : PopupUI
         {
-            // 이미 생성된 풀이 있으면 재사용
-            if (popupPools.TryGetValue(type, out var pool))
-            {
-                return pool.Get() as T;
-            }
-
-            // 풀이 없으면 리소스 로드 후 풀 생성
             string key = uiName ?? $"{type.Name}.prefab";
-            if (ResourceManager.Instance.Load<UnityEngine.Object>(key) is not GameObject loadedUI)
+            if (!TryGetOrCreateUIPool(type, key, UICanvas.Popup, out var pool))
                 return null;
 
-            // 오브젝트 풀 생성 (초기 1개, 최대 10개)
-            var uiPool = PoolManager.Instance.GetPool(
-                loadedUI,
-                parent: GetUIParent(UICanvas.Popup),
-                capacity: DefaultReadyMadePopupCount, // 1
-                maxSize: MaxDuplicatePopupCount, // 10
-                registerPool: false
-            );
-
-            // 타입별 풀 등록
-            popupPools[type] = uiPool;
-            keyTypeDictionary.TryAdd(key, type);
-
             // 풀에서 인스턴스 가져오기
-            var popup = popupPools[type].Get() as T;
+            var popup = pool.Get() as T;
             if (popup == null) return null;
 
-            // 중복 정책 캐싱 (최초 1회)
+            // 중복 타입 UI 정책 캐싱 (최초 1회)
             CacheDuplicatePolicy(type, popup);
             return popup;
         }
@@ -218,7 +198,7 @@ namespace TH.Core.Service
         public void ClosePopupUIImmediately<T>(T popup) where T : PopupUI
         {
             Type type = popup.GetType();
-            if (popupPools.TryGetValue(type, out var pool))
+            if (uiPools.TryGetValue(type, out var pool))
             {
                 pool.Release(popup);
             }
@@ -291,6 +271,9 @@ namespace TH.Core.Service
         #endregion
 
         #region Frequently Used UI
+
+        private const string OptionMenuUIKey = "OptionMenuUI";
+        private const string InventoryUIKey = "InventoryUI.prefab";
 
         public void ShowOptionMenu()
         {

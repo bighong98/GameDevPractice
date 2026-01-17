@@ -43,8 +43,15 @@ namespace TH.UI
         [Serializable]
         public class CanvasSetting
         {
-            public bool overrideSorting;
-            public int defaultSortingOrder;
+            [SerializeField] private bool overrideSorting;
+            [SerializeField] private int defaultSortingOrder;
+            [SerializeField] private int poolCapacity;
+            [SerializeField] private int poolMaxSize;
+
+            public bool OverrideSorting => overrideSorting;
+            public int DefaultSortingOrder => defaultSortingOrder;
+            public int PoolCapacity => poolCapacity;
+            public int PoolMaxSize => poolMaxSize;
         }
 
         #region ISerializationCallbackReceiver

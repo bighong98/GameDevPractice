@@ -12,7 +12,7 @@ using TH.Resource;
 namespace TH.UI
 {
     //인벤토리 아이템 설명 툴팁용 스크립트
-    public sealed class ItemTooltipUI : BaseUI
+    public sealed class ItemTooltipUI : BaseUI, IPoolObject
     {
         #region Enums
 
@@ -260,5 +260,33 @@ namespace TH.UI
             descPanelPool?.Clear();
             descPanelPool = null;
         }
+
+        #region IPoolObject
+
+        public GameObject Origin { get; set; }
+
+        public void OnCreateFromPool()
+        {
+        }
+
+        public void OnGetFromPool()
+        {
+        }
+
+        public void OnReleaseFromPool()
+        {
+            HideTooltip();
+        }
+
+        public void OnDestroyFromPool()
+        {
+        }
+
+        public void ReleaseSelf()
+        {
+            HideTooltip();
+        }
+
+        #endregion
     }
 }

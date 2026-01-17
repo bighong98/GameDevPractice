@@ -20,13 +20,13 @@ namespace TH.Core.Service
         private readonly PopupStack popupStacks = new();
 
         private readonly Dictionary<string, Type> keyTypeDictionary = new();
-        private readonly Dictionary<Type, ObjectPool<IPoolObject>> popupPools = new();
+        private readonly Dictionary<Type, ObjectPool<IPoolObject>> uiPools = new();
+        private readonly Dictionary<string, IPoolObject> activeUIByKey = new();
 
         private Transform root;
         private List<GameObject> canvases;
         private readonly int[] sortOrders = new int[Enum.GetValues(typeof(UICanvas)).Length];
 
-        private SceneUI sceneUI;
 
         private const float PopupOpenThreshold = 0.05f;
         private float lastPopupOpenTime;
@@ -46,10 +46,6 @@ namespace TH.Core.Service
         // default value
         private const int DefaultReadyMadePopupCount = 1; // 팝업용 오브젝트 풀 생성 시 초기 생성 개수
         private const int MaxDuplicatePopupCount = 10; // 팝업용 오브젝트 풀에서 생성 가능한 동일 팝업 최대 개수
-
-        private const string TooltipUIPrefabKey = "TooltipUI.prefab";
-        private const string OptionMenuUIKey = "OptionMenuUI";
-        private const string InventoryUIKey = "InventoryUI.prefab";
 
         // outer service
         private readonly IResourceLoader resourceLoader;
@@ -136,70 +132,68 @@ namespace TH.Core.Service
 
         #endregion
 
-        #region Scene UI Method
-
-        // 현재 씬에 맞는 SceneUI를 비동기로 로드하고 설정
-        // 동일한 SceneUI가 이미 있으면 갱신만 수행, 다르면 교체
-        // Singleton.InitAfterPreLoad()에서 실행
-        private async UniTask SetSceneUIAsync(Scene scene)
+        #region UI Object Pool
+        private bool TryGetOrCreateUIPool(Type type, string key, UICanvas canvasType, out ObjectPool<IPoolObject> pool)
         {
-            if (sceneCatalogSO == null || sceneUIListSO == null)
-            {
-                Logg.LogError($"[UIManager] sceneCatalogSO: {sceneCatalogSO}, sceneUIListSO: {sceneUIListSO}");
-                return;
-            }
+            if (uiPools.TryGetValue(type, out pool))
+                return true;
 
-            if (!sceneCatalogSO.TryGetSceneEntry(scene, out var currentSceneEntry))
+            if (ResourceManager.Instance.Load<UnityEngine.Object>(key) is not GameObject loadedUI)
             {
-                Logg.LogWarning($"[UIManager] currentSceneEntry is null from (scene: {scene.name})");
-                return;
-            }
-
-            var targetSceneUIRef = sceneUIListSO.GetSceneUIByScene(currentSceneEntry?.sceneRef);
-            if (targetSceneUIRef == null)
-            {
-                Logg.LogWarning($"[UIManager] targetSceneUIRef is null");
-                return;
-            }
-
-            var loadedSceneUI = await resourceLoader.LoadAsync<GameObject>(targetSceneUIRef);
-            if (loadedSceneUI == null)
-            {
-                Logg.LogWarning($"[UIManager] loadedSceneUIis null");
-                return;
-            }
-
-            if (sceneUI != null)
-            {
-                // 현재 SceneUI와 동일한 경우 변경 없이 갱신만 요청, 종료
-                if (loadedSceneUI == sceneUI.Origin)
-                {
-                    sceneUI.RefreshUI();
-                    return;
-                }
-                // 기존 SceneUI가 있으면 풀에 반환
-                else PoolManager.Instance.ReleaseFromPool(sceneUI);
-            }
-
-            // 새로운 SceneUI를 풀에서 가져오기
-            sceneUI = PoolManager.Instance.GetFromPool<SceneUI>(loadedSceneUI, canvases[(int)UICanvas.Scene].transform);
-            SetCanvas(sceneUI.gameObject, UICanvas.Scene);
-            sceneUI.RefreshUI();
-        }
-
-        public bool TryGetSceneUI(out SceneUI ui)
-        {
-            if (!sceneUI.IsNotNull())
-            {
-                ui = default;
+                pool = null;
                 return false;
             }
 
-            ui = sceneUI;
+            return CreateUIPool(type, key, canvasType, loadedUI, out pool);
+        }
+
+        private bool TryGetOrCreateUIPool(Type type, string key, UICanvas canvasType, GameObject prefab, out ObjectPool<IPoolObject> pool)
+        {
+            if (uiPools.TryGetValue(type, out pool))
+                return true;
+
+            if (prefab == null)
+            {
+                pool = null;
+                return false;
+            }
+
+            return CreateUIPool(type, key, canvasType, prefab, out pool);
+        }
+
+        private bool CreateUIPool(Type type, string key, UICanvas canvasType, GameObject prefab, out ObjectPool<IPoolObject> pool)
+        {
+            var setting = uiCanvasSettingSO?.GetCanvasSetting(canvasType);
+            int capacity = DefaultReadyMadePopupCount;
+            int maxSize = MaxDuplicatePopupCount;
+            if (setting != null)
+            {
+                if (setting.PoolCapacity > 0) capacity = setting.PoolCapacity;
+                if (setting.PoolMaxSize > 0) maxSize = setting.PoolMaxSize;
+            }
+
+            Action<IPoolObject> createAction = obj =>
+            {
+                if (obj is Component comp)
+                    SetCanvas(comp.gameObject, canvasType);
+            };
+
+            pool = PoolManager.Instance.GetPool(
+                prefab,
+                parent: GetUIParent(canvasType),
+                createAction: createAction,
+                capacity: capacity,
+                maxSize: maxSize,
+                registerPool: false
+            );
+
+            uiPools[type] = pool;
+            keyTypeDictionary.TryAdd(key, type);
             return true;
         }
 
         #endregion
+
 
         #region Overlay UI Method (Not Popup)
 
@@ -207,7 +201,68 @@ namespace TH.Core.Service
         // PopupUI가 아닌 일반 UI에 사용 (예: AnchoredOverlay UI)
         public T GetUIFromPool<T>(GameObject prefab, UICanvas canvasType) where T : BaseUI, IPoolObject
         {
-            return PoolManager.Instance.GetFromPool<T>(prefab, canvases[(int)canvasType]?.transform);
+            if (prefab == null) return null;
+
+            string key = $"{prefab.name}.prefab";
+            if (!TryGetOrCreateUIPool(typeof(T), key, canvasType, prefab, out var pool))
+                return null;
+
+            return pool.Get() as T;
+        }
+
+        public T ShowUI<T>(string key, UICanvas canvasType) where T : BaseUI, IPoolObject
+        {
+            if (string.IsNullOrWhiteSpace(key)) return null;
+
+            if (activeUIByKey.TryGetValue(key, out var existing)
+                && existing is Component existingComp
+                && existingComp.gameObject.activeSelf)
+            {
+                return existing as T;
+            }
+
+            if (ResourceManager.Instance.Load<UnityEngine.Object>(key) is not GameObject prefab)
+                return null;
+
+            if (!TryGetOrCreateUIPool(typeof(T), key, canvasType, prefab, out var pool))
+                return null;
+
+            var ui = pool.Get() as T;
+            if (ui == null) return null;
+
+            activeUIByKey[key] = ui;
+            return ui;
+        }
+
+        public void ReleaseUI(string key)
+        {
+            if (string.IsNullOrWhiteSpace(key)) return;
+            if (!activeUIByKey.TryGetValue(key, out var ui)) return;
+
+            ReleaseUI(ui);
+            activeUIByKey.Remove(key);
+        }
+
+        public void ReleaseUI(IPoolObject ui)
+        {
+            if (ui == null) return;
+
+            if (uiPools.TryGetValue(ui.GetType(), out var pool))
+                pool.Release(ui);
+            else
+                PoolManager.Instance.ReleaseFromPool(ui);
+
+            string removeKey = null;
+            foreach (var (key, value) in activeUIByKey)
+            {
+                if (ReferenceEquals(value, ui))
+                {
+                    removeKey = key;
+                    break;
+                }
+            }
+            if (removeKey != null)
+                activeUIByKey.Remove(removeKey);
         }
 
         #endregion

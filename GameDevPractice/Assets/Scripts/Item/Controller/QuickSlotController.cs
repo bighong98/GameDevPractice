@@ -12,9 +12,8 @@ using UnityEngine;
 // PlayerStorage(사용자 소지 아이템 모델) <-> PlayerQuickStorage 중계
 public class QuickSlotController : MonoBehaviour
 {
-    
-    private ItemTooltipUI quickSlotTooltip;
-[SerializeField] private QuickSlotPanelUI panelUI;
+    private const string ItemTooltipPrefabKey = "UI_ItemTooltip.prefab";
+    [SerializeField] private QuickSlotPanelUI panelUI;
     
     // 연결된 저장소 (Model)
     private IPlayerStorage playerStorage;
@@ -40,7 +39,6 @@ public class QuickSlotController : MonoBehaviour
         InitializeEventRegistries();
         BindStorageEvents(playerStorage);
         
-        LoadItemTooltipUI();
 BindStorageUIEvents(panelUI);
     }
 
@@ -93,7 +91,7 @@ BindStorageUIEvents(panelUI);
         }
 
         
-        quickSlotTooltip?.HideTooltip();
+        UIManager.Instance.ReleaseUI(ItemTooltipPrefabKey);
 UnsubscribeInputEvents();
     }
 
@@ -107,8 +105,7 @@ UnsubscribeInputEvents();
 
         
 
-        if (quickSlotTooltip != null && quickSlotTooltip.gameObject != null)
-            Destroy(quickSlotTooltip.gameObject);
+        UIManager.Instance.ReleaseUI(ItemTooltipPrefabKey);
 UnBindStorageEvents(playerStorage);
     }
 
@@ -128,17 +125,8 @@ UnBindStorageEvents(playerStorage);
             adder: (ui, handler) => ui.OnSlotClicked += handler,
             remover: (ui, handler) => ui.OnSlotClicked -= handler
         );
+    
     }
-
-private void LoadItemTooltipUI()
-    {
-        if (ResourceManager.Instance.Instantiate("UI_ItemTooltip.prefab", transform) is { } tooltipObj)
-        {
-            quickSlotTooltip = tooltipObj.GetComponent<ItemTooltipUI>();
-            quickSlotTooltip.HideTooltip();
-        }
-    }
-
 
     private void BindStorageUIEvents(IStorageUI storageUI)
     {
@@ -302,16 +290,14 @@ private void LoadItemTooltipUI()
             hoveredItem = slotItem;
         }
 
-        if (quickSlotTooltip != null)
+        if (hoveredItem.IsNotNull())
         {
-            if (hoveredItem.IsNotNull())
-            {
-                quickSlotTooltip.ShowTooltipAt(InputManager.Instance.PointerPos, hoveredItem);
-            }
-            else
-            {
-                quickSlotTooltip.HideTooltip();
-            }
+            UIManager.Instance.ShowUI<ItemTooltipUI>(ItemTooltipPrefabKey, UICanvas.Feedback)
+                ?.ShowTooltipAt(InputManager.Instance.PointerPos, hoveredItem);
+        }
+        else
+        {
+            UIManager.Instance.ReleaseUI(ItemTooltipPrefabKey);
         }
 
         Logg.Log($"[{GetType().Name}] OnSlotHovered({index}) invoked", Logg.LoggingMode.Completed);
@@ -324,14 +310,14 @@ private void LoadItemTooltipUI()
             highlightableUI.UnHighlightSlot(lastHighlightedSlotIndex);
         highlightableUI.UnHighlightSlot(index);
         lastHighlightedSlotIndex = -1;
-        quickSlotTooltip?.HideTooltip();
+        UIManager.Instance.ReleaseUI(ItemTooltipPrefabKey);
         Logg.Log($"[{GetType().Name}] OffSlotHovered({index}) invoked", Logg.LoggingMode.Completed);
     }
 
     private void OnSlotClicked(IClickableStorageUI targetUI, int index)
     {
         Logg.Log($"[{GetType().Name}] OnSlotClicked({index}) invoked", Logg.LoggingMode.Completed);
-        quickSlotTooltip?.HideTooltip();
+        UIManager.Instance.ReleaseUI(ItemTooltipPrefabKey);
         UseQuickSlot(index);
     }
 

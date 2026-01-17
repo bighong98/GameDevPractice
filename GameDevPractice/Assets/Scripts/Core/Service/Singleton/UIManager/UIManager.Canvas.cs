@@ -10,55 +10,68 @@ namespace TH.Core.Service
     {
         #region Common UI Method
 
+        private Canvas EnsureCanvas(GameObject go)
+        {
+            Canvas canvas = go.GetOrAddComponent<Canvas>();
+            if (canvas != null)
+                canvas.overrideSorting = true;
+            return canvas;
+        }
+
+        private void ConfigureCanvasScaler(GameObject go)
+        {
+            CanvasScaler cs = go.GetOrAddComponent<CanvasScaler>();
+            if (cs == null) return;
+
+            cs.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            cs.referenceResolution = new Vector2(1920, 1080);
+        }
+
+        private void ConfigureGraphicRaycaster(GameObject go, bool isInteractable)
+        {
+            if (!isInteractable) return;
+            go.GetOrAddComponent<GraphicRaycaster>();
+        }
+
         // UI Canavas 설정 일괄 적용 
         public void SetCanvas(GameObject go, UICanvas canvasType, bool isInteractable = true, bool renderWorldSpace = false)
         {
             // Canvas 컴포넌트 추가 또는 가져오기
-            Canvas canvas = go.GetOrAddComponent<Canvas>();
+            Canvas canvas = EnsureCanvas(go);
             if (canvas != null)
             {
-                canvas.renderMode = renderWorldSpace ? RenderMode.WorldSpace : RenderMode.ScreenSpaceOverlay;
-                canvas.overrideSorting = true;
+                if (go.TryGetComponent<PopupUI>(out var popup))
+                {
+                    // RenderType에 따라 Canvas 모드 설정
+                    canvas.renderMode = popup.UiRenderType switch
+                    {
+                        Enums.UIRenderType.WorldSpace => RenderMode.WorldSpace,
+                        Enums.UIRenderType.ScreenCamera => RenderMode.ScreenSpaceCamera,
+                        _ => RenderMode.ScreenSpaceOverlay
+                    };
+                }
+                else
+                {
+                    canvas.renderMode = renderWorldSpace ? RenderMode.WorldSpace : RenderMode.ScreenSpaceOverlay;
+                }
             }
 
             // CanvasScaler 컴포넌트 설정 (1920x1080 기준 스케일링)
-            CanvasScaler cs = go.GetOrAddComponent<CanvasScaler>();
-            if (cs != null)
-            {
-                cs.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-                cs.referenceResolution = new Vector2(1920, 1080);
-            }
+            ConfigureCanvasScaler(go);
 
             // 상호작용 가능하면 GraphicRaycaster 추가
-            if (isInteractable)
-                go.GetOrAddComponent<GraphicRaycaster>();
+            ConfigureGraphicRaycaster(go, isInteractable);
 
-            SortCanvas(canvas, canvasType);
-        }
-
-        // PopupUI에 Canvas 설정 (팝업 전용)
-        // RenderType에 따라 Canvas 모드 설정
-        // CanvasGroup으로 투명도 제어 (애니메이션용)
-        public void SetCanvas(PopupUI popup, bool isInteractable = true)
-        {
-            Canvas canvas = popup.gameObject.GetOrAddComponent<Canvas>();
-            if (canvas != null)
+            // PopupUI에 Canvas 설정 (팝업 전용)
+            if (go.TryGetComponent<PopupUI>(out _))
             {
-                canvas.renderMode = popup.UiRenderType switch
-                {
-                    Enums.UIRenderType.WorldSpace => RenderMode.WorldSpace,
-                    Enums.UIRenderType.ScreenCamera => RenderMode.ScreenSpaceCamera,
-                    _ => RenderMode.ScreenSpaceOverlay
-                };
-                canvas.overrideSorting = true;
+                // CanvasGroup으로 투명도 제어 (애니메이션용)
+                CanvasGroup cg = go.GetOrAddComponent<CanvasGroup>();
+                if (cg != null)
+                    cg.alpha = 0f; // UI 애니메이션, 애니메이션 전처리를 위해 투명화 -> PopupUI.OnGetFromPool()에서 투명도 제거처리
             }
 
-            CanvasGroup cg = popup.gameObject.GetOrAddComponent<CanvasGroup>();
-            if (cg != null)
-                cg.alpha = 0f; // UI 애니메이션, 애니메이션 전처리를 위해 투명화 -> PopupUI.OnGetFromPool()에서 투명도 제거처리
-
-            if (isInteractable)
-                popup.gameObject.GetOrAddComponent<GraphicRaycaster>();
+            SortCanvas(canvas, canvasType);
         }
 
         // Canvas의 sortingOrder 수동 설정
@@ -82,7 +95,7 @@ namespace TH.Core.Service
         private void ResetCanvasOrder(UICanvas canvasType)
         {
             if (uiCanvasSettingSO != null
-                && uiCanvasSettingSO.GetCanvasSetting(canvasType)?.defaultSortingOrder
+                && uiCanvasSettingSO.GetCanvasSetting(canvasType)?.DefaultSortingOrder
                     is { } resultSortingOrder)
                 sortOrders[(int)canvasType] = resultSortingOrder;
         }

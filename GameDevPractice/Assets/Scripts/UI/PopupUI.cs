@@ -270,7 +270,6 @@ namespace TH.UI
         {
             IsPooledObject = true;
             // UIManager를 통해 Canvas 설정 (render mode, sorting 등)
-            UIManager.Instance.SetCanvas(this);
             
             // 컴포넌트 캐싱
             canvas = GetComponent<Canvas>();

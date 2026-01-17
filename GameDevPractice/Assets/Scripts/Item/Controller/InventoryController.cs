@@ -25,7 +25,8 @@ namespace TH.Item
         // view
         private IPlayerInventoryUI pInvenUI;
         // sub popup
-        private ItemTooltipUI itemTooltip;
+
+        private const string ItemTooltipPrefabKey = "UI_ItemTooltip.prefab";
         
         // 드래그 상태 추적
         private bool isDragging = false;
@@ -59,7 +60,6 @@ namespace TH.Item
             RenewPlayerReference();
             SceneManager.sceneLoaded += RenewPlayerReference;
             
-            LoadItemTooltipUI();
         }
 
         private void OnEnable()
@@ -119,9 +119,6 @@ namespace TH.Item
             _hoverExitRegistry.Clear();
             _clickRegistry.Clear();
             _subClickRegistry.Clear();
-
-            if (itemTooltip != null && itemTooltip.gameObject != null)
-                Destroy(itemTooltip.gameObject);
 
             SceneManager.sceneLoaded -= RenewPlayerReference;
         }
@@ -251,16 +248,6 @@ namespace TH.Item
 
             pEquipHolder = newer;
             BindStorageEvents(pEquipHolder);
-        }
-
-        private void LoadItemTooltipUI()
-        {
-            // 아이템 툴팁 UI 로드
-            if (ResourceManager.Instance.Instantiate("UI_ItemTooltip.prefab", transform) is { } tooltipObj)
-            {
-                itemTooltip = tooltipObj.GetComponent<ItemTooltipUI>();
-                itemTooltip.HideTooltip();
-            }
         }
 
         #endregion
@@ -425,9 +412,10 @@ namespace TH.Item
                 result.TryGetItemSlot(index, out var slot) &&
                 slot is {HasItem: true, IsAccessible: true, GetItem: {} item})
             {
-                itemTooltip.ShowTooltipAt(InputManager.Instance.PointerPos, item); 
+                UIManager.Instance.ShowUI<ItemTooltipUI>(ItemTooltipPrefabKey, UICanvas.Feedback)
+                    ?.ShowTooltipAt(InputManager.Instance.PointerPos, item);
             }
-            else itemTooltip.HideTooltip(); // 아이템이 없는 슬롯일 경우 툴팁 비활성화
+            else UIManager.Instance.ReleaseUI(ItemTooltipPrefabKey); // 아이템이 없는 슬롯일 경우 툴팁 비활성화
         }
 
         private void OffSlotHovered(IHoverableStorageUI targetUI, int index)
@@ -448,7 +436,7 @@ namespace TH.Item
             SetHighlightSlot(targetUI, index, false); 
             // 호버링 슬롯 기록 초기화
             lastHovered.Clear(); 
-            itemTooltip.HideTooltip();
+            UIManager.Instance.ReleaseUI(ItemTooltipPrefabKey);
         }
 
         private void OnSlotClicked(IClickableStorageUI targetUI, int index)
@@ -852,8 +840,7 @@ namespace TH.Item
         
         private void Refresh()
         {
-            if (itemTooltip != null)
-                itemTooltip.HideTooltip();
+            UIManager.Instance.ReleaseUI(ItemTooltipPrefabKey);
             CancelAllSlotProgress();
         }
     }

@@ -20,19 +20,29 @@ MonoBehaviour:
     value:
       overrideSorting: 1
       defaultSortingOrder: 10
+      poolCapacity: 1
+      poolMaxSize: 1
   - key: 1
     value:
       overrideSorting: 1
       defaultSortingOrder: 20
+      poolCapacity: 10
+      poolMaxSize: 100
   - key: 2
     value:
       overrideSorting: 1
       defaultSortingOrder: 100
+      poolCapacity: 1
+      poolMaxSize: 10
   - key: 3
     value:
       overrideSorting: 1
       defaultSortingOrder: 500
+      poolCapacity: 1
+      poolMaxSize: 10
   - key: 4
     value:
       overrideSorting: 1
       defaultSortingOrder: 1000
+      poolCapacity: 1
+      poolMaxSize: 1
