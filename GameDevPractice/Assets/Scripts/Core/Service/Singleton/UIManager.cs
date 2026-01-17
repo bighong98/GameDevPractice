@@ -644,55 +644,6 @@ namespace TH.Core.Service
         {
             ShowPopupUI<InventoryUI>(InventoryUIKey);
         }
-        
-        // // Tooltip (현재 미사용)
-        //
-        // // Frequently Used UI
-        // public TooltipUI Tooltip;
-        // private void SetTooltip()
-        // {
-        //     resourceLoader.OnLabelResourcesLoadedAll -= SetTooltip; // 중복 구독 방지
-        //     resourceLoader.OnLabelResourcesLoadedAll += SetTooltip;
-        // }
-        //
-        // private void SetTooltip(string label)
-        // {
-        //     if (label != Constants.PreLoadLabel) return;
-        //     
-        //     if (!resourceLoader.TryLoad<GameObject>(TooltipUIPrefabKey, out var loadedPrefab)
-        //         || UnityEngine.Object.Instantiate(loadedPrefab, root) is not {} instantiatePrefab
-        //         || !instantiatePrefab.TryGetComponent<TooltipUI>(out var loadedTooltip))
-        //     {
-        //         Logg.LogError($"[UIManager] failed to load tooltip");
-        //         return;
-        //     }
-        //
-        //     Tooltip = loadedTooltip;
-        // }
-        //
-        // public void ShowTooltip(int errorType, bool hideAfterDelay = false, float delayDuration = 2.0f) // 3.0f is magic number
-        // {
-        //     if (errorType == (int)Enums.TooltipErrorType.Empty) return;
-        //     if (!Tooltip.IsAlive()) return;
-        //
-        //     int order = sortOrders[(int)UICanvas.Popup];
-        //     Tooltip.tooltipCanvas.sortingOrder = order + 1; // 언제나 최상단 팝업 UI보다 한단계 더 위로
-        //     Tooltip.Show(errorType, hideAfterDelay, delayDuration);
-        // }
-        //
-        // public void ShowTooltip(string tooltipString, bool hideAfterDelay = false, float delayDuration = 3.0f)
-        // {
-        //     if (!Tooltip.IsAlive()) return;
-        //     
-        //     int order = sortOrders[(int)UICanvas.Popup];
-        //     Tooltip.tooltipCanvas.sortingOrder = order + 1; // 언제나 최상단 팝업 UI보다 한단계 더 위로
-        //     Tooltip.Show(tooltipString, hideAfterDelay, delayDuration);
-        // }
-        //
-        // public void HideTooltip()
-        // {
-        //     Tooltip.Hide();
-        // }
 
         #endregion
 
@@ -721,9 +672,10 @@ namespace TH.UI
 {
     public enum UICanvas
     {
-        Scene, // 씬UI 캔버스
-        AnchoredOverlay, // 게임 오브젝트와 함께 움직이는 UI용 캔버스
-        Popup, // 팝업UI 캔버스
-        Fader, // 화면 전체 마스킹 용도 (Fader 등)
+        Scene, // 씬UI
+        HUD, // 게임 오브젝트와 함께 움직이는 UI
+        Popup, // 팝업UI
+        Feedback, // 툴팁, 화면 터치 이펙트, 토스트UI 등 포함 
+        FullScreen, // 화면 전체 마스킹 용도
     }
 }

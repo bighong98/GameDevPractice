@@ -69,7 +69,7 @@ namespace TH.Attribute
 
         private void Start()
         {
-            UIManager.Instance.GetUIFromPool<HPBar>(HPBarPrefab, UICanvas.AnchoredOverlay).SetOwner(this);
+            UIManager.Instance.GetUIFromPool<HPBar>(HPBarPrefab, UICanvas.HUD).SetOwner(this);
             maxHp.ForceInit();
             hp.ForceInit();
         }
