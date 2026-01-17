@@ -8,16 +8,34 @@ using TH.Resource;
 
 namespace TH.UI
 {
-    public enum TooltipDetailLevel
+    /// <summary>
+    /// 툴팁 상세 수준 정의.
+    /// Brief: 간략 정보, Detailed: 상세 정보.
+    /// </summary>
+    
+public enum TooltipDetailLevel
     {
-        Brief,
-        Detailed,
+        /// <summary>간략 정보 (제한된 스탯/효과 표시)</summary>
+        
+Brief,
+        /// <summary>상세 정보 (모든 스탯/효과 표시)</summary>
+        
+Detailed,
     }
 
-    public readonly struct ItemTooltipContent
+    /// <summary>
+    /// 툴팁 콘텐츠 데이터 구조체.
+    /// 이름과 설명을 함께 전달.
+    /// </summary>
+    
+public readonly struct ItemTooltipContent
     {
-        public readonly string Name;
-        public readonly string Description;
+        /// <summary>아이템 이름</summary>
+        
+public readonly string Name;
+        /// <summary>아이템 설명 (스탯, 효과 포함)</summary>
+        
+public readonly string Description;
 
         public ItemTooltipContent(string name, string description)
         {
@@ -26,12 +44,28 @@ namespace TH.UI
         }
     }
 
-    public static class ItemTooltipContentBuilder
+    /// <summary>
+    /// 아이템 툴팁 콘텐츠 빌더 유틸리티 클래스.
+    /// ItemTypeSO에서 설명, 스탯, 효과 정보를 추출하여 포맷팅.
+    /// </summary>
+    
+public static class ItemTooltipContentBuilder
     {
-        private const int BriefStatLimit = 2;
-        private const int BriefEffectLimit = 2;
+        /// <summary>Brief 모드에서 표시할 최대 스탯 수</summary>
+        
+private const int BriefStatLimit = 2;
+        /// <summary>Brief 모드에서 표시할 최대 효과 수</summary>
+        
+private const int BriefEffectLimit = 2;
 
-        public static ItemTooltipContent Build(IGameItem item, TooltipDetailLevel detailLevel)
+        /// <summary>
+        /// IGameItem에서 툴팁 콘텐츠 생성.
+        /// </summary>
+        /// <param name="item">대상 아이템</param>
+        /// <param name="detailLevel">상세 수준</param>
+        /// <returns>툴팁 콘텐츠 데이터</returns>
+        
+public static ItemTooltipContent Build(IGameItem item, TooltipDetailLevel detailLevel)
         {
             if (item?.GetItemInfo == null)
                 return default;
@@ -39,7 +73,14 @@ namespace TH.UI
             return Build(item.GetItemInfo, detailLevel);
         }
 
-        public static ItemTooltipContent Build(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel)
+        /// <summary>
+        /// ItemTypeSO에서 툴팁 콘텐츠 생성.
+        /// </summary>
+        /// <param name="itemInfo">아이템 정보 SO</param>
+        /// <param name="detailLevel">상세 수준</param>
+        /// <returns>툴팁 콘텐츠 데이터</returns>
+        
+public static ItemTooltipContent Build(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel)
         {
             if (itemInfo == null)
                 return default;
@@ -48,13 +89,30 @@ namespace TH.UI
             return new ItemTooltipContent(itemInfo.nameString, description);
         }
 
-        private static string BuildDescription(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel)
+        /// <summary>
+        /// 설명 문자열 생성.
+        /// 섹션들을 줄바꿈으로 결합.
+        /// </summary>
+        /// <param name="itemInfo">아이템 정보 SO</param>
+        /// <param name="detailLevel">상세 수준</param>
+        /// <returns>포맷팅된 설명 문자열</returns>
+        
+private static string BuildDescription(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel)
         {
             var sections = BuildDescriptionSections(itemInfo, detailLevel);
             return string.Join("\n\n", sections);
         }
 
-        public static void SplitSections(string text, out string description, out string stats, out string effects)
+        /// <summary>
+        /// 텍스트를 섹션별로 분리.
+        /// description, stats, effects로 구분.
+        /// </summary>
+        /// <param name="text">원본 텍스트</param>
+        /// <param name="description">설명 출력</param>
+        /// <param name="stats">스탯 출력</param>
+        /// <param name="effects">효과 출력</param>
+        
+public static void SplitSections(string text, out string description, out string stats, out string effects)
         {
             description = string.Empty;
             stats = string.Empty;
@@ -83,7 +141,15 @@ namespace TH.UI
             }
         }
 
-        private static bool TryExtractSection(string section, string header, out string body)
+        /// <summary>
+        /// 섹션 헤더를 기준으로 본문 추출 시도.
+        /// </summary>
+        /// <param name="section">섹션 텍스트</param>
+        /// <param name="header">헤더 문자열 (Stats, Effects 등)</param>
+        /// <param name="body">추출된 본문 출력</param>
+        /// <returns>추출 성공 여부</returns>
+        
+private static bool TryExtractSection(string section, string header, out string body)
         {
             body = string.Empty;
             if (!section.StartsWith(header, StringComparison.OrdinalIgnoreCase)) return false;
@@ -97,7 +163,14 @@ namespace TH.UI
 
 
 
-        private static List<string> BuildEquipmentStatLines(ItemTypeSO itemInfo)
+        /// <summary>
+        /// 장비 스탯 라인 목록 생성.
+        /// EquipmentTypeSO의 equipmentStats에서 추출.
+        /// </summary>
+        /// <param name="itemInfo">아이템 정보 SO</param>
+        /// <returns>스탯 라인 목록</returns>
+        
+private static List<string> BuildEquipmentStatLines(ItemTypeSO itemInfo)
         {
             if (itemInfo is not EquipmentTypeSO equipment || equipment.equipmentStats == null)
                 return new List<string>();
@@ -113,7 +186,15 @@ namespace TH.UI
             return lines;
         }
 
-        private static List<string> BuildEffectLines(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel)
+        /// <summary>
+        /// 아이템 효과 라인 목록 생성.
+        /// itemUseEffects에서 추출.
+        /// </summary>
+        /// <param name="itemInfo">아이템 정보 SO</param>
+        /// <param name="detailLevel">상세 수준</param>
+        /// <returns>효과 라인 목록</returns>
+        
+private static List<string> BuildEffectLines(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel)
         {
             if (itemInfo?.itemUseEffects == null || itemInfo.itemUseEffects.Count == 0)
                 return new List<string>();
@@ -131,7 +212,15 @@ namespace TH.UI
             return lines;
         }
 
-        private static string ResolveEffectText(ItemEffectBase effect, TooltipDetailLevel detailLevel)
+        /// <summary>
+        /// 효과 텍스트 결정.
+        /// IItemEffectTooltipInfo 인터페이스 구현 시 해당 텍스트 사용.
+        /// </summary>
+        /// <param name="effect">효과 객체</param>
+        /// <param name="detailLevel">상세 수준</param>
+        /// <returns>효과 텍스트</returns>
+        
+private static string ResolveEffectText(ItemEffectBase effect, TooltipDetailLevel detailLevel)
         {
             if (effect is IItemEffectTooltipInfo info)
                 return detailLevel == TooltipDetailLevel.Detailed
@@ -141,7 +230,14 @@ namespace TH.UI
             return effect.name;
         }
 
-        private static string FormatStatLine(StatModifierData data)
+        /// <summary>
+        /// 스탯 라인 포맷팅.
+        /// 스탯 이름과 값을 결합.
+        /// </summary>
+        /// <param name="data">스탯 수정자 데이터</param>
+        /// <returns>포맷팅된 스탯 라인</returns>
+        
+private static string FormatStatLine(StatModifierData data)
         {
             if (Math.Abs(data.value) < 0.0001f)
                 return string.Empty;
@@ -155,7 +251,15 @@ namespace TH.UI
             return $"{statName} {valueText}";
         }
 
-        private static string FormatStatValue(float value, StatModCalcType calculation)
+        /// <summary>
+        /// 스탯 값 포맷팅.
+        /// 퍼센트/절대값 표시 및 부호 처리.
+        /// </summary>
+        /// <param name="value">스탯 값</param>
+        /// <param name="calculation">계산 타입 (Add/Multiply 등)</param>
+        /// <returns>포맷팅된 값 문자열</returns>
+        
+private static string FormatStatValue(float value, StatModCalcType calculation)
         {
             bool isPercent = calculation != StatModCalcType.Add;
             float displayValue = isPercent ? value * 100f : value;
@@ -164,7 +268,14 @@ namespace TH.UI
             return isPercent ? $"{sign}{formatted}%" : $"{sign}{formatted}";
         }
 
-        private static List<string> LimitLines(List<string> lines, int limit)
+        /// <summary>
+        /// 라인 목록을 지정 개수로 제한.
+        /// </summary>
+        /// <param name="lines">원본 라인 목록</param>
+        /// <param name="limit">최대 개수</param>
+        /// <returns>제한된 라인 목록</returns>
+        
+private static List<string> LimitLines(List<string> lines, int limit)
         {
             if (limit <= 0 || lines.Count <= limit)
                 return lines;
@@ -172,7 +283,15 @@ namespace TH.UI
             return lines.GetRange(0, limit);
         }
 
-        private static string FormatSection(string title, List<string> lines)
+        /// <summary>
+        /// 섹션 포맷팅.
+        /// 타이틀과 라인들을 결합.
+        /// </summary>
+        /// <param name="title">섹션 타이틀</param>
+        /// <param name="lines">라인 목록</param>
+        /// <returns>포맷팅된 섹션 문자열</returns>
+        
+private static string FormatSection(string title, List<string> lines)
         {
             var builder = new StringBuilder();
             builder.Append(title).Append('\n');
@@ -187,7 +306,15 @@ namespace TH.UI
         }
     
 
-        public static IReadOnlyList<string> BuildDescriptionSections(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel)
+        /// <summary>
+        /// 설명 섹션 목록 생성.
+        /// 기본 설명, 스탯, 효과 섹션을 각각 구성.
+        /// </summary>
+        /// <param name="itemInfo">아이템 정보 SO</param>
+        /// <param name="detailLevel">상세 수준</param>
+        /// <returns>섹션 문자열 목록 (desc, stats, effects)</returns>
+        
+public static IReadOnlyList<string> BuildDescriptionSections(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel)
         {
             if (itemInfo == null)
                 return Array.Empty<string>();

@@ -14,42 +14,71 @@ using UnityEngine.UI;
 
 namespace TH.Core.Service
 {
+    /// <summary>
+    /// UI 시스템 전체를 관리하는 싱글톤 매니저 클래스.
+    /// Canvas 계층 구조 관리, 팝업/씬UI 제어, UI 오브젝트 풀링을 담당.
+    /// partial class로 Canvas, Input, Popup, SceneUI 기능이 분리되어 있음.
+    /// </summary>
     [Preserve]
     public partial class UIManager : Singleton<UIManager>, ISingleton
     {
+        /// <summary>열린 팝업들을 스택으로 관리 (LIFO 방식 닫기 지원)</summary>
         private readonly PopupStack popupStacks = new();
 
+        /// <summary>리소스 키와 UI 타입 간의 매핑 딕셔너리</summary>
         private readonly Dictionary<string, Type> keyTypeDictionary = new();
+        /// <summary>UI 타입별 오브젝트 풀 (메모리 효율적 UI 재사용)</summary>
         private readonly Dictionary<Type, ObjectPool<IPoolObject>> uiPools = new();
+        /// <summary>현재 활성화된 UI를 키로 추적 (중복 표시 방지)</summary>
         private readonly Dictionary<string, IPoolObject> activeUIByKey = new();
 
+        /// <summary>UI 계층 구조의 최상위 Root Transform (DontDestroyOnLoad)</summary>
         private Transform root;
+        /// <summary>각 UICanvas 타입별 캔버스 GameObject 목록</summary>
         private List<GameObject> canvases;
+        /// <summary>각 캔버스 타입별 현재 sortOrder 값 (동적 정렬 용도)</summary>
         private readonly int[] sortOrders = new int[Enum.GetValues(typeof(UICanvas)).Length];
 
 
+        /// <summary>팝업 연속 오픈 방지를 위한 최소 간격 (초)</summary>
         private const float PopupOpenThreshold = 0.05f;
+        /// <summary>마지막 팝업 오픈 시간 (Time.unscaledTime)</summary>
         private float lastPopupOpenTime;
 
+        /// <summary>팝업 중복 오픈 체크용 딕셔너리</summary>
         private readonly Dictionary<Type, bool> popupDuplicateCheck = new();
 
-        // scriptable objects
+        #region ScriptableObject 데이터 레퍼런스
+        /// <summary>씬 카탈로그 설정 데이터</summary>
         private SceneCatalogSO sceneCatalogSO;
+        /// <summary>각 씬별 자동 로드할 UI 목록 데이터</summary>
         private SceneUIListSO sceneUIListSO;
+        /// <summary>캔버스 타입별 설정 (풀 사이즈, sortOrder 등)</summary>
         private UICanvasSettingSO uiCanvasSettingSO;
+        #endregion
 
-        // resource key (Addressables)
+        #region Addressables 리소스 키
         private const string SceneCatalogSOKey = "SceneCatalogSO";
         private const string SceneUIListSOKey = "SceneUIListSO";
         private const string UICanvasSettingSOKey = "UICanvasSettingSO";
+        #endregion
 
-        // default value
+        #region 기본값 상수
+        /// <summary>팝업 풀 초기 생성 개수</summary>
         private const int DefaultReadyMadePopupCount = 1; // 팝업용 오브젝트 풀 생성 시 초기 생성 개수
-        private const int MaxDuplicatePopupCount = 10; // 팝업용 오브젝트 풀에서 생성 가능한 동일 팝업 최대 개수
+        /// <summary>동일 팝업 최대 생성 가능 개수</summary>
+        private const int MaxDuplicatePopupCount = 10;
+        #endregion // 팝업용 오브젝트 풀에서 생성 가능한 동일 팝업 최대 개수
 
-        // outer service
+        #region 외부 서비스 의존성
+        /// <summary>Addressables 리소스 로더 서비스</summary>
         private readonly IResourceLoader resourceLoader;
+        #endregion
 
+        /// <summary>
+        /// 생성자: 리소스 로더를 가져오고 PreLoad 완료 후 초기화 작업 예약.
+        /// ServiceLocator를 통해 IResourceLoader를 주입받음.
+        /// </summary>
         private UIManager()
         {
             resourceLoader = ServiceLocator.Get<IResourceLoader>();
@@ -58,6 +87,10 @@ namespace TH.Core.Service
 
         #region Initialization
 
+        /// <summary>
+        /// PreLoad 완료 후 실행되는 콜백.
+        /// ScriptableObject 데이터 로드 및 UI 컨테이너 설정.
+        /// </summary>
         private void TaskAfterPreLoad()
         {
             LoadData();
@@ -65,9 +98,15 @@ namespace TH.Core.Service
             // SetTooltip();
         }
 
+        /// <summary>UI Root GameObject의 이름</summary>
         private const string UIRootName = "UIs";
         // UI 컨테이너 초기 설정 (UI_Root 생성 및 캔버스 계층 구조 생성)
         // Scene, AnchoredOverlay, Popup 3가지 타입의 캔버스를 생성
+        /// <summary>
+        /// UI 컨테이너 초기 설정.
+        /// DontDestroyOnLoad로 UI_Root 생성 및 UICanvas enum의 모든 타입에 대해 캔버스 계층 구조 생성.
+        /// Scene, HUD, Popup, Feedback, FullScreen 5가지 캔버스 생성.
+        /// </summary>
         private void SetUIContainer()
         {
             // UI_Root GameObject 생성 및 씬 전환 시 파괴되지 않도록 설정
@@ -89,6 +128,10 @@ namespace TH.Core.Service
             }
         }
 
+        /// <summary>
+        /// Addressables로 ScriptableObject 데이터 로드.
+        /// SceneCatalogSO, SceneUIListSO, UICanvasSettingSO를 로드.
+        /// </summary>
         private void LoadData()
         {
             if (!resourceLoader.TryLoad(SceneCatalogSOKey, out sceneCatalogSO))
@@ -114,6 +157,11 @@ namespace TH.Core.Service
 
         #region ISingleton
 
+        /// <summary>
+        /// 씬 전환 전 호출되는 ISingleton 콜백.
+        /// 모든 팝업 닫기 및 입력 이벤트 연결 해제.
+        /// </summary>
+        /// <param name="externalToken">취소 토큰</param>
         public UniTask BeforeSceneLoad(CancellationToken externalToken)
         {
             if (externalToken.IsCancellationRequested) return UniTask.CompletedTask;
@@ -124,6 +172,11 @@ namespace TH.Core.Service
             return UniTask.CompletedTask;
         }
 
+        /// <summary>
+        /// 씬 전환 후 호출되는 ISingleton 콜백.
+        /// 입력 이벤트 연결 및 해당 씬의 SceneUI 비동기 설정.
+        /// </summary>
+        /// <param name="externalToken">취소 토큰</param>
         public async UniTask AfterSceneLoad(CancellationToken externalToken)
         {
             ConnectInputEvents();
@@ -133,6 +186,15 @@ namespace TH.Core.Service
         #endregion
 
         #region UI Object Pool
+        /// <summary>
+        /// UI 풀을 가져오거나 새로 생성.
+        /// 리소스 키로 Addressables에서 프리팩을 로드하여 풀 생성.
+        /// </summary>
+        /// <param name="type">UI 컴포넌트 타입</param>
+        /// <param name="key">Addressables 리소스 키</param>
+        /// <param name="canvasType">대상 캔버스 타입</param>
+        /// <param name="pool">출력: 생성/찾은 오브젝트 풀</param>
+        /// <returns>성공 여부</returns>
         private bool TryGetOrCreateUIPool(Type type, string key, UICanvas canvasType, out ObjectPool<IPoolObject> pool)
         {
             if (uiPools.TryGetValue(type, out pool))
@@ -147,6 +209,16 @@ namespace TH.Core.Service
             return CreateUIPool(type, key, canvasType, loadedUI, out pool);
         }
 
+        /// <summary>
+        /// UI 풀을 가져오거나 새로 생성 (프리팩 직접 전달 버전).
+        /// 이미 로드된 프리팩을 사용하여 풀 생성.
+        /// </summary>
+        /// <param name="type">UI 컴포넌트 타입</param>
+        /// <param name="key">리소스 키</param>
+        /// <param name="canvasType">대상 캔버스 타입</param>
+        /// <param name="prefab">UI 프리팩</param>
+        /// <param name="pool">출력: 생성/찾은 오브젝트 풀</param>
+        /// <returns>성공 여부</returns>
         private bool TryGetOrCreateUIPool(Type type, string key, UICanvas canvasType, GameObject prefab, out ObjectPool<IPoolObject> pool)
         {
             if (uiPools.TryGetValue(type, out pool))
@@ -161,6 +233,16 @@ namespace TH.Core.Service
             return CreateUIPool(type, key, canvasType, prefab, out pool);
         }
 
+        /// <summary>
+        /// 새 UI 오브젝트 풀 생성.
+        /// UICanvasSettingSO에서 풀 용량 설정을 가져오고 PoolManager를 통해 풀 생성.
+        /// </summary>
+        /// <param name="type">UI 컴포넌트 타입</param>
+        /// <param name="key">리소스 키</param>
+        /// <param name="canvasType">대상 캔버스 타입</param>
+        /// <param name="prefab">UI 프리팩</param>
+        /// <param name="pool">출력: 생성된 오브젝트 풀</param>
+        /// <returns>성공 여부</returns>
         private bool CreateUIPool(Type type, string key, UICanvas canvasType, GameObject prefab, out ObjectPool<IPoolObject> pool)
         {
             var setting = uiCanvasSettingSO?.GetCanvasSetting(canvasType);
@@ -195,10 +277,18 @@ namespace TH.Core.Service
         #endregion
 
 
-        #region Overlay UI Method (Not Popup)
+        #region Overlay UI Method (팝업이 아닌 일반 UI)
 
         // 오브젝트 풀에서 UI를 가져오는 제네릭 메서드
         // PopupUI가 아닌 일반 UI에 사용 (예: AnchoredOverlay UI)
+        /// <summary>
+        /// 오브젝트 풀에서 UI를 가져오는 제네릭 메서드.
+        /// PopupUI가 아닌 일반 UI에 사용 (예: HUD, AnchoredOverlay UI).
+        /// </summary>
+        /// <typeparam name="T">BaseUI를 상속하고 IPoolObject를 구현한 UI 타입</typeparam>
+        /// <param name="prefab">UI 프리팩</param>
+        /// <param name="canvasType">표시할 캔버스 타입</param>
+        /// <returns>풀에서 가져온 UI 인스턴스</returns>
         public T GetUIFromPool<T>(GameObject prefab, UICanvas canvasType) where T : BaseUI, IPoolObject
         {
             if (prefab == null) return null;
@@ -210,6 +300,14 @@ namespace TH.Core.Service
             return pool.Get() as T;
         }
 
+        /// <summary>
+        /// 키로 UI를 표시하거나 이미 활성화된 UI 반환.
+        /// 중복 표시 방지 - 같은 키의 UI가 이미 활성화되어 있으면 기존 UI 반환.
+        /// </summary>
+        /// <typeparam name="T">BaseUI를 상속하고 IPoolObject를 구현한 UI 타입</typeparam>
+        /// <param name="key">Addressables 리소스 키</param>
+        /// <param name="canvasType">표시할 캔버스 타입</param>
+        /// <returns>UI 인스턴스 (실패 시 null)</returns>
         public T ShowUI<T>(string key, UICanvas canvasType) where T : BaseUI, IPoolObject
         {
             if (string.IsNullOrWhiteSpace(key)) return null;
@@ -234,6 +332,11 @@ namespace TH.Core.Service
             return ui;
         }
 
+        /// <summary>
+        /// 키로 UI를 풀에 반환.
+        /// activeUIByKey에서 제거하고 풀에 반환하여 재사용 가능하게 함.
+        /// </summary>
+        /// <param name="key">Addressables 리소스 키</param>
         public void ReleaseUI(string key)
         {
             if (string.IsNullOrWhiteSpace(key)) return;
@@ -243,6 +346,12 @@ namespace TH.Core.Service
             activeUIByKey.Remove(key);
         }
 
+        /// <summary>
+        /// UI 오브젝트를 풀에 직접 반환.
+        /// uiPools에 등록된 풀이 있으면 해당 풀에, 없으면 PoolManager로 반환.
+        /// activeUIByKey에서도 제거.
+        /// </summary>
+        /// <param name="ui">반환할 UI 오브젝트</param>
         public void ReleaseUI(IPoolObject ui)
         {
             if (ui == null) return;
@@ -269,6 +378,10 @@ namespace TH.Core.Service
 
         #region DeInitialization
 
+        /// <summary>
+        /// UIManager 상태 초기화.
+        /// 모든 캔버스의 sortOrder를 기본값으로 리셋.
+        /// </summary>
         private void ClearValues()
         {
             foreach (var canvasType in (UICanvas[])Enum.GetValues(typeof(UICanvas)))
@@ -283,13 +396,22 @@ namespace TH.Core.Service
 
 namespace TH.UI
 {
+    /// <summary>
+    /// UI 캔버스 타입 정의.
+    /// 각 타입은 별도의 Canvas GameObject로 관리되며 sortOrder가 다름.
+    /// </summary>
     public enum UICanvas
     {
-        Scene, // 씬UI
-        HUD, // 게임 오브젝트와 함께 움직이는 UI
-        Popup, // 팝업UI
-        Feedback, // 툴팁, 화면 터치 이펙트, 토스트UI 등 포함 
-        FullScreen, // 화면 전체 마스킹 용도
+        /// <summary>씬 전용 UI (항상 표시, HUD 등)</summary>
+        Scene,
+        /// <summary>게임 오브젝트에 엵친 UI (체력바, 네임택 등)</summary>
+        HUD,
+        /// <summary>팝업 UI (모달 창, 확인 대화상자 등)</summary>
+        Popup,
+        /// <summary>피드백 UI (툴팁, 터치 이펙트, 토스트 등)</summary>
+        Feedback, 
+        /// <summary>화면 전체 마스킹 (로딩, 전환 페이드 등)</summary>
+        FullScreen,
     }
 }
 

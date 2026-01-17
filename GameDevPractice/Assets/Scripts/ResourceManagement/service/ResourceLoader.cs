@@ -22,8 +22,8 @@ namespace TH.Resource
         private readonly Dictionary<string, AsyncOperationHandle> resourceGuids = new ();
         // 라벨별 에셋 번들 로드 상태 추적
         private readonly Dictionary<string, LoadStatus> loadStatus = new Dictionary<string, LoadStatus>();
-        
-        public event Action<string> OnLabelResourcesLoadedAll; // 라벨 단위로 일괄 리소스 로드 완료 알림 이벤트
+        // 라벨 단위로 일괄 리소스 로드 완료 알림 이벤트
+        public event Action<string> OnLabelResourcesLoadedAll; 
         private readonly Dictionary<string, Queue<Action>> reservedPreLoadTasks = new();
         
         #region Enums
@@ -62,7 +62,6 @@ namespace TH.Resource
             {
                 InitForLabel(label);
             }
-            // PreLoad();
         }
         
         private void InitForLabel(string label)
@@ -79,12 +78,6 @@ namespace TH.Resource
 
         // 어플리케이션 시작 시점에 라벨 단위로 구분된 에셋 번들 로드
         // 라벨별로 로드 완료 시 이벤트 전달
-        private void PreLoad()
-        {
-            PreLoadAsync().Forget();
-        }
-        
-        // PreLoad() 내부 구현
         // 개별 리소스 로드마다 콜백 실행 (로딩 프로그레스 바 등에 사용)
         public async UniTask PreLoadAsync()
         {
@@ -95,21 +88,8 @@ namespace TH.Resource
             }
         }
 
-        private void NotifyPreLoadDone(string label)
-        {
-            RunReserved(label);
-            OnLabelResourcesLoadedAll?.Invoke(label);
-        }
-
-        private void RunReserved(string label)
-        {
-            if (!reservedPreLoadTasks.TryGetValue(label, out var queue) || queue.Count <= 0) return;
-            while (queue.TryDequeue(out var task))
-            {
-                task?.Invoke();
-            }
-        }
-
+        // 특정 어드레서블 라벨 로드까지 대기 콜백 등록
+        // 이미 완료된 리소스 라벨인 경우 즉시 콜백 실행
         public void WaitForPreLoad(string label, Action callback)
         {
             if (IsLoadedAll(label))
@@ -125,6 +105,21 @@ namespace TH.Resource
             }
             
             queue.Enqueue(callback);
+        }
+
+        private void NotifyPreLoadDone(string label)
+        {
+            RunReserved(label);
+            OnLabelResourcesLoadedAll?.Invoke(label);
+        }
+        // 특정 어드레서블 라벨에 소속된 리소스 일괄 로드가 끝난 경우 대기 중인 작업들 실행
+        private void RunReserved(string label)
+        {
+            if (!reservedPreLoadTasks.TryGetValue(label, out var queue) || queue.Count <= 0) return;
+            while (queue.TryDequeue(out var task))
+            {
+                task?.Invoke();
+            }
         }
 
         #endregion
