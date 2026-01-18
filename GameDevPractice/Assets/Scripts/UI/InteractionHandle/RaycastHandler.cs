@@ -25,18 +25,19 @@ namespace TH.UI
             RenewCamera();
         }
 
+        //최초 1회 초기화 필요한 작업 수행
         void InitOnce()
         {
             Logg.Log($"[RaycastHandler] InitOnce() invoked", Logg.LoggingMode.Completed);
             Init();
-            //todo: 최초 1회 초기화 필요한 항목 처리
+            
         }
         
+        //씬 변동마다 초기화 필요한 작업 수행
         void InitAfterSceneChanged(Scene scene)
         {
             Logg.Log($"[RaycastHandler] InitAfterSceneChanged() invoked", Logg.LoggingMode.Completed);
             Init();
-            //todo: 씬 변동마다 초기화 필요한 항목 처리
         }
 
         void RenewCamera()

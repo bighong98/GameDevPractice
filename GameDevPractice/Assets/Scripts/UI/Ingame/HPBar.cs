@@ -1,19 +1,22 @@
 using System;
 using System.Threading;
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 using TH.Attribute;
 using TH.Core.Pool;
 using TH.Core.Service;
-using TH.UI;
+using TH.UI.Service;
 using TH.Utils;
 
 // HP Bar Controller using UI Component Image, Slider
 namespace TH.UI
 {
-    public class HPBar : BaseUI, IPoolObject
+    public class HPBar : BaseUI, IPoolObject, ICullingTargetView
     {
+        private static readonly Dictionary<Health, HPBar> ActiveByOwner = new();
+
         [SerializeField]private Transform target; // HPBar가 추적하는 대상 // serialize for debug
         private RectTransform rect; // 자기 자신의 RectTransform
         
@@ -21,8 +24,6 @@ namespace TH.UI
         private Slider sub; // 체력이 줄어들었을 때 효과 처리용 바
 
         private bool easing; // 천천히 움직이는 bar 애니메이션 실행중인지 여부
-        private bool isHiding; // 현재 시각적으로 비활성화중인지 여부
-        
         private const float FillingUpSpeed = 1.0f; // 체력이 회복되었을 때 체력바 움직임 애니메이션 속도
         private const float FallingDownSpeed = 0.5f; // 체력이 떨어졌을 때 체력바 움직임 애니메이션 속도
         private const float DelayHideByDeath = 1.0f; // Bar의 주인이 사망처리시 비활성화까지의 지연시간 (사망 후 {DelayHideByDeath}초 뒤 사라짐) // 현재 사용x
@@ -40,6 +41,10 @@ namespace TH.UI
 
         private CancellationToken token;
         private IRaycastHandler raycastHandler;
+        private IHUDCullingSystem hudCullingSystem;
+        private HUDCullingSystem.CullingHandle cullingHandle;
+        private Health owner;
+        private bool isReleasing;
         
         protected override void Awake()
         {
@@ -58,21 +63,8 @@ namespace TH.UI
 
             token = destroyCancellationToken;
             raycastHandler = ServiceLocator.Get<IRaycastHandler>();
+            hudCullingSystem = ServiceLocator.Get<IHUDCullingSystem>();
             raycastHandler.ForceInit();
-        }
-
-        private void LateUpdate()
-        {
-            if (!isHiding && target != null && raycastHandler.IsInsideScreen(target.position, out var result))
-            {
-                rect.position = result;
-                Show();
-            }
-            else
-            {
-                Logg.Log($"not in screen. Hide HPBar", Logg.LoggingMode.Completed);
-                Hide();
-            }
         }
 
         private void SetFill(float ratio)
@@ -161,22 +153,41 @@ namespace TH.UI
         
         public void SetOwner(Health owner)
         {
+            UnregisterCulling();
+            DetachOwner();
+            if (this.owner != null)
+                ActiveByOwner.Remove(this.owner);
+
+            this.owner = owner;
+            if (this.owner != null)
+                ActiveByOwner[this.owner] = this;
+
             owner.OnHealthRatioChanged += this.OnHealthRatioChanged;
             owner.OnMaxHealthChanged += this.OnMaxHealthChanged;
             owner.OnDead += this.OnOwnerDied;
             owner.OnRevived += this.OnOwnerRevived;
             target = owner.transform;
+            TryRegisterCulling();
         }
 
         private void ResetOwner()
         {
             if (target != null && target.GetComponent<Health>() is { } owner)
             {
+                UnregisterCulling();
+                DetachOwner();
+                if (this.owner != null)
+                    ActiveByOwner.Remove(this.owner);
+
+                this.owner = owner;
+                ActiveByOwner[this.owner] = this;
+
                 owner.OnHealthRatioChanged += this.OnHealthRatioChanged;
                 owner.OnMaxHealthChanged += this.OnMaxHealthChanged;
                 owner.OnDead += this.OnOwnerDied;
                 owner.OnRevived += this.OnOwnerRevived;
                 target = owner.transform;
+                TryRegisterCulling();
             }
         }
 
@@ -200,25 +211,47 @@ namespace TH.UI
 
         private void OnOwnerRevived()
         {
-            if (!isHiding) return;
-            isHiding = false;
         }
 
         private void Show()
         {
-            if (GetObject((int)GameObjects.Displayer) is not { activeSelf: false } displayer) 
-                return;
-            
-            displayer.SetActive(true);
+            SetDisplayerActive(true);
         }
 
         private void Hide(bool keepHiding = false)
         {
-            if (GetObject((int)GameObjects.Displayer) is not { } displayer || !displayer || !displayer.activeSelf) return;
-            
-            displayer.SetActive(false);
-            if (keepHiding) 
-                isHiding = true;
+            if (!this) return;
+            if (isReleasing) return;
+            ReleaseSelf();
+        }
+
+        private void TryRegisterCulling()
+        {
+            if (hudCullingSystem == null || target == null || cullingHandle.IsValid) return;
+            cullingHandle = hudCullingSystem.Register(this);
+        }
+
+        private void UnregisterCulling()
+        {
+            if (hudCullingSystem == null || !cullingHandle.IsValid) return;
+            isReleasing = true;
+            hudCullingSystem.Unregister(cullingHandle);
+            cullingHandle = default;
+            isReleasing = false;
+        }
+
+        Transform ICullingTargetView.Target => target;
+
+        void ICullingTargetView.SetVisible(bool visible)
+        {
+            if (visible) Show();
+            else SetDisplayerActive(false);
+        }
+
+        void ICullingTargetView.SetScreenPosition(Vector2 screenPos)
+        {
+            if (rect == null) return;
+            rect.position = screenPos;
         }
         
         public GameObject Origin { get; set; }
@@ -231,16 +264,21 @@ namespace TH.UI
         public void OnGetFromPool()
         {
             SetFill(1f);
+            TryRegisterCulling();
         }
 
         public void OnReleaseFromPool()
         {
+            UnregisterCulling();
+            ClearOwnerMap();
             if (!barAnimCTS.IsCancellationRequested)
                 barAnimCTS.Cancel();
         }
 
         public void OnDestroyFromPool()
         {
+            UnregisterCulling();
+            ClearOwnerMap();
             if (!barAnimCTS.IsCancellationRequested)
                 barAnimCTS.Cancel();
             barAnimCTS.Dispose();
@@ -248,8 +286,81 @@ namespace TH.UI
 
         public void ReleaseSelf()
         {
+            if (isReleasing) return;
             if (!gameObject.activeSelf) return;
-            PoolManager.Instance.ReleaseFromPool(this);
+            isReleasing = true;
+            UIManager.Instance.ReleaseUI(this);
+            isReleasing = false;
+        }
+
+        private void SetDisplayerActive(bool active)
+        {
+            var displayer = GetObject((int)GameObjects.Displayer);
+            if (!displayer) return;
+            if (displayer.activeSelf == active) return;
+
+            displayer.SetActive(active);
+        }
+
+        public static HPBar Acquire(Health owner, GameObject prefab)
+        {
+            if (owner == null || prefab == null) return null;
+            if (ActiveByOwner.TryGetValue(owner, out var existing) && existing != null)
+                return existing;
+
+            var ui = UIManager.Instance.GetUIFromPool<HPBar>(prefab, UICanvas.HUD);
+            if (ui == null) return null;
+            ui.SetOwner(owner);
+            return ui;
+        }
+
+        public static void Release(Health owner)
+        {
+            if (owner == null) return;
+            if (!ActiveByOwner.TryGetValue(owner, out var ui) || ui == null) return;
+
+            UIManager.Instance.ReleaseUI(ui);
+            ActiveByOwner.Remove(owner);
+        }
+
+        private void ClearOwnerMap()
+        {
+            DetachOwner();
+
+            if (owner == null)
+            {
+                RemoveMapByValue();
+                return;
+            }
+
+            ActiveByOwner.Remove(owner);
+            owner = null;
+            target = null;
+        }
+
+        private void DetachOwner()
+        {
+            if (!owner) return;
+            owner.OnHealthRatioChanged -= this.OnHealthRatioChanged;
+            owner.OnMaxHealthChanged -= this.OnMaxHealthChanged;
+            owner.OnDead -= this.OnOwnerDied;
+            owner.OnRevived -= this.OnOwnerRevived;
+        }
+
+        private void RemoveMapByValue()
+        {
+            Health keyToRemove = null;
+            foreach (var kvp in ActiveByOwner)
+            {
+                if (ReferenceEquals(kvp.Value, this))
+                {
+                    keyToRemove = kvp.Key;
+                    break;
+                }
+            }
+
+            if (keyToRemove != null)
+                ActiveByOwner.Remove(keyToRemove);
         }
     }
 }

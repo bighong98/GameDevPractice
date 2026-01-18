@@ -9,6 +9,8 @@ using TH.Utils;
 using UnityEngine;
 using TH.Item.Storage;
 using Cysharp.Threading.Tasks;
+using TH.Cinematic.Service;
+using TH.UI.Service;
 
 namespace TH.Core.Service
 {
@@ -46,20 +48,21 @@ namespace TH.Core.Service
                     sp.Get<ISceneLoader>(),
                     sp.Get<IResourceLoader>(),
                     sp.Get<ISaveFileHandler>(),
-                    sp.Get<ISaveEntityRegistry>()));
+                    sp.Get<ISaveEntityRegistry>()
+                ));
             ServiceLocator.Register<IRaycastHandler>( sp =>
                 new RaycastHandler(sp.Get<ISceneLoader>()));
             ServiceLocator.Register<IDamageCalculator>(new DamageCalculator());
             ServiceLocator.Register<ICombatSystem>( sp => 
                 new CombatSystem(
                     sp.Get<IResourceLoader>(),
-                    sp.Get<IDamageCalculator>()));
+                    sp.Get<IDamageCalculator>()
+                ));
             ServiceLocator.Register<IPlayerStorage>(sp => 
                 new PlayerStorage(
                     sp.Get<IResourceLoader>(),
-                    /* sp.Get<ISaveSystem>() */
                     sp.Get<ISaveEntityRegistry>()
-                    ));
+                ));
             ServiceLocator.Register<IQuickStorage>(new PlayerQuickStorage());
             ServiceLocator.Register<IGameItemTransfer>(new GameItemTransfer());
             ServiceLocator.Register<IGameItemConsumer>(new GameItemConsumer());
@@ -70,7 +73,14 @@ namespace TH.Core.Service
                 new PortalManager(
                     sp.Get<ISceneLoader>(),
                     sp.Get<IPlayerHolder>()
-                    ));
+                ));
+            ServiceLocator.Register<ICameraHolder>(new CameraHolder());
+            ServiceLocator.Register<IHUDCullingSystem>(sp => 
+                new HUDCullingSystem(
+                    sp.Get<ISceneLoader>(),
+                    sp.Get<ICameraHolder>(),
+                    sp.Get<IPlayerHolder>()
+                ));
         }
 
         private static async UniTask InitializeAsync()

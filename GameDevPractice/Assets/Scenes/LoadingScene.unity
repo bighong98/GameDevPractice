@@ -221,8 +221,40 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 785334137700611097, guid: df9e86d862d87ba4da7b8f17a8eaadc4, type: 3}
       insertIndex: -1
       addedObject: {fileID: 545136042}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3537914159488693809, guid: df9e86d862d87ba4da7b8f17a8eaadc4, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 51034733}
   m_SourcePrefab: {fileID: 100100000, guid: df9e86d862d87ba4da7b8f17a8eaadc4, type: 3}
+--- !u!1 &51034725 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3537914159488693809, guid: df9e86d862d87ba4da7b8f17a8eaadc4, type: 3}
+  m_PrefabInstance: {fileID: 51034724}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &51034726 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3350454568712652468, guid: df9e86d862d87ba4da7b8f17a8eaadc4, type: 3}
+  m_PrefabInstance: {fileID: 51034724}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 51034725}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72ece51f2901e7445ab60da3685d6b5f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &51034733
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 51034725}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e16df48a87397940812d42d9db59843, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TH.Cinematic.Service.CinemachineBrainRegister
+  cinemachineBrain: {fileID: 51034726}
 --- !u!1 &217795203
 GameObject:
   m_ObjectHideFlags: 0

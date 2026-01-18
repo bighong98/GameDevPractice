@@ -1,6 +1,5 @@
 using System;
 using UnityEngine;
-using TH.Core;
 using TH.SaveLoad;
 using TH.Utils;
 using TH.UI;
@@ -69,13 +68,14 @@ namespace TH.Attribute
 
         private void Start()
         {
-            UIManager.Instance.GetUIFromPool<HPBar>(HPBarPrefab, UICanvas.HUD).SetOwner(this);
+            EnsureHPBar();
             maxHp.ForceInit();
             hp.ForceInit();
         }
 
         private void OnEnable()
         {
+            EnsureHPBar();
             textSpawner.Register(this, FloatingTextEventType.Damage);
             textSpawner.Register(this, FloatingTextEventType.Heal);
             if (!hasMutableLevel || !levelHolder.IsNotNull()) return;
@@ -88,6 +88,19 @@ namespace TH.Attribute
             textSpawner.UnRegister(this, FloatingTextEventType.Heal);
             if (!hasMutableLevel || !levelHolder.IsNotNull()) return;
             levelHolder.OnLevelChanged -= this.OnLevelUp;
+
+            ReleaseHPBar();
+        }
+
+        private void EnsureHPBar()
+        {
+            if (HPBarPrefab == null) return;
+            HPBar.Acquire(this, HPBarPrefab);
+        }
+
+        private void ReleaseHPBar()
+        {
+            HPBar.Release(this);
         }
 
         private float GetInitialHealth()
