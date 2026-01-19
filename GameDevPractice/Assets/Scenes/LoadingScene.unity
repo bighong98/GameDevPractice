@@ -129,11 +129,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 282620375234977517, guid: df9e86d862d87ba4da7b8f17a8eaadc4, type: 3}
       propertyPath: fadeInDuration
-      value: 0.8
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 282620375234977517, guid: df9e86d862d87ba4da7b8f17a8eaadc4, type: 3}
       propertyPath: fadeOutDuration
-      value: 0.5
+      value: 0.4
       objectReference: {fileID: 0}
     - target: {fileID: 785334137700611097, guid: df9e86d862d87ba4da7b8f17a8eaadc4, type: 3}
       propertyPath: m_LocalPosition.x
@@ -183,6 +183,30 @@ PrefabInstance:
       propertyPath: IgnoreTimeScale
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 4064588193056988819, guid: df9e86d862d87ba4da7b8f17a8eaadc4, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 4064588193056988819, guid: df9e86d862d87ba4da7b8f17a8eaadc4, type: 3}
+      propertyPath: m_Color.a
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4064588193056988819, guid: df9e86d862d87ba4da7b8f17a8eaadc4, type: 3}
+      propertyPath: m_Color.b
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4064588193056988819, guid: df9e86d862d87ba4da7b8f17a8eaadc4, type: 3}
+      propertyPath: m_Color.g
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4064588193056988819, guid: df9e86d862d87ba4da7b8f17a8eaadc4, type: 3}
+      propertyPath: m_Color.r
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4064588193056988819, guid: df9e86d862d87ba4da7b8f17a8eaadc4, type: 3}
+      propertyPath: m_Material
+      value: 
+      objectReference: {fileID: 2100000, guid: 2cfd3ae6d0d617a44b232d48607edbab, type: 2}
     - target: {fileID: 4336856667516042916, guid: df9e86d862d87ba4da7b8f17a8eaadc4, type: 3}
       propertyPath: loadMainMenuInEditor
       value: 1
