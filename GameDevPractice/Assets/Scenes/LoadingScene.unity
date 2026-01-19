@@ -245,6 +245,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 785334137700611097, guid: df9e86d862d87ba4da7b8f17a8eaadc4, type: 3}
       insertIndex: -1
       addedObject: {fileID: 545136042}
+    - targetCorrespondingSourceObject: {fileID: 785334137700611097, guid: df9e86d862d87ba4da7b8f17a8eaadc4, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 710711745}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 3537914159488693809, guid: df9e86d862d87ba4da7b8f17a8eaadc4, type: 3}
       insertIndex: -1
@@ -435,6 +438,53 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 7082838052983258679, guid: 070ddd0e72bfc1440984beb8b0e5b1b5, type: 3}
   m_PrefabInstance: {fileID: 4667360992828648042}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &710711744
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 710711745}
+  - component: {fileID: 710711746}
+  m_Layer: 0
+  m_Name: TouchGlowUISpawner
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &710711745
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 710711744}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 590156710}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &710711746
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 710711744}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bfa7c21ba6ec70d45a424edcc8792120, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TH.UI.TouchGlowUISpawner
+  pointPrefab: {fileID: 9161163329881022701, guid: f27b7b0157dd76246a7e53574c1e3532, type: 3}
+  targetRect: {fileID: 0}
+  canvasType: 3
 --- !u!1001 &4667360992828648042
 PrefabInstance:
   m_ObjectHideFlags: 0

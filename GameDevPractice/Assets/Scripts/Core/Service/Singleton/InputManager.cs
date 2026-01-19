@@ -42,11 +42,12 @@ namespace TH.Core
         #region 외부 접근용 이벤트
         
         // global
-        public event Action OnEscaped;
         public event Action<Vector2> OnPointerMoved; // 마우스/터치 등의 포인터 움직임 발생시 (UI 팝업과 무관하게 항상 사용 가능)
-        public event Action OnInventoryCalled;
-        public event Action OnSaveCalled;
-        public event Action OnLoadCalled;
+        public event Action<Vector2> OnPointerPressed; // SingleClick, DoubleClick 등 구분 없이 스크린 터치 발생 시
+        public event Action OnEscaped; // esc 등 escape 입력 발생 시
+        public event Action OnInventoryCalled; // 인벤토리 호출키 (default: I)
+        public event Action OnSaveCalled; // 세이브 호출키 (default: O)
+        public event Action OnLoadCalled; // 로드 호출키 (default: L)
         // player
         public event Action<Vector2> OnMoved; // 플레이어 캐릭터가 이동시 (현재는 사용x)
         public event Action<Vector2> OnSelected; // 게임 오브젝트에 터치/클릭 시 (팝업UI와 상호작용은 미포함)
@@ -163,6 +164,9 @@ namespace TH.Core
         {
             switch (context.phase)
             {
+                case InputActionPhase.Started:
+                    OnPointerPressed?.Invoke(currentPointerPos);
+                    break;
                 case InputActionPhase.Canceled when !isDragging:
                     OnSingleClicked?.Invoke(currentPointerPos);
                     break;

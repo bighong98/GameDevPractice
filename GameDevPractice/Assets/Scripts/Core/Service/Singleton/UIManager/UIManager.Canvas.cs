@@ -108,6 +108,16 @@ namespace TH.Core.Service
             return null;
         }
 
+        public RectTransform GetCanvasRect(UICanvas type)
+        {
+            if (canvases == null || canvases.Count == 0)
+                return null;
+
+            if (canvases[(int)type] is { } canvasGo)
+                return canvasGo.transform as RectTransform;
+            return null;
+        }
+
         private Transform GetOrCreateUIPoolContainer(UICanvas canvasType, Type type)
         {
             var parent = GetUIParent(canvasType);
