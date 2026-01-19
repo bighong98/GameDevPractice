@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: facd75b8aedb6b444a25aa95cb2445a9
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {fileID: 2800000, guid: 523560c1ad55b4740ad9a7896c89201f, type: 3}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 333584
+  packageName: Touch Effect System mini
+  packageVersion: 1.0.1
+  assetPath: Assets/OctantaStudio/TouchEffectSystemMini/Scripts/TouchTextUI.cs
+  uploadId: 828600

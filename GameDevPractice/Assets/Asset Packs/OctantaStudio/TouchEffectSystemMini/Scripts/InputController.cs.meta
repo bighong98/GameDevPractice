@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: f56b86aca88997447ac343b576d765ca
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {fileID: 2800000, guid: 9f7df7578343b6643a50087f43cd18a6, type: 3}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 333584
+  packageName: Touch Effect System mini
+  packageVersion: 1.0.1
+  assetPath: Assets/OctantaStudio/TouchEffectSystemMini/Scripts/InputController.cs
+  uploadId: 828600

@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 35b33c93cbf237b4db7ba99faf63e273
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 333584
+  packageName: Touch Effect System mini
+  packageVersion: 1.0.1
+  assetPath: Assets/OctantaStudio/TouchEffectSystemMini/Prefabs/TouchEffects/TextEffectSprite.prefab
+  uploadId: 828600

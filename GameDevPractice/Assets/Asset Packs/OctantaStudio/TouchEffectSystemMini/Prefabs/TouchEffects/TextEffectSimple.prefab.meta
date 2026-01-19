@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 6c4a9897e6639644d92ee032c5ea96fd
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 333584
+  packageName: Touch Effect System mini
+  packageVersion: 1.0.1
+  assetPath: Assets/OctantaStudio/TouchEffectSystemMini/Prefabs/TouchEffects/TextEffectSimple.prefab
+  uploadId: 828600

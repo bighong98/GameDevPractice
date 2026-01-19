@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 7ddd63bb150e5ad4bb98971439659474
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 333584
+  packageName: Touch Effect System mini
+  packageVersion: 1.0.1
+  assetPath: Assets/OctantaStudio/TouchEffectSystemMini/Sprites/SpriteAssets/coin_sprite.asset
+  uploadId: 828600

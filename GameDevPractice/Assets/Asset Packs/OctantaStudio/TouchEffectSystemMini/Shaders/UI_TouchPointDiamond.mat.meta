@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: d73a7adbd5fb05b48aa1ada6a0ce8cc9
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 333584
+  packageName: Touch Effect System mini
+  packageVersion: 1.0.1
+  assetPath: Assets/OctantaStudio/TouchEffectSystemMini/Shaders/UI_TouchPointDiamond.mat
+  uploadId: 828600

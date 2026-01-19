@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 13a4c1eaa3310494887055ea62319976
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 333584
+  packageName: Touch Effect System mini
+  packageVersion: 1.0.1
+  assetPath: Assets/OctantaStudio/TouchEffectSystemMini/Prefabs/TouchEffects/TouchSquare.prefab
+  uploadId: 828600

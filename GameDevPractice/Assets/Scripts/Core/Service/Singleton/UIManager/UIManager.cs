@@ -30,6 +30,8 @@ namespace TH.Core.Service
         private readonly Dictionary<string, Type> keyTypeDictionary = new();
         /// <summary>UI 타입별 오브젝트 풀 (메모리 효율적 UI 재사용)</summary>
         private readonly Dictionary<Type, ObjectPool<IPoolObject>> uiPools = new();
+        /// <summary>UI 풀용 타입별 컨테이너 (캔버스 아래 타입별 그룹)</summary>
+        private readonly Dictionary<string, Transform> uiPoolContainers = new();
         /// <summary>현재 활성화된 UI를 키로 추적 (중복 표시 방지)</summary>
         private readonly Dictionary<string, IPoolObject> activeUIByKey = new();
 
@@ -247,20 +249,18 @@ namespace TH.Core.Service
                 if (setting.PoolMaxSize > 0) maxSize = setting.PoolMaxSize;
             }
 
+            var cullingSystem = ServiceLocator.Get<IHUDCullingSystem>();
             Action<IPoolObject> createAction = obj =>
             {
                 if (obj is Component comp)
                     SetCanvas(comp.gameObject, canvasType);
                 if (obj is IHUDCullingBindable bindable)
-                {
-                    var cullingSystem = ServiceLocator.Get<IHUDCullingSystem>();
                     bindable.ConfigureCulling(view => cullingSystem.Register(view), handle => cullingSystem.Unregister(handle));
-                }
             };
 
             pool = PoolManager.Instance.GetPool(
                 prefab,
-                parent: GetUIParent(canvasType),
+                parent: GetOrCreateUIPoolContainer(canvasType, type),
                 createAction: createAction,
                 capacity: capacity,
                 maxSize: maxSize,

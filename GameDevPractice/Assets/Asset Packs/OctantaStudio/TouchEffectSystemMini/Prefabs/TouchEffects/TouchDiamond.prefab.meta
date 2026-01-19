@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 1af70aab7c8d9a44e9f1c316965d340b
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 333584
+  packageName: Touch Effect System mini
+  packageVersion: 1.0.1
+  assetPath: Assets/OctantaStudio/TouchEffectSystemMini/Prefabs/TouchEffects/TouchDiamond.prefab
+  uploadId: 828600

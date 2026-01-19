@@ -108,6 +108,41 @@ namespace TH.Core.Service
             return null;
         }
 
+        private Transform GetOrCreateUIPoolContainer(UICanvas canvasType, Type type)
+        {
+            var parent = GetUIParent(canvasType);
+            if (parent == null) return null;
+
+            string key = $"{canvasType}:{type.FullName}";
+            if (uiPoolContainers.TryGetValue(key, out var existing) && existing != null)
+                return existing;
+
+            var containerGo = new GameObject($"{type.Name}", typeof(RectTransform), typeof(LayoutElement));
+            var container = containerGo.GetComponent<RectTransform>();
+            container.SetParent(parent, worldPositionStays: false);
+
+            if (parent is RectTransform parentRect)
+            {
+                container.anchorMin = parentRect.anchorMin;
+                container.anchorMax = parentRect.anchorMax;
+                container.pivot = parentRect.pivot;
+                container.anchoredPosition = parentRect.anchoredPosition;
+                container.sizeDelta = parentRect.sizeDelta;
+                container.localScale = Vector3.one;
+            }
+            else
+            {
+                container.anchoredPosition = Vector2.zero;
+                container.localScale = Vector3.one;
+            }
+
+            var layoutElement = containerGo.GetComponent<LayoutElement>();
+            layoutElement.ignoreLayout = true;
+
+            uiPoolContainers[key] = container;
+            return container;
+        }
+
         #endregion
     }
 }

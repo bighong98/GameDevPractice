@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 2eece6506b177084c9bc1931d9b6a6c8
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 333584
+  packageName: Touch Effect System mini
+  packageVersion: 1.0.1
+  assetPath: Assets/OctantaStudio/TouchEffectSystemMini/Shaders/UI_TouchPointSparkle.mat
+  uploadId: 828600

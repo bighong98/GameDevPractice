@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 4fea2c067536fa0448253c8b44f50bff
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 333584
+  packageName: Touch Effect System mini
+  packageVersion: 1.0.1
+  assetPath: Assets/OctantaStudio/TouchEffectSystemMini/Shaders/UI_TouchPointCircle.mat
+  uploadId: 828600

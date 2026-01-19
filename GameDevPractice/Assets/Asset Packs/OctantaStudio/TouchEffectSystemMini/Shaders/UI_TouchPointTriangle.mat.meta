@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 92978c882f493bc4bb96120625125f68
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 333584
+  packageName: Touch Effect System mini
+  packageVersion: 1.0.1
+  assetPath: Assets/OctantaStudio/TouchEffectSystemMini/Shaders/UI_TouchPointTriangle.mat
+  uploadId: 828600

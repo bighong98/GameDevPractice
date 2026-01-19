@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 26a2282d3f6c8d64ba719f1d68171189
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 333584
+  packageName: Touch Effect System mini
+  packageVersion: 1.0.1
+  assetPath: Assets/OctantaStudio/TouchEffectSystemMini/Prefabs/TouchEffects/TouchTriangle.prefab
+  uploadId: 828600

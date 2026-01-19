@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: f8da8a838840248409b355da3d72892a
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 333584
+  packageName: Touch Effect System mini
+  packageVersion: 1.0.1
+  assetPath: Assets/OctantaStudio/TouchEffectSystemMini/Shaders/TouchPointDiamond.shader
+  uploadId: 828600

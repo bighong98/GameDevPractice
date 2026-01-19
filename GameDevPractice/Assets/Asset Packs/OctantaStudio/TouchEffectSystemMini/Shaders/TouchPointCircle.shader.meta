@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 93fdbe4604411e24eb0f116c05ca84bd
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 333584
+  packageName: Touch Effect System mini
+  packageVersion: 1.0.1
+  assetPath: Assets/OctantaStudio/TouchEffectSystemMini/Shaders/TouchPointCircle.shader
+  uploadId: 828600

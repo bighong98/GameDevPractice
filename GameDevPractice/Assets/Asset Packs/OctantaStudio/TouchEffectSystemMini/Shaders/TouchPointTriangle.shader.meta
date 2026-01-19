@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: b60f7b07e65799e43aa2de505c6ffee8
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 333584
+  packageName: Touch Effect System mini
+  packageVersion: 1.0.1
+  assetPath: Assets/OctantaStudio/TouchEffectSystemMini/Shaders/TouchPointTriangle.shader
+  uploadId: 828600
