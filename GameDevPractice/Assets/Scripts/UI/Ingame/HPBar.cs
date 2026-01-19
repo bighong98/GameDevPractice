@@ -13,7 +13,7 @@ using TH.Utils;
 // HP Bar Controller using UI Component Image, Slider
 namespace TH.UI
 {
-    public class HPBar : BaseUI, IPoolObject, ICullingTargetView
+    public class HPBar : BaseUI, IPoolObject, ICullingTargetView, IHUDCullingBindable
     {
         private static readonly Dictionary<Health, HPBar> ActiveByOwner = new();
 
@@ -40,11 +40,12 @@ namespace TH.UI
         #endregion
 
         private CancellationToken token;
-        private IRaycastHandler raycastHandler;
-        private IHUDCullingSystem hudCullingSystem;
-        private HUDCullingSystem.CullingHandle cullingHandle;
         private Health owner;
         private bool isReleasing;
+
+        private HUDCullingSystem.CullingHandle cullingHandle;
+        private Func<ICullingTargetView, HUDCullingSystem.CullingHandle> registerCulling;
+        private Action<HUDCullingSystem.CullingHandle> unregisterCulling;
         
         protected override void Awake()
         {
@@ -62,9 +63,6 @@ namespace TH.UI
             }
 
             token = destroyCancellationToken;
-            raycastHandler = ServiceLocator.Get<IRaycastHandler>();
-            hudCullingSystem = ServiceLocator.Get<IHUDCullingSystem>();
-            raycastHandler.ForceInit();
         }
 
         private void SetFill(float ratio)
@@ -153,42 +151,21 @@ namespace TH.UI
         
         public void SetOwner(Health owner)
         {
-            UnregisterCulling();
-            DetachOwner();
-            if (this.owner != null)
-                ActiveByOwner.Remove(this.owner);
-
-            this.owner = owner;
-            if (this.owner != null)
-                ActiveByOwner[this.owner] = this;
-
-            owner.OnHealthRatioChanged += this.OnHealthRatioChanged;
-            owner.OnMaxHealthChanged += this.OnMaxHealthChanged;
-            owner.OnDead += this.OnOwnerDied;
-            owner.OnRevived += this.OnOwnerRevived;
-            target = owner.transform;
-            TryRegisterCulling();
+            AttachOwner(owner);
         }
 
         private void ResetOwner()
         {
-            if (target != null && target.GetComponent<Health>() is { } owner)
+            if (target == null)
             {
-                UnregisterCulling();
-                DetachOwner();
-                if (this.owner != null)
-                    ActiveByOwner.Remove(this.owner);
-
-                this.owner = owner;
-                ActiveByOwner[this.owner] = this;
-
-                owner.OnHealthRatioChanged += this.OnHealthRatioChanged;
-                owner.OnMaxHealthChanged += this.OnMaxHealthChanged;
-                owner.OnDead += this.OnOwnerDied;
-                owner.OnRevived += this.OnOwnerRevived;
-                target = owner.transform;
-                TryRegisterCulling();
+                AttachOwner(null);
+                return;
             }
+
+            if (target.GetComponent<Health>() is { } owner)
+                AttachOwner(owner);
+            else
+                AttachOwner(null);
         }
 
         private void OnHealthRatioChanged(float ratio)
@@ -225,17 +202,24 @@ namespace TH.UI
             ReleaseSelf();
         }
 
+        public void ConfigureCulling(Func<ICullingTargetView, HUDCullingSystem.CullingHandle> register,
+            Action<HUDCullingSystem.CullingHandle> unregister)
+        {
+            registerCulling = register;
+            unregisterCulling = unregister;
+        }
+
         private void TryRegisterCulling()
         {
-            if (hudCullingSystem == null || target == null || cullingHandle.IsValid) return;
-            cullingHandle = hudCullingSystem.Register(this);
+            if (registerCulling == null || target == null || cullingHandle.IsValid) return;
+            cullingHandle = registerCulling(this);
         }
 
         private void UnregisterCulling()
         {
-            if (hudCullingSystem == null || !cullingHandle.IsValid) return;
+            if (unregisterCulling == null || !cullingHandle.IsValid) return;
             isReleasing = true;
-            hudCullingSystem.Unregister(cullingHandle);
+            unregisterCulling(cullingHandle);
             cullingHandle = default;
             isReleasing = false;
         }
@@ -264,24 +248,22 @@ namespace TH.UI
         public void OnGetFromPool()
         {
             SetFill(1f);
+            if (owner == null)
+            {
+                ResetOwner();
+                return;
+            }
             TryRegisterCulling();
         }
 
         public void OnReleaseFromPool()
         {
-            UnregisterCulling();
-            ClearOwnerMap();
-            if (!barAnimCTS.IsCancellationRequested)
-                barAnimCTS.Cancel();
+            ClearPoolingState(disposeTokenSource: false);
         }
 
         public void OnDestroyFromPool()
         {
-            UnregisterCulling();
-            ClearOwnerMap();
-            if (!barAnimCTS.IsCancellationRequested)
-                barAnimCTS.Cancel();
-            barAnimCTS.Dispose();
+            ClearPoolingState(disposeTokenSource: true);
         }
 
         public void ReleaseSelf()
@@ -361,6 +343,47 @@ namespace TH.UI
 
             if (keyToRemove != null)
                 ActiveByOwner.Remove(keyToRemove);
+        }
+
+        private void AttachOwner(Health newOwner)
+        {
+            if (ReferenceEquals(owner, newOwner))
+            {
+                if (owner != null)
+                    target = owner.transform;
+                TryRegisterCulling();
+                return;
+            }
+
+            UnregisterCulling();
+            DetachOwner();
+            if (owner != null)
+                ActiveByOwner.Remove(owner);
+
+            owner = newOwner;
+            if (owner == null)
+            {
+                target = null;
+                return;
+            }
+
+            ActiveByOwner[owner] = this;
+            owner.OnHealthRatioChanged += this.OnHealthRatioChanged;
+            owner.OnMaxHealthChanged += this.OnMaxHealthChanged;
+            owner.OnDead += this.OnOwnerDied;
+            owner.OnRevived += this.OnOwnerRevived;
+            target = owner.transform;
+            TryRegisterCulling();
+        }
+
+        private void ClearPoolingState(bool disposeTokenSource)
+        {
+            UnregisterCulling();
+            ClearOwnerMap();
+            if (!barAnimCTS.IsCancellationRequested)
+                barAnimCTS.Cancel();
+            if (disposeTokenSource)
+                barAnimCTS.Dispose();
         }
     }
 }

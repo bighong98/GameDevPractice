@@ -5,6 +5,7 @@ using Cysharp.Threading.Tasks;
 using TH.Core.Pool;
 using TH.Resource;
 using TH.UI;
+using TH.UI.Service;
 using TH.Utils;
 using UnityEngine;
 using UnityEngine.Pool;
@@ -39,14 +40,6 @@ namespace TH.Core.Service
         /// <summary>각 캔버스 타입별 현재 sortOrder 값 (동적 정렬 용도)</summary>
         private readonly int[] sortOrders = new int[Enum.GetValues(typeof(UICanvas)).Length];
 
-
-        /// <summary>팝업 연속 오픈 방지를 위한 최소 간격 (초)</summary>
-        private const float PopupOpenThreshold = 0.05f;
-        /// <summary>마지막 팝업 오픈 시간 (Time.unscaledTime)</summary>
-        private float lastPopupOpenTime;
-
-        /// <summary>팝업 중복 오픈 체크용 딕셔너리</summary>
-        private readonly Dictionary<Type, bool> popupDuplicateCheck = new();
 
         #region ScriptableObject 데이터 레퍼런스
         /// <summary>씬 카탈로그 설정 데이터</summary>
@@ -258,6 +251,11 @@ namespace TH.Core.Service
             {
                 if (obj is Component comp)
                     SetCanvas(comp.gameObject, canvasType);
+                if (obj is IHUDCullingBindable bindable)
+                {
+                    var cullingSystem = ServiceLocator.Get<IHUDCullingSystem>();
+                    bindable.ConfigureCulling(view => cullingSystem.Register(view), handle => cullingSystem.Unregister(handle));
+                }
             };
 
             pool = PoolManager.Instance.GetPool(
@@ -404,7 +402,7 @@ namespace TH.UI
     {
         /// <summary>씬 전용 UI (항상 표시, HUD 등)</summary>
         Scene,
-        /// <summary>게임 오브젝트에 엵친 UI (체력바, 네임택 등)</summary>
+        /// <summary>게임 오브젝트에 고정되어야하는 UI (체력바, 네임택 등)</summary>
         HUD,
         /// <summary>팝업 UI (모달 창, 확인 대화상자 등)</summary>
         Popup,

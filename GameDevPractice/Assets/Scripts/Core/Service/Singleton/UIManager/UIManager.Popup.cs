@@ -1,7 +1,7 @@
 using System;
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using TH.Core.Pool;
-using TH.Resource;
 using TH.UI;
 using TH.Utils;
 using UnityEngine;
@@ -11,6 +11,14 @@ namespace TH.Core.Service
 {
     public partial class UIManager
     {
+        /// <summary>팝업 연속 오픈 방지를 위한 최소 간격 (초)</summary>
+        private const float PopupOpenThreshold = 0.05f;
+        /// <summary>마지막 팝업 오픈 시간 (Time.unscaledTime)</summary>
+        private float lastPopupOpenTime; 
+
+        /// <summary>팝업 중복 오픈 체크용 딕셔너리</summary>
+        private readonly Dictionary<Type, bool> popupDuplicateCheck = new();
+        
         #region Popup UI Method
 
         // 팝업 UI 생성/활성화 메서드
