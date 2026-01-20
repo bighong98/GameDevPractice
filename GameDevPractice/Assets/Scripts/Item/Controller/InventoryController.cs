@@ -412,7 +412,7 @@ namespace TH.Item
                 result.TryGetItemSlot(index, out var slot) &&
                 slot is {HasItem: true, IsAccessible: true, GetItem: {} item})
             {
-                UIManager.Instance.ShowUI<ItemTooltipUI>(ItemTooltipPrefabKey, UICanvas.Feedback)
+                UIManager.Instance.ShowUI<ItemTooltipUI>(ItemTooltipPrefabKey, UICanvas.FeedbackOverlay)
                     ?.ShowTooltipAt(InputManager.Instance.PointerPos, item);
             }
             else UIManager.Instance.ReleaseUI(ItemTooltipPrefabKey); // 아이템이 없는 슬롯일 경우 툴팁 비활성화

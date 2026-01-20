@@ -12,7 +12,7 @@ namespace TH.UI
         [SerializeField] private RectTransform targetRect;
 
         [Header("Canvas Sorting")]
-        [SerializeField] private UICanvas canvasType = UICanvas.Feedback;
+        [SerializeField] private UICanvas canvasType = UICanvas.FeedbackOverlay;
 
         private IRaycastHandler raycastHandler;
         private bool isInitialized;
@@ -28,7 +28,7 @@ namespace TH.UI
 
         private void Start()
         {
-            EnsureTargetRect();
+            // EnsureTargetRect();
             raycastHandler = ServiceLocator.Get<IRaycastHandler>();
         }
 

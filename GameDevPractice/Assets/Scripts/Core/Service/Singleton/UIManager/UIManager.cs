@@ -395,21 +395,19 @@ namespace TH.Core.Service
 namespace TH.UI
 {
     /// <summary>
-    /// UI 캔버스 타입 정의.
-    /// 각 타입은 별도의 Canvas GameObject로 관리되며 sortOrder가 다름.
+    /// 용도별 UI 캔버스 타입 enum
+    /// 타입별로 별도의 Canvas GameObject로 분리되어 관리
+    /// SetCanvas() 에서 캔버스 설정 일괄 적용 (sortOrder, render mode, etc) 
+    /// - CanvasSettingSO 데이터 사용 (새로운 CanvasUI 타입 추가시 반드시 타입별 값 재확인할 것)
     /// </summary>
     public enum UICanvas
-    {
-        /// <summary>씬 전용 UI (항상 표시, HUD 등)</summary>
-        Scene,
-        /// <summary>게임 오브젝트에 고정되어야하는 UI (체력바, 네임택 등)</summary>
-        HUD,
-        /// <summary>팝업 UI (모달 창, 확인 대화상자 등)</summary>
-        Popup,
-        /// <summary>피드백 UI (툴팁, 터치 이펙트, 토스트 등)</summary>
-        Feedback, 
-        /// <summary>화면 전체 마스킹 (로딩, 전환 페이드 등)</summary>
-        FullScreen,
+    { 
+        Scene, /// <summary>씬 전용 UI (항상 표시, HUD 등)</summary>
+        HUD, /// <summary>게임 오브젝트에 고정되어야하는 UI (체력바, 네임택 등)</summary>
+        Popup, /// <summary>팝업 UI (모달 창, 확인 대화상자 등)</summary>
+        FeedbackOverlay, /// <summary>피드백 UI - RenderMode: Overlay (툴팁, 터치 이펙트, 토스트 등)</summary>
+        FeedbackCamera, /// <summary>피드백 UI - RenderMode: Camera (툴팁, 터치 이펙트, 토스트 등)</summary>
+        FullScreen, /// <summary>화면 전체 마스킹 (로딩, 전환 페이드 등)</summary>
     }
 }
 

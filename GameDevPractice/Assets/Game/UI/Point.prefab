@@ -87,4 +87,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TH.UI.TouchGlowUIPoint
   glowMaterial: {fileID: 2100000, guid: 4fea2c067536fa0448253c8b44f50bff, type: 2}
   glowLifetime: 0.3
-  pointSize: 60
+  pointSize: 50

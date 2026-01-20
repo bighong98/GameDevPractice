@@ -20,29 +20,41 @@ MonoBehaviour:
     value:
       overrideSorting: 1
       defaultSortingOrder: 10
+      renderMode: 0
       poolCapacity: 1
       poolMaxSize: 1
   - key: 1
     value:
       overrideSorting: 1
       defaultSortingOrder: 20
+      renderMode: 0
       poolCapacity: 10
       poolMaxSize: 100
   - key: 2
     value:
       overrideSorting: 1
-      defaultSortingOrder: 100
+      defaultSortingOrder: 300
+      renderMode: 0
       poolCapacity: 1
       poolMaxSize: 10
   - key: 3
     value:
       overrideSorting: 1
-      defaultSortingOrder: 500
+      defaultSortingOrder: 600
+      renderMode: 0
       poolCapacity: 1
       poolMaxSize: 10
   - key: 4
     value:
       overrideSorting: 1
+      defaultSortingOrder: 700
+      renderMode: 1
+      poolCapacity: 1
+      poolMaxSize: 1
+  - key: 5
+    value:
+      overrideSorting: 1
       defaultSortingOrder: 1000
+      renderMode: 0
       poolCapacity: 1
       poolMaxSize: 1

@@ -30,8 +30,8 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _CoreOpacity: 0.6
-    - _CoreSize: 0.25
+    - _CoreOpacity: 0.3
+    - _CoreSize: 0.2
     - _Fading: 1
     - _GlowBlur: 0.3
     - _GlowOpacity: 0.3

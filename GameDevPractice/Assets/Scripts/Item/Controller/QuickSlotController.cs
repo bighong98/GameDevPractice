@@ -292,7 +292,7 @@ UnBindStorageEvents(playerStorage);
 
         if (hoveredItem.IsNotNull())
         {
-            UIManager.Instance.ShowUI<ItemTooltipUI>(ItemTooltipPrefabKey, UICanvas.Feedback)
+            UIManager.Instance.ShowUI<ItemTooltipUI>(ItemTooltipPrefabKey, UICanvas.FeedbackOverlay)
                 ?.ShowTooltipAt(InputManager.Instance.PointerPos, hoveredItem);
         }
         else

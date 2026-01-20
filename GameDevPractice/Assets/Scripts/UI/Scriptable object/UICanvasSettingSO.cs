@@ -45,11 +45,13 @@ namespace TH.UI
         {
             [SerializeField] private bool overrideSorting;
             [SerializeField] private int defaultSortingOrder;
+            [SerializeField] private RenderMode renderMode = RenderMode.ScreenSpaceOverlay;
             [SerializeField] private int poolCapacity;
             [SerializeField] private int poolMaxSize;
 
             public bool OverrideSorting => overrideSorting;
             public int DefaultSortingOrder => defaultSortingOrder;
+            public RenderMode RenderMode => renderMode;
             public int PoolCapacity => poolCapacity;
             public int PoolMaxSize => poolMaxSize;
         }
