@@ -46,6 +46,7 @@
   <Project Path="Unity.AppUI.MVVM.csproj" />
   <Project Path="MCPForUnity.Runtime.csproj" />
   <Project Path="Assembly-CSharp-firstpass.csproj" />
+  <Project Path="Unity.InputSystem.RebindingUI.csproj" />
   <Project Path="Unity.AppUI.Navigation.csproj" />
   <Project Path="Unity.InputSystem.ForUI.csproj" />
   <Project Path="Unity.AI.Navigation.csproj" />
