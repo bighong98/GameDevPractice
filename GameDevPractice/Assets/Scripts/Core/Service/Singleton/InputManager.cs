@@ -44,6 +44,7 @@ namespace TH.Core
         // global
         public event Action<Vector2> OnPointerMoved; // 마우스/터치 등의 포인터 움직임 발생시 (UI 팝업과 무관하게 항상 사용 가능)
         public event Action<Vector2> OnPointerPressed; // SingleClick, DoubleClick 등 구분 없이 스크린 터치 발생 시
+        public event Action<Vector2> OnPointerReleased; 
         public event Action OnEscaped; // esc 등 escape 입력 발생 시
         public event Action OnInventoryCalled; // 인벤토리 호출키 (default: I)
         public event Action OnSaveCalled; // 세이브 호출키 (default: O)
@@ -169,8 +170,10 @@ namespace TH.Core
                     break;
                 case InputActionPhase.Canceled when !isDragging:
                     OnSingleClicked?.Invoke(currentPointerPos);
+                    OnPointerReleased?.Invoke(currentPointerPos);
                     break;
                 case InputActionPhase.Canceled when isDragging:
+                    OnPointerReleased?.Invoke(currentPointerPos);
                     isDragging = false;
                     OnDragEnded?.Invoke(currentPointerPos);
             

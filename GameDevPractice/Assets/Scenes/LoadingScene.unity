@@ -456,8 +456,9 @@ GameObject:
   m_Component:
   - component: {fileID: 710711745}
   - component: {fileID: 710711746}
+  - component: {fileID: 710711747}
   m_Layer: 0
-  m_Name: TouchGlowUISpawner
+  m_Name: FeedbackUISpawner
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -492,6 +493,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TH.UI.TouchGlowUISpawner
   pointPrefab: {fileID: 9161163329881022701, guid: f27b7b0157dd76246a7e53574c1e3532, type: 3}
   targetRect: {fileID: 0}
+  canvasType: 3
+--- !u!114 &710711747
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 710711744}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8005ba14d627f4348829d66b3dfab985, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TH.UI.UIDragTrailSpawner
+  trailPrefab: {fileID: 9180660716138415764, guid: 754827a05cbff294383eabfac76e23fc, type: 3}
   canvasType: 3
 --- !u!1001 &4667360992828648042
 PrefabInstance:

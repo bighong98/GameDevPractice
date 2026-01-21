@@ -115,7 +115,7 @@ namespace TH.UI
             if (runtimeMaterial == null)
                 return;
 
-            float startTime = Time.time;
+            float startTime = Time.unscaledTime;
             runtimeMaterial.SetFloat(LifetimeID, glowLifetime);
             runtimeMaterial.SetFloat(StartTimeID, startTime);
             runtimeMaterial.SetFloat(TimeNowID, startTime);
@@ -151,7 +151,7 @@ namespace TH.UI
         {
             while (!token.IsCancellationRequested)
             {
-                float now = Time.time;
+                float now = Time.unscaledTime;
                 runtimeMaterial.SetFloat(TimeNowID, now);
 
                 if (now - startTime > glowLifetime)

@@ -5,10 +5,11 @@ using UnityEngine;
 
 namespace TH.UI
 {
-    public sealed class TouchGlowUISpawner : MonoBehaviour
+    public sealed class UITouchGlowSpawner : MonoBehaviour
     {
         [Header("References")]
         [SerializeField] private GameObject pointPrefab;
+        [Tooltip("RectTransformUtility 사용에 필요한 부모 캔버스 RectTransform. 런타임에 canvasType과 동일한 캔버스 컨테이너의 참조가 할당되어야 함")]
         [SerializeField] private RectTransform targetRect;
 
         [Header("Canvas Sorting")]
@@ -28,7 +29,6 @@ namespace TH.UI
 
         private void Start()
         {
-            // EnsureTargetRect();
             raycastHandler = ServiceLocator.Get<IRaycastHandler>();
         }
 
