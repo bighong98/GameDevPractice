@@ -1,5 +1,6 @@
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using TH.Core.Input;
@@ -9,13 +10,15 @@ using TH.Utils;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 using UnityEngine.Scripting;
 using TH.Core.Service;
+using TH.SaveLoad;
 
 namespace TH.Core
 {
     [Preserve]
-    public sealed class InputManager : Singleton<InputManager>, ISingleton,
+    public sealed class InputManager : Singleton<InputManager>, ISingleton, ISavableEntity,
         UserInput.IPlayerActions, UserInput.IGlobalActions, UserInput.IUIActions, UserInput.IQuickSlotActions, UserInput.ICamActions
     {
         private InputManager()
@@ -36,6 +39,221 @@ namespace TH.Core
 
         // Cached Pointer Position
         public Vector2 PointerPos => currentPointerPos;
+
+        #region Rebinding
+
+        public bool IsRebindInProgress => rebindOperation != null;
+
+        public event Action<RebindResult> OnRebindStarted;
+        public event Action<RebindResult> OnRebindCompleted;
+        public event Action OnRebindCanceled;
+
+        public bool TryStartRebind(string actionMapName, string actionName, string bindingId, RebindOptions options = null)
+        {
+            if (IsRebindInProgress)
+                return false;
+
+            if (!TryResolveBinding(actionMapName, actionName, bindingId, out var action, out var bindingIndex))
+                return false;
+
+            if (!IsRebindableBinding(action, bindingIndex))
+                return false;
+
+            StartRebindInternal(action, bindingIndex, options);
+            return true;
+        }
+
+        public void CancelRebind()
+        {
+            rebindOperation?.Cancel();
+        }
+
+        public bool TryGetBindingDisplayString(string actionMapName, string actionName, string bindingId,
+            out string displayString, out string deviceLayoutName, out string controlPath,
+            InputBinding.DisplayStringOptions options = default)
+        {
+            displayString = string.Empty;
+            deviceLayoutName = null;
+            controlPath = null;
+
+            if (!TryResolveBinding(actionMapName, actionName, bindingId, out var action, out var bindingIndex))
+                return false;
+
+            displayString = action.GetBindingDisplayString(bindingIndex, out deviceLayoutName, out controlPath, options);
+            return true;
+        }
+
+        public bool TryApplyBindingOverride(string actionMapName, string actionName, string bindingId, string overridePath)
+        {
+            if (!TryResolveBinding(actionMapName, actionName, bindingId, out var action, out var bindingIndex))
+                return false;
+
+            action.ApplyBindingOverride(bindingIndex, overridePath);
+            return true;
+        }
+
+        public bool TryClearBindingOverride(string actionMapName, string actionName, string bindingId)
+        {
+            if (!TryResolveBinding(actionMapName, actionName, bindingId, out var action, out var bindingIndex))
+                return false;
+
+            action.RemoveBindingOverride(bindingIndex);
+            return true;
+        }
+
+        public void ClearAllBindingOverrides()
+        {
+            UserInput.asset.RemoveAllBindingOverrides();
+        }
+
+        private void StartRebindInternal(InputAction action, int bindingIndex, RebindOptions options)
+        {
+            CancelRebind();
+            options ??= new RebindOptions();
+
+            var actionMap = action.actionMap;
+            var actionMapWasEnabled = actionMap.enabled;
+            if (actionMapWasEnabled)
+                actionMap.Disable();
+
+            rebindOperation = action.PerformInteractiveRebinding(bindingIndex)
+                .WithActionEventNotificationsBeingSuppressed();
+
+            if (options.timeoutSeconds > 0f)
+                rebindOperation.WithTimeout(options.timeoutSeconds);
+            if (!string.IsNullOrEmpty(options.cancelBinding))
+                rebindOperation.WithCancelingThrough(options.cancelBinding);
+            if (options.excludeMouse)
+                rebindOperation.WithControlsExcluding("<Mouse>");
+            if (options.excludeKeyboard)
+                rebindOperation.WithControlsExcluding("<Keyboard>");
+            if (options.excludeGamepad)
+                rebindOperation.WithControlsExcluding("<Gamepad>");
+
+            var startResult = BuildRebindResult(action, bindingIndex);
+            OnRebindStarted?.Invoke(startResult);
+
+            rebindOperation.OnCancel(_ =>
+                {
+                    Cleanup();
+                    OnRebindCanceled?.Invoke();
+                })
+                .OnComplete(_ =>
+                {
+                    var result = BuildRebindResult(action, bindingIndex);
+                    Cleanup();
+                    OnRebindCompleted?.Invoke(result);
+                });
+
+            rebindOperation.Start();
+
+            void Cleanup()
+            {
+                rebindOperation?.Dispose();
+                rebindOperation = null;
+                if (actionMapWasEnabled)
+                    actionMap.Enable();
+            }
+        }
+
+        private bool TryResolveBinding(string actionMapName, string actionName, string bindingId,
+            out InputAction action, out int bindingIndex)
+        {
+            action = null;
+            bindingIndex = -1;
+
+            if (string.IsNullOrEmpty(actionMapName) || string.IsNullOrEmpty(actionName) || string.IsNullOrEmpty(bindingId))
+                return false;
+
+            var map = UserInput.asset.FindActionMap(actionMapName, false);
+            if (map == null)
+                return false;
+
+            action = map.FindAction(actionName, false);
+            if (action == null)
+                return false;
+
+            bindingIndex = FindBindingIndex(action, bindingId);
+            return bindingIndex >= 0;
+        }
+
+        private static bool IsRebindableBinding(InputAction action, int bindingIndex)
+        {
+            if (action == null || bindingIndex < 0 || bindingIndex >= action.bindings.Count)
+                return false;
+
+            var binding = action.bindings[bindingIndex];
+            if (binding.isComposite || binding.isPartOfComposite)
+                return false;
+
+            var expectedControlType = action.expectedControlType;
+            if (!string.IsNullOrEmpty(expectedControlType) &&
+                !string.Equals(expectedControlType, "Button", StringComparison.OrdinalIgnoreCase))
+                return false;
+
+            return true;
+        }
+
+        private static int FindBindingIndex(InputAction action, string bindingId)
+        {
+            if (action == null || string.IsNullOrEmpty(bindingId))
+                return -1;
+
+            return action.bindings.IndexOf(x => x.id.ToString() == bindingId);
+        }
+
+        private static RebindResult BuildRebindResult(InputAction action, int bindingIndex)
+        {
+            var displayString = string.Empty;
+            var deviceLayoutName = default(string);
+            var controlPath = default(string);
+            var bindingId = string.Empty;
+            var actionMapName = string.Empty;
+            var actionName = string.Empty;
+
+            if (action != null && bindingIndex >= 0 && bindingIndex < action.bindings.Count)
+            {
+                actionMapName = action.actionMap != null ? action.actionMap.name : string.Empty;
+                actionName = action.name;
+                bindingId = action.bindings[bindingIndex].id.ToString();
+                displayString = action.GetBindingDisplayString(bindingIndex, out deviceLayoutName, out controlPath);
+            }
+
+            return new RebindResult(actionMapName, actionName, bindingId, displayString, deviceLayoutName, controlPath);
+        }
+
+        [Serializable]
+        public sealed class RebindOptions
+        {
+            public float timeoutSeconds;
+            public string cancelBinding = "<Keyboard>/escape";
+            public bool excludeMouse;
+            public bool excludeKeyboard;
+            public bool excludeGamepad;
+        }
+
+        public readonly struct RebindResult
+        {
+            public readonly string ActionMap;
+            public readonly string Action;
+            public readonly string BindingId;
+            public readonly string DisplayString;
+            public readonly string DeviceLayout;
+            public readonly string ControlPath;
+
+            public RebindResult(string actionMap, string action, string bindingId, string displayString,
+                string deviceLayout, string controlPath)
+            {
+                ActionMap = actionMap;
+                Action = action;
+                BindingId = bindingId;
+                DisplayString = displayString;
+                DeviceLayout = deviceLayout;
+                ControlPath = controlPath;
+            }
+        }
+
+        #endregion
         
         #endregion
         
@@ -77,6 +295,9 @@ namespace TH.Core
         // 내부 플래그
         private bool isDragging = false;
         private bool wasDraggingOneFrameAgo = false;
+        private InputActionRebindingExtensions.RebindingOperation rebindOperation;
+        private ISaveEntityRegistry saveEntityRegistry;
+        private const string RebindSaveId = "Global.InputManager.Rebinds";
         
         #region Initialization
 
@@ -87,6 +308,9 @@ namespace TH.Core
             UserInput.QuickSlot.SetCallbacks(this);
             UserInput.UI.SetCallbacks(this);
             UserInput.Cam.SetCallbacks(this);
+
+            saveEntityRegistry = ServiceLocator.Get<ISaveEntityRegistry>();
+            saveEntityRegistry.RegisterEntity(this);
         }
 
         private void Init()
@@ -412,6 +636,73 @@ namespace TH.Core
                 }
             }
         }
+
+        #region SaveSystem
+
+        public string UniqueIdentifier => RebindSaveId;
+        public bool IsGlobal => true;
+        public bool IsRegistered { get; set; }
+        public Scene TargetScene => default;
+
+        public object CaptureState()
+        {
+            var json = UserInput.asset.SaveBindingOverridesAsJson();
+            return new InputRebindState { overridesJson = json };
+        }
+
+        public bool RestoreState(object state)
+        {
+            if (state == null)
+                return false;
+
+            if (state is InputRebindState rebindState)
+            {
+                ApplyRebindState(rebindState);
+                return true;
+            }
+
+            if (state is string json)
+            {
+                ApplyRebindState(new InputRebindState { overridesJson = json });
+                return true;
+            }
+
+            if (state is Dictionary<string, object> dict)
+            {
+                foreach (var value in dict.Values)
+                {
+                    if (value is InputRebindState data)
+                    {
+                        ApplyRebindState(data);
+                        return true;
+                    }
+
+                    if (value is string jsonValue)
+                    {
+                        ApplyRebindState(new InputRebindState { overridesJson = jsonValue });
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private void ApplyRebindState(InputRebindState state)
+        {
+            if (state == null || string.IsNullOrEmpty(state.overridesJson))
+                return;
+
+            UserInput.asset.LoadBindingOverridesFromJson(state.overridesJson);
+        }
+
+        [Serializable]
+        public sealed class InputRebindState
+        {
+            public string overridesJson;
+        }
+
+        #endregion
 
 #region Helper Methods
 

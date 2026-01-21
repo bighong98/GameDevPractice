@@ -20,3 +20,6 @@ MonoBehaviour:
   - category: 1
     label: "\uD14C\uC2A4\uD2B8"
     panelPrefab: {fileID: 645695070661365118, guid: 070387744288da24e94d33f8d9169de2, type: 3}
+  - category: 2
+    label: "\uB2E8\uCD95\uD0A4"
+    panelPrefab: {fileID: 645695070661365118, guid: e7dd0d6f4cf77074488c4299029f21d8, type: 3}

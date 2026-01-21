@@ -220,7 +220,6 @@ MonoBehaviour:
   playExitAnimation: 0
   exitAnimation: 0
   categoryPanelMap: {fileID: 0}
-  categoryButtonTemplate: {fileID: 4801843772811348024, guid: f09a265d62bb6d248bc0f6cf6407ab3f, type: 3}
 --- !u!1 &3779532039971976963
 GameObject:
   m_ObjectHideFlags: 0

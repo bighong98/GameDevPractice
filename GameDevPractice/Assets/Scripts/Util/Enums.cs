@@ -40,6 +40,7 @@ public static class Enums
     {
         Sound,
         Blank,
+        KeyBinding,
     }
     
     public enum UIEvent
