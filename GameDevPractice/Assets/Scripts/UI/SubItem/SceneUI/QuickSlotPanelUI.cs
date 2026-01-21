@@ -77,6 +77,13 @@ public class QuickSlotPanelUI : BaseUI, IStorageUI<QuickSlotUI>, IDraggableStora
         slotUI.SetIcon(itemInfo.sprite);
     }
 
+    public void SetSlotKeyText(int index, string text)
+    {
+        if (!IsValidSlotIdx(index)) return;
+        if (GetSlotUI(index) is {} slotUI)
+            slotUI.SetKeyText(text);
+    }
+
     public void CleanSlot(int index)
     {
         if (!IsValidSlotIdx(index)) return;

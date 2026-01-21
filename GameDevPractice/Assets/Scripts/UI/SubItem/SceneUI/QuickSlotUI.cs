@@ -11,6 +11,7 @@ public class QuickSlotUI : BaseSlotUI, IHighlightableSlotUI
     enum TMPTexts
     {
         ItemAmountText,
+        QuickSlotKeyText,
     }
 
     #endregion
@@ -49,6 +50,14 @@ public class QuickSlotUI : BaseSlotUI, IHighlightableSlotUI
             t.enabled = false;
         UnHighlight();
         UnHighlightEquipping();
+    }
+
+    public void SetKeyText(string text)
+    {
+        if (GetTMPText((int)TMPTexts.QuickSlotKeyText) is not {} t)
+            return;
+
+        t.SetText(text);
     }
 
     #region IHighlightableSlotUI

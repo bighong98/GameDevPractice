@@ -6,6 +6,7 @@ using TH.Resource;
 using TH.UI;
 using TH.Utils;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 
 // PlayerQuickStorage(퀵슬롯 바인딩 모델)와 QuickSlotPanelUI(뷰) 중계
@@ -13,6 +14,15 @@ using UnityEngine;
 public class QuickSlotController : MonoBehaviour
 {
     private const string ItemTooltipPrefabKey = "UI_ItemTooltip.prefab";
+    private const string QuickSlotActionMapName = "QuickSlot";
+    private static readonly string[] QuickSlotActionNames =
+    {
+        "QuickSlot1",
+        "QuickSlot2",
+        "QuickSlot3",
+        "QuickSlot4",
+        "QuickSlot5",
+    };
     [SerializeField] private QuickSlotPanelUI panelUI;
     
     // 연결된 저장소 (Model)
@@ -22,6 +32,7 @@ public class QuickSlotController : MonoBehaviour
     
     // 외부 서비스     
     private IPlayerHolder playerHolder;
+    private string[] quickSlotBindingIds;
 
     private void Awake()
     {
@@ -40,11 +51,13 @@ public class QuickSlotController : MonoBehaviour
         BindStorageEvents(playerStorage);
         
 BindStorageUIEvents(panelUI);
+        CacheQuickSlotBindingIds();
     }
 
     private void Start()
     {
         RefreshAllSlots();
+        RefreshQuickSlotKeyLabels();
     }
 
     private void OnEnable()
@@ -70,6 +83,7 @@ BindStorageUIEvents(panelUI);
         }
 
         SubscribeInputEvents();
+        RefreshQuickSlotKeyLabels();
     }
 
     private void OnDisable()
@@ -165,6 +179,9 @@ UnBindStorageEvents(playerStorage);
         InputManager.Instance.OnQuickSlot3Pressed += OnQuickSlot3Input;
         InputManager.Instance.OnQuickSlot4Pressed += OnQuickSlot4Input;
         InputManager.Instance.OnQuickSlot5Pressed += OnQuickSlot5Input;
+
+        InputManager.Instance.OnRebindCompleted += HandleRebindCompleted;
+        InputManager.Instance.OnRebindCanceled += HandleRebindCanceled;
     }
 
     private void UnsubscribeInputEvents()
@@ -176,6 +193,9 @@ UnBindStorageEvents(playerStorage);
         InputManager.Instance.OnQuickSlot3Pressed -= OnQuickSlot3Input;
         InputManager.Instance.OnQuickSlot4Pressed -= OnQuickSlot4Input;
         InputManager.Instance.OnQuickSlot5Pressed -= OnQuickSlot5Input;
+
+        InputManager.Instance.OnRebindCompleted -= HandleRebindCompleted;
+        InputManager.Instance.OnRebindCanceled -= HandleRebindCanceled;
     }
 
 
@@ -408,6 +428,81 @@ UnBindStorageEvents(playerStorage);
     #endregion
 
     #region Helper Methods
+
+    private void RefreshQuickSlotKeyLabels()
+    {
+        if (panelUI == null || InputManager.Instance == null)
+            return;
+
+        if (quickSlotBindingIds == null || quickSlotBindingIds.Length == 0)
+            CacheQuickSlotBindingIds();
+
+        for (int i = 0; i < QuickSlotActionNames.Length; i++)
+        {
+            var bindingId = quickSlotBindingIds != null && i < quickSlotBindingIds.Length
+                ? quickSlotBindingIds[i]
+                : null;
+            if (string.IsNullOrEmpty(bindingId))
+                continue;
+
+            if (InputManager.Instance.TryGetBindingDisplayString(
+                    QuickSlotActionMapName,
+                    QuickSlotActionNames[i],
+                    bindingId,
+                    out var displayString,
+                    out _,
+                    out _))
+            {
+                panelUI.SetSlotKeyText(i, displayString);
+            }
+        }
+    }
+
+    private void CacheQuickSlotBindingIds()
+    {
+        var map = InputManager.Instance.UserInput.asset.FindActionMap(QuickSlotActionMapName, false);
+        if (map == null)
+            return;
+
+        quickSlotBindingIds = new string[QuickSlotActionNames.Length];
+        for (int i = 0; i < QuickSlotActionNames.Length; i++)
+        {
+            var action = map.FindAction(QuickSlotActionNames[i], false);
+            quickSlotBindingIds[i] = FindFirstRebindableBindingId(action);
+        }
+    }
+
+    private static string FindFirstRebindableBindingId(InputAction action)
+    {
+        if (action == null)
+            return null;
+
+        for (int i = 0; i < action.bindings.Count; i++)
+        {
+            var binding = action.bindings[i];
+            if (binding.isComposite || binding.isPartOfComposite)
+                continue;
+
+            var expectedControlType = action.expectedControlType;
+            if (!string.IsNullOrEmpty(expectedControlType) &&
+                !string.Equals(expectedControlType, "Button", System.StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            return binding.id.ToString();
+        }
+
+        return null;
+    }
+
+    private void HandleRebindCompleted(InputManager.RebindResult result)
+    {
+        RefreshQuickSlotKeyLabels();
+    }
+
+    private void HandleRebindCanceled()
+    {
+        RefreshQuickSlotKeyLabels();
+    }
 
     private bool IsValidQuickIndex(int index)
     {
