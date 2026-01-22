@@ -99,7 +99,7 @@ namespace TH.SaveLoad
             {
                 if (typeResolver.GetTypeByName(entry.typeName) is not { } type)
                 {
-                    Logg.LogError($"[{nameof(SaveStateSerializer)}] Type not found: {entry.typeName}");
+                    Logg.LogWarning($"[{nameof(SaveStateSerializer)}] Type not found: {entry.typeName}");
                     continue;
                 }
 

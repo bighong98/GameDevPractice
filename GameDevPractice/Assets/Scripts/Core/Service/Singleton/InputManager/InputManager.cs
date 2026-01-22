@@ -14,7 +14,7 @@ using TH.SaveLoad;
 namespace TH.Core
 {
     [Preserve]
-    public sealed partial class InputManager : Singleton<InputManager>, ISingleton, ISavableEntity,
+    public sealed partial class InputManager : Singleton<InputManager>, ISingleton,
         UserInput.IPlayerActions, UserInput.IGlobalActions, UserInput.IUIActions, UserInput.IQuickSlotActions, UserInput.ICamActions
     {
         private InputManager()
@@ -77,9 +77,6 @@ namespace TH.Core
         private bool isDragging = false;
         private bool wasDraggingOneFrameAgo = false;
         
-        private ISaveEntityRegistry saveEntityRegistry;
-        private const string RebindSaveId = "Global.InputManager.Rebinds";
-        
         #region Initialization
 
         private void InitOnce()
@@ -88,10 +85,14 @@ namespace TH.Core
             UserInput.Global.SetCallbacks(this);
             UserInput.QuickSlot.SetCallbacks(this);
             UserInput.UI.SetCallbacks(this);
-            UserInput.Cam.SetCallbacks(this);
+            
 
-            saveEntityRegistry = ServiceLocator.Get<ISaveEntityRegistry>();
-            saveEntityRegistry.RegisterEntity(this);
+            InitPlayerPrefsBindings();
+UserInput.Cam.SetCallbacks(this);
+
+            // 세이브 시스템 확장 전까지는 PlayerPrefs 기반으로 바인딩 키 저장 및 적용
+            // saveEntityRegistry = ServiceLocator.Get<ISaveEntityRegistry>();
+            // saveEntityRegistry.RegisterEntity(this);
         }
 
         private void Init()
@@ -418,70 +419,73 @@ namespace TH.Core
             }
         }
 
-        #region ISavable
+        #region ISavable (Not using)
 
-        public string UniqueIdentifier => RebindSaveId;
-        public bool IsGlobal => true;
-        public bool IsRegistered { get; set; }
-        public Scene TargetScene => default;
+        // private ISaveEntityRegistry saveEntityRegistry;
+        // private const string RebindSaveId = "Global.InputManager.Rebinds";
 
-        public object CaptureState()
-        {
-            var json = UserInput.asset.SaveBindingOverridesAsJson();
-            return new InputRebindState { overridesJson = json };
-        }
+        // public string UniqueIdentifier => RebindSaveId;
+        // public bool IsGlobal => true;
+        // public bool IsRegistered { get; set; }
+        // public Scene TargetScene => default;
 
-        public bool RestoreState(object state)
-        {
-            if (state == null)
-                return false;
+        // public object CaptureState()
+        // {
+        //     var json = UserInput.asset.SaveBindingOverridesAsJson();
+        //     return new InputRebindState { overridesJson = json };
+        // }
 
-            if (state is InputRebindState rebindState)
-            {
-                ApplyRebindState(rebindState);
-                return true;
-            }
+        // public bool RestoreState(object state)
+        // {
+        //     if (state == null)
+        //         return false;
 
-            if (state is string json)
-            {
-                ApplyRebindState(new InputRebindState { overridesJson = json });
-                return true;
-            }
+        //     if (state is InputRebindState rebindState)
+        //     {
+        //         ApplyRebindState(rebindState);
+        //         return true;
+        //     }
 
-            if (state is Dictionary<string, object> dict)
-            {
-                foreach (var value in dict.Values)
-                {
-                    if (value is InputRebindState data)
-                    {
-                        ApplyRebindState(data);
-                        return true;
-                    }
+        //     if (state is string json)
+        //     {
+        //         ApplyRebindState(new InputRebindState { overridesJson = json });
+        //         return true;
+        //     }
 
-                    if (value is string jsonValue)
-                    {
-                        ApplyRebindState(new InputRebindState { overridesJson = jsonValue });
-                        return true;
-                    }
-                }
-            }
+        //     if (state is Dictionary<string, object> dict)
+        //     {
+        //         foreach (var value in dict.Values)
+        //         {
+        //             if (value is InputRebindState data)
+        //             {
+        //                 ApplyRebindState(data);
+        //                 return true;
+        //             }
 
-            return false;
-        }
+        //             if (value is string jsonValue)
+        //             {
+        //                 ApplyRebindState(new InputRebindState { overridesJson = jsonValue });
+        //                 return true;
+        //             }
+        //         }
+        //     }
 
-        private void ApplyRebindState(InputRebindState state)
-        {
-            if (state == null || string.IsNullOrEmpty(state.overridesJson))
-                return;
+        //     return false;
+        // }
 
-            UserInput.asset.LoadBindingOverridesFromJson(state.overridesJson);
-        }
+        // private void ApplyRebindState(InputRebindState state)
+        // {
+        //     if (state == null || string.IsNullOrEmpty(state.overridesJson))
+        //         return;
 
-        [Serializable]
-        public sealed class InputRebindState
-        {
-            public string overridesJson;
-        }
+        //     UserInput.asset.LoadBindingOverridesFromJson(state.overridesJson);
+        // }
+
+        // [Serializable]
+        // public sealed class InputRebindState
+        // {
+        //     public string overridesJson;
+        // }
 
         #endregion
 
