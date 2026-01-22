@@ -4,7 +4,7 @@ using TH.Core.Service;
 using TH.Utils;
 using UnityEngine;
 
-public class SoundOptionPanelUI : MonoBehaviour
+public class SoundOptionPanelUI : OptionPanelUIBase
 {
     [SerializeField] private SoundVolumeOptionItemUI optionItemTemplate;
     [SerializeField] private Transform optionItemParent;
@@ -92,6 +92,47 @@ public class SoundOptionPanelUI : MonoBehaviour
 
             groupItems[group] = item;
             SoundManager.Instance.SetGroupVolume(group, initial);
+        }
+    }
+
+    protected override void SyncFromSettings()
+    {
+        if (groupItems.Count == 0)
+            return;
+
+        foreach (Enums.VolumeGroup group in Enum.GetValues(typeof(Enums.VolumeGroup)))
+        {
+            if (!groupItems.TryGetValue(group, out var item))
+                continue;
+
+            float value = PlayerPrefs.GetFloat(GetVolumeKey(group), DefaultVolume);
+            item.SetValueWithoutNotify(value);
+
+            if (value > 0f)
+            {
+                lastNonZeroVolumes[group] = value;
+                isMuted[group] = false;
+            }
+            else
+            {
+                isMuted[group] = true;
+            }
+        }
+    }
+
+    protected override void ResetToDefaults()
+    {
+        foreach (Enums.VolumeGroup group in Enum.GetValues(typeof(Enums.VolumeGroup)))
+        {
+            if (!groupItems.TryGetValue(group, out var item))
+                continue;
+
+            item.SetValueWithoutNotify(DefaultVolume);
+            lastNonZeroVolumes[group] = DefaultVolume;
+            isMuted[group] = false;
+
+            SoundManager.Instance.SetGroupVolume(group, DefaultVolume);
+            PlayerPrefs.SetFloat(GetVolumeKey(group), DefaultVolume);
         }
     }
 

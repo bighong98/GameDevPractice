@@ -1,79 +1,126 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &645695070661365118
+--- !u!1001 &6638936620201578055
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 645695070661365118, guid: 070387744288da24e94d33f8d9169de2, type: 3}
+      propertyPath: m_Name
+      value: SoundVolumePanelUI
+      objectReference: {fileID: 0}
+    - target: {fileID: 3040356733589537284, guid: 070387744288da24e94d33f8d9169de2, type: 3}
+      propertyPath: m_Pivot.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3040356733589537284, guid: 070387744288da24e94d33f8d9169de2, type: 3}
+      propertyPath: m_Pivot.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3040356733589537284, guid: 070387744288da24e94d33f8d9169de2, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3040356733589537284, guid: 070387744288da24e94d33f8d9169de2, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3040356733589537284, guid: 070387744288da24e94d33f8d9169de2, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3040356733589537284, guid: 070387744288da24e94d33f8d9169de2, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3040356733589537284, guid: 070387744288da24e94d33f8d9169de2, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3040356733589537284, guid: 070387744288da24e94d33f8d9169de2, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3040356733589537284, guid: 070387744288da24e94d33f8d9169de2, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3040356733589537284, guid: 070387744288da24e94d33f8d9169de2, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3040356733589537284, guid: 070387744288da24e94d33f8d9169de2, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3040356733589537284, guid: 070387744288da24e94d33f8d9169de2, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3040356733589537284, guid: 070387744288da24e94d33f8d9169de2, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3040356733589537284, guid: 070387744288da24e94d33f8d9169de2, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3040356733589537284, guid: 070387744288da24e94d33f8d9169de2, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3040356733589537284, guid: 070387744288da24e94d33f8d9169de2, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3040356733589537284, guid: 070387744288da24e94d33f8d9169de2, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3040356733589537284, guid: 070387744288da24e94d33f8d9169de2, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3040356733589537284, guid: 070387744288da24e94d33f8d9169de2, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3040356733589537284, guid: 070387744288da24e94d33f8d9169de2, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 645695070661365118, guid: 070387744288da24e94d33f8d9169de2, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5917221081248229084}
+  m_SourcePrefab: {fileID: 100100000, guid: 070387744288da24e94d33f8d9169de2, type: 3}
+--- !u!1 &6113572243903562553 stripped
 GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 645695070661365118, guid: 070387744288da24e94d33f8d9169de2, type: 3}
+  m_PrefabInstance: {fileID: 6638936620201578055}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 3040356733589537284}
-  - component: {fileID: 3335970603098077308}
-  - component: {fileID: -6447325780083730449}
-  m_Layer: 5
-  m_Name: SoundVolumePanelUI
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &3040356733589537284
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 645695070661365118}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &3335970603098077308
+--- !u!114 &5917221081248229084
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 645695070661365118}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 59f8146938fff824cb5fd77236b75775, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.VerticalLayoutGroup
-  m_Padding:
-    m_Left: 0
-    m_Right: 0
-    m_Top: 0
-    m_Bottom: 0
-  m_ChildAlignment: 1
-  m_Spacing: 0
-  m_ChildForceExpandWidth: 0
-  m_ChildForceExpandHeight: 0
-  m_ChildControlWidth: 1
-  m_ChildControlHeight: 0
-  m_ChildScaleWidth: 0
-  m_ChildScaleHeight: 0
-  m_ReverseArrangement: 0
---- !u!114 &-6447325780083730449
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 645695070661365118}
+  m_GameObject: {fileID: 6113572243903562553}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fc44773f8deddf847aacc26f98cb555a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SoundOptionPanelUI
   optionItemTemplate: {fileID: -5986182329520038065, guid: 8564d4fbfe55ece49a4155985c3136a9, type: 3}
-  optionItemParent: {fileID: 3040356733589537284}
+  optionItemParent: {fileID: 8508348601429183555}
+--- !u!224 &8508348601429183555 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 4443739715126350291, guid: 070387744288da24e94d33f8d9169de2, type: 3}
+  m_PrefabInstance: {fileID: 6638936620201578055}
+  m_PrefabAsset: {fileID: 0}

@@ -15,6 +15,13 @@ MonoBehaviour:
   m_GroupName: Data Catalog
   m_GUID: 23253a76be3db4f4ea9a8ecdeda81285
   m_SerializeEntries:
+  - m_GUID: 083952a111f06744a9604185c26e7c0f
+    m_Address: RebindableActionCatalogSO
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 1f83942423df5e7408d461722fc9d9d2
     m_Address: SoundVolumeGroupMapSO
     m_ReadOnly: 0

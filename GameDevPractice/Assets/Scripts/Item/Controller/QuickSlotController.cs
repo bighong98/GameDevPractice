@@ -453,7 +453,13 @@ UnBindStorageEvents(playerStorage);
                     out _,
                     out _))
             {
+                if (string.IsNullOrEmpty(displayString))
+                    displayString = string.Empty;
                 panelUI.SetSlotKeyText(i, displayString);
+            }
+            else
+            {
+                panelUI.SetSlotKeyText(i, string.Empty);
             }
         }
     }
@@ -494,7 +500,7 @@ UnBindStorageEvents(playerStorage);
         return null;
     }
 
-    private void HandleRebindCompleted(InputManager.RebindResult result)
+    private void HandleRebindCompleted(RebindResult result)
     {
         RefreshQuickSlotKeyLabels();
     }

@@ -8,9 +8,10 @@ public class KeyRebindingOptionItemUI : MonoBehaviour
     [SerializeField] private TMP_Text labelText;
     [SerializeField] private TMP_Text bindingText;
     [SerializeField] private Button rebindButton;
-    [SerializeField] private Button resetButton;
+    [SerializeField] private Button unbindButton;
+    [SerializeField] private Button defaultButton;
 
-    public void Initialize(string label, string bindingDisplay, Action onRebind, Action onReset)
+    public void Initialize(string label, string bindingDisplay, Action onRebind, Action onUnbind, Action onDefault)
     {
         if (labelText != null)
             labelText.text = label;
@@ -25,11 +26,18 @@ public class KeyRebindingOptionItemUI : MonoBehaviour
                 rebindButton.onClick.AddListener(() => onRebind());
         }
 
-        if (resetButton != null)
+        if (unbindButton != null)
         {
-            resetButton.onClick.RemoveAllListeners();
-            if (onReset != null)
-                resetButton.onClick.AddListener(() => onReset());
+            unbindButton.onClick.RemoveAllListeners();
+            if (onUnbind != null)
+                unbindButton.onClick.AddListener(() => onUnbind());
+        }
+
+        if (defaultButton != null)
+        {
+            defaultButton.onClick.RemoveAllListeners();
+            if (onDefault != null)
+                defaultButton.onClick.AddListener(() => onDefault());
         }
     }
 
@@ -43,7 +51,9 @@ public class KeyRebindingOptionItemUI : MonoBehaviour
     {
         if (rebindButton != null)
             rebindButton.interactable = interactable;
-        if (resetButton != null)
-            resetButton.interactable = interactable;
+        if (unbindButton != null)
+            unbindButton.interactable = interactable;
+        if (defaultButton != null)
+            defaultButton.interactable = interactable;
     }
 }
