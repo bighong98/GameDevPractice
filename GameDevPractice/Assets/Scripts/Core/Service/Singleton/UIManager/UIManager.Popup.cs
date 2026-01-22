@@ -282,6 +282,22 @@ namespace TH.Core.Service
 
         private const string OptionMenuUIKey = "OptionMenuUI";
         private const string InventoryUIKey = "InventoryUI.prefab";
+        private const string ToastMessageUIKey = "";
+
+        private void PrepareFrequentlyUsedUIs()
+        {
+            PrepareFrequentlyUsedUI<OptionMenuUI>(OptionMenuUIKey, UICanvas.Popup);
+            PrepareFrequentlyUsedUI<InventoryUI>(InventoryUIKey, UICanvas.Popup);
+            PrepareFrequentlyUsedUI<ToastMessageUI>(ToastMessageUIKey, UICanvas.FeedbackOverlay);
+        }
+
+        private void PrepareFrequentlyUsedUI<T>(string key, UICanvas canvasType) where T : BaseUI, IPoolObject
+        {
+            if (string.IsNullOrWhiteSpace(key))
+                return;
+
+            TryGetOrCreateUIPool(typeof(T), key, canvasType, out _);
+        }
 
         public void ShowOptionMenu()
         {
@@ -291,6 +307,21 @@ namespace TH.Core.Service
         private void ShowInventoryUI()
         {
             ShowPopupUI<InventoryUI>(InventoryUIKey);
+        }
+
+        public void ShowToastMessage(string message)
+        {
+            if (string.IsNullOrWhiteSpace(message))
+                return;
+
+            if (string.IsNullOrWhiteSpace(ToastMessageUIKey))
+                return;
+
+            var toast = ShowUI<ToastMessageUI>(ToastMessageUIKey, UICanvas.FeedbackOverlay);
+            if (toast == null)
+                return;
+
+            toast.Show(message);
         }
 
         #endregion

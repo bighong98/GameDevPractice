@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 9106091953963819933}
   - component: {fileID: -6042583459191917537}
   m_Layer: 2
-  m_Name: Point
+  m_Name: GlowSparklePointUI
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -85,6 +85,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 14b618777eb7a554090a823848dfb7a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TH.UI.TouchGlowUIPoint
-  glowMaterial: {fileID: 2100000, guid: 4fea2c067536fa0448253c8b44f50bff, type: 2}
+  glowMaterial: {fileID: 2100000, guid: 2eece6506b177084c9bc1931d9b6a6c8, type: 2}
   glowLifetime: 0.3
   pointSize: 50

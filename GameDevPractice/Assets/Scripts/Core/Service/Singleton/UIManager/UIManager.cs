@@ -38,7 +38,7 @@ namespace TH.Core.Service
         /// <summary>UI 계층 구조의 최상위 Root Transform (DontDestroyOnLoad)</summary>
         private Transform root;
         /// <summary>각 UICanvas 타입별 캔버스 GameObject 목록</summary>
-        private List<GameObject> canvases;
+        private readonly List<GameObject> canvases = new();
         /// <summary>각 캔버스 타입별 현재 sortOrder 값 (동적 정렬 용도)</summary>
         private readonly int[] sortOrders = new int[Enum.GetValues(typeof(UICanvas)).Length];
 
@@ -90,13 +90,14 @@ namespace TH.Core.Service
         {
             LoadData();
             SetUIContainer();
+            PrepareFrequentlyUsedUIs();
             // SetTooltip();
         }
 
         /// <summary>UI Root GameObject의 이름</summary>
         private const string UIRootName = "UIs";
-        // UI 컨테이너 초기 설정 (UI_Root 생성 및 캔버스 계층 구조 생성)
-        // Scene, AnchoredOverlay, Popup 3가지 타입의 캔버스를 생성
+        // UI 컨테이너 초기 설정 (UI 오브젝트 풀 루트 컨테이너(UIs) 생성 및 캔버스 계층 구조 생성)
+        // UICanvas enum 타입별로 캔버스 생성 (Scene, AnchoredOverlay, Popup, etc)
         /// <summary>
         /// UI 컨테이너 초기 설정.
         /// DontDestroyOnLoad로 UI_Root 생성 및 UICanvas enum의 모든 타입에 대해 캔버스 계층 구조 생성.
@@ -108,7 +109,6 @@ namespace TH.Core.Service
             var rootGo = new GameObject(name: UIRootName);
             UnityEngine.Object.DontDestroyOnLoad(rootGo);
             root = rootGo.transform;
-            canvases = new();
 
             var t = typeof(UICanvas);
             // UICanvas enum의 모든 타입에 대해 캔버스 생성
@@ -240,7 +240,12 @@ namespace TH.Core.Service
         /// <returns>성공 여부</returns>
         private bool CreateUIPool(Type type, string key, UICanvas canvasType, GameObject prefab, out ObjectPool<IPoolObject> pool)
         {
-            var setting = uiCanvasSettingSO?.GetCanvasSetting(canvasType);
+            pool = null;
+            if (uiCanvasSettingSO.IsNull() || 
+                uiCanvasSettingSO.GetCanvasSetting(canvasType) is not {} setting) 
+                return false;
+            
+            // var setting = uiCanvasSettingSO?.GetCanvasSetting(canvasType);
             int capacity = DefaultReadyMadePopupCount;
             int maxSize = MaxDuplicatePopupCount;
             if (setting != null)

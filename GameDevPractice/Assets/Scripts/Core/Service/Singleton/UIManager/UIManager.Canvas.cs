@@ -134,9 +134,12 @@ namespace TH.Core.Service
         // 특정 CanvasUI 타입의 UI 부모 Transform을 반환
         private Transform GetUIParent(UICanvas type)
         {
-            if (canvases[(int)type] is { } canvasGo)
-                return canvasGo.transform;
-            return null;
+            if (canvases == null || 
+                canvases.Count == 0 || 
+                canvases[(int)type] is not { } canvasGo) 
+                return null;
+            
+            return canvasGo.transform;
         }
 
         // UI 오브젝트 풀의 컨테이너 반환, 기존 컨테이너가 없을 경우 생성
