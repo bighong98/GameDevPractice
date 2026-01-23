@@ -26,12 +26,12 @@ namespace TH.Core.Service
         /// <summary>열린 팝업들을 스택으로 관리 (LIFO 방식 닫기 지원)</summary>
         private readonly PopupStack popupStacks = new();
 
-        /// <summary>리소스 키와 UI 타입 간의 매핑 딕셔너리</summary>
-        private readonly Dictionary<string, Type> keyTypeDictionary = new();
-        /// <summary>UI 타입별 오브젝트 풀 (메모리 효율적 UI 재사용)</summary>
-        private readonly Dictionary<Type, ObjectPool<IPoolObject>> uiPools = new();
-        /// <summary>UI 풀용 타입별 컨테이너 (캔버스 아래 타입별 그룹)</summary>
-        private readonly Dictionary<string, Transform> uiPoolContainers = new();
+        /// <summary>UI 프리팹 기반 오브젝트 풀</summary>
+        // 전제: 동일 프리팹은 항상 동일한 캔버스 타입에서만 사용된다.
+        private readonly Dictionary<GameObject, ObjectPool<IPoolObject>> uiPools = new();
+        /// <summary>UI 풀용 프리팹별 컨테이너 (캔버스 아래 프리팹별 그룹)</summary>
+        private readonly Dictionary<GameObject, Transform> uiPoolContainers = new();
+
         /// <summary>현재 활성화된 UI를 키로 추적 (중복 표시 방지)</summary>
         private readonly Dictionary<string, IPoolObject> activeUIByKey = new();
 
@@ -185,60 +185,56 @@ namespace TH.Core.Service
         /// UI 풀을 가져오거나 새로 생성.
         /// 리소스 키로 Addressables에서 프리팩을 로드하여 풀 생성.
         /// </summary>
-        /// <param name="type">UI 컴포넌트 타입</param>
         /// <param name="key">Addressables 리소스 키</param>
         /// <param name="canvasType">대상 캔버스 타입</param>
         /// <param name="pool">출력: 생성/찾은 오브젝트 풀</param>
-        /// <returns>성공 여부</returns>
-        private bool TryGetOrCreateUIPool(Type type, string key, UICanvas canvasType, out ObjectPool<IPoolObject> pool)
-        {
-            if (uiPools.TryGetValue(type, out pool))
-                return true;
 
+        /// <returns>성공 여부</returns>
+        private bool TryGetOrCreateUIPool(string key, UICanvas canvasType, out ObjectPool<IPoolObject> pool)
+        {
             if (ResourceManager.Instance.Load<UnityEngine.Object>(key) is not GameObject loadedUI)
             {
                 pool = null;
                 return false;
             }
 
-            return CreateUIPool(type, key, canvasType, loadedUI, out pool);
+            return TryGetOrCreateUIPool(loadedUI, canvasType, out pool);
         }
 
         /// <summary>
         /// UI 풀을 가져오거나 새로 생성 (프리팩 직접 전달 버전).
         /// 이미 로드된 프리팩을 사용하여 풀 생성.
         /// </summary>
-        /// <param name="type">UI 컴포넌트 타입</param>
-        /// <param name="key">리소스 키</param>
+        /// <param name="prefab">UI 프리팹</param>
         /// <param name="canvasType">대상 캔버스 타입</param>
-        /// <param name="prefab">UI 프리팩</param>
         /// <param name="pool">출력: 생성/찾은 오브젝트 풀</param>
-        /// <returns>성공 여부</returns>
-        private bool TryGetOrCreateUIPool(Type type, string key, UICanvas canvasType, GameObject prefab, out ObjectPool<IPoolObject> pool)
-        {
-            if (uiPools.TryGetValue(type, out pool))
-                return true;
 
+        /// <returns>성공 여부</returns>
+        private bool TryGetOrCreateUIPool(GameObject prefab, UICanvas canvasType, out ObjectPool<IPoolObject> pool)
+        {
             if (prefab == null)
             {
                 pool = null;
                 return false;
             }
 
-            return CreateUIPool(type, key, canvasType, prefab, out pool);
+            if (uiPools.TryGetValue(prefab, out pool))
+                return true;
+
+            return CreateUIPool(canvasType, prefab, out pool);
         }
+
 
         /// <summary>
         /// 새 UI 오브젝트 풀 생성.
         /// UICanvasSettingSO에서 풀 용량 설정을 가져오고 PoolManager를 통해 풀 생성.
         /// </summary>
-        /// <param name="type">UI 컴포넌트 타입</param>
-        /// <param name="key">리소스 키</param>
         /// <param name="canvasType">대상 캔버스 타입</param>
-        /// <param name="prefab">UI 프리팩</param>
+        /// <param name="prefab">UI 프리팹</param>
         /// <param name="pool">출력: 생성된 오브젝트 풀</param>
         /// <returns>성공 여부</returns>
-        private bool CreateUIPool(Type type, string key, UICanvas canvasType, GameObject prefab, out ObjectPool<IPoolObject> pool)
+        private bool CreateUIPool(UICanvas canvasType, GameObject prefab, out ObjectPool<IPoolObject> pool)
+
         {
             pool = null;
             if (uiCanvasSettingSO.IsNull() || 
@@ -265,15 +261,16 @@ namespace TH.Core.Service
 
             pool = PoolManager.Instance.GetPool(
                 prefab,
-                parent: GetOrCreateUIPoolContainer(canvasType, type),
+                parent: GetOrCreateUIPoolContainer(canvasType, prefab),
+
                 createAction: createAction,
                 capacity: capacity,
                 maxSize: maxSize,
                 registerPool: false
             );
 
-            uiPools[type] = pool;
-            keyTypeDictionary.TryAdd(key, type);
+            uiPools[prefab] = pool;
+
             return true;
         }
 
@@ -296,9 +293,9 @@ namespace TH.Core.Service
         {
             if (prefab == null) return null;
 
-            string key = $"{prefab.name}.prefab";
-            if (!TryGetOrCreateUIPool(typeof(T), key, canvasType, prefab, out var pool))
+            if (!TryGetOrCreateUIPool(prefab, canvasType, out var pool))
                 return null;
+;
 
             return pool.Get() as T;
         }
@@ -325,7 +322,8 @@ namespace TH.Core.Service
             if (ResourceManager.Instance.Load<UnityEngine.Object>(key) is not GameObject prefab)
                 return null;
 
-            if (!TryGetOrCreateUIPool(typeof(T), key, canvasType, prefab, out var pool))
+            if (!TryGetOrCreateUIPool(prefab, canvasType, out var pool))
+
                 return null;
 
             var ui = pool.Get() as T;
@@ -359,10 +357,11 @@ namespace TH.Core.Service
         {
             if (ui == null) return;
 
-            if (uiPools.TryGetValue(ui.GetType(), out var pool))
+            if (TryGetUIPool(ui, out var pool))
                 pool.Release(ui);
             else
                 PoolManager.Instance.ReleaseFromPool(ui);
+
 
             string removeKey = null;
             foreach (var (key, value) in activeUIByKey)
@@ -375,6 +374,15 @@ namespace TH.Core.Service
             }
             if (removeKey != null)
                 activeUIByKey.Remove(removeKey);
+        }
+
+        private bool TryGetUIPool(IPoolObject ui, out ObjectPool<IPoolObject> pool)
+        {
+            pool = null;
+            if (ui?.Origin == null)
+                return false;
+
+            return uiPools.TryGetValue(ui.Origin, out pool);
         }
 
         #endregion

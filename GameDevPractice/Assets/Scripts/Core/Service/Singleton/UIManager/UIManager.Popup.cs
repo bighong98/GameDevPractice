@@ -103,7 +103,7 @@ namespace TH.Core.Service
             }
 
             // 팝업 풀에서 닫기 처리
-            if (uiPools.TryGetValue(popup.GetType(), out var popupPool))
+            if (TryGetUIPool(popup, out var popupPool))
             {
                 ClosePopupInternal(popup, popupPool, waitForAnimation);
             }
@@ -166,7 +166,7 @@ namespace TH.Core.Service
         private T GetPopupInstance<T>(Type type, string uiName) where T : PopupUI
         {
             string key = uiName ?? $"{type.Name}.prefab";
-            if (!TryGetOrCreateUIPool(type, key, UICanvas.Popup, out var pool))
+            if (!TryGetOrCreateUIPool(key, UICanvas.Popup, out var pool))
                 return null;
 
             // 풀에서 인스턴스 가져오기
@@ -206,7 +206,7 @@ namespace TH.Core.Service
         public void ClosePopupUIImmediately<T>(T popup) where T : PopupUI
         {
             Type type = popup.GetType();
-            if (uiPools.TryGetValue(type, out var pool))
+            if (TryGetUIPool(popup, out var pool))
             {
                 pool.Release(popup);
             }
@@ -296,7 +296,7 @@ namespace TH.Core.Service
             if (string.IsNullOrWhiteSpace(key))
                 return;
 
-            TryGetOrCreateUIPool(typeof(T), key, canvasType, out _);
+            TryGetOrCreateUIPool(key, canvasType, out _);
         }
 
         public void ShowOptionMenu()

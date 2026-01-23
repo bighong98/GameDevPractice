@@ -1,4 +1,3 @@
-using System;
 using TH.UI;
 using TH.Utils;
 using UnityEngine;
@@ -143,16 +142,15 @@ namespace TH.Core.Service
         }
 
         // UI 오브젝트 풀의 컨테이너 반환, 기존 컨테이너가 없을 경우 생성
-        private Transform GetOrCreateUIPoolContainer(UICanvas canvasType, Type type)
+        private Transform GetOrCreateUIPoolContainer(UICanvas canvasType, GameObject prefab)
         {
             var parent = GetUIParent(canvasType);
             if (parent == null) return null;
             // 이미 해당 UICanvas 타입용 컨테이너가 있을 경우 반환
-            string key = $"{canvasType}:{type.FullName}";
-            if (uiPoolContainers.TryGetValue(key, out var existing) && existing != null)
+            if (uiPoolContainers.TryGetValue(prefab, out var existing) && existing != null)
                 return existing;
             // 
-            var containerGo = new GameObject($"{type.Name}", typeof(RectTransform), typeof(LayoutElement));
+            var containerGo = new GameObject($"{prefab.name}", typeof(RectTransform), typeof(LayoutElement));
             var container = containerGo.GetComponent<RectTransform>();
             container.SetParent(parent, worldPositionStays: false);
 
@@ -176,7 +174,7 @@ namespace TH.Core.Service
             var layoutElement = containerGo.GetComponent<LayoutElement>();
             layoutElement.ignoreLayout = true;
 
-            uiPoolContainers[key] = container;
+            uiPoolContainers[prefab] = container;
             return container;
         }
 

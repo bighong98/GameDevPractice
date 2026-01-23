@@ -54,22 +54,20 @@ namespace TH.Core.Service
                     return;
                 }
                 // 기존 SceneUI가 있으면 풀에 반환
-                else if (uiPools.TryGetValue(sceneUI.GetType(), out var previousPool))
+                else if (TryGetUIPool(sceneUI, out var previousPool))
                     previousPool.Release(sceneUI);
                 else
                     PoolManager.Instance.ReleaseFromPool(sceneUI);
             }
 
             // 새로운 씬UI 프리펩 컴포넌트(SceneUI 타입) 체크
-            string key = $"{loadedSceneUI.name}.prefab";
             if (!loadedSceneUI.TryGetComponent(out SceneUI sceneUIPrefab))
             {
                 Logg.LogWarning("[UIManager] SceneUI component not found on prefab");
                 return;
             }
             // 새로운 SceneUI를 풀에서 가져오기 (없으면 오브젝트 풀 생성)
-            var sceneUIType = sceneUIPrefab.GetType();
-            if (!TryGetOrCreateUIPool(sceneUIType, key, UICanvas.Scene, loadedSceneUI, out var pool))
+            if (!TryGetOrCreateUIPool(loadedSceneUI, UICanvas.Scene, out var pool))
                 return;
 
             sceneUI = pool.Get() as SceneUI;
