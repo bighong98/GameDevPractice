@@ -28,23 +28,31 @@ namespace TH.UI
 
         private void OnEnable()
         {
-            InputManager.Instance.OnPointerPressed += HandleDragStarted;
-            InputManager.Instance.OnPointerReleased += HandleDragEnded;
-            InputManager.Instance.OnPointerMoved += HandlePointerMoved;
+            InputManager.Instance.OnScreenDragStarted += HandleDragStarted;
+            InputManager.Instance.OnUIDragStarted += HandleDragStarted;
+            InputManager.Instance.OnScreenDragEnded += HandleDragEnded;
+            InputManager.Instance.OnUIDragEnded += HandleDragEnded;
+            InputManager.Instance.OnScreenDragging += HandlePointerMoved;
+            InputManager.Instance.OnUIDragging += HandlePointerMoved;
         }
 
         private void OnDisable()
         {
-            InputManager.Instance.OnPointerPressed -= HandleDragStarted;
-            InputManager.Instance.OnPointerReleased -= HandleDragEnded;
-            InputManager.Instance.OnPointerMoved -= HandlePointerMoved;
+            InputManager.Instance.OnScreenDragStarted -= HandleDragStarted;
+            InputManager.Instance.OnUIDragStarted -= HandleDragStarted;
+            InputManager.Instance.OnScreenDragEnded -= HandleDragEnded;
+            InputManager.Instance.OnUIDragEnded -= HandleDragEnded;
+            InputManager.Instance.OnScreenDragging -= HandlePointerMoved;
+            InputManager.Instance.OnUIDragging -= HandlePointerMoved;
 
             ReleaseActiveTrail();
         }
 
         private void HandleDragStarted(Vector2 screenPos)
         {
+            if (isDragging) return;
             isDragging = true;
+
             activeTrail = UIManager.Instance.GetUIFromPool<CanvasDragTrailUI>(trailPrefab, canvasType);
             if (activeTrail.IsNotNull())
                 activeTrail.AddPoint(screenPos);

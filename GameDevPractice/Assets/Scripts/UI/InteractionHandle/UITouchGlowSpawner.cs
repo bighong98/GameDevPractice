@@ -1,3 +1,5 @@
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using TH.Core;
 using TH.Core.Service;
 using TH.Utils;
@@ -15,8 +17,13 @@ namespace TH.UI
         [Header("Canvas Sorting")]
         [SerializeField] private UICanvas canvasType = UICanvas.FeedbackOverlay;
 
+        [Header("Settings")]
+        [SerializeField] private float glowLifetime = 1.0f;
+        [SerializeField] private float pointSize = 120f;
+
         private IRaycastHandler raycastHandler;
         private bool isInitialized;
+        private CancellationTokenSource glowCts;
 
         private void Awake() 
         {
@@ -34,12 +41,14 @@ namespace TH.UI
 
         private void OnEnable()
         {
+            glowCts = new CancellationTokenSource();
             InputManager.Instance.OnPointerPressed += HandlePointerPressed;
         }
 
         private void OnDisable()
         {
             InputManager.Instance.OnPointerPressed -= HandlePointerPressed;
+            CancelGlowTasks();
         }
 
         private void HandlePointerPressed(Vector2 screenPos)
@@ -49,7 +58,31 @@ namespace TH.UI
 
             var point = UIManager.Instance.GetUIFromPool<TouchGlowUIPoint>(pointPrefab, canvasType);
             if (point.IsNotNull())
-                point.Play(localPos);
+            {
+                float now = Time.unscaledTime;
+                point.Play(localPos, now, glowLifetime, pointSize);
+                TrackGlowAsync(point, now, glowLifetime, glowCts.Token).Forget();
+            }
+        }
+
+        private async UniTaskVoid TrackGlowAsync(TouchGlowUIPoint point, float startTime, float lifetime, CancellationToken token)
+        {
+            while (!token.IsCancellationRequested)
+            {
+                if (point == null)
+                    return;
+
+                float now = Time.unscaledTime;
+                point.SetTimeNow(now);
+
+                if (now - startTime > lifetime)
+                    break;
+
+                await UniTask.Yield(PlayerLoopTiming.Update, token).SuppressCancellationThrow();
+            }
+
+            if (point != null)
+                point.ReleaseSelf();
         }
 
         private bool EnsureTargetRect()
@@ -70,5 +103,24 @@ namespace TH.UI
 
             return isInitialized;
         }
+
+        private void CancelGlowTasks()
+        {
+            if (glowCts == null)
+                return;
+
+            try
+            {
+                if (!glowCts.IsCancellationRequested)
+                    glowCts.Cancel();
+            }
+            finally
+            {
+                glowCts.Dispose();
+                glowCts = null;
+            }
+        }
     }
 }
+
+

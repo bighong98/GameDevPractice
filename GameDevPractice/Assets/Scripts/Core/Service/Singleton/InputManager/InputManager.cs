@@ -51,15 +51,18 @@ namespace TH.Core
         // player
         public event Action<Vector2> OnMoved; // 플레이어 캐릭터가 이동시 (현재는 사용x)
         public event Action<Vector2> OnSelected; // 게임 오브젝트에 터치/클릭 시 (팝업UI와 상호작용은 미포함)
-        public event Action<Vector2> OnScreenDragged; // 게임 스크린 드래그 시 (팝업UI와 상호작용은 OnDragStarted 혹은 pointerEvent 기반으로 처리 )
+        public event Action<Vector2> OnScreenDragStarted; // 게임 스크린 드래그 시작 시 
+        public event Action<Vector2> OnScreenDragging; // 게임 스크린 드래그 시 (팝업UI와 상호작용은 OnDragStarted 혹은 pointerEvent 기반으로 처리 )
+        public event Action<Vector2> OnScreenDragEnded; // 게임 스크린 드래그 종료 시
         // UI.Click
         public event Action<Vector2> OnUIPointerMoved; // UI 팝업이 활성화된 상태에서 포인터 움직임 발생시
         public event Action<Vector2> OnSingleClicked;
         public event Action<Vector2> OnDoubleClicked; // 더블클릭
         public event Action<Vector2> OnAltClicked; // 보조 입력 발생 시 (마우스 우클릭 등)
         // UI.Drag
-        public event Action<Vector2> OnDragStarted; // 드래그 시작 시
-        public event Action<Vector2> OnDragEnded; // 드래그 종료 시
+        public event Action<Vector2> OnUIDragStarted; // 드래그 시작 시
+        public event Action<Vector2> OnUIDragging; // UI 드래그 중
+        public event Action<Vector2> OnUIDragEnded; // 드래그 종료 시
         public event Action<Vector2> OnAdditived;
         // QuickSlot
         public event Action OnQuickSlot1Pressed;
@@ -139,15 +142,34 @@ UserInput.Cam.SetCallbacks(this);
             
         }
 
+        // public void OnDragScreen(InputAction.CallbackContext context)
+        // {
+        //     Vector2 delta = context.ReadValue<Vector2>();
+
+        //     if (context.phase != InputActionPhase.Performed) return;
+        //     if (!(delta.magnitude > 8f)) return;
+            
+        //     OnScreenDragging?.Invoke(delta);
+        //     Logg.Log($"[{GetType().Name}] OnScreenDragged({delta})", Logg.LoggingMode.Completed);
+        // }
+
         public void OnDragScreen(InputAction.CallbackContext context)
         {
             Vector2 delta = context.ReadValue<Vector2>();
-
-            if (context.phase != InputActionPhase.Performed) return;
             if (!(delta.magnitude > 8f)) return;
+
+            switch (context.phase) 
+            {
+                case InputActionPhase.Performed when !isDragging:
+                    isDragging = true;
+                    OnScreenDragStarted?.Invoke(currentPointerPos);
+                    break;
+                case InputActionPhase.Performed when isDragging:
+                    OnScreenDragging?.Invoke(currentPointerPos);
+                    break;
+            }
             
-            OnScreenDragged?.Invoke(delta);
-            Logg.Log($"[{GetType().Name}] OnScreenDragged({delta})", Logg.LoggingMode.Completed);
+            // Logg.Log($"[{GetType().Name}] OnScreenDragged({delta})", Logg.LoggingMode.Completed);
         }
         
         #endregion
@@ -181,8 +203,8 @@ UserInput.Cam.SetCallbacks(this);
                 case InputActionPhase.Canceled when isDragging:
                     OnPointerReleased?.Invoke(currentPointerPos);
                     isDragging = false;
-                    OnDragEnded?.Invoke(currentPointerPos);
-            
+                    OnUIDragEnded?.Invoke(currentPointerPos);
+                    OnScreenDragEnded?.Invoke(currentPointerPos);
                     wasDraggingOneFrameAgo = true;
                     UniTask.Void(async () =>
                     {
@@ -239,14 +261,28 @@ UserInput.Cam.SetCallbacks(this);
 
         public void OnDrag(InputAction.CallbackContext context)
         {
-            Vector2 delta = context.ReadValue<Vector2>();
+            // Vector2 delta = context.ReadValue<Vector2>();
 
-            if (context.phase != InputActionPhase.Performed) return;
-            if (isDragging || !(delta.magnitude > 2f)) return;
+            // if (context.phase != InputActionPhase.Performed) return;
+            // if (isDragging || !(delta.magnitude > 2f)) return;
             
-            isDragging = true;
-            dragStartPosition = PointerPos;
-            OnDragStarted?.Invoke(dragStartPosition);
+            // isDragging = true;
+            // dragStartPosition = PointerPos;
+            // OnUIDragStarted?.Invoke(dragStartPosition);
+
+            Vector2 delta = context.ReadValue<Vector2>();
+            if (!(delta.magnitude > 2f)) return;
+
+            switch (context.phase) 
+            {
+                case InputActionPhase.Performed when !isDragging:
+                    isDragging = true;
+                    OnUIDragStarted?.Invoke(currentPointerPos);
+                    break;
+                case InputActionPhase.Performed when isDragging:
+                    OnUIDragging?.Invoke(currentPointerPos);
+                    break;
+            }
         }
 
         public void OnPointUI(InputAction.CallbackContext context)
