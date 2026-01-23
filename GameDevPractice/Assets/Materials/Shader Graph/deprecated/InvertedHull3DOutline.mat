@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: 3DOutline
+  m_Name: InvertedHull3DOutline
   m_Shader: {fileID: -6465566751694194690, guid: 5ef6833028f1b444e93bacb53b9f10b9, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
