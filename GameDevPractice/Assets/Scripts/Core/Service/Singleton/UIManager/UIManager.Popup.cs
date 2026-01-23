@@ -77,6 +77,26 @@ namespace TH.Core.Service
             return popup;
         }
 
+        // 공용 UI 호출 메서드(ShowUI)로 팝업 호출 시 사용하는 우회용 메서드 (ShowUI -> ShowPopupUI)
+        // 가능하면 팝업은 ShowPopupUI<T>(string) 직접 호출 사용할 것  
+        private PopupUI ShowPopupUIByType(Type type, string uiName = null)
+        {
+            if (type == null || !typeof(PopupUI).IsAssignableFrom(type))
+                return null;
+
+            var method = GetType().GetMethod(
+                nameof(ShowPopupUI),
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public,
+                null,
+                new[] { typeof(string) },
+                null
+            );
+            if (method == null || !method.IsGenericMethodDefinition)
+                return null;
+
+            var generic = method.MakeGenericMethod(type);
+            return generic.Invoke(this, new object[] { uiName }) as PopupUI;
+        }
 
         // 특정 팝업 UI 닫기
         // escapableCheck: Escapable 속성 확인 여부

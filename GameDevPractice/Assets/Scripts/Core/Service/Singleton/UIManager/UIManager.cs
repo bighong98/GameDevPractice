@@ -310,7 +310,12 @@ namespace TH.Core.Service
         /// <returns>UI 인스턴스 (실패 시 null)</returns>
         public T ShowUI<T>(string key, UICanvas canvasType) where T : BaseUI, IPoolObject
         {
-            if (string.IsNullOrWhiteSpace(key)) return null;
+            if (string.IsNullOrWhiteSpace(key)) 
+                return null;
+            // 호출하려는 UI가 PopupUI인 경우 PopupUI 전용 호출 메서드로 연결 (리플렉션 사용)
+            // 팝업은 가급적이면 ShowPopupUI<T>(string)으로 호출할 것
+            if (canvasType == UICanvas.Popup && typeof(PopupUI).IsAssignableFrom(typeof(T)))
+                return ShowPopupUIByType(typeof(T), key) as T;
 
             if (activeUIByKey.TryGetValue(key, out var existing)
                 && existing is Component existingComp
