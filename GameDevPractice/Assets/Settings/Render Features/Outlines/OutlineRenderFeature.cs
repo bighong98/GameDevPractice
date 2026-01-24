@@ -59,6 +59,10 @@ namespace Xenon
         }
         public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
         {
+            // Base 카메라만 적용
+            if (renderingData.cameraData.renderType != CameraRenderType.Base)
+                return;
+
             renderer.EnqueuePass(_outlinePassFilter);
             renderer.EnqueuePass(_outlinePassFinal);
         }

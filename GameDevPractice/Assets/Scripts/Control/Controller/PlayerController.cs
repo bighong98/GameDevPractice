@@ -18,12 +18,12 @@ namespace TH.Control
     
     public class PlayerController : MonoBehaviour, IPlayerController, ISightHandler
     {
-        [SerializeField] private Camera _camera;
-        [SerializeField] private Material _outlineMaterial;
+                [SerializeField] private Camera _camera;
         [SerializeField] private bool _enableInteractionOutline = true;
 
         private GameObject _outlinedTarget;
-        private Renderer[] _outlinedRenderers = Array.Empty<Renderer>();
+        private Renderer _outlinedRenderer;
+        private int _outlinedOriginalLayer = -1;
         // private Mover mover;
         private Mover mover;
         private IFighter fighter;
@@ -193,7 +193,7 @@ namespace TH.Control
             ClearInteractionOutline();
             _outlinedTarget = target;
 
-            if (_outlinedTarget == null || _outlineMaterial == null) return;
+            if (_outlinedTarget == null) return;
 
             var renderers = _outlinedTarget.GetComponentsInChildren<Renderer>(true);
             if (renderers == null || renderers.Length == 0) return;
@@ -217,21 +217,23 @@ namespace TH.Control
             var targetRenderer = (Renderer)skinnedRenderer ?? meshRenderer;
             if (targetRenderer == null) return;
 
-            Util.AddMaterialIfMissing(targetRenderer, _outlineMaterial);
-            _outlinedRenderers = new[] { targetRenderer };
+            int outlineLayer = LayerMask.NameToLayer("Outline");
+            if (outlineLayer < 0) return;
+
+            _outlinedRenderer = targetRenderer;
+            _outlinedOriginalLayer = targetRenderer.gameObject.layer;
+            targetRenderer.gameObject.layer = outlineLayer;
         }
 
         private void ClearInteractionOutline()
         {
-            if (_outlinedRenderers == null || _outlinedRenderers.Length == 0) return;
-
-            foreach (var renderer in _outlinedRenderers)
+            if (_outlinedRenderer != null)
             {
-                if (renderer == null) continue;
-                Util.RemoveMaterialIfPresent(renderer, _outlineMaterial);
+                _outlinedRenderer.gameObject.layer = _outlinedOriginalLayer;
             }
 
-            _outlinedRenderers = Array.Empty<Renderer>();
+            _outlinedRenderer = null;
+            _outlinedOriginalLayer = -1;
             _outlinedTarget = null;
         }
 
