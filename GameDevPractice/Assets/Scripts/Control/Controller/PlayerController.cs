@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using TH.Attribute;
 using UnityEngine.AI;
@@ -6,6 +7,7 @@ using TH.Utils;
 using TH.Control.Movement;
 using TH.Core;
 using TH.Core.Service;
+
 
 namespace TH.Control
 {
@@ -17,6 +19,11 @@ namespace TH.Control
     public class PlayerController : MonoBehaviour, IPlayerController, ISightHandler
     {
         [SerializeField] private Camera _camera;
+        [SerializeField] private Material _outlineMaterial;
+        [SerializeField] private bool _enableInteractionOutline = true;
+
+        private GameObject _outlinedTarget;
+        private Renderer[] _outlinedRenderers = Array.Empty<Renderer>();
         // private Mover mover;
         private Mover mover;
         private IFighter fighter;
@@ -149,7 +156,10 @@ namespace TH.Control
         private bool TryInteractWithComponent(Vector2 pointerPos)
         {
             if (Physics.RaycastNonAlloc(GetPointerRay(pointerPos), hitResults) is not (int hitLength and > 0))
+            {
+                SetInteractionOutline(null);
                 return false;
+            }
             
             for (int i = 0; i < hitLength; i++) // todo: 거리순서로 정렬된 배열을 사용하는 것을 고려
             {
@@ -159,15 +169,72 @@ namespace TH.Control
                 {
                     if (!raycastable.HandleRaycast(this)) continue;
                     
+                    SetInteractionOutline(((Component)raycastable).gameObject);
                     SetCursor(raycastable.GetCursorType());
                     return true;
                 }
             }
             
+            SetInteractionOutline(null);
             return false;
         }
         
         
+        private void SetInteractionOutline(GameObject target)
+        {
+            if (!_enableInteractionOutline)
+            {
+                ClearInteractionOutline();
+                return;
+            }
+
+            if (_outlinedTarget == target) return;
+
+            ClearInteractionOutline();
+            _outlinedTarget = target;
+
+            if (_outlinedTarget == null || _outlineMaterial == null) return;
+
+            var renderers = _outlinedTarget.GetComponentsInChildren<Renderer>(true);
+            if (renderers == null || renderers.Length == 0) return;
+
+            SkinnedMeshRenderer skinnedRenderer = null;
+            Renderer meshRenderer = null;
+            foreach (var renderer in renderers)
+            {
+                if (renderer is SkinnedMeshRenderer skinned)
+                {
+                    skinnedRenderer ??= skinned;
+                    continue;
+                }
+
+                if (renderer is MeshRenderer)
+                {
+                    meshRenderer ??= renderer;
+                }
+            }
+
+            var targetRenderer = (Renderer)skinnedRenderer ?? meshRenderer;
+            if (targetRenderer == null) return;
+
+            Util.AddMaterialIfMissing(targetRenderer, _outlineMaterial);
+            _outlinedRenderers = new[] { targetRenderer };
+        }
+
+        private void ClearInteractionOutline()
+        {
+            if (_outlinedRenderers == null || _outlinedRenderers.Length == 0) return;
+
+            foreach (var renderer in _outlinedRenderers)
+            {
+                if (renderer == null) continue;
+                Util.RemoveMaterialIfPresent(renderer, _outlineMaterial);
+            }
+
+            _outlinedRenderers = Array.Empty<Renderer>();
+            _outlinedTarget = null;
+        }
+
         private bool TryCombat(Vector2 pos)
         {
             if (Physics.RaycastNonAlloc(GetPointerRay(pos), hitResults) is int hitLength and > 0)

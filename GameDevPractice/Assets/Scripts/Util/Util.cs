@@ -121,6 +121,48 @@ public static class Util
     
     #endregion
 
+    #region Rendering
+
+    public static bool AddMaterialIfMissing(Renderer renderer, Material material)
+    {
+        if (renderer == null || material == null) return false;
+
+        var materials = renderer.sharedMaterials;
+        for (int i = 0; i < materials.Length; i++)
+        {
+            if (materials[i] == material) return false;
+        }
+
+        var newMaterials = new Material[materials.Length + 1];
+        Array.Copy(materials, newMaterials, materials.Length);
+        newMaterials[newMaterials.Length - 1] = material;
+        renderer.sharedMaterials = newMaterials;
+        return true;
+    }
+
+    public static bool RemoveMaterialIfPresent(Renderer renderer, Material material)
+    {
+        if (renderer == null || material == null) return false;
+
+        var materials = renderer.sharedMaterials;
+        int index = Array.IndexOf(materials, material);
+        if (index < 0) return false;
+        if (materials.Length == 1) return false;
+
+        var newMaterials = new Material[materials.Length - 1];
+        if (index > 0) Array.Copy(materials, 0, newMaterials, 0, index);
+        if (index < materials.Length - 1)
+            Array.Copy(materials, index + 1, newMaterials, index, materials.Length - index - 1);
+
+        renderer.sharedMaterials = newMaterials;
+        return true;
+    }
+
+    #endregion
+
+    #region Vector
+#endregion
+
     #region Vector
     
     public static Vector2 GetVectorTwo(Vector3 vector)
