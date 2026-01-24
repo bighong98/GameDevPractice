@@ -349,6 +349,10 @@ PrefabInstance:
       propertyPath: _outlineMaterial
       value: 
       objectReference: {fileID: 2100000, guid: eaf1a231f95e86a488406ffa3d380808, type: 2}
+    - target: {fileID: 173797161318829073, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
+      propertyPath: _enableInteractionOutline
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 785334137700611097, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
