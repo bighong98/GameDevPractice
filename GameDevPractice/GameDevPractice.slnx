@@ -37,6 +37,7 @@
   <Project Path="Unity.PerformanceTesting.csproj" />
   <Project Path="Unity.AppUI.Navigation.Editor.csproj" />
   <Project Path="Unity.Serialization.csproj" />
+  <Project Path="Unity.RenderPipelines.Core.Samples.Runtime.csproj" />
   <Project Path="Unity.Burst.Editor.csproj" />
   <Project Path="lilToon.Editor.csproj" />
   <Project Path="Unity.Rider.Editor.csproj" />
@@ -63,6 +64,7 @@
   <Project Path="Unity.AppUI.Redux.Editor.csproj" />
   <Project Path="Unity.Profiling.Core.csproj" />
   <Project Path="Unity.AppUI.Undo.csproj" />
+  <Project Path="Unity.RenderPipelines.Core.Samples.Editor.csproj" />
   <Project Path="Unity.UI.Shaders.Sample.csproj" />
   <Project Path="Boxophobic.SkyboxCubemapExtended.Editor.csproj" />
   <Project Path="Unity.UI.Shaders.Sample.Editor.csproj" />
