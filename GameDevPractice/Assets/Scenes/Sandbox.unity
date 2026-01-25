@@ -581,14 +581,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Tough Enemy
       objectReference: {fileID: 0}
-    - target: {fileID: 6503091717552732409, guid: 846c10040e9c6eb4c9a3a41c999b7a9c, type: 3}
-      propertyPath: patrolPath
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 6719027779859601505, guid: 846c10040e9c6eb4c9a3a41c999b7a9c, type: 3}
-      propertyPath: type
-      value: 
-      objectReference: {fileID: 0}
     - target: {fileID: 8079388733457840914, guid: 846c10040e9c6eb4c9a3a41c999b7a9c, type: 3}
       propertyPath: m_LocalPosition.x
       value: 28.57

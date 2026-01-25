@@ -1,8 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Cysharp.Threading.Tasks;
+using TH.Resource;
+using TH.SaveLoad;
 using TH.Utils;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace TH.Item.Storage
 {
@@ -13,18 +17,26 @@ namespace TH.Item.Storage
     
     // 추후 기능 확장을 고려한 인터페이스 래퍼
     public interface IQuickStorage : IGameItemStorage, IReferenceStorage { }
-    public class PlayerQuickStorage : IQuickStorage
+    public class PlayerQuickStorage : IQuickStorage, ISavableEntity
     {
         public IReadOnlyCollection<IGameItemSlot> ItemSlots 
             => readonlySlots ??= slots.AsReadOnly();
 
         private readonly List<IGameItemSlot> slots = new List<IGameItemSlot>(capacity: QuickStorageCapacity);
         private IReadOnlyCollection<IGameItemSlot> readonlySlots;
+        private readonly IPlayerStorage playerStorage;
 
         public int Capacity => QuickStorageCapacity;
 
         public event Action<IGameItemSlot> OnSlotChanged;
         public event Action OnStorageChanged;
+
+        private const string QuickSlotIdentifier = "playerQuickSlots";
+        public string UniqueIdentifier => QuickSlotIdentifier;
+        public bool IsGlobal { get; } = true;
+        public bool IsRegistered { get; set; } = false;
+        public Scene TargetScene { get; } = default;
+
 
         private const int QuickStorageCapacity = 5;
 
@@ -36,9 +48,18 @@ namespace TH.Item.Storage
             Enums.ItemType.Equipment
         };
 
-        public PlayerQuickStorage()
+        public PlayerQuickStorage(IResourceLoader resourceLoader, ISaveEntityRegistry saveEntityRegistry, IPlayerStorage playerStorage)
         {
             InitSlots();
+            this.playerStorage = playerStorage;
+
+            if (resourceLoader != null && saveEntityRegistry != null)
+            {
+                resourceLoader.WaitForPreLoad(Constants.PreLoadLabel, () =>
+                {
+                    saveEntityRegistry.RegisterEntity(this);
+                });
+            }
         }
 
         #region Initialization
@@ -266,5 +287,108 @@ namespace TH.Item.Storage
         }
 
         #endregion
+
+        #region ISavable (save/load)
+
+        public object CaptureState()
+        {
+            this.Log("CaptureState", Logg.LoggingMode.Completed);
+            List<IGameItem> items = new List<IGameItem>(Capacity);
+
+            for (int i = 0; i < Capacity; i++)
+            {
+                if (slots[i] is { HasItem: true, GetItem: { } item })
+                    items.Add(item.Clone<IGameItem>());
+                else
+                    items.Add(null);
+            }
+
+            return items;
+        }
+
+        public bool RestoreState(object state)
+        {
+            this.Log("RestoreState", Logg.LoggingMode.Completed);
+
+            InitSlots();
+            ClearAllSlots();
+
+            List<IGameItem> items = ExtractSaveData(state);
+            if (items is { Count: > 0 })
+            {
+                int count = Mathf.Min(Capacity, items.Count);
+                for (int i = 0; i < count; i++)
+                {
+                    if (items[i] is not { IsValid: true } item) continue;
+                    TryStore(item, i);
+                }
+            }
+
+            OnStorageChanged?.Invoke();
+            ValidateQuickSlotBindingsAsync().Forget();
+            return true;
+        }
+
+        private void ClearAllSlots()
+        {
+            for (int i = 0; i < Capacity; i++)
+            {
+                if (slots[i] is { IsAccessible: true, HasItem: true } slot)
+                    slot.Clear();
+            }
+        }
+
+        private static List<IGameItem> ExtractSaveData(object state)
+        {
+            switch (state)
+            {
+                case List<IGameItem> l: return l;
+                case Dictionary<string, object> stateDict:
+                {
+                    foreach (var s in stateDict.Values)
+                        if (s is List<IGameItem> { } dl)
+                            return dl;
+                    break;
+                }
+            }
+            return null;
+        }
+        private async UniTask ValidateQuickSlotBindingsAsync()
+        {
+            await UniTask.NextFrame();
+
+            if (playerStorage == null)
+                return;
+
+            for (int i = 0; i < Capacity; i++)
+            {
+                if (slots[i] is not { IsAccessible: true, HasItem: true, GetItemInfo: { } itemInfo })
+                    continue;
+
+                if (HasItemInPlayerStorage(itemInfo))
+                    continue;
+
+                TryRemoveItem(i);
+            }
+        }
+
+        private bool HasItemInPlayerStorage(ItemTypeSO itemInfo)
+        {
+            if (itemInfo == null || playerStorage == null)
+                return false;
+
+            foreach (var slot in playerStorage.ItemSlots)
+            {
+                if (slot is { IsAccessible: true, HasItem: true, GetItemInfo: { } slotItemInfo }
+                    && slotItemInfo == itemInfo)
+                    return true;
+            }
+
+            return false;
+        }
+
+
+        #endregion
+
     }
 }

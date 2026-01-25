@@ -63,7 +63,12 @@ namespace TH.Core.Service
                     sp.Get<IResourceLoader>(),
                     sp.Get<ISaveEntityRegistry>()
                 ));
-            ServiceLocator.Register<IQuickStorage>(new PlayerQuickStorage());
+            ServiceLocator.Register<IQuickStorage>(
+                new PlayerQuickStorage(
+                    ServiceLocator.Get<IResourceLoader>(),
+                    ServiceLocator.Get<ISaveEntityRegistry>(),
+                    ServiceLocator.Get<IPlayerStorage>()
+                ));
             ServiceLocator.Register<IGameItemTransfer>(new GameItemTransfer());
             ServiceLocator.Register<IGameItemConsumer>(new GameItemConsumer());
             ServiceLocator.Register<IFloatingTextSpawner>(sp => 
