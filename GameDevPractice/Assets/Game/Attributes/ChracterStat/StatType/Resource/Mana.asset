@@ -10,7 +10,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: eaaccd1f9c644814bac6faddbe7e78e5, type: 3}
-  m_Name: ExperienceReward
+  m_Name: Mana
   m_EditorClassIdentifier: Assembly-CSharp::TH.Attribute.Stat.StatTypeSO
-  displayName: "\uCC98\uCE58 \uC2DC \uACBD\uD5D8\uCE58"
-  legacyId: 1001
+  displayName: "\uC815\uC2E0\uB825"
+  legacyId: 102
+  category: 1
