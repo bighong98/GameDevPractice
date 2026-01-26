@@ -81,13 +81,30 @@ namespace TH.Item
             }
 
             RenewPlayerReference();
-            SceneManager.sceneLoaded += RenewPlayerReference;
+            UpdatePlayerStatusPanel();
+            SceneManager.sceneLoaded += OnSceneLoaded;
         }
 
         private void OnEnable()
         {
             RenewPlayerReference(); // 플레이어의 EquipHolder 인스턴스 참조 및 이벤트 갱신
+            UpdatePlayerStatusPanel();
         }
+
+        private void UpdatePlayerStatusPanel()
+        {
+            if (pInvenUI is not InventoryUI inventoryUI) return;
+            if (playerHealth == null) return;
+
+            inventoryUI.SetPlayerStatusPanel(playerHealth.gameObject);
+        }
+
+        private void OnSceneLoaded(Scene s, LoadSceneMode m)
+        {
+            RenewPlayerReference();
+            UpdatePlayerStatusPanel();
+        }
+
 
         // 이벤트 바인딩 후 UI 초기 갱신
         private void Start()
@@ -144,7 +161,7 @@ namespace TH.Item
             _clickRegistry.Clear();
             _subClickRegistry.Clear();
 
-            SceneManager.sceneLoaded -= RenewPlayerReference;
+            SceneManager.sceneLoaded -= OnSceneLoaded;
         }
     }
 }

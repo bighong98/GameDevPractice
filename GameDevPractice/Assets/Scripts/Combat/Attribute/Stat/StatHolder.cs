@@ -15,7 +15,8 @@ namespace TH.Attribute.Stat
         [SerializeField] private ProgressionSO progression; // serialize for debug
         
         private Dictionary<StatTypeSO, GameStat> stats = new Dictionary<StatTypeSO, GameStat>();
-        
+        public IReadOnlyDictionary<StatTypeSO, GameStat> Stats => stats;
+
         private int startingLevel; 
         [SerializeField] private int level; // serialize for debug
         private ILevel levelHolder;

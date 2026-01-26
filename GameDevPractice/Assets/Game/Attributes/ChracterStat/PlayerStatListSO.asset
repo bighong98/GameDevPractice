@@ -16,11 +16,11 @@ MonoBehaviour:
   - type: {fileID: 11400000, guid: 9e86dca11c02ff94396bdadebb64b5cb, type: 2}
     value: 50
   - type: {fileID: 11400000, guid: 084013cbdb346d4428cb29a47d22b70e, type: 2}
-    value: 0
+    value: 50
   - type: {fileID: 11400000, guid: cf7022ca8cb84ae4395e9b8e2edbcdf2, type: 2}
     value: 0
   - type: {fileID: 11400000, guid: f33892e137b94bf4e9d027c090bd8c4f, type: 2}
-    value: 50
+    value: 0
   - type: {fileID: 11400000, guid: e3eea70b5cde0694eb6d179932efe3c0, type: 2}
     value: 0
   - type: {fileID: 11400000, guid: 3a7cc61c3042aa04387e312907199547, type: 2}

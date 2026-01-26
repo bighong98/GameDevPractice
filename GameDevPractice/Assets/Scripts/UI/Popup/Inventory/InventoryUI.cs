@@ -18,9 +18,11 @@ namespace TH.UI
         [Header("InventoryUI")]
         [SerializeField] private PlayerStorageUI storageUI;
         [SerializeField] private PlayerEquipmentUI equipmentUI;
+        [SerializeField] private PlayerStatusPanelUI statusPanelUI;
 
         public IPlayerStorageUI StorageUI => storageUI;
         public IEquipmentHolderUI EquipmentUI => equipmentUI;
+
         
         // UI events
         public event Action<IDraggableStorageUI, int> OnDragStarted;
@@ -75,7 +77,8 @@ namespace TH.UI
 
             EnsureStorageUI();
             EnsureEquipmentUI();
-            
+            EnsureStatusPanelUI();
+
             BindObject(typeof(GameObjects));
             BindButton(typeof(Buttons));
             BindButtonEvents();
@@ -141,8 +144,22 @@ namespace TH.UI
             }
         }
 
+        private void EnsureStatusPanelUI()
+        {
+            if (statusPanelUI != null) return;
+            statusPanelUI = GetComponentInChildren<PlayerStatusPanelUI>(true);
+        }
+
+        public void SetPlayerStatusPanel(GameObject playerInstance)
+        {
+            if (playerInstance == null) return;
+            EnsureStatusPanelUI();
+            if (statusPanelUI == null) return;
+            statusPanelUI.SetPlayer(playerInstance);
+        }
+
         #endregion
-        
+
         #region Handle Drag
 
         private readonly Dictionary<IDraggableStorageUI, Action<int>> _dragBeginHandlers = new();
