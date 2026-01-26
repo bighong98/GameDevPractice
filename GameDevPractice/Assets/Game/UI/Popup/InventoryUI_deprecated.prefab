@@ -920,7 +920,7 @@ GameObject:
   - component: {fileID: 5823777282133482513}
   - component: {fileID: 3511409085505329025}
   m_Layer: 5
-  m_Name: InventoryUI
+  m_Name: InventoryUI_deprecated
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

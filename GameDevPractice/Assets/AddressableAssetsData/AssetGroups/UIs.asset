@@ -36,13 +36,6 @@ MonoBehaviour:
     - PreLoad_Prefab
     - UI
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 74bd640d5d22cca46bd8e0648a556856
-    m_Address: InventoryUI.prefab_testing
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - PreLoad_Prefab
-    - UI
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 8aa63baa8eb8d7b43bc219b70f06f61f
     m_Address: LoadSlotPanel
     m_ReadOnly: 0
