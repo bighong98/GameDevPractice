@@ -242,7 +242,7 @@ private static string FormatStatLine(StatModifierData data)
             if (Math.Abs(data.value) < 0.0001f)
                 return string.Empty;
 
-            var statName = data.type.ToString();
+            var statName = data.type != null ? data.type.DisplayName : string.Empty;
             var valueText = FormatStatValue(data.value, data.calculation);
 
             if (string.IsNullOrWhiteSpace(statName) || string.IsNullOrWhiteSpace(valueText))

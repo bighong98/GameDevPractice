@@ -5,7 +5,7 @@ namespace TH.Attribute.Stat
     [Serializable]
     public struct StatModifierData
     {
-        public GameStats type;
+        public StatTypeSO type;
         public StatModCalcType calculation;
         public float value;
 

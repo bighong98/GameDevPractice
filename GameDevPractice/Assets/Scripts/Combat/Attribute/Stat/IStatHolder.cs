@@ -1,18 +1,16 @@
 using System;
-using TH.Stats;
-using UnityEngine;
 
 namespace TH.Attribute.Stat
 {
     public interface IStatHolder
     {
-        GameStat GetStat(GameStats statType);
-        float GetStat(GameStats statType, int level);
-        bool AddModifier(GameStats type, StatModifier mod);
-        bool RemoveModifier(GameStats type, StatModifier mod);
+        GameStat GetStat(StatTypeSO statType);
+        float GetStat(StatTypeSO statType, int level);
+        bool AddModifier(StatTypeSO type, StatModifier mod);
+        bool RemoveModifier(StatTypeSO type, StatModifier mod);
         bool RemoveModifier(object source);
-        void BindEvent(GameStats type, Action action);
-        void UnBindEvent(GameStats type, Action action);
+        void BindEvent(StatTypeSO type, Action action);
+        void UnBindEvent(StatTypeSO type, Action action);
     }
 }
 

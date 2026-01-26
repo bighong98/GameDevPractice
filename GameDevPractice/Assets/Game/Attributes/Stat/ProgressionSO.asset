@@ -15,7 +15,7 @@ MonoBehaviour:
   characterClasses:
   - characterType: 1
     progressionStats:
-    - stat: 101
+    - stat: {fileID: 11400000, guid: 9e86dca11c02ff94396bdadebb64b5cb, type: 2}
       levels:
       - 100
       - 200
@@ -23,7 +23,7 @@ MonoBehaviour:
       - 400
       - 500
       - 600
-    - stat: 1002
+    - stat: {fileID: 11400000, guid: 1e740bd9a6c8102498dccea3aaad3595, type: 2}
       levels:
       - 100
       - 300
@@ -32,14 +32,14 @@ MonoBehaviour:
       - 1500
   - characterType: 2
     progressionStats:
-    - stat: 101
+    - stat: {fileID: 11400000, guid: 9e86dca11c02ff94396bdadebb64b5cb, type: 2}
       levels:
       - 30
       - 60
       - 90
       - 120
       - 150
-    - stat: 1001
+    - stat: {fileID: 11400000, guid: eb610ac4bc4ab4f408d8533075f7d56c, type: 2}
       levels:
       - 5
       - 10
@@ -48,14 +48,14 @@ MonoBehaviour:
       - 25
   - characterType: 3
     progressionStats:
-    - stat: 101
+    - stat: {fileID: 11400000, guid: 9e86dca11c02ff94396bdadebb64b5cb, type: 2}
       levels:
       - 35
       - 70
       - 105
       - 140
       - 175
-    - stat: 1001
+    - stat: {fileID: 11400000, guid: eb610ac4bc4ab4f408d8533075f7d56c, type: 2}
       levels:
       - 20
       - 40

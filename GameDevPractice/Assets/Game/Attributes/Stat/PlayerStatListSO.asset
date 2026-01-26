@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: PlayerStatListSO
   m_EditorClassIdentifier: Assembly-CSharp::TH.Attribute.Stat.BaseStatSO
   list:
-  - type: 101
+  - type: {fileID: 11400000, guid: 9e86dca11c02ff94396bdadebb64b5cb, type: 2}
     value: 50
-  - type: 201
+  - type: {fileID: 11400000, guid: cf7022ca8cb84ae4395e9b8e2edbcdf2, type: 2}
     value: 0
-  - type: 202
+  - type: {fileID: 11400000, guid: f33892e137b94bf4e9d027c090bd8c4f, type: 2}
     value: 0

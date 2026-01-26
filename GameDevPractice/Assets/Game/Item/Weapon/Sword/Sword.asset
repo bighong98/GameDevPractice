@@ -19,10 +19,16 @@ MonoBehaviour:
   maxAmount: 1
   desc: Sword Test1 Description
   itemUseEffects: []
+  itemUseSFXReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
   equipmentType: 1
   slotType: 0
   equipmentStats:
-  - type: 201
+  - type: {fileID: 11400000, guid: cf7022ca8cb84ae4395e9b8e2edbcdf2, type: 2}
     calculation: 0
     value: 10
   weaponType: 0
@@ -31,9 +37,7 @@ MonoBehaviour:
   damage: 10
   range: 3
   hand: 0
-  hasProjectile: 0
   projectilePrefab: {fileID: 0}
-  hasImpactEffect: 0
   impactParticlePrefab: {fileID: 0}
   attackSFXReference:
     m_AssetGUID: 4e7a9f408abdba8459fdccbeaea95215

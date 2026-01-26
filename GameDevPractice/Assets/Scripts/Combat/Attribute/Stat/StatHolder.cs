@@ -14,7 +14,7 @@ namespace TH.Attribute.Stat
         [SerializeField] private CharacterType characterType;
         [SerializeField] private ProgressionSO progression; // serialize for debug
         
-        private Dictionary<GameStats, GameStat> stats = new Dictionary<GameStats, GameStat>();
+        private Dictionary<StatTypeSO, GameStat> stats = new Dictionary<StatTypeSO, GameStat>();
         
         private int startingLevel; 
         [SerializeField] private int level; // serialize for debug
@@ -59,15 +59,6 @@ namespace TH.Attribute.Stat
 
         private void InitBeforeLoad()
         {
-            // if (TryGetComponent(out ILevel iLevel))
-            // {
-            //     levelHolder = iLevel;
-            //     hasMutableLevel = true;
-            // }
-            
-            // if (TryGetComponent(out IEquipHandler iEquipHandler))
-            //     equipHandler = iEquipHandler;
-
             hasMutableLevel = TryGetComponent(out ILevel iLevel);
             if (hasMutableLevel) levelHolder = iLevel;
 
@@ -103,6 +94,11 @@ namespace TH.Attribute.Stat
                 baseStatData is not BaseStatListSO { list: { } baseStats }) return;
             foreach (var baseStat in baseStats)
             {
+                if (baseStat.type == null)
+                {
+                    Logg.LogWarning($"[{gameObject.name}.{nameof(StatHolder)}] base stat type is null");
+                    continue;
+                }
                 stats[baseStat.type] = new GameStat(baseStat.value);
             }
         }
@@ -121,8 +117,14 @@ namespace TH.Attribute.Stat
         #region Get Stat
 
 #nullable enable
-        public GameStat? GetStat(GameStats statType)
+        public GameStat? GetStat(StatTypeSO statType)
         {
+            if (statType == null)
+            {
+                Logg.LogError($"[{gameObject.name}] Null stat type requested - scene: {gameObject.scene.name}", this);
+                return null;
+            }
+
             if (stats.TryGetValue(statType, out var stat))
             {
                 return stat;
@@ -132,7 +134,7 @@ namespace TH.Attribute.Stat
             return null;
         }
 
-        public float GetStat(GameStats statType, int lv)
+        public float GetStat(StatTypeSO statType, int lv)
         {
             Logg.Log($"[from '{gameObject.name}'] GetStat({statType}, {characterType}, {lv})", Logg.LoggingMode.Completed);
             return progression.GetProgressionStat(statType, characterType, lv);
@@ -143,7 +145,7 @@ namespace TH.Attribute.Stat
 
         #region Update Stat (Apply Stat Modifier)
 
-        public bool AddModifier(GameStats type, StatModifier mod)
+        public bool AddModifier(StatTypeSO type, StatModifier mod)
         {
             if (!stats.TryGetValue(type, out var stat)) return false;
             
@@ -152,7 +154,7 @@ namespace TH.Attribute.Stat
             return true;
         }
 
-        public bool RemoveModifier(GameStats type, StatModifier mod)
+        public bool RemoveModifier(StatTypeSO type, StatModifier mod)
         {
             if (!stats.TryGetValue(type, out var stat)) return false;
             
@@ -172,7 +174,7 @@ namespace TH.Attribute.Stat
 
         #endregion
         
-        public void BindEvent(GameStats type, Action action)
+        public void BindEvent(StatTypeSO type, Action action)
         {
             if (!stats.TryGetValue(type, out var stat))
             {
@@ -183,7 +185,7 @@ namespace TH.Attribute.Stat
             stat.OnStatChanged += action;
         }
         
-        public void UnBindEvent(GameStats type, Action action)
+        public void UnBindEvent(StatTypeSO type, Action action)
         {
             if (!stats.TryGetValue(type, out var stat))
             {

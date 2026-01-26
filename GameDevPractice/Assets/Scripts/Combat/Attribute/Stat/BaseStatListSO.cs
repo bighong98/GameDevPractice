@@ -14,7 +14,7 @@ namespace TH.Attribute.Stat
     [Serializable]
     public struct BaseStat // GameStat 초기화에 사용
     {
-        public GameStats type; // 스탯 타입
+        public StatTypeSO type; // 스탯 타입
         public float value; // 초기 값
     }
 }
