@@ -1,7 +1,12 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:GameDevPractice/Assets/Game/Attributes/ChracterStat/StatType/Attack.meta
 guid: 69ce44b86c1e01b43ad68534fd523007
 folderAsset: yes
 DefaultImporter:
+========
+guid: 74bd640d5d22cca46bd8e0648a556856
+PrefabImporter:
+>>>>>>>> 5276250ec2cb844e88bba886785a8c4d7fda01b9:GameDevPractice/Assets/Game/UI/Popup/InventoryUI_deprecated.prefab.meta
   externalObjects: {}
   userData: 
   assetBundleName: 
