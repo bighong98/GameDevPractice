@@ -15,11 +15,6 @@ MonoBehaviour:
   m_GroupName: Shared
   m_GUID: 1ad787ea84b605f4e84971a74e7ed2c8
   m_SerializeEntries:
-  - m_GUID: 084013cbdb346d4428cb29a47d22b70e
-    m_Address: Assets/Game/Attributes/ChracterStat/StatType/Resource/Mana.asset
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 36f3e6bc2976551408b1cf79527feca9
     m_Address: Assets/Game/Control/Character/Action/WalkActionSO.asset
     m_ReadOnly: 0
@@ -27,11 +22,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 38703959b00cc0145ba1149ca77cac13
     m_Address: Assets/Asset Packs/Synty - Polygon Student Sample/Models/SM_Wep_Sword_01.fbx
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 3a7cc61c3042aa04387e312907199547
-    m_Address: Assets/Game/Attributes/ChracterStat/StatType/Basic/Agility.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -88,16 +78,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 951140a1eab4079458785564169d0fbf
-    m_Address: Assets/Game/Attributes/ChracterStat/StatType/Basic/Intelligence.asset
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 9e86dca11c02ff94396bdadebb64b5cb
-    m_Address: Assets/Game/Attributes/ChracterStat/StatType/Resource/Health.asset
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a73ecc94afab3c446b6b4668596140e5
     m_Address: Assets/Game/Input/UserInput.inputactions
     m_ReadOnly: 0
@@ -128,11 +108,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: e3eea70b5cde0694eb6d179932efe3c0
-    m_Address: Assets/Game/Attributes/ChracterStat/StatType/Basic/Strength.asset
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e6969e6a3fc702b4ca4e7564bb1bdde7
     m_Address: Assets/Asset Packs/GameDev.tv Assets/Simple Bow/Materials and Model/Simple
       Bow.mat
@@ -141,11 +116,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e842427a572cdcb439fe256d0de3e8d6
     m_Address: Assets/Asset Packs/Synty - Polygon Student Sample/Textures/Characters_Texture_Black.png
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: eb610ac4bc4ab4f408d8533075f7d56c
-    m_Address: Assets/Game/Attributes/ChracterStat/StatType/Exp/ExperienceReward.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
