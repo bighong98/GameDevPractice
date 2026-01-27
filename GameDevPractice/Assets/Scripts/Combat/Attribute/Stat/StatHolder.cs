@@ -6,6 +6,7 @@ using TH.Item;
 using UnityEngine;
 using TH.Utils;
 using TH.Resource;
+using System.Collections.ObjectModel;
 
 namespace TH.Attribute.Stat
 {
@@ -14,8 +15,9 @@ namespace TH.Attribute.Stat
         [SerializeField] private CharacterType characterType;
         [SerializeField] private ProgressionSO progression; // serialize for debug
         
-        private Dictionary<StatTypeSO, GameStat> stats = new Dictionary<StatTypeSO, GameStat>();
-        public IReadOnlyDictionary<StatTypeSO, GameStat> Stats => stats;
+        private readonly Dictionary<int, GameStat> statIdMap = new();
+        private Dictionary<GameStatSO, GameStat> stats = new Dictionary<GameStatSO, GameStat>();
+        public IReadOnlyDictionary<GameStatSO, GameStat> Stats => stats;
 
         private int startingLevel; 
         [SerializeField] private int level; // serialize for debug
@@ -100,7 +102,9 @@ namespace TH.Attribute.Stat
                     Logg.LogWarning($"[{gameObject.name}.{nameof(StatHolder)}] base stat type is null");
                     continue;
                 }
-                stats[baseStat.type] = new GameStat(baseStat.value);
+                var gameStat = new GameStat(baseStat.value);
+                stats[baseStat.type] = gameStat;
+                statIdMap[baseStat.type.LegacyId] = gameStat;
             }
         }
 
@@ -118,24 +122,28 @@ namespace TH.Attribute.Stat
         #region Get Stat
 
 #nullable enable
-        public GameStat? GetStat(StatTypeSO statType)
+        public GameStat? GetStat(GameStatSO statData)
         {
-            if (statType == null)
+            if (statData == null)
             {
                 Logg.LogError($"[{gameObject.name}] Null stat type requested - scene: {gameObject.scene.name}", this);
                 return null;
             }
 
-            if (stats.TryGetValue(statType, out var stat))
-            {
+            // if (stats.TryGetValue(statData, out var stat))
+            // {
+            //     return stat;
+            // }
+
+            if (statIdMap.TryGetValue(statData.LegacyId, out var stat))
                 return stat;
-            }
             
-            Logg.LogError($"[{gameObject.name}] Invalid stat type requested: {statType}. Available stats: {string.Join(", ", stats.Keys)} - scene: {gameObject.scene.name}", this);
+            // Logg.LogError($"[{gameObject.name}] Invalid stat type requested: {statData}. Available stats: {string.Join(", ", stats.Keys)} - scene: {gameObject.scene.name}", this);
+            Logg.LogError($"[{gameObject.name}] Invalid stat type requested: {statData}. Available stats: {string.Join(", ", statIdMap.Keys)} - scene: {gameObject.scene.name}", this);
             return null;
         }
 
-        public float GetStat(StatTypeSO statType, int lv)
+        public float GetStat(GameStatSO statType, int lv)
         {
             Logg.Log($"[from '{gameObject.name}'] GetStat({statType}, {characterType}, {lv})", Logg.LoggingMode.Completed);
             return progression.GetProgressionStat(statType, characterType, lv);
@@ -146,26 +154,31 @@ namespace TH.Attribute.Stat
 
         #region Update Stat (Apply Stat Modifier)
 
-        public bool AddModifier(StatTypeSO type, StatModifier mod)
+        public bool AddModifier(GameStatSO type, StatModifier mod)
         {
-            if (!stats.TryGetValue(type, out var stat)) return false;
+            // if (!stats.TryGetValue(type, out var stat)) return false;
+            if (type.IsNull()) return false;
+            if (!statIdMap.TryGetValue(type.LegacyId, out var stat)) return false;
             
             stat.AddModifier(mod);
             Logg.Log($"[{gameObject.name}.{nameof(StatHolder)}.{nameof(AddModifier)}] '{type}' is changed to ({stat.Value})", Logg.LoggingMode.Completed);
             return true;
         }
 
-        public bool RemoveModifier(StatTypeSO type, StatModifier mod)
+        public bool RemoveModifier(GameStatSO type, StatModifier mod)
         {
-            if (!stats.TryGetValue(type, out var stat)) return false;
-            
+            // if (!stats.TryGetValue(type, out var stat)) return false;
+            if (type.IsNull()) return false;
+            if (!statIdMap.TryGetValue(type.LegacyId, out var stat)) return false;
+
             stat.RemoveModifier(mod);
             return true;
         }
 
         public bool RemoveModifier(object source)
         {
-            foreach (var stat in stats.Values)
+            // foreach (var stat in stats.Values)
+            foreach (var stat in statIdMap.Values)
             {
                 stat.RemoveModifiersFromSource(source);
             }
@@ -175,9 +188,10 @@ namespace TH.Attribute.Stat
 
         #endregion
         
-        public void BindEvent(StatTypeSO type, Action action)
+        public void BindEvent(GameStatSO type, Action action)
         {
-            if (!stats.TryGetValue(type, out var stat))
+            // if (!stats.TryGetValue(type, out var stat))
+            if (type.IsNull() || !statIdMap.TryGetValue(type.LegacyId, out var stat))
             {
                 Logg.Log($"[{gameObject.name}.{nameof(StatHolder)}] failed to bind event to stat '{type}'");
                 return;
@@ -186,9 +200,10 @@ namespace TH.Attribute.Stat
             stat.OnStatChanged += action;
         }
         
-        public void UnBindEvent(StatTypeSO type, Action action)
+        public void UnBindEvent(GameStatSO type, Action action)
         {
-            if (!stats.TryGetValue(type, out var stat))
+            // if (!stats.TryGetValue(type, out var stat))
+            if (type.IsNull() || !statIdMap.TryGetValue(type.LegacyId, out var stat))
             {
                 Logg.Log($"[{gameObject.name}.{nameof(StatHolder)}] failed to bind event to stat '{type}'");
                 return;

@@ -12,9 +12,9 @@ namespace TH.Stats
     {
         [SerializeField] private ProgressionCharacterClass[] characterClasses;
 
-        private readonly Dictionary<CharacterType, Dictionary<StatTypeSO, float[]>> characterProgressionLookup = new();
+        private readonly Dictionary<CharacterType, Dictionary<GameStatSO, float[]>> characterProgressionLookup = new();
 
-        public float GetProgressionStat(StatTypeSO statType, CharacterType characterType, int level)
+        public float GetProgressionStat(GameStatSO statType, CharacterType characterType, int level)
         {
             if (statType == null)
             {
@@ -40,7 +40,7 @@ namespace TH.Stats
             return 0; // 테이블에 없다면 0 반환
         }
 
-        public int GetMaxLevel(StatTypeSO statType, CharacterType characterType)
+        public int GetMaxLevel(GameStatSO statType, CharacterType characterType)
         {
             if (statType == null)
             {
@@ -65,7 +65,7 @@ namespace TH.Stats
 
             foreach (var characterProgression in characterClasses)
             {
-                Dictionary<StatTypeSO, float[]> progressionStatDict = new();
+                Dictionary<GameStatSO, float[]> progressionStatDict = new();
                 foreach (var progressionStat in characterProgression.progressionStats)
                 {
                     if (progressionStat.stat == null) continue;
@@ -88,7 +88,7 @@ namespace TH.Stats
     [System.Serializable]
     public class ProgressionStat
     {
-        [SerializeField] public StatTypeSO stat; // 스탯 종류
+        [SerializeField] public GameStatSO stat; // 스탯 종류
         [SerializeField] public float[] levels; // 레벨에 따른 스탯의 값 (levels[n]: (n+1)레벨의 스탯 값, ex- levels[0]: 1레벨 스탯 값)
     }
 }

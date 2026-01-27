@@ -4,13 +4,13 @@ namespace TH.Attribute.Stat
 {
     public interface IStatHolder
     {
-        GameStat GetStat(StatTypeSO statType);
-        float GetStat(StatTypeSO statType, int level);
-        bool AddModifier(StatTypeSO type, StatModifier mod);
-        bool RemoveModifier(StatTypeSO type, StatModifier mod);
+        GameStat GetStat(GameStatSO statType);
+        float GetStat(GameStatSO statType, int level);
+        bool AddModifier(GameStatSO type, StatModifier mod);
+        bool RemoveModifier(GameStatSO type, StatModifier mod);
         bool RemoveModifier(object source);
-        void BindEvent(StatTypeSO type, Action action);
-        void UnBindEvent(StatTypeSO type, Action action);
+        void BindEvent(GameStatSO type, Action action);
+        void UnBindEvent(GameStatSO type, Action action);
     }
 }
 

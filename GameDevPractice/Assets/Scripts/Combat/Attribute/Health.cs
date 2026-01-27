@@ -15,7 +15,7 @@ namespace TH.Attribute
         public float maxHp;
         public float hp;
     }
-    public class Health : MonoBehaviour, IDamageable, IHealable, ISavable
+    public class Health : MonoBehaviour, IDamageable, IHealable, ISavable //todo: ITypeDependant 구현 후 HPBar 처리
     {
         private LazyValue<float> maxHp;
         private LazyValue<float> hp;
@@ -38,7 +38,9 @@ namespace TH.Attribute
         public float GetCurrentHealthRatio => (hp.Value / maxHp.Value);
         public bool IsDead { get; private set; }
         
+
         [SerializeField] private GameObject HPBarPrefab; // serialize for debug
+        [SerializeField] private GameStatSO hpStatSO;
 
         private IAttacker lastAttacker; // 가장 최근 자신에게 피해를 입힌 대상
         private LazyValue<float> rewardXp;
@@ -63,6 +65,13 @@ namespace TH.Attribute
                 Logg.LogError($"[{gameObject.name}.Health] Failed to initialize rewardXp field. Stat 'ExperienceReward' not found.");
                 return 0;
             });
+
+            if (hpStatSO.IsNull() || hpStatSO.LegacyId == default)
+            {
+                Logg.LogError($"[{gameObject.name}.Health] invalid hpStatSO", context: this);
+                return;
+            }
+
             this.Log($"{gameObject.name} - Awake() in scene({gameObject.scene.name}) done", Logg.LoggingMode.Completed);
         }
 
@@ -105,7 +114,8 @@ namespace TH.Attribute
 
         private float GetInitialHealth()
         {
-            if (!statHolder.IsNotNull() || statHolder.GetStat(GameStats.Health) is not { } stat)
+            if (!statHolder.IsNotNull() || statHolder.GetStat(hpStatSO) is not { } stat)
+            // if (!statHolder.IsNotNull() || statHolder.GetStat(GameStats.Health) is not { } stat)
             {
                 Logg.LogError($"[{gameObject.name}.Health] Failed to initialize health stat");
                 return 0;
@@ -221,7 +231,8 @@ namespace TH.Attribute
         private const int LevelUpRegenerationPercentage = 50;
         private void OnLevelUp(int level)
         {
-            SetMaxHp(statHolder.GetStat(GameStats.Health, level));
+            // SetMaxHp(statHolder.GetStat(GameStats.Health, level));
+            SetMaxHp(statHolder.GetStat(hpStatSO, level));
             SetCurrentHp(hp.Value + maxHp.Value * ((float)LevelUpRegenerationPercentage / 100));
             Logg.Log($"OnLevelUp: hp: {hp.Value}", Logg.LoggingMode.Completed);
         }

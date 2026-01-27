@@ -16,7 +16,7 @@ public class PlayerStatusPanelUI : BaseUI
     
     private StatHolder statHolder;
 
-    private readonly Dictionary<StatTypeSO, StatEntryBinding> statEntries = new();
+    private readonly Dictionary<GameStatSO, StatEntryBinding> statEntries = new();
     private readonly Dictionary<GameStatCategory, PlayerStatusPanelSectionUI> sectionLookup = new();
 
     protected override void Awake()
@@ -138,7 +138,7 @@ public class PlayerStatusPanelUI : BaseUI
         }
     }
 
-    private void LogEntryState(PlayerStatusPanelStatEntryUI entry, RectTransform parent, StatTypeSO statType)
+    private void LogEntryState(PlayerStatusPanelStatEntryUI entry, RectTransform parent, GameStatSO statType)
     {
         if (!debugLayout || entry == null || parent == null) return;
 

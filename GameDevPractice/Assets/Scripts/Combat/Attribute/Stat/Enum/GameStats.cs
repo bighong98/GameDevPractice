@@ -7,23 +7,23 @@ namespace TH.Attribute.Stat
 {
     public static class GameStats
     {
-        private static readonly Dictionary<int, StatTypeSO> LegacyIdLookup = new();
-        private static readonly Dictionary<string, StatTypeSO> NameLookup = new(StringComparer.OrdinalIgnoreCase);
+        private static readonly Dictionary<int, GameStatSO> LegacyIdLookup = new();
+        private static readonly Dictionary<string, GameStatSO> NameLookup = new(StringComparer.OrdinalIgnoreCase);
         private static bool initialized;
 
-        public static StatTypeSO Health => GetByLegacyId(101, nameof(Health));
-        public static StatTypeSO AD => GetByLegacyId(201, nameof(AD));
-        public static StatTypeSO AP => GetByLegacyId(202, nameof(AP));
-        public static StatTypeSO ExperienceReward => GetByLegacyId(1001, nameof(ExperienceReward));
-        public static StatTypeSO ExperienceToLevelUp => GetByLegacyId(1002, nameof(ExperienceToLevelUp));
+        public static GameStatSO Health => GetByLegacyId(101, nameof(Health));
+        public static GameStatSO AD => GetByLegacyId(201, nameof(AD));
+        public static GameStatSO AP => GetByLegacyId(202, nameof(AP));
+        public static GameStatSO ExperienceReward => GetByLegacyId(1001, nameof(ExperienceReward));
+        public static GameStatSO ExperienceToLevelUp => GetByLegacyId(1002, nameof(ExperienceToLevelUp));
 
-        public static bool TryGetByLegacyId(int legacyId, out StatTypeSO statType)
+        public static bool TryGetByLegacyId(int legacyId, out GameStatSO statType)
         {
             EnsureCache();
             return LegacyIdLookup.TryGetValue(legacyId, out statType);
         }
 
-        public static void Register(StatTypeSO statType)
+        public static void Register(GameStatSO statType)
         {
             if (statType == null) return;
 
@@ -45,7 +45,7 @@ namespace TH.Attribute.Stat
             initialized = true;
         }
 
-        private static StatTypeSO GetByLegacyId(int legacyId, string fallbackName)
+        private static GameStatSO GetByLegacyId(int legacyId, string fallbackName)
         {
             EnsureCache();
 
@@ -84,7 +84,7 @@ namespace TH.Attribute.Stat
         private static void RefreshCache()
         {
             initialized = true;
-            foreach (var statType in Resources.FindObjectsOfTypeAll<StatTypeSO>())
+            foreach (var statType in Resources.FindObjectsOfTypeAll<GameStatSO>())
             {
                 Register(statType);
             }

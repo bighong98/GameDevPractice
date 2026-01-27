@@ -100,6 +100,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   HPBarPrefab: {fileID: 2676722583102593113, guid: 23d1f639e15c7f74cb905caf3aef5bed, type: 3}
+  hpStatSO: {fileID: 11400000, guid: 9e86dca11c02ff94396bdadebb64b5cb, type: 2}
 --- !u!136 &-4321172655345262780
 CapsuleCollider:
   m_ObjectHideFlags: 0

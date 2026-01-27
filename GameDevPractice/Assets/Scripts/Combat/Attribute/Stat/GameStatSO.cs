@@ -3,8 +3,8 @@ using UnityEngine;
 
 namespace TH.Attribute.Stat
 {
-    [CreateAssetMenu(fileName = "StatType", menuName = "Scriptable Objects/GameStat/StatType")]
-    public class StatTypeSO : ScriptableObject
+    [CreateAssetMenu(fileName = "GameStatSO", menuName = "Scriptable Objects/GameStat/GameStatSO")]
+    public class GameStatSO : ScriptableObject
     {
         [SerializeField] private string displayName;
         [SerializeField] private int legacyId;
