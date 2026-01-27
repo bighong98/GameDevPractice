@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using TH.SceneManagement;
+
+using UnityEngine;
 using TH.Utils;
 using UnityEngine.SceneManagement;
 using UnityEngine.Scripting;
@@ -80,7 +82,7 @@ namespace TH.Core.Service
 #elif UNITY_IOS
     return;
 #else
-    Application.Quit();
+    UnityEngine.Application.Quit();
 #endif
         }
     }

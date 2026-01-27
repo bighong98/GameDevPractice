@@ -14,7 +14,9 @@
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": true,
-    "precompiledReferences": [],
+    "precompiledReferences": [
+        "UnityEditor.PackageManager"
+    ],
     "autoReferenced": true,
     "defineConstraints": [],
     "versionDefines": [

@@ -116,10 +116,10 @@ namespace TH.Control.State
             // 상태 전환
             currentState = nextState;
             stateTime = 0;
-            
+#if UNITY_EDITOR
             this.Log($"[{gameObject.name}] TransitionToState({prevState?.GetType().Name} -> {nextState.GetType().Name})"
                 , Logg.LoggingMode.Completed);
-            
+#endif   
             // 새 상태 진입 로직 실행
             if (currentState.IsNotNull())
                 currentState.EnterState(this);
