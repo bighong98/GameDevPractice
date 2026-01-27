@@ -6,6 +6,7 @@ using TH.UI;
 using TH.Attribute.Stat;
 using TH.Combat;
 using TH.Core.Service;
+using TH.Resource;
 
 namespace TH.Attribute
 {
@@ -15,7 +16,7 @@ namespace TH.Attribute
         public float maxHp;
         public float hp;
     }
-    public class Health : MonoBehaviour, IDamageable, IHealable, ISavable //todo: ITypeDependant 구현 후 HPBar 처리
+    public class Health : MonoBehaviour, IDamageable, IHealable, ISavable, ITypeDependent //todo: ITypeDependant 구현 후 HPBar 처리
     {
         private LazyValue<float> maxHp;
         private LazyValue<float> hp;
@@ -39,7 +40,6 @@ namespace TH.Attribute
         public bool IsDead { get; private set; }
         
 
-        [SerializeField] private GameObject HPBarPrefab; // serialize for debug
         [SerializeField] private GameStatSO hpStatSO;
 
         private IAttacker lastAttacker; // 가장 최근 자신에게 피해를 입힌 대상
@@ -77,14 +77,14 @@ namespace TH.Attribute
 
         private void Start()
         {
-            EnsureHPBar();
+            // EnsureHPBar();
             maxHp.ForceInit();
             hp.ForceInit();
         }
 
         private void OnEnable()
         {
-            EnsureHPBar();
+            // EnsureHPBar();
             textSpawner.Register(this, FloatingTextEventType.Damage);
             textSpawner.Register(this, FloatingTextEventType.Heal);
             if (!hasMutableLevel || !levelHolder.IsNotNull()) return;
@@ -101,10 +101,10 @@ namespace TH.Attribute
             ReleaseHPBar();
         }
 
-        private void EnsureHPBar()
+        private void EnsureHPBar(GameObject hpBarPrefab)
         {
-            if (HPBarPrefab == null) return;
-            HPBar.Acquire(this, HPBarPrefab);
+            if (hpBarPrefab == null) return;
+            HPBar.Acquire(this, hpBarPrefab);
         }
 
         private void ReleaseHPBar()
@@ -276,6 +276,22 @@ namespace TH.Attribute
         {
             if (maxHp is not {Initialized: true, Value: {} maxHpValue}) return false;
             return Heal((int)(maxHpValue * ratio), byForce);
+        }
+
+        #endregion
+
+        #region ITypeDependant 
+
+        public void ReceiveType(ScriptableObject typeInfo)
+        {
+            if (typeInfo.IsNull() || 
+                typeInfo is not CharacterTypeSO charSO )
+                return;
+
+            var hpBarPrefab = charSO.HpBarPrefab;
+            if (hpBarPrefab == null) return;
+
+            EnsureHPBar(hpBarPrefab);
         }
 
         #endregion

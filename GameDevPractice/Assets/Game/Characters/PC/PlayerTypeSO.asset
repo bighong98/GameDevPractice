@@ -22,4 +22,5 @@ MonoBehaviour:
   defaultEquipments:
   - {fileID: 11400000, guid: 0a600904131b2d64994bee447b8efe39, type: 2}
   - {fileID: 11400000, guid: 2fb8efb1b192ee345b6e53c7761aa529, type: 2}
+  hpBarPrefab: {fileID: 2676722583102593113, guid: 23d1f639e15c7f74cb905caf3aef5bed, type: 3}
   levelUpEffect: {fileID: 672893909101835284, guid: 94089ecaec66ba248b810e3bfaf74600, type: 3}

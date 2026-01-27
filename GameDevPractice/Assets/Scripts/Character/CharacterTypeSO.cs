@@ -15,6 +15,9 @@ namespace TH.Resource
         public int startingLevel;
 
         [SerializeField] public List<EquipmentTypeSO> defaultEquipments;
+        [SerializeField] private GameObject hpBarPrefab;
+
+        public GameObject HpBarPrefab => hpBarPrefab;
     }
 }
 

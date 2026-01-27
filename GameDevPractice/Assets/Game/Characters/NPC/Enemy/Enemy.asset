@@ -15,12 +15,10 @@ MonoBehaviour:
   prefab: {fileID: 431537241663738169, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}
   nameString: Enemy
   sprite: {fileID: 0}
-  showInMinimap: 0
-  minimapSprite: {fileID: 0}
-  minimapSpriteColor: {r: 1, g: 1, b: 1, a: 1}
   characterType: 2
   characterBaseStats: {fileID: 11400000, guid: 7e507f31a56583d42923f7e4b8a1f0d8, type: 2}
   height: 0
   startingLevel: 1
   defaultEquipments:
   - {fileID: 11400000, guid: 0a600904131b2d64994bee447b8efe39, type: 2}
+  hpBarPrefab: {fileID: 2676722583102593113, guid: 23d1f639e15c7f74cb905caf3aef5bed, type: 3}
