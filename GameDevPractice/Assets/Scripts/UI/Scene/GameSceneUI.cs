@@ -7,6 +7,7 @@ using TH.Attribute.Stat;
 using TH.UI;
 using TH.Utils;
 using TH.Core.Service;
+using Cysharp.Threading.Tasks;
 
 public class GameSceneUI : SceneUI
 {
@@ -60,13 +61,19 @@ public class GameSceneUI : SceneUI
         Init();
     }
 
-    private void Start()
+    private async void Start()
     {
-        // 초기 플레이어 인스턴스 즉시 연결
-        if (playerHolder.GetPlayerInstance is PlayerController p && p.IsNotNull())
+        try
         {
-            UpdatePlayerInstance(p);
+            await UniTask.Yield();
+        
+            // 초기 플레이어 인스턴스 즉시 연결
+            if (playerHolder.GetPlayerInstance is PlayerController p && p.IsNotNull())
+            {
+                UpdatePlayerInstance(p);
+            }
         }
+        catch (Exception e) { Logg.LogError($"exception occured while GameSceneUI.Start() - {e}", context: this); }
     }
 
     public override bool Init() // UIManager 호출
@@ -163,11 +170,15 @@ public class GameSceneUI : SceneUI
         {
             // 콜백 시점 재검사
             if (Util.IsQuitting || !player.IsNotNull()) return;
-            // 홀더 인스턴스 변경 여부 확인
-            var holderPlayer = playerHolder?.GetPlayerInstance as PlayerController;
-            if (holderPlayer != null && holderPlayer != player) return;
-            // 스냅샷 반영
-            RefreshPlayerSnapshot(player);
+            // 플레이어 객체의 내부 초기화를 고려하여 1프레임 지연
+            UniTask.DelayFrame(1).ContinueWith(() =>
+            {
+                // 홀더 인스턴스 변경 여부 확인
+                var holderPlayer = playerHolder?.GetPlayerInstance as PlayerController;
+                if (holderPlayer != null && holderPlayer != player) return;
+                // 현재 플레이어 상태 동기화
+                RefreshPlayerSnapshot(player);
+            });
         });
     }
 
