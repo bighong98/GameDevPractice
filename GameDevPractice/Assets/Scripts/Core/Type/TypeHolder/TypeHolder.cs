@@ -38,7 +38,7 @@ namespace TH.Resource
             if (isInit) return; // 이미 OnCreateFromPool()이 실행된 경우 실행x
             token = destroyCancellationToken; // 오브젝트 파괴와 연동된 CTS 토큰 캐싱
 
-            InitializeType();
+            bool loadInAwakeSucceed = InitializeType();
             
             if (addToPool)
                 AddToPool(); // 필요시 자동으로 오브젝트 풀에 등록
@@ -47,7 +47,7 @@ namespace TH.Resource
             OnGetFromPool();
             
             // 종속 컴포넌트(ITypeDependent)에 타입 데이터 전달
-            DeliverTypeData();
+            if (loadInAwakeSucceed || type != null) DeliverTypeData();
         }
         
         // Awake 시점에 typeRef 등록이 되어있지 않은 경우 수동으로 AssetReference 기반 비동기 로드 실행 
@@ -55,35 +55,49 @@ namespace TH.Resource
         // -> 별도로 await InitializeTypeAsync(); 호출 필요 (void 타입은 await 불가능)
         protected virtual async void Start()
         {
-            try { await InitializeTypeAsync(); }
+            try 
+            { 
+                bool result = await InitializeTypeAsync();
+                if (result) DeliverTypeData();
+            }
             catch (Exception e ) { this.LogError($"{e}"); }
         }
 
-        private void InitializeType()
+        private bool InitializeType()
         {
-            if (type != null) return; // 이미 type 로드가 완료된 경우 실행x
+            if (type != null) return false; // 이미 type 로드가 완료된 경우 실행x
             if (typeRef == null || !typeRef.RuntimeKeyIsValid())
                 throw new InvalidOperationException(
                     $"[{gameObject.name}.{nameof(InitializeTypeAsync)}] invalid AssetReference for type data");
             
-            ResourceManager.Instance.TryLoad(typeRef, out type);
+            bool result = ResourceManager.Instance.TryLoad(typeRef, out type);
             this.Log($"InitializeType() - result: {type}", Logg.LoggingMode.Completed);
+            return result;
         }
 
         // Addressables에서 ScriptableObject 타입 데이터를 비동기 로드
         // 동일한 참조를 중복 로드하지 않도록 내부적으로 캐싱함
-        protected async UniTask InitializeTypeAsync()
+        protected async UniTask<bool> InitializeTypeAsync()
         {
-            if (type != null) return; // 이미 type 로드가 완료된 경우 실행x
+            // 이미 type 데이터 로드가 완료된 경우 실행x
+            if (type != null) return false; 
             if (typeRef == null || !typeRef.RuntimeKeyIsValid())
                 throw new InvalidOperationException(
                     $"[{gameObject.name}] InitializeTypeAsync - invalid AssetReference for type data");
+            
             // 타입 데이터 비동기 로드 시작
-            type = await ResourceManager.Instance.ExtractAssetRefAsync<T>(typeRef, token);
-
-            if (token.IsCancellationRequested) return;
-            Logg.Log($"[{gameObject.name}] InitializeTypeAsync - " +
-                     $"type: {type}", Logg.LoggingMode.Completed);
+            try
+            {
+                type = await ResourceManager.Instance.ExtractAssetRefAsync<T>(typeRef, token);
+                // Logg.Log($"[{gameObject.name}] InitializeTypeAsync - " +
+                //      $"type: {type}", Logg.LoggingMode.Completed);
+                return type != null;
+            }
+            catch (Exception e) 
+            {
+                this.LogWarning($"InitializeTypeAsync() interrupted - {e}"); 
+                return false;
+            }
         }
 
         // 간단한 오브젝트에 데이터 주입 목적으로 사용
@@ -116,10 +130,18 @@ namespace TH.Resource
         // 로드된 타입 데이터를 ITypeDependent 인터페이스를 구현한 모든 컴포넌트에 전달
         private void DeliverTypeData()
         {
+            // type 데이터 유효성 검사
+            if (type == null)
+            {
+                this.LogWarning($"missing type data. DeliverTypeData() is failed", context: this);   
+                return;
+            }
+            // ITypeDependent 구현 컴포넌트 탐색 및 데이터 전달
             foreach (var dependent in GetComponents<ITypeDependent>())
             {
                 dependent.ReceiveType(type);
             }
+            this.Log($"{gameObject.name} - DeliverTypeData() is done", Logg.LoggingMode.Completed);
         }
 
         // TypeSO에 지정된 prefab을 기반으로 오브젝트 풀을 생성/등록

@@ -26,9 +26,8 @@ namespace TH.Attribute
         
         private int startingLevel;
         
-        private ProgressionSO progression;
         private Action LevelUpEffectAction;
-
+        private ProgressionSO progression;
         private IFloatingTextSpawner textSpawner;
         
         private void Awake()

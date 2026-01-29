@@ -12,7 +12,7 @@ namespace TH.Stats
     {
         [SerializeField] private ProgressionCharacterClass[] characterClasses;
 
-        private readonly Dictionary<CharacterType, Dictionary<GameStatSO, float[]>> characterProgressionLookup = new();
+        private readonly Dictionary<CharacterType, Dictionary<GameStatSO, float[]>> progressionLookup = new();
 
         public float GetProgressionStat(GameStatSO statType, CharacterType characterType, int level)
         {
@@ -24,7 +24,7 @@ namespace TH.Stats
 
             InitializeLookupTable(); // lookup 테이블 초기화 시도 (최초 호출 시 초기화 후 결과 반환)
 
-            if (characterProgressionLookup.TryGetValue(characterType, out var progressionStats) &&
+            if (progressionLookup.TryGetValue(characterType, out var progressionStats) &&
                 progressionStats.TryGetValue(statType, out var levels))
             {
                 if (level < 1 || levels is not { Length: { } length } || length < level) 
@@ -40,6 +40,38 @@ namespace TH.Stats
             return 0; // 테이블에 없다면 0 반환
         }
 
+#nullable enable
+        public List<(GameStatSO, float)>? GetProgressionStats(CharacterType characterType, int level)
+        {
+            if (!progressionLookup.TryGetValue(characterType, out var progression))
+                return null;
+            
+            List<(GameStatSO, float)> values = new();
+            foreach (var pair in progression)
+            {
+                if (level >= 0 && level < pair.Value.Length)
+                    values.Add((pair.Key, pair.Value[level]));
+            }
+            return values;
+        }
+
+        // 호출자 측에서 제공하는 리스트를 재사용하는 non-allocation 버전
+        public bool GetProgressionStatsNonAlloc(CharacterType characterType, int level, List<(GameStatSO, float)> results)
+        {
+            if (!progressionLookup.TryGetValue(characterType, out var progression))
+                return false;
+                
+            results.Clear();
+            foreach (var pair in progression)
+            {
+                if (level >= 0 && level < pair.Value.Length)
+                    results.Add((pair.Key, pair.Value[level]));
+            }
+            
+            return true;
+        }
+#nullable restore
+
         public int GetMaxLevel(GameStatSO statType, CharacterType characterType)
         {
             if (statType == null)
@@ -50,7 +82,7 @@ namespace TH.Stats
 
             InitializeLookupTable();
             
-            if (characterProgressionLookup.TryGetValue(characterType, out var progressionStats) &&
+            if (progressionLookup.TryGetValue(characterType, out var progressionStats) &&
                 progressionStats.TryGetValue(statType, out var levels))
             {
                 return levels.Length;
@@ -61,7 +93,7 @@ namespace TH.Stats
 
         private void InitializeLookupTable()
         {
-            if (characterProgressionLookup.Count > 0) return; // 이미 초기화된 상태라면 취소
+            if (progressionLookup.Count > 0) return; // 이미 초기화된 상태라면 취소
 
             foreach (var characterProgression in characterClasses)
             {
@@ -73,7 +105,7 @@ namespace TH.Stats
                 }
 
                 if (progressionStatDict.Count == 0) continue;
-                characterProgressionLookup[characterProgression.characterType] = progressionStatDict;
+                progressionLookup[characterProgression.characterType] = progressionStatDict;
             }
         }
     }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace TH.Utils
 {
@@ -20,6 +21,13 @@ namespace TH.Utils
         }
 
 #if UNITY_EDITOR
+
+        public SerializablePair(TKey key, TValue value) 
+        {
+            this.key = key;
+            this.value = value;
+        }
+
         public static void ValidateUnitySerializable()
         {
             if (!IsUnitySerializable(typeof(TKey)))

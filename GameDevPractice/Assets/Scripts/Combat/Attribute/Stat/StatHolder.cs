@@ -6,7 +6,7 @@ using TH.Item;
 using UnityEngine;
 using TH.Utils;
 using TH.Resource;
-using System.Collections.ObjectModel;
+
 
 namespace TH.Attribute.Stat
 {
@@ -14,7 +14,7 @@ namespace TH.Attribute.Stat
     {
         [SerializeField] private CharacterType characterType;
         [SerializeField] private ProgressionSO progression; // serialize for debug
-        
+
         private readonly Dictionary<int, GameStat> statIdMap = new();
         private Dictionary<GameStatSO, GameStat> stats = new Dictionary<GameStatSO, GameStat>();
         public IReadOnlyDictionary<GameStatSO, GameStat> Stats => stats;
@@ -94,29 +94,44 @@ namespace TH.Attribute.Stat
         private void InitializeStats(ScriptableObject baseStatData) // call by ReceiveType()
         {
             if (baseStatData == null || 
-                baseStatData is not BaseStatListSO { list: { } baseStats }) return;
+                baseStatData is not BaseStatListSO { Items: { } baseStats }) return;
             foreach (var baseStat in baseStats)
             {
-                if (baseStat.type == null)
+                if (baseStat.key is not {} statSO || statSO.IsNull())
                 {
                     Logg.LogWarning($"[{gameObject.name}.{nameof(StatHolder)}] base stat type is null");
                     continue;
                 }
+                this.Log($"InitializeStats() - stat added: {baseStat.key.DisplayName}", Logg.LoggingMode.Completed);
                 var gameStat = new GameStat(baseStat.value);
-                stats[baseStat.type] = gameStat;
-                statIdMap[baseStat.type.LegacyId] = gameStat;
+                
+                stats[statSO] = gameStat;
+                statIdMap[statSO.LegacyId] = gameStat;
+                RegisterStat(statSO, gameStat);
+                AddEditorStatList(statSO, gameStat);
             }
         }
 
         #endregion
         
 
+        private readonly List<(GameStatSO, float)> progressionStatBuffer = new();
         private void UpdateStatsByLevel(int lv)
         {
             if (level == lv) return;
             level = lv;
             
             //todo: 레벨에 비례해 변동되는 능력치 반영
+            if (progression == null) return;
+            if (!progression.GetProgressionStatsNonAlloc(characterType, lv, progressionStatBuffer)
+                || progressionStatBuffer.Count == 0) return;
+
+            foreach ((var statSO, var statValue) in progressionStatBuffer)
+            {
+                if (GetStat(statSO) is not {} stat) continue;
+                stat.BaseValue = statValue;
+            }
+            
         }
 
         #region Get Stat
@@ -130,16 +145,10 @@ namespace TH.Attribute.Stat
                 return null;
             }
 
-            // if (stats.TryGetValue(statData, out var stat))
-            // {
-            //     return stat;
-            // }
-
             if (statIdMap.TryGetValue(statData.LegacyId, out var stat))
                 return stat;
             
-            // Logg.LogError($"[{gameObject.name}] Invalid stat type requested: {statData}. Available stats: {string.Join(", ", stats.Keys)} - scene: {gameObject.scene.name}", this);
-            Logg.LogError($"[{gameObject.name}] Invalid stat type requested: {statData}. Available stats: {string.Join(", ", statIdMap.Keys)} - scene: {gameObject.scene.name}", this);
+            Logg.LogWarning($"[{gameObject.name}] Invalid stat type requested: {statData}. Available stats: {string.Join(", ", statIdMap.Keys)} - scene: {gameObject.scene.name}", this);
             return null;
         }
 
@@ -156,7 +165,6 @@ namespace TH.Attribute.Stat
 
         public bool AddModifier(GameStatSO type, StatModifier mod)
         {
-            // if (!stats.TryGetValue(type, out var stat)) return false;
             if (type.IsNull()) return false;
             if (!statIdMap.TryGetValue(type.LegacyId, out var stat)) return false;
             
@@ -167,7 +175,6 @@ namespace TH.Attribute.Stat
 
         public bool RemoveModifier(GameStatSO type, StatModifier mod)
         {
-            // if (!stats.TryGetValue(type, out var stat)) return false;
             if (type.IsNull()) return false;
             if (!statIdMap.TryGetValue(type.LegacyId, out var stat)) return false;
 
@@ -177,7 +184,6 @@ namespace TH.Attribute.Stat
 
         public bool RemoveModifier(object source)
         {
-            // foreach (var stat in stats.Values)
             foreach (var stat in statIdMap.Values)
             {
                 stat.RemoveModifiersFromSource(source);
@@ -188,9 +194,10 @@ namespace TH.Attribute.Stat
 
         #endregion
         
+        #region bind/unbind stat event
+        
         public void BindEvent(GameStatSO type, Action action)
         {
-            // if (!stats.TryGetValue(type, out var stat))
             if (type.IsNull() || !statIdMap.TryGetValue(type.LegacyId, out var stat))
             {
                 Logg.Log($"[{gameObject.name}.{nameof(StatHolder)}] failed to bind event to stat '{type}'");
@@ -202,7 +209,6 @@ namespace TH.Attribute.Stat
         
         public void UnBindEvent(GameStatSO type, Action action)
         {
-            // if (!stats.TryGetValue(type, out var stat))
             if (type.IsNull() || !statIdMap.TryGetValue(type.LegacyId, out var stat))
             {
                 Logg.Log($"[{gameObject.name}.{nameof(StatHolder)}] failed to bind event to stat '{type}'");
@@ -212,6 +218,69 @@ namespace TH.Attribute.Stat
             stat.OnStatChanged -= action;
         }
 
+        // 아직 생성되지 않은 스탯을 기다리는 대기 콜백 목록
+        private Dictionary<GameStatSO, List<Action<float>>> pendingListeners = new();
+
+        // 스탯 이벤트 구독 (외부 호출용)
+        public void BindStatChanged(GameStatSO statSO, Action<float> callback)
+        {
+            if (statSO == null || callback == null) return;
+
+            // Case 1: 스탯이 이미 존재하는 경우 -> 즉시 연결
+            if (stats.TryGetValue(statSO, out var stat))
+            {
+                stat.OnStatChangedWithValue += callback;
+                callback.Invoke(stat.Value); // 현재 값으로 초기화 보장
+            }
+            // Case 2: 스탯이 아직 없는 경우 -> 대기 명단(Pending)에 등록
+            else
+            {
+                if (!pendingListeners.ContainsKey(statSO))
+                    pendingListeners[statSO] = new List<Action<float>>();
+                
+                pendingListeners[statSO].Add(callback);
+                
+                // 주의: 스탯이 없으므로 invokeImmediately가 true여도 
+                // 현재 값을 줄 수 없음. 생성될 때 호출되기를 기다려야 함.
+            }
+        }
+
+        // 스탯 이벤트 구독 해제 
+        public void UnbindStatChanged(GameStatSO statSO, Action<float> callback)
+        {
+            if (statSO == null) return;
+
+            // 이미 존재하는 스탯에서 해제
+            if (stats.TryGetValue(statSO, out var stat))
+            {
+                stat.OnStatChangedWithValue -= callback;
+            }
+
+            // 대기 명단에서도 제거 (아직 생성 안 됐는데 리스너가 죽는 경우 대비)
+            if (pendingListeners.TryGetValue(statSO, out var list))
+            {
+                list.Remove(callback);
+                if (list.Count == 0) pendingListeners.Remove(statSO);
+            }
+        }
+
+        // 실제로 스탯이 생성(초기화)되는 시점에 호출
+        // TypeHolder에서 데이터를 받아 스탯을 생성한 직후 이 메서드를 불러줘야 함
+        private void RegisterStat(GameStatSO statSO, GameStat newStat)
+        {
+            // 대기 중이던 리스너가 있다면 일괄 연결 및 처리
+            if (!pendingListeners.TryGetValue(statSO, out var callbacks)) return;
+            
+            foreach (var callback in callbacks)
+            {
+                newStat.OnStatChangedWithValue += callback; // 이벤트 연결
+                callback.Invoke(newStat.Value);    // 초기값 동기화 (Health의 MaxHp 갱신)
+            }
+            // 대기 목록에서 제거 
+            pendingListeners.Remove(statSO);
+        }
+
+        #endregion
 
         #region Handle Events
 
@@ -259,7 +328,17 @@ namespace TH.Attribute.Stat
 
         #endregion
         
-        
+        #region Editor Methods
+#if UNITY_EDITOR
+        [SerializeField] private List<SerializablePair<GameStatSO, GameStat>> editorStats;
+
+        private void AddEditorStatList(GameStatSO statSO, GameStat stat)
+        {
+            editorStats.Add(new SerializablePair<GameStatSO, GameStat>(statSO, stat));
+        }
+
+#endif
+        #endregion
         
     }
 }

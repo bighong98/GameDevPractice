@@ -190,8 +190,8 @@ public class GameSceneUI : SceneUI
         // HP 현재/최대 반영
         if (TryConnectComponent(player, out Health pHealth))
         {
-            sliderHandlers[(int)Sliders.HP].SetCeil(pHealth.GetMaxHealth);
-            sliderHandlers[(int)Sliders.HP].SetFloor(pHealth.GetCurrentHealth);
+            sliderHandlers[(int)Sliders.HP].SetCeil(pHealth.MaxHp);
+            sliderHandlers[(int)Sliders.HP].SetFloor(pHealth.Hp);
         }
 
         // XP 현재값 반영

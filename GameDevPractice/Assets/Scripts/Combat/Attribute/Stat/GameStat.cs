@@ -8,24 +8,35 @@ namespace TH.Attribute.Stat
     [Serializable]
     public class GameStat : IGameStat
     {
-        public float BaseValue;
-        
-        protected bool isDirty = true;
+        [SerializeField] protected float baseValue;
         protected float value;
-        protected float lastBaseValue = float.MinValue;
-
+        protected bool isDirty = true;
+        
         protected readonly List<StatModifier> statModifiers;
         public readonly ReadOnlyCollection<StatModifier> StatModifiers;
 
-        public event Action OnStatChanged;
-        
+        #region Property
+        public float BaseValue
+        {
+            get => baseValue;
+            set
+            {
+                if (!Mathf.Approximately(baseValue, value))
+                {
+                    baseValue = value;
+                    isDirty = true;
+                    OnStatChanged?.Invoke();
+                    OnStatChangedWithValue?.Invoke(CalculateFinalValue()); // 즉시 변동사항을 갱신해야하는 작업이 있다면 재계산 후 실행
+                }
+            }
+        }
+
         public virtual float Value
         {
             get
             {
-                if (isDirty || !Mathf.Approximately(BaseValue, lastBaseValue)) // 값에 변동사항이 있다면
+                if (isDirty) // 값에 변동사항이 있다면
                 {
-                    lastBaseValue = BaseValue;
                     value = CalculateFinalValue();
                     isDirty = false;
                 }
@@ -33,6 +44,12 @@ namespace TH.Attribute.Stat
                 return value;
             }
         }
+
+        public event Action OnStatChanged;
+        public event Action<float> OnStatChangedWithValue;
+
+        #endregion
+        
 
         public GameStat()
         {
@@ -52,6 +69,7 @@ namespace TH.Attribute.Stat
             statModifiers.Add(mod);
             statModifiers.Sort(CompareModOrder); // CompareOrder() 규칙에 따라 모드 재정렬
             OnStatChanged?.Invoke(); // 해당 스탯 변경 시 필요한 작업이 있다면 실행
+            OnStatChangedWithValue?.Invoke(CalculateFinalValue()); // 즉시 변동사항을 갱신해야하는 작업이 있다면 재계산 후 실행
         }
 
         // 특정 모드 제거
@@ -61,6 +79,7 @@ namespace TH.Attribute.Stat
             {
                 isDirty = true;
                 OnStatChanged?.Invoke(); // 해당 스탯 변경 시 필요한 작업이 있다면 실행
+                OnStatChangedWithValue?.Invoke(CalculateFinalValue()); // 즉시 변동사항을 갱신해야하는 작업이 있다면 재계산 후 실행
                 return true; // 제거 성공: true 반환
             }
             return false; // 제거 시도한 모드가 없는 경우: false 반환
@@ -104,7 +123,7 @@ namespace TH.Attribute.Stat
 
         protected virtual float CalculateFinalValue()
         {
-            float finalValue = BaseValue;
+            float finalValue = baseValue;
             float sumPerAdd = 0;
             int length = statModifiers.Count;
             for (int i = 0; i < length; i++)

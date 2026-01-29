@@ -13,11 +13,11 @@ MonoBehaviour:
   m_Name: EnemyStatListSO
   m_EditorClassIdentifier: Assembly-CSharp::TH.Attribute.Stat.BaseStatSO
   list:
-  - type: {fileID: 11400000, guid: 9e86dca11c02ff94396bdadebb64b5cb, type: 2}
+  - key: {fileID: 11400000, guid: 9e86dca11c02ff94396bdadebb64b5cb, type: 2}
     value: 30
-  - type: {fileID: 11400000, guid: eb610ac4bc4ab4f408d8533075f7d56c, type: 2}
+  - key: {fileID: 11400000, guid: eb610ac4bc4ab4f408d8533075f7d56c, type: 2}
     value: 10
-  - type: {fileID: 11400000, guid: cf7022ca8cb84ae4395e9b8e2edbcdf2, type: 2}
+  - key: {fileID: 11400000, guid: cf7022ca8cb84ae4395e9b8e2edbcdf2, type: 2}
     value: 6
-  - type: {fileID: 11400000, guid: f33892e137b94bf4e9d027c090bd8c4f, type: 2}
+  - key: {fileID: 11400000, guid: f33892e137b94bf4e9d027c090bd8c4f, type: 2}
     value: 0

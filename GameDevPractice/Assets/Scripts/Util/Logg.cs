@@ -62,7 +62,7 @@ namespace TH.Utils
         {
             if (msg is string stringMsg)
                 msg = $"[{sender.GetType().Name}] {stringMsg}";
-            Log(msg, mode);
+            Log(msg, mode, context: sender as UnityEngine.Object);
         }
         
         [System.Diagnostics.Conditional("UNITY_EDITOR")]

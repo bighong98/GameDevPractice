@@ -32,6 +32,8 @@ namespace TH.SceneManagement
        
         // 씬 전환 중 확인 플래그
         private bool isLoadingScene;
+        public bool IsLoadingScene => isLoadingScene;
+        public SceneLoadingState LoadingState { get; private set; } = SceneLoadingState.None;
         
         // 리소스 어드레서블 키
         private const string LoadingSceneName = "LoadingScene";
@@ -142,7 +144,8 @@ namespace TH.SceneManagement
 
             if (isLoadingScene) return;
             isLoadingScene = true;
-            
+            LoadingState = SceneLoadingState.Initialized;
+
             float prevTimeScale = Time.timeScale;
             BeginTransition(); // 씬 전환 
             
@@ -163,6 +166,7 @@ namespace TH.SceneManagement
                 var result = await LoadSceneWithAddressablesAsync(key, onProgress, token);
                 // 씬 전환 전 사전작업 처리
                 this.Log($"OnBeforeSceneChanged starts - scene: {result.Scene.name}", Logg.LoggingMode.Completed);
+                LoadingState = SceneLoadingState.OnBeforeSceneChanged;
                 await UniTask.WhenAll(
                     OnBeforeSceneChanged.InvokeAllThrottledAsync(token),
                     AwaitBeforeGates(token),
@@ -171,22 +175,23 @@ namespace TH.SceneManagement
                 CloseBeforePhase();
                 // 진행도 100% 전달
                 ReportProgress((0.8f, sceneName), format: ProgressTextFormat.LoadingScene);
-                // 타겟 씬 활성화
+                // 타겟 씬 활성화 (씬에 배치된 게임오브젝트이ㅡ Awake(), OnEnable() 실행됨)
                 await result.ActivateAsync().ToUniTask(cancellationToken: token);
-                await UniTask.Yield();
-                
-                // 게임 시간 일시정지 (todo: timeScale 대신 게임 플레이 일시정지 기능 추가하여 대체)
-                Time.timeScale = 0f;
-                
-                // 진행도 100% 전달
-                ReportProgress((1f, "Loading ended. Wait for seconds")); 
                 // 씬 매니저에게 Active Scene 변동 전달 (멀티 씬 문제 대응)
                 SceneManager.SetActiveScene(result.Scene);
-
+                // 1프레임 대기 (Start() 실행 보장 
+                // -> SceneManager.GetActiveScene()으로 현재 활성화 씬 정보가 필요한 작업의 경우 Start에서 실행 권장함)
                 await UniTask.Yield();
-                this.Log($"OnAfterSceneChanged starts - scene: {result.Scene.name}", Logg.LoggingMode.Completed);
+                
+                // 게임 시간 일시정지 // todo: timeScale 대신 게임 플레이 일시정지 기능 추가하여 대체
+                Time.timeScale = 0f;
+                // 진행도 100% 전달
+                ReportProgress((1f, "Loading ended. Wait for seconds")); 
+                
                 // 이전 씬 언로드 및 씬 전환 이벤트 호출
                 // 씬 언로드와 함께 실행되는 이벤트 메서드(OnDestroy, etc)가 호출되는 시점엔 이미 활성 씬이 바뀐 상태임에 주의
+                this.Log($"OnAfterSceneChanged starts - scene: {result.Scene.name}", Logg.LoggingMode.Completed);
+                LoadingState = SceneLoadingState.OnAfterSceneChanged;
                 await UniTask.WhenAll(
                     UnloadPreviousSceneAsync(token),
                     OnAfterSceneChanged.InvokeAllThrottledAsync(token),
@@ -194,7 +199,9 @@ namespace TH.SceneManagement
                 );
                 CloseAfterPhase();
                 OnSceneChanged?.Invoke(result.Scene);
-
+                
+                // 씬 전환 후 최종 예약 작업 실행 (씬 전환 연출 포함)
+                LoadingState = SceneLoadingState.OnLastSceneChanged;                
                 await UniTask.WhenAll(
                     OnLastSceneChanged.InvokeAllThrottledAsync(token),
                     UniTask.DelayFrame(60, cancellationToken: token)
@@ -206,7 +213,9 @@ namespace TH.SceneManagement
             }
             finally
             {
+                // 씬 전환 관련 플래그 갱신 및 게임 일시정지 해제
                 isLoadingScene = false;
+                LoadingState = SceneLoadingState.None;
                 Time.timeScale = prevTimeScale;
                 EndTransitionInvalidateAll();
             }
