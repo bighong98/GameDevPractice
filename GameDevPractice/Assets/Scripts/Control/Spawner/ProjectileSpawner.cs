@@ -16,6 +16,8 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
     
     private AttackSource projectileAttackSource; // 투사체에 적용될 AttackSource
     private ICombatSystem combatSystem;
+    private IAttacker currentOwner;
+    private GameStat cachedAdStat;
     
     [SerializeField] private GameObject onHitParticlePrefab;
 
@@ -28,28 +30,16 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
     // public void InitializeProjectileSpawner(Fighter owner, WeaponTypeSO weaponTypeSO)
     public void InitializeProjectileSpawner(IAttacker owner, WeaponTypeSO weaponTypeSO)
     {
+        combatSystem ??= ServiceLocator.Get<ICombatSystem>();
+
         if (owner is not { } shootingWeaponOwner)
         {
             Logg.Log($"[{name}.{nameof(ProjectileSpawner)}] failed to {nameof(InitializeProjectileSpawner)}");
+            UnbindOwner();
             return;
         }
         
-        shootingWeaponOwner.OnTargetSet += SetTarget;
-        shootingWeaponOwner.OnAttack += Shoot;
-
-        if (owner is Component c && c.TryGetComponent(out IStatHolder statHolder))
-        {
-            if (statHolder.GetStat(GameStats.AD) is { } stat)
-            {
-                stat.OnStatChanged += () =>
-                {
-                    SetAttackSource(shootingWeaponOwner, stat.Value);
-                };
-                SetAttackSource(shootingWeaponOwner, stat.Value);
-            }
-        }
-
-        // SetAttackSource(shootingWeaponOwner, weaponTypeSO.GetDamage);
+        BindOwner(shootingWeaponOwner);
 
         if (weaponTypeSO is { HasImpactEffect: true, GetImpactEffect: { } particlePrefab })
         {
@@ -71,6 +61,57 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
         }
     }
 
+    private void OnDisable()
+    {
+        UnbindOwner();
+    }
+
+    private void BindOwner(IAttacker owner)
+    {
+        UnbindOwner();
+        currentOwner = owner;
+
+        if (currentOwner.IsNull()) return;
+        
+        currentOwner.OnTargetSet += SetTarget;
+        currentOwner.OnAttack += Shoot;
+
+        if (currentOwner is Component c && c.TryGetComponent(out IStatHolder statHolder))
+        {
+            if (statHolder.GetStat(GameStats.AD) is { } stat)
+            {
+                cachedAdStat = stat;
+                cachedAdStat.OnStatChanged += OnAttackStatChanged;
+                SetAttackSource(currentOwner, stat.Value);
+            }
+        }
+    }
+
+    private void UnbindOwner()
+    {
+        if (currentOwner.IsNotNull())
+        {
+            currentOwner.OnTargetSet -= SetTarget;
+            currentOwner.OnAttack -= Shoot;
+        }
+
+        if (cachedAdStat != null)
+        {
+            cachedAdStat.OnStatChanged -= OnAttackStatChanged;
+            cachedAdStat = null;
+        }
+
+        currentOwner = null;
+        hasTarget = false;
+        projectileTarget = null;
+    }
+
+    private void OnAttackStatChanged()
+    {
+        if (currentOwner.IsNull() || cachedAdStat == null) return;
+        SetAttackSource(currentOwner, cachedAdStat.Value);
+    }
+
     // private void SetAttackSource(Fighter owner, float damage)
     // {
     //     projectileAttackSource = new AttackSource(owner, damage);
@@ -90,7 +131,14 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
     private void Shoot()
     {
         if (!hasTarget) return; // 타겟이 없다면 쏘지 않음
-        base.Spawn(transform.position).SetTargetAndShoot(projectileTarget, isHoming);
+
+        combatSystem ??= ServiceLocator.Get<ICombatSystem>();
+        var projectile = base.Spawn(transform.position);
+        if (projectile == null) return;
+
+        // 풀 콜백이 stale한 경우를 대비해 발사 시점에 최신 소스 주입
+        projectile.SetProjectile(combatSystem, projectileAttackSource);
+        projectile.SetTargetAndShoot(projectileTarget, isHoming);
     }
 
     private void PlayOnHitEffect(Vector3 pos)

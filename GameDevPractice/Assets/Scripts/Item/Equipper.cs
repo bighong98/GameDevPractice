@@ -134,8 +134,7 @@ namespace TH.Item
         //         pool.Release(currentWeapon);
         //     }
         // }
-        //
-        // private bool SpawnWeapon(WeaponTypeSO weaponType)
+                // private bool SpawnWeapon(WeaponTypeSO weaponType)
         // {
         //     if (!isInit) return false;
         //     
@@ -244,6 +243,12 @@ namespace TH.Item
                 return false;
 
             result.owner = fighter;
+
+            if (weaponType.HasProjectile && result.TryGetComponent(out ProjectileSpawner projectileSpawner))
+            {
+                projectileSpawner.InitializeProjectileSpawner(fighter, weaponType);
+            }
+
             currentWeapon = result;
 
             if (!ignoreLocalPosition) return true;

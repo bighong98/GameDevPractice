@@ -97,23 +97,27 @@ namespace TH.Attribute.Stat
                 baseStatData is not BaseStatListSO { Items: { } baseStats }) return;
             foreach (var baseStat in baseStats)
             {
-                if (baseStat.key is not {} statSO || statSO.IsNull())
+                if (baseStat.key is not { } statSO || statSO.IsNull())
                 {
                     Logg.LogWarning($"[{gameObject.name}.{nameof(StatHolder)}] base stat type is null");
                     continue;
                 }
-                this.Log($"InitializeStats() - stat added: {baseStat.key.DisplayName}", Logg.LoggingMode.Completed);
-                var gameStat = new GameStat(baseStat.value);
                 
-                stats[statSO] = gameStat;
-                statIdMap[statSO.LegacyId] = gameStat;
-                RegisterStat(statSO, gameStat);
-                AddEditorStatList(statSO, gameStat);
+                var gameStat = new GameStat(baseStat.value);
+                AddNewStat(statSO, gameStat);
             }
         }
 
+        private void AddNewStat(GameStatSO statSO, GameStat gameStat)
+        {
+            stats[statSO] = gameStat;
+            statIdMap[statSO.LegacyId] = gameStat;
+            RegisterStat(statSO, gameStat);
+            AddEditorStatList(statSO, gameStat);
+        }
+
         #endregion
-        
+
 
         private readonly List<(GameStatSO, float)> progressionStatBuffer = new();
         private void UpdateStatsByLevel(int lv)
@@ -121,14 +125,16 @@ namespace TH.Attribute.Stat
             if (level == lv) return;
             level = lv;
             
-            //todo: 레벨에 비례해 변동되는 능력치 반영
+            // 레벨에 비례해 변동되는 능력치 반영
+            // ProgressionSO.asset 으로부터 캐릭터의 타입/레벨에 해당하는 데이터 받아오기
             if (progression == null) return;
             if (!progression.GetProgressionStatsNonAlloc(characterType, lv, progressionStatBuffer)
                 || progressionStatBuffer.Count == 0) return;
-
+            // 받아온 데이터 캐릭터 능력치의 기본값(BaseValue)에 반영
             foreach ((var statSO, var statValue) in progressionStatBuffer)
             {
-                if (GetStat(statSO) is not {} stat) continue;
+                // notice: Progression.asset 데이터에는 있지만 캐릭터 능력치 목록에 없는 경우 강제로 추가함
+                if (GetOrAddStat(statSO) is not {} stat) continue;
                 stat.BaseValue = statValue;
             }
             
@@ -137,6 +143,26 @@ namespace TH.Attribute.Stat
         #region Get Stat
 
 #nullable enable
+        // statData 기반으로 능력치 조회 + 등록된 능력치가 없을 경우 임의의 기본값으로 생성 및 추가 
+        // (해당 GameStatSO가 해당 캐릭터에게 유효하다는 확신이 있는 경우에만 사용)
+        private GameStat? GetOrAddStat(GameStatSO statData, float defaultValue = 0f)
+        {
+            if (statData == null)
+            {
+                Logg.LogError($"[{gameObject.name}] Null stat type requested - scene: {gameObject.scene.name}", this);
+                return null;
+            }
+
+            int id = statData.LegacyId;
+            if (!statIdMap.ContainsKey(id))
+            {
+                var newStat = new GameStat(defaultValue);
+                AddNewStat(statData, newStat);
+            }
+
+            return GetStat(statData);
+        }
+
         public GameStat? GetStat(GameStatSO statData)
         {
             if (statData == null)
@@ -148,7 +174,7 @@ namespace TH.Attribute.Stat
             if (statIdMap.TryGetValue(statData.LegacyId, out var stat))
                 return stat;
             
-            Logg.LogWarning($"[{gameObject.name}] Invalid stat type requested: {statData}. Available stats: {string.Join(", ", statIdMap.Keys)} - scene: {gameObject.scene.name}", this);
+            Logg.LogWarning($"[{gameObject.name}] Invalid stat type requested: {statData} - scene: {gameObject.scene.name}", this);
             return null;
         }
 
@@ -195,7 +221,7 @@ namespace TH.Attribute.Stat
         #endregion
         
         #region bind/unbind stat event
-        
+
         public void BindEvent(GameStatSO type, Action action)
         {
             if (type.IsNull() || !statIdMap.TryGetValue(type.LegacyId, out var stat))

@@ -22,6 +22,7 @@ MonoBehaviour:
       - 600
       - 1000
       - 1500
+      - 1e+9
     - stat: {fileID: 11400000, guid: 9e86dca11c02ff94396bdadebb64b5cb, type: 2}
       levels:
       - 100

@@ -11,6 +11,7 @@ using TH.Item.Storage;
 using Cysharp.Threading.Tasks;
 using TH.Cinematic.Service;
 using TH.UI.Service;
+using TH.Combat.Service;
 
 namespace TH.Core.Service
 {
@@ -86,6 +87,7 @@ namespace TH.Core.Service
                     sp.Get<ICameraHolder>(),
                     sp.Get<IPlayerHolder>()
                 ));
+            ServiceLocator.Register<IKillEventHandler>(new KillEventHandler());
         }
 
         private static async UniTask InitializeAsync()

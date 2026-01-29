@@ -7,6 +7,7 @@ using TH.Attribute.Stat;
 using TH.Combat;
 using TH.Core.Service;
 using TH.Resource;
+using TH.Combat.Service;
 
 namespace TH.Attribute
 {
@@ -22,14 +23,13 @@ namespace TH.Attribute
         // fields serailized for debug
         [SerializeField] private float maxHp = 1;
         [SerializeField] private float hp = 1;
-        [SerializeField] private float rewardXp = 0;
 
         private IStatHolder statHolder;
         private GameObject characterHpBarPrefab;
         
         // 외부 서비스
         private IFloatingTextSpawner textSpawner;
-
+        private IKillEventHandler killEventHandler;
 
         public event Action OnDead;
         public event Action OnRevived;
@@ -52,6 +52,7 @@ namespace TH.Attribute
             TryGetComponent(out statHolder);
 
             textSpawner = ServiceLocator.Get<IFloatingTextSpawner>();
+            killEventHandler = ServiceLocator.Get<IKillEventHandler>();
 
             if (hpStatSO.IsNull() || hpStatSO.LegacyId == default)
             {
@@ -180,11 +181,7 @@ namespace TH.Attribute
             IsDead = true;
             OnDead?.Invoke();
 
-            if (lastAttacker is not Component c || c.IsNull() ||
-                !c.TryGetComponent(out IExperience xp))
-                return;
-            
-            xp.GainXp(rewardXp);
+            killEventHandler?.HandleKillEvent(this, lastAttacker);
         }
 
         private void Revive()
