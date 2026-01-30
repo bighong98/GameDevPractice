@@ -14,6 +14,7 @@ namespace TH.Attribute
     [Serializable]
     public struct HealthSaveData
     {
+        public bool isDead;
         public float ratio;
     }
     public class Health : MonoBehaviour, IDamageable, IHealable, ISavable, ITypeDependent //todo: ITypeDependant 구현 후 HPBar 처리
@@ -45,7 +46,7 @@ namespace TH.Attribute
         public float HpRatio => hp / maxHp;
         public bool IsDead { get; private set; }
 
-        private IAttacker lastAttacker; // 가장 최근 자신에게 피해를 입힌 대상
+        private IAttacker lastAttacker = null; // 가장 최근 자신에게 피해를 입힌 대상
 
         private void Awake()
         {
@@ -181,7 +182,9 @@ namespace TH.Attribute
             IsDead = true;
             OnDead?.Invoke();
 
-            killEventHandler?.HandleKillEvent(this, lastAttacker);
+            if (lastAttacker.IsNotNull())
+                killEventHandler?.HandleKillEvent(this, lastAttacker);
+            lastAttacker = null;
         }
 
         private void Revive()
@@ -204,6 +207,7 @@ namespace TH.Attribute
             
             return new HealthSaveData
             {
+                isDead = IsDead,
                 ratio = (maxHp.IsEqualFloat(0f) || hp.IsEqualFloat(0f)) ? 0 : HpRatio
             };
         }
@@ -211,8 +215,9 @@ namespace TH.Attribute
         public bool RestoreState(object state)
         {
             if (state is not HealthSaveData data) return false;
-            if (data.ratio is not (float storedHpRatio and > 0)) return false;
+            if (data.ratio is not (float storedHpRatio and >= 0)) return false;
 
+            if (data.isDead) Die();
             SetCurrentHp(maxHp * storedHpRatio);
 
             this.Log($"[{gameObject.name}] - Health.RestoreState: ratio: {storedHpRatio} -> hp is set to {hp})", Logg.LoggingMode.Completed); 

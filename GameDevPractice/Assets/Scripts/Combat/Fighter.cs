@@ -75,13 +75,20 @@ public class Fighter : MonoBehaviour, IFighter
 
     private void OnEnable()
     {
-        equipHolder.OnEquipmentChanged += OnEquipmentChanged;
+        if (equipHolder.IsNotNull())
+            equipHolder.OnEquipmentChanged += OnEquipmentChanged;
+
+        if (statHolder.IsNotNull())
+            statHolder.BindStatChanged(GameStats.AD, OnAttackStatChanged);
     }
 
     private void OnDisable()
     {
-        if (!equipHolder.IsNotNull()) return;
-        equipHolder.OnEquipmentChanged -= OnEquipmentChanged;
+        if (equipHolder.IsNotNull())
+            equipHolder.OnEquipmentChanged -= OnEquipmentChanged;
+
+        if (statHolder.IsNotNull())
+            statHolder.UnbindStatChanged(GameStats.AD, OnAttackStatChanged);
     }
 
     private float timeBetweenAttacks = 1f; // todo: move to equipped weapon
@@ -166,6 +173,12 @@ public class Fighter : MonoBehaviour, IFighter
             Logg.LogError($"[{gameObject.name}.Fighter] Failed to get AD stat for attack source");
         }
     }
+
+    private void OnAttackStatChanged(float amount)
+    {
+        currAttackSource = new AttackSource(this, amount);
+    }
+
 
     #endregion
 

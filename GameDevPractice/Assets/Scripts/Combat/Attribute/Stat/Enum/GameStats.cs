@@ -12,6 +12,7 @@ namespace TH.Attribute.Stat
         private static bool initialized;
 
         public static GameStatSO Health => GetByLegacyId(101, nameof(Health));
+        public static GameStatSO Mana => GetByLegacyId(102, nameof(Mana));
         public static GameStatSO AD => GetByLegacyId(201, nameof(AD));
         public static GameStatSO AP => GetByLegacyId(202, nameof(AP));
         public static GameStatSO ExperienceReward => GetByLegacyId(1001, nameof(ExperienceReward));

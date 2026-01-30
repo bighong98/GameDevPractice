@@ -180,7 +180,7 @@ namespace TH.Attribute.Stat
 
         public float GetStat(GameStatSO statType, int lv)
         {
-            Logg.Log($"[from '{gameObject.name}'] GetStat({statType}, {characterType}, {lv})", Logg.LoggingMode.Completed);
+            Logg.Log($"[from '{gameObject.name}'] GetStat({statType}, {characterType}, {lv})", Logg.LoggingMode.InProgress);
             return progression.GetProgressionStat(statType, characterType, lv);
         }
 #nullable restore

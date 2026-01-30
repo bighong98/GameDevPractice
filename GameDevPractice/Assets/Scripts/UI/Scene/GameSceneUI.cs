@@ -49,43 +49,21 @@ public class GameSceneUI : SceneUI
     // 슬라이더 UI 핸들러 캐시
     private readonly ISliderUIHandler[] sliderHandlers = new ISliderUIHandler[(int)Sliders.max];
     
-    // 스탯/플레이어 홀더 참조
-    private IStatHolder statHolder;
+    // 플레이어 인스턴스 홀더 참조
     private IPlayerHolder playerHolder;
     
     protected override void Awake()
     {
-        // 베이스 초기화 호출
         base.Awake();
-        // UI 구성 초기화
         Init();
     }
 
-    private async void Start()
+    public override bool Init()
     {
-        try
-        {
-            await UniTask.Yield();
-        
-            // 초기 플레이어 인스턴스 즉시 연결
-            if (playerHolder.GetPlayerInstance is PlayerController p && p.IsNotNull())
-            {
-                UpdatePlayerInstance(p);
-            }
-        }
-        catch (Exception e) { Logg.LogError($"exception occured while GameSceneUI.Start() - {e}", context: this); }
-    }
-
-    public override bool Init() // UIManager 호출
-    {
-        // 베이스 초기화 검사
+        // 최초 1회 초기화 필요 여부 검사 
         if (base.Init() == false) return false;
-        
-        // 캔버스/캔버스그룹 확보
-        canvas = GetComponent<Canvas>();
-        canvasGroup = gameObject.GetOrAddComponent<CanvasGroup>();
-        
-        // 바인딩 테이블 구성
+
+        // Graphic 컴포넌트 연결
         BindObject(typeof(GameObjects));
         BindTMPText(typeof(TMPTexts));
         BindImage(typeof(Images));
@@ -97,18 +75,162 @@ public class GameSceneUI : SceneUI
 
         foreach (var sliderHandler in sliderHandlers)
         {
-            // 하이라이트 이벤트 바인딩
+            // UI 이벤트 바인딩
             BindSliderEvent(sliderHandler);
             // 초기 하이라이트 해제
             sliderHandler.OffHighlight();
         }
 
-        // 플레이어 홀더 구독
-        playerHolder = ServiceLocator.Get<IPlayerHolder>();
-        playerHolder.OnPlayerInstanceUpdated += UpdatePlayerInstance;
-        
         return true;
     }
+
+    private void Start()
+    {
+        BindPlayerUpdateEvent();
+    }
+
+    #region Bind Event
+
+    private void BindPlayerUpdateEvent()
+    {
+        playerHolder = ServiceLocator.Get<IPlayerHolder>();
+
+        // 즉시 플레이어 인스턴스 및 이벤트 갱신
+        UpdatePlayerInstance(playerHolder.GetPlayerInstance);
+        // 플레이어 인스턴스 갱신 이벤트 구독
+        playerHolder.OnPlayerInstanceUpdated += UpdatePlayerInstance;
+    }
+
+    private void BindSliderEvent(ISliderUIHandler sliderHandler)
+    {
+        // 슬라이더/게임오브젝트 유효성 검사
+        if (sliderHandler.GetSlider is not { gameObject: { } go } || go == null) return;
+        // 부모 오브젝트 기준 이벤트 바인딩 (임시 처리)
+        var parentGo = go.transform.parent.gameObject;
+        
+        // 마우스 오버 하이라이트
+        BindEvent(parentGo, sliderHandler.OnHighlight, type: Enums.UIEvent.PointerEnter);
+        // 마우스 아웃 하이라이트 해제
+        BindEvent(parentGo, sliderHandler.OffHighlight, type: Enums.UIEvent.PointerExit);
+    }
+
+    #endregion
+
+    #region Handle Event
+
+    private void UpdatePlayerInstance(object o)
+    {
+        // 어플리케이션 상태 및 플레이어 인스턴스 유효성 검사
+        if (Util.IsQuitting) return;
+        if (o.IsNull() || o is not PlayerController player) return;
+        
+        // 기존 이벤트 해제
+        DisConnectComponents(player);
+        // 새 이벤트 연결
+        ConnectComponents(player);
+    }
+
+    private void ConnectComponents(PlayerController player)
+    {
+        // 플레이어 체력(hp, maxHp) 정보 반영 및 이벤트 연결
+        if (TryConnectComponent(player, out Health pHealth))
+        {
+            var sliderHandler = sliderHandlers[(int)Sliders.HP];
+            
+            sliderHandler.SetCeil(pHealth.MaxHp);
+            sliderHandler.SetFloor(pHealth.Hp);
+
+            pHealth.OnCurrHealthChanged += sliderHandler.SetFloor;
+            pHealth.OnMaxHealthChanged += sliderHandler.SetCeil;
+        }
+        // 마나(MP) 스탯 반영 및 이벤트 연결
+        if (TryConnectComponent(player, out IStatHolder pStatHolder))
+        {
+            // BindStatChanged는 스탯 생성 이후 자동 연결/초기값 동기화 처리
+            pStatHolder.BindStatChanged(GameStats.Mana, OnManaChanged);
+        }
+
+
+        // 플레이어 레벨 반영 및 이벤트 연결
+        if (TryConnectComponent(player, out ILevel pLevel))
+        {
+            HandleOnLevelUp(pLevel.GetCurrLevel);
+            pLevel.OnLevelChanged += HandleOnLevelUp;
+        }
+
+        // 플레이어 경험치 반영 및 이벤트 연결
+        if (TryConnectComponent(player, out IExperience pExp))
+        {
+            var sliderHandler = sliderHandlers[(int)Sliders.EXP];
+
+            sliderHandler.SetFloor(pExp.GetCurrXp);
+            sliderHandler.SetCeil(pExp.GetCurrXpToLevelUp);
+            sliderHandler.SetBaseline(pExp.GetCurrBaselineXp);
+
+            pExp.OnXpChanged += sliderHandler.SetFloor;
+            pExp.OnXpToLevelUpChanged += sliderHandler.SetCeil;
+            pExp.OnXpBaselineChanged += sliderHandler.SetBaseline;
+        }
+    }
+
+    private void DisConnectComponents(PlayerController player)
+    {
+        // 종료 중 보호
+        if (Util.IsQuitting) return;
+
+        // 체력 이벤트 해제
+        if (TryConnectComponent(player, out Health pHealth))
+        {
+            var sliderHandler = sliderHandlers[(int)Sliders.HP];
+
+            pHealth.OnCurrHealthChanged -= sliderHandler.SetFloor;
+            pHealth.OnMaxHealthChanged -= sliderHandler.SetCeil;
+        }
+        // 마나(MP) 이벤트 해제
+        if (TryConnectComponent(player, out IStatHolder pStatHolder))
+        {
+            pStatHolder.UnbindStatChanged(GameStats.Mana, OnManaChanged);
+        }
+
+
+        // 레벨 이벤트 해제
+        if (TryConnectComponent(player, out ILevel pLevel))
+            pLevel.OnLevelChanged -= HandleOnLevelUp;
+
+        // 경험치 이벤트 해제
+        if (TryConnectComponent(player, out IExperience pExp))
+        {
+            var sliderHandler = sliderHandlers[(int)Sliders.EXP];
+
+            pExp.OnXpChanged -= sliderHandler.SetFloor;
+            pExp.OnXpToLevelUpChanged -= sliderHandler.SetCeil;
+            pExp.OnXpBaselineChanged -= sliderHandler.SetBaseline;
+        }
+    }
+
+    private bool TryConnectComponent<T>(in Component from, out T c)
+    {
+        bool result = from.TryGetComponent(out c);
+        if (!result) Logg.Log($"[{nameof(GameSceneUI)}.{nameof(TryConnectComponent)}] failed to Find Component: {typeof(T).Name}");
+        
+        return result;
+    }
+
+    private void HandleOnLevelUp(int level)
+    {
+        // 레벨 텍스트 갱신
+        SetLevelText(level);
+    }
+
+    private void OnManaChanged(float mana)
+    {
+        var sliderHandler = sliderHandlers[(int)Sliders.MP];
+        sliderHandler.SetCeil(mana);
+        sliderHandler.SetFloor(mana);
+    }
+
+
+    #endregion 
 
     public override void RefreshUI()
     {
@@ -132,178 +254,10 @@ public class GameSceneUI : SceneUI
         return slider;
     }
 
-    private void BindSliderEvent(ISliderUIHandler sliderHandler)
-    {
-        // 슬라이더/게임오브젝트 유효성 검사
-        if (sliderHandler.GetSlider is not { gameObject: { } go } || go == null) return;
-        // 부모 오브젝트 기준 이벤트 바인딩 (임시 처리)
-        var parentGo = go.transform.parent.gameObject;
-        
-        // 마우스 오버 하이라이트
-        BindEvent(parentGo, sliderHandler.OnHighlight, type: Enums.UIEvent.PointerEnter);
-        // 마우스 아웃 하이라이트 해제
-        BindEvent(parentGo, sliderHandler.OffHighlight, type: Enums.UIEvent.PointerExit);
-    }
-
-    private void UpdatePlayerInstance(object o)
-    {
-        // 종료 중 보호
-        if (Util.IsQuitting) return;
-        // 플레이어 인스턴스 갱신 처리
-        if (o is PlayerController player)
-        {
-            // 기존 이벤트 해제
-            DisConnectComponents(player);
-            // 새 이벤트 연결
-            ConnectComponents(player);
-            // 초기 스냅샷 갱신 요청
-            RequestInitialRefresh(player);
-        }
-    }
-
-    private void RequestInitialRefresh(PlayerController player)
-    {
-        // 유효성 검사
-        if (Util.IsQuitting || !player.IsNotNull()) return;
-        // 프리로드 완료 후 초기 스냅샷 갱신 예약
-        ResourceManager.Instance.WaitForPreLoadOnlyOnce(() =>
-        {
-            // 콜백 시점 재검사
-            if (Util.IsQuitting || !player.IsNotNull()) return;
-            // 플레이어 객체의 내부 초기화를 고려하여 1프레임 지연
-            UniTask.DelayFrame(1).ContinueWith(() =>
-            {
-                // 홀더 인스턴스 변경 여부 확인
-                var holderPlayer = playerHolder?.GetPlayerInstance as PlayerController;
-                if (holderPlayer != null && holderPlayer != player) return;
-                // 현재 플레이어 상태 동기화
-                RefreshPlayerSnapshot(player);
-            });
-        });
-    }
-
-    private void RefreshPlayerSnapshot(PlayerController player)
-    {
-        // 종료 중 보호
-        if (Util.IsQuitting) return;
-
-        // HP 현재/최대 반영
-        if (TryConnectComponent(player, out Health pHealth))
-        {
-            sliderHandlers[(int)Sliders.HP].SetCeil(pHealth.MaxHp);
-            sliderHandlers[(int)Sliders.HP].SetFloor(pHealth.Hp);
-        }
-
-        // XP 현재값 반영
-        if (TryConnectComponent(player, out IExperience pExp))
-            sliderHandlers[(int)Sliders.EXP].SetFloor(pExp.GetCurrXp);
-
-        // 레벨 스냅샷 반영 (베이스라인/상한 갱신 포함)
-        if (TryConnectComponent(player, out ILevel pLevel))
-            OnLevelUp(pLevel.GetCurrLevel);
-    }
-
-
-    private void ConnectComponents(PlayerController player)
-    {
-        // 스탯 홀더 캐시
-        if (TryConnectComponent(player, out IStatHolder pStatHolder))
-            statHolder = pStatHolder;
-
-        // 체력 이벤트 연결
-        if (TryConnectComponent(player, out Health pHealth))
-        {
-            pHealth.OnCurrHealthChanged += sliderHandlers[(int)GameObjects.HPBar].SetFloor;
-            pHealth.OnMaxHealthChanged += sliderHandlers[(int)GameObjects.HPBar].SetCeil;
-        }
-
-        // 경험치 이벤트 연결
-        if (TryConnectComponent(player, out IExperience pExp))
-        {
-            pExp.OnXpChanged += sliderHandlers[(int)GameObjects.PlayerExpBar].SetFloor;
-        }
-
-        // 레벨 이벤트 연결
-        if (TryConnectComponent(player, out ILevel pLevel))
-        {
-            pLevel.OnLevelChanged += OnLevelUp;
-        }
-    }
-
-    private void DisConnectComponents(PlayerController player)
-    {
-        // 종료 중 보호
-        if (Util.IsQuitting) return;
-
-        // 체력 이벤트 해제
-        if (TryConnectComponent(player, out Health pHealth))
-        {
-            pHealth.OnCurrHealthChanged -= sliderHandlers[(int)GameObjects.HPBar].SetFloor;
-            pHealth.OnMaxHealthChanged -= sliderHandlers[(int)GameObjects.HPBar].SetCeil;
-        }
-
-        // 경험치 이벤트 해제
-        if (TryConnectComponent(player, out IExperience pExp))
-            pExp.OnXpChanged -= sliderHandlers[(int)GameObjects.PlayerExpBar].SetFloor;
-        // 레벨 이벤트 해제
-        if (TryConnectComponent(player, out ILevel pLevel))
-            pLevel.OnLevelChanged -= OnLevelUp;
-    }
-
-    private bool TryConnectComponent<T>(in Component from, out T c)
-    {
-        // 컴포넌트 탐색 시도
-        if (from.TryGetComponent(out T result))
-        {
-            c = result;
-            return true;
-        }
-
-        // 누락 로그 출력
-        Logg.Log($"[{nameof(GameSceneUI)}.{nameof(TryConnectComponent)}] failed to Find Component: {typeof(T).Name}");
-        c = default;
-        return false;
-    }
-
     private void SetLevelText(int level)
     {
         // 레벨 텍스트 갱신
         GetTMPText((int)TMPTexts.levelText).SetText($"{level}");
-    }
-
-    private void OnLevelUp(int level)
-    {
-        // 레벨 텍스트 갱신
-        SetLevelText(level);
-
-        // 스탯 홀더 확보
-        if (statHolder == null)
-        {
-            if (FindFirstObjectByType<PlayerController>() is { } foundPlayer
-                && foundPlayer.GetComponent<IStatHolder>() is { } pStatHolder)
-            {
-                statHolder = pStatHolder;
-            }
-            else return;
-        }
-        
-        // 레벨 구간 계산
-        int currLevel = level;
-        int prevLevel = level - 1;
-        
-        // 이전 레벨 기준 XP 베이스라인 갱신
-        if (prevLevel > 0 && statHolder.GetStat(GameStats.ExperienceToLevelUp, prevLevel) is { } baseline)
-        {
-            Logg.Log($"[{nameof(GameSceneUI)}.{nameof(OnLevelUp)}()] xp baseline is changed: {baseline}", Logg.LoggingMode.Completed);
-            sliderHandlers[(int)Sliders.EXP].SetBaseline(baseline);
-        }
-
-        // 현재 레벨 기준 XP 상한 갱신
-        if (currLevel > 0 && statHolder.GetStat(GameStats.ExperienceToLevelUp, currLevel) is { } ceil)
-        {
-            Logg.Log($"[{nameof(GameSceneUI)}.{nameof(OnLevelUp)}()] ceilXp is changed: {ceil}", Logg.LoggingMode.Completed);
-            sliderHandlers[(int)Sliders.EXP].SetCeil(ceil);
-        }
     }
 
     protected override void Clear()
@@ -316,10 +270,9 @@ public class GameSceneUI : SceneUI
             s.OffHighlight();
         }
 
-        // 이벤트 구독 해제
+        // 플레이어 인스턴스 갱신 이벤트 구독 해제
         playerHolder.OnPlayerInstanceUpdated -= UpdatePlayerInstance;
     }
-
 
     public override bool GetQuickSlotPanelUI(out QuickSlotPanelUI quickSlotPanelUI)
     {

@@ -13,6 +13,8 @@ namespace TH.UI
         void UpdateBar();
         void OnHighlight();
         void OffHighlight();
+        void Show();
+        void Hide();
     }
 }
 

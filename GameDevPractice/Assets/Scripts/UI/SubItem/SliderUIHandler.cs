@@ -11,14 +11,15 @@ namespace TH.UI
         private float currFloor = 1f;
         private float currCeil = 1f;
         
+        private readonly GameObject gameObject;
         private readonly TextMeshProUGUI text;
         
         public SliderUIHandler(Slider s)
         {
             slider = s;
 
-            var parent = s.transform.parent.gameObject;
-            if (Util.FindChild<TextMeshProUGUI>(parent, "text", recursive: true) is { } result)
+            gameObject = s.transform.parent.gameObject;
+            if (Util.FindChild<TextMeshProUGUI>(gameObject, "text", recursive: true) is { } result)
             {
                 text = result;
             }
@@ -71,8 +72,6 @@ namespace TH.UI
 
         public void Set(float floor, float ceil, float baseline = 0f)
         {
-            if (!IsValidValue(floor, ceil)) return; 
-            
             SetCeil(floor, updateBar: false);
             SetFloor(ceil, updateBar: false);
             SetBaseline(baseline, updateBar: false);
@@ -82,14 +81,25 @@ namespace TH.UI
         
         public void UpdateBar()
         {
-            if (!IsValidValue(currFloor, currCeil)) return;
-            float baseFloor = currFloor - currBaseline;
-            float baseCeil = currCeil - currBaseline;
-            if (!IsValidValue(baseFloor, baseCeil)) return;
+            if (!IsValidState(out float baseFloor, out float baseCeil))
+            {
+                Hide();
+                return;
+            }
             
-            // slider.value = Mathf.Clamp01(currFloor / currCeil);
+            Show();
             slider.value = Mathf.Clamp01(baseFloor / baseCeil);
         }
+
+        private bool IsValidState(out float baseFloor, out float baseCeil)
+        {
+            baseFloor = currFloor - currBaseline;
+            baseCeil = currCeil - currBaseline;
+
+            if (!IsValidValue(currFloor, currCeil)) return false;
+            return IsValidValue(baseFloor, baseCeil);
+        }
+
 
         private bool IsValidValue(float floor, float ceil)
         {
@@ -124,6 +134,18 @@ namespace TH.UI
         public void OffHighlight()
         {
             HideText();
+        }
+
+        public void Show()
+        {
+            if (gameObject == null || gameObject.activeSelf) return;
+            gameObject.SetActive(true);
+        }
+
+        public void Hide()
+        {
+            if (gameObject == null || !gameObject.activeSelf) return;
+            gameObject.SetActive(false);
         }
     }
 }
