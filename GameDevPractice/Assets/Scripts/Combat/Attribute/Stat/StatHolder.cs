@@ -6,6 +6,7 @@ using TH.Item;
 using UnityEngine;
 using TH.Utils;
 using TH.Resource;
+using TH.Attribute.Service;
 
 
 namespace TH.Attribute.Stat
@@ -26,9 +27,12 @@ namespace TH.Attribute.Stat
 
         private IEquipHandler equipHandler;
         private bool hasEquipHandler;
+
+        private static IStatRelationHandler statRelationHandler;
         
         private void Awake()
         {
+            statRelationHandler = ServiceLocator.Get<IStatRelationHandler>();
             InitBeforeLoad();
             ResourceManager.Instance.WaitForPreLoadOnlyOnce(InitAfterLoad);
         }

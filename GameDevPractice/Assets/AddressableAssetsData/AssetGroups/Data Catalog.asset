@@ -30,6 +30,13 @@ MonoBehaviour:
     - Scriptable Object
     - Sound
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2dab3d02036fe9e459c89ee9f3777093
+    m_Address: StatCorrelationMapSO
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_CatalogSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 32f5e9ec55ccdb04b83ed9329574eaf4
     m_Address: DamageRuleSO
     m_ReadOnly: 0

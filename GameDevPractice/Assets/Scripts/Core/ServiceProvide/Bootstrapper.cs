@@ -12,6 +12,7 @@ using Cysharp.Threading.Tasks;
 using TH.Cinematic.Service;
 using TH.UI.Service;
 using TH.Combat.Service;
+using TH.Attribute.Service;
 
 namespace TH.Core.Service
 {
@@ -88,6 +89,8 @@ namespace TH.Core.Service
                     sp.Get<IPlayerHolder>()
                 ));
             ServiceLocator.Register<IKillEventHandler>(new KillEventHandler());
+            ServiceLocator.Register<IStatRelationHandler>(sp =>
+                new StatRelationHandler(sp.Get<IResourceLoader>()));
         }
 
         private static async UniTask InitializeAsync()
