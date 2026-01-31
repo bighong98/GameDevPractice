@@ -16,10 +16,12 @@ public class PlayerStatusPanelUI : BaseUI
     [SerializeField] private bool debugLayout = false;
     [SerializeField] private bool debugTiming = false;
 
-    
+    private readonly HashSet<GameStatCategory> missingCategoryLogged = new();
     private StatHolder statHolder;
 
     private readonly Dictionary<GameStatSO, StatEntryBinding> statEntries = new();
+    private readonly List<PlayerStatusPanelStatEntryUI> entryPool = new();
+    private int entryPoolIndex;
     private readonly Dictionary<GameStatCategory, PlayerStatusPanelSectionUI> sectionLookup = new();
 
     protected override void Awake()
@@ -42,7 +44,7 @@ public class PlayerStatusPanelUI : BaseUI
         {
             var sw = Stopwatch.StartNew();
             CacheSections();
-            Logg.Log($"[{nameof(PlayerStatusPanelUI)}] CacheSections took {sw.Elapsed.TotalMilliseconds:0.###} ms", Logg.LoggingMode.InProgress);
+            Logg.Log($"[{nameof(PlayerStatusPanelUI)}] CacheSections took {sw.Elapsed.TotalMilliseconds:0.###} ms", Logg.LoggingMode.Completed);
         }
         else
         {
@@ -62,8 +64,8 @@ public class PlayerStatusPanelUI : BaseUI
             {
                 var sw = Stopwatch.StartNew();
                 RefreshValues();
-                Logg.Log($"[{nameof(PlayerStatusPanelUI)}] RefreshValues took {sw.Elapsed.TotalMilliseconds:0.###} ms", Logg.LoggingMode.InProgress);
-                Logg.Log($"[{nameof(PlayerStatusPanelUI)}] SetPlayer total took {totalSw.Elapsed.TotalMilliseconds:0.###} ms", Logg.LoggingMode.InProgress);
+                Logg.Log($"[{nameof(PlayerStatusPanelUI)}] RefreshValues took {sw.Elapsed.TotalMilliseconds:0.###} ms", Logg.LoggingMode.Completed);
+                Logg.Log($"[{nameof(PlayerStatusPanelUI)}] SetPlayer total took {totalSw.Elapsed.TotalMilliseconds:0.###} ms", Logg.LoggingMode.Completed);
             }
             else
             {
@@ -77,7 +79,7 @@ public class PlayerStatusPanelUI : BaseUI
             var sw = Stopwatch.StartNew();
             DisconnectStatEvents();
             ClearEntries();
-            Logg.Log($"[{nameof(PlayerStatusPanelUI)}] Disconnect+Clear took {sw.Elapsed.TotalMilliseconds:0.###} ms", Logg.LoggingMode.InProgress);
+            Logg.Log($"[{nameof(PlayerStatusPanelUI)}] Disconnect+Clear took {sw.Elapsed.TotalMilliseconds:0.###} ms", Logg.LoggingMode.Completed);
         }
         else
         {
@@ -90,7 +92,7 @@ public class PlayerStatusPanelUI : BaseUI
 
         if (debugTiming)
         {
-            Logg.Log($"[{nameof(PlayerStatusPanelUI)}] SetPlayer total took {totalSw.Elapsed.TotalMilliseconds:0.###} ms", Logg.LoggingMode.InProgress);
+            Logg.Log($"[{nameof(PlayerStatusPanelUI)}] SetPlayer total took {totalSw.Elapsed.TotalMilliseconds:0.###} ms", Logg.LoggingMode.Completed);
         }
     }
 
@@ -109,8 +111,48 @@ public class PlayerStatusPanelUI : BaseUI
         if (sectionLookup.TryGetValue(category, out var section) && section != null)
             return section.EnsureAndGetContent();
 
-        Logg.LogWarning($"[{nameof(PlayerStatusPanelUI)}] Section not found for category: {category}");
+        if (missingCategoryLogged.Add(category))
+        {
+            Logg.Log($"[{nameof(PlayerStatusPanelUI)}] Section not found for category: {category}", Logg.LoggingMode.Completed);
+        }
         return null;
+    }
+
+
+    private void ResetEntryPool()
+    {
+        entryPoolIndex = 0;
+        foreach (var entry in entryPool)
+        {
+            if (entry != null)
+                entry.gameObject.SetActive(false);
+        }
+    }
+
+    private PlayerStatusPanelStatEntryUI GetOrCreateEntry(RectTransform parent)
+    {
+        PlayerStatusPanelStatEntryUI entry;
+        if (entryPoolIndex < entryPool.Count)
+        {
+            entry = entryPool[entryPoolIndex];
+        }
+        else
+        {
+            entry = Instantiate(entryPrefab, parent);
+            entryPool.Add(entry);
+        }
+
+        entryPoolIndex++;
+
+        if (entry != null)
+        {
+            var entryTransform = entry.transform as RectTransform;
+            if (entryTransform != null && entryTransform.parent != parent)
+                entryTransform.SetParent(parent, false);
+            entry.gameObject.SetActive(true);
+        }
+
+        return entry;
     }
 
 
@@ -134,22 +176,54 @@ public class PlayerStatusPanelUI : BaseUI
             Logg.Log($"[{nameof(PlayerStatusPanelUI)}] BuildStatEntries stats={statCount}, sections={sectionLookup.Count}");
         }
 
+        ResetEntryPool();
+
+        // Cache content per category and pause layout recalculations during bulk instantiate.
+        Dictionary<GameStatCategory, RectTransform> contentByCategory = new();
+        List<Behaviour> pausedLayouts = new();
+        foreach (var section in sectionLookup.Values)
+        {
+            if (section == null) continue;
+            var content = section.EnsureAndGetContent();
+            if (content == null) continue;
+            contentByCategory[section.Category] = content;
+
+            var layoutGroup = content.GetComponent<LayoutGroup>();
+            if (layoutGroup != null && layoutGroup.enabled)
+            {
+                layoutGroup.enabled = false;
+                pausedLayouts.Add(layoutGroup);
+            }
+
+            var contentSizeFitter = content.GetComponent<ContentSizeFitter>();
+            if (contentSizeFitter != null && contentSizeFitter.enabled)
+            {
+                contentSizeFitter.enabled = false;
+                pausedLayouts.Add(contentSizeFitter);
+            }
+        }
+
         foreach (var pair in statHolder.Stats)
         {
             var statType = pair.Key;
             var stat = pair.Value;
             if (statType == null || stat == null) continue;
 
-            var parent = GetContentForCategory(statType.Category);
-            if (parent == null)
+            if (!contentByCategory.TryGetValue(statType.Category, out var parent) || parent == null)
             {
                 missingCategory++;
+                if (missingCategoryLogged.Add(statType.Category))
+                {
+                    Logg.Log($"[{nameof(PlayerStatusPanelUI)}] Section not found for category: {statType.Category}", Logg.LoggingMode.Completed);
+                }
                 continue;
             }
 
-            var entry = CreateStatEntry(parent, statType.DisplayName, stat);
+            var entry = GetOrCreateEntry(parent);
             if (entry == null) continue;
 
+            entry.SetName(statType.DisplayName);
+            entry.SetValue(FormatValue(stat.Value));
             created++;
 
             var binding = new StatEntryBinding
@@ -168,13 +242,16 @@ public class PlayerStatusPanelUI : BaseUI
             }
         }
 
+        foreach (var layout in pausedLayouts)
+            layout.enabled = true;
+
         RebuildLayouts();
 
         if (debugTiming)
         {
             Logg.Log(
                 $"[{nameof(PlayerStatusPanelUI)}] BuildStatEntries took {buildSw.Elapsed.TotalMilliseconds:0.###} ms (stats={statCount}, created={created}, missingCategory={missingCategory}, sections={sectionLookup.Count})",
-                Logg.LoggingMode.InProgress);
+                Logg.LoggingMode.Completed);
         }
     }
 
@@ -192,13 +269,13 @@ public class PlayerStatusPanelUI : BaseUI
 
             if (debugLayout)
             {
-                Logg.Log($"[{nameof(PlayerStatusPanelUI)}] RebuildLayouts section={section.name}, contentSize={content.rect.size}, children={content.childCount}", Logg.LoggingMode.InProgress);
+                Logg.Log($"[{nameof(PlayerStatusPanelUI)}] RebuildLayouts section={section.name}, contentSize={content.rect.size}, children={content.childCount}", Logg.LoggingMode.Completed);
             }
         }
 
         if (debugTiming)
         {
-            Logg.Log($"[{nameof(PlayerStatusPanelUI)}] RebuildLayouts took {sw.Elapsed.TotalMilliseconds:0.###} ms", Logg.LoggingMode.InProgress);
+            Logg.Log($"[{nameof(PlayerStatusPanelUI)}] RebuildLayouts took {sw.Elapsed.TotalMilliseconds:0.###} ms", Logg.LoggingMode.Completed);
         }
     }
 
@@ -216,7 +293,7 @@ public class PlayerStatusPanelUI : BaseUI
                 $"entrySize={entryRect.sizeDelta}, entryScale={entryRect.lossyScale}, parentRect={parent.rect.size}, "+
                 $"canvas={canvas?.name}, renderMode={canvas?.renderMode}, order={canvas?.sortingOrder}, " + 
                 $"cam={(canvas != null ? canvas.worldCamera?.name : "null")}, canvasAlpha={(canvasGroup != null ? canvasGroup.alpha : -1f)}, " + 
-                $"mask={(mask != null ? mask.name : "null")}", Logg.LoggingMode.InProgress, context: this);
+                $"mask={(mask != null ? mask.name : "null")}", Logg.LoggingMode.Completed, context: this);
     }
 
     private PlayerStatusPanelStatEntryUI CreateStatEntry(RectTransform parent, string statName, IGameStat stat)
@@ -265,14 +342,22 @@ public class PlayerStatusPanelUI : BaseUI
         foreach (var entry in statEntries.Values)
         {
             if (entry?.Entry != null)
-                Destroy(entry.Entry.gameObject);
+                entry.Entry.gameObject.SetActive(false);
         }
         statEntries.Clear();
+        entryPoolIndex = 0;
     }
     private void OnDestroy()
     {
         DisconnectStatEvents();
         ClearEntries();
+
+        foreach (var entry in entryPool)
+        {
+            if (entry != null)
+                Destroy(entry.gameObject);
+        }
+        entryPool.Clear();
     }
 
 

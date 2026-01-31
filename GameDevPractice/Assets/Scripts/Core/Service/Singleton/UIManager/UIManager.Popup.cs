@@ -18,6 +18,7 @@ namespace TH.Core.Service
 
         /// <summary>팝업 중복 오픈 체크용 딕셔너리</summary>
         private readonly Dictionary<Type, bool> popupDuplicateCheck = new();
+        private bool logInventoryOpenFrame = true;
         
         #region Popup UI Method
 
@@ -311,6 +312,17 @@ namespace TH.Core.Service
             PrepareFrequentlyUsedUI<ToastMessageUI>(ToastMessageUIKey, UICanvas.FeedbackOverlay);
         }
 
+        private void PrewarmInventoryUI()
+        {
+            if (!TryGetOrCreateUIPool(InventoryUIKey, UICanvas.Popup, out var pool))
+                return;
+
+            var ui = pool.Get();
+            if (ui is Component comp)
+                comp.gameObject.SetActive(false);
+            pool.Release(ui);
+        }
+
         private void PrepareFrequentlyUsedUI<T>(string key, UICanvas canvasType) where T : BaseUI, IPoolObject
         {
             if (string.IsNullOrWhiteSpace(key))
@@ -326,6 +338,10 @@ namespace TH.Core.Service
 
         private void ShowInventoryUI()
         {
+            if (logInventoryOpenFrame)
+            {
+                Logg.Log($"[UIManager] Inventory open frame: {Time.frameCount}", Logg.LoggingMode.InProgress);
+            }
             ShowPopupUI<InventoryUI>(InventoryUIKey);
         }
 
