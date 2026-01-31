@@ -83,6 +83,7 @@ MonoBehaviour:
   category: 0
   scrollRect: {fileID: 1717796139411486515}
   debugLayout: 0
+  debugTiming: 0
   content: {fileID: 4717423027198686353}
 --- !u!1 &674417347623056878
 GameObject:
@@ -167,6 +168,7 @@ MonoBehaviour:
   category: 2
   scrollRect: {fileID: 1521176494398068835}
   debugLayout: 0
+  debugTiming: 0
   content: {fileID: 8796807428279664759}
 --- !u!1 &2199074411067004691
 GameObject:
@@ -256,8 +258,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerStatusPanelUI
   entryPrefab: {fileID: 5677476292541409995, guid: 19074e8dfc6eb2149aff748402c72cf9, type: 3}
-  debugLayout: 0
   player: {fileID: 0}
+  debugLayout: 0
+  debugTiming: 1
 --- !u!1 &3681180678273360426
 GameObject:
   m_ObjectHideFlags: 0
@@ -341,6 +344,7 @@ MonoBehaviour:
   category: 1
   scrollRect: {fileID: 2754001107757919603}
   debugLayout: 0
+  debugTiming: 0
   content: {fileID: 8798055390481141737}
 --- !u!1 &3692808712001532745
 GameObject:

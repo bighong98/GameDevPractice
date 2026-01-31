@@ -161,7 +161,7 @@ namespace TH.Resource
                             Interlocked.Increment(ref loadCount);
                             callback?.Invoke(key, loadCount, totalCount);
                             Logg.Log($"[ResourceLoader] finished loading: ({label} - {key}:{handle.Result})" +
-                                $"({loadCount}/{totalCount}, {loadCount / (float)totalCount})", Logg.LoggingMode.InProgress);
+                                $"({loadCount}/{totalCount}, {loadCount / (float)totalCount})", Logg.LoggingMode.Completed);
                             ReportPreLoadProgress(label, (totalCount <= 0) ? 1f : (loadCount / (float)totalCount));
                         },
                         token: token));

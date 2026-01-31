@@ -1,4 +1,5 @@
 using TH.Attribute.Stat;
+using System.Diagnostics;
 using TH.Utils;
 using UnityEngine;
 using UnityEngine.UI;
@@ -9,7 +10,9 @@ public class PlayerStatusPanelSectionUI : MonoBehaviour
     [SerializeField] private ScrollRect scrollRect;
     
     [SerializeField] private bool debugLayout = false;
-[SerializeField] private RectTransform content;
+    [SerializeField] private bool debugTiming = false;
+    [SerializeField] private RectTransform content;
+
 
     public GameStatCategory Category => category;
     public ScrollRect ScrollRect => scrollRect;
@@ -23,6 +26,8 @@ public class PlayerStatusPanelSectionUI : MonoBehaviour
 
     public void EnsureScrollSetup()
     {
+        Stopwatch sw = debugTiming ? Stopwatch.StartNew() : null;
+
         if (scrollRect == null)
             scrollRect = GetComponent<ScrollRect>();
         if (scrollRect == null)
@@ -62,6 +67,11 @@ public class PlayerStatusPanelSectionUI : MonoBehaviour
         {
             var parentRect = scrollRectRect != null ? scrollRectRect.parent as RectTransform : null;
             Logg.Log($"[{nameof(PlayerStatusPanelSectionUI)}] Layout '{name}' scrollRect={scrollRectRect?.rect.size}, viewport={viewportRect.rect.size}, content={content.rect.size}, parent={parentRect?.rect.size}");
+        }
+
+        if (debugTiming)
+        {
+            Logg.Log($"[{nameof(PlayerStatusPanelSectionUI)}] EnsureScrollSetup '{name}' took {sw.Elapsed.TotalMilliseconds:0.###} ms", Logg.LoggingMode.Completed);
         }
     }
 
