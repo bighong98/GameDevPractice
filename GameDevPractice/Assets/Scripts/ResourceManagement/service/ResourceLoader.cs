@@ -137,64 +137,79 @@ namespace TH.Resource
             int totalCount = locations.Count;
             int loadCount = 0;
 
-            // 리소스가 없는 라벨은 즉시 100% 완료 처리
-            if (totalCount == 0)
-            {
-                ReportPreLoadProgress(label, 1f);
-            }
-
-            var tasks = new List<UniTask>(totalCount);
-
-            foreach (var loc in locations)
-            {
-                string key = loc.PrimaryKey;
-                if (resourceKeys.ContainsKey(key))
-                {
-                    loadCount++;
-                    continue;
-                }
-
-                var handle = Addressables.LoadAssetAsync<T>(loc);
-                resourceKeys[key] = handle;
+            try {
+                // 리소스가 없는 라벨은 즉시 100% 완료 처리
+                if (totalCount <= 0) return;
                 
-                tasks.Add(LoadAndInitAsync(handle, async asset =>
+                var tasks = new List<UniTask>(totalCount);
+                foreach (var loc in locations)
                 {
-                    // ReSharper disable once AccessToModifiedClosure
-                    loadCount++;
-                    callback?.Invoke(key, loadCount, totalCount);
-                    ReportPreLoadProgress(label, (totalCount <= 0) ? 1f : (loadCount / (float)totalCount));
-                    await DoAsyncInitialize(asset, token);
-                    Logg.Log($"[ResourceLoader] {label} - finished loading {key}:{handle.Result} ({loadCount}/{totalCount}, {(loadCount / (float)totalCount)})", 
-                        Logg.LoggingMode.Completed);
-                }, token));
+                    string key = loc.PrimaryKey;
+                    if (resourceKeys.ContainsKey(key))
+                    {
+                        Interlocked.Increment(ref loadCount);
+                        continue;
+                    }
+
+                    var handle = Addressables.LoadAssetAsync<T>(loc);
+                    resourceKeys[key] = handle;
+                    
+                    tasks.Add(LoadAndInitAsync(handle, 
+                        onSucceedAsync: async (asset) => await DoAsyncInitialize(asset, token),
+                        onComplete: () =>
+                        {
+                            Interlocked.Increment(ref loadCount);
+                            callback?.Invoke(key, loadCount, totalCount);
+                            Logg.Log($"[ResourceLoader] finished loading: ({label} - {key}:{handle.Result})" +
+                                $"({loadCount}/{totalCount}, {loadCount / (float)totalCount})", Logg.LoggingMode.InProgress);
+                            ReportPreLoadProgress(label, (totalCount <= 0) ? 1f : (loadCount / (float)totalCount));
+                        },
+                        token: token));
+                }
+                await UniTask.WhenAll(tasks);
             }
-            await UniTask.WhenAll(tasks);
-            
-            Logg.Log($"[ResourceLoader] finished loading label '{label}' assets", 
+            catch (Exception e) { Logg.LogError($"Exception occured while loading assets in label: {label} - {e}"); }
+            finally
+            {
+                Logg.Log($"[ResourceLoader] finished loading label '{label}' assets", 
                 Logg.LoggingMode.Completed);
 
-            loadStatus[label] = LoadStatus.Done;
-            NotifyPreLoadDone(label);// 리소스 로딩 대기중인 클래스들에게 로딩 완료 이벤트 전달
-            
-            Addressables.Release(locationHandles);
+                ReportPreLoadProgress(label, 1f);
+                loadStatus[label] = LoadStatus.Done; //todo: 예외 발생 시 LoadStatus 다르게 설정할지 고려
+                NotifyPreLoadDone(label);// 리소스 로딩 대기중인 클래스들에게 로딩 완료 이벤트 전달
+                
+                Addressables.Release(locationHandles);
+            }
         }
 
-        private static async UniTask LoadAndInitAsync<T>(AsyncOperationHandle<T> handle, Func<T, UniTask> onDoneAsync, CancellationToken token)
+        private static async UniTask LoadAndInitAsync<T>(
+            AsyncOperationHandle<T> handle, 
+            Func<T, UniTask> onSucceedAsync, 
+            Action onComplete,
+            CancellationToken token)
         {
-            await handle.ToUniTask(cancellationToken: token);
+            try
+            {
+                await handle.ToUniTask(cancellationToken: token);
 
-            if (handle.Status != AsyncOperationStatus.Succeeded) return;
-            if (onDoneAsync != null)
-                await onDoneAsync(handle.Result);
+                if (handle.Status == AsyncOperationStatus.Succeeded)
+                {
+                    if (onSucceedAsync == null) return;
+                    await onSucceedAsync(handle.Result);
+                }
+                else Logg.LogError($"{nameof(LoadAndInitAsync)} - Asset load failed: {handle.DebugName}");
+            }
+            catch (Exception e) { 
+                Logg.LogError($"Exception occured while {nameof(LoadAndInitAsync)} loading asset: {handle.DebugName} - {e}");}
+            finally { onComplete?.Invoke(); }
         }
 
         private async UniTask DoAsyncInitialize(object obj, CancellationToken token)
         {
-            if (obj is IAsyncInitializer asyncInitializer)
-            {
-                await asyncInitializer.InitializeAsync(token);
-                Logg.Log($"[{GetType().Name}.DoAsyncInitialize] {obj.GetType().Name}", Logg.LoggingMode.Completed);
-            }
+            if (obj is not IAsyncInitializer asyncInitializer) return;
+
+            await asyncInitializer.InitializeAsync(token);
+            Logg.Log($"[{GetType().Name}.DoAsyncInitialize] {obj.GetType().Name}", Logg.LoggingMode.Completed);
         }
 
         public async UniTask<T> LoadAsync<T>(string key, CancellationToken token = default) where T : UnityEngine.Object
@@ -386,6 +401,20 @@ namespace TH.Resource
             return _globalProgressMessage.Subscribe(onProgress);
         }
 
+
+        #endregion
+
+        #region 
+
+        public void Unload(string key)
+        {
+            //todo: 어드레서블 키 기반 리소스 조회 후 리소스 언로드 + 핸들 정리
+        }
+
+        public void Unload(AssetReference key)
+        {
+            //todo: AssetReference 기반 리소스 조회 후 리소스 언로드 + 핸들 정리
+        }
 
         #endregion
     }

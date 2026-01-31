@@ -43,7 +43,7 @@ namespace TH.Cinematic.Service
 
             cinemachineBrain = brain;
             init = true;
-            Logg.Log($"Cinemachine Brain is set", Logg.LoggingMode.InProgress, context: cinemachineBrain);
+            Logg.Log($"Cinemachine Brain is set", Logg.LoggingMode.Completed, context: cinemachineBrain);
             
             if (!cinemachineBrain.TryGetComponent(out mainCamera))
             {
@@ -52,7 +52,7 @@ namespace TH.Cinematic.Service
             }
 
             if (mainCamera != null)
-                Logg.Log($"Main Camera is set", Logg.LoggingMode.InProgress, context: cinemachineBrain);
+                Logg.Log($"Main Camera is set", Logg.LoggingMode.Completed, context: cinemachineBrain);
 
             OnCameraInstanceUpdated?.Invoke(mainCamera);
         }
