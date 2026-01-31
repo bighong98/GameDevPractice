@@ -219,7 +219,7 @@ public class PlayerStatusPanelUI : BaseUI
                 $"mask={(mask != null ? mask.name : "null")}", Logg.LoggingMode.InProgress, context: this);
     }
 
-    private PlayerStatusPanelStatEntryUI CreateStatEntry(RectTransform parent, string statName, GameStat stat)
+    private PlayerStatusPanelStatEntryUI CreateStatEntry(RectTransform parent, string statName, IGameStat stat)
     {
         if (entryPrefab == null) return null;
 
@@ -280,7 +280,7 @@ public class PlayerStatusPanelUI : BaseUI
     private sealed class StatEntryBinding
     {
         public PlayerStatusPanelStatEntryUI Entry;
-        public GameStat Stat;
+        public IGameStat Stat;
         public Action OnChanged;
     }
 }

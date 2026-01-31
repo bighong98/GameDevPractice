@@ -17,7 +17,7 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
     private AttackSource projectileAttackSource; // 투사체에 적용될 AttackSource
     private ICombatSystem combatSystem;
     private IAttacker currentOwner;
-    private GameStat cachedAdStat;
+    private IGameStat cachedAdStat;
     
     [SerializeField] private GameObject onHitParticlePrefab;
 
@@ -27,7 +27,6 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
         combatSystem = ServiceLocator.Get<ICombatSystem>();
     }
     
-    // public void InitializeProjectileSpawner(Fighter owner, WeaponTypeSO weaponTypeSO)
     public void InitializeProjectileSpawner(IAttacker owner, WeaponTypeSO weaponTypeSO)
     {
         combatSystem ??= ServiceLocator.Get<ICombatSystem>();
@@ -111,11 +110,6 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
         if (currentOwner.IsNull() || cachedAdStat == null) return;
         SetAttackSource(currentOwner, cachedAdStat.Value);
     }
-
-    // private void SetAttackSource(Fighter owner, float damage)
-    // {
-    //     projectileAttackSource = new AttackSource(owner, damage);
-    // }
     
     private void SetAttackSource(IAttacker owner, float damage)
     {

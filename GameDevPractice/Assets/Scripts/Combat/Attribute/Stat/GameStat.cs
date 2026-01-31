@@ -45,8 +45,9 @@ namespace TH.Attribute.Stat
             }
         }
 
+        // 스탯 변동 이벤트
         public event Action OnStatChanged;
-        public event Action<float> OnStatChangedWithValue;
+        public event Action<float> OnStatChangedWithValue; //notice: OnStatChangedWithValue 사용 시 해당 GameStat 인스턴스는 더이상 lazy하게 계산되지 않음
 
         #endregion
         

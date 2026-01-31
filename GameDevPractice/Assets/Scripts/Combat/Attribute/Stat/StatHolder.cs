@@ -54,7 +54,7 @@ namespace TH.Attribute.Stat
         {
             if (equipHandler != null)
             {
-                equipHandler.OnEquipmentChanged += this.OnEquipmentChanged;
+                equipHandler.OnEquipmentChanged -= this.OnEquipmentChanged;
             }
             
             if (!hasMutableLevel || progression == null) return; 
@@ -87,8 +87,9 @@ namespace TH.Attribute.Stat
 
             characterType = charInfo.characterType;
             startingLevel = charInfo.startingLevel;
-            
+
             InitializeStats(charInfo.characterBaseStats);
+            statRelationHandler?.BindRelations(this);
 
             if (!hasMutableLevel || progression == null) return; 
             level = startingLevel;
@@ -149,7 +150,7 @@ namespace TH.Attribute.Stat
 #nullable enable
         // statData 기반으로 능력치 조회 + 등록된 능력치가 없을 경우 임의의 기본값으로 생성 및 추가 
         // (해당 GameStatSO가 해당 캐릭터에게 유효하다는 확신이 있는 경우에만 사용)
-        private GameStat? GetOrAddStat(GameStatSO statData, float defaultValue = 0f)
+        private IGameStat? GetOrAddStat(GameStatSO statData, float defaultValue = 0f)
         {
             if (statData == null)
             {
@@ -167,7 +168,7 @@ namespace TH.Attribute.Stat
             return GetStat(statData);
         }
 
-        public GameStat? GetStat(GameStatSO statData)
+        public IGameStat? GetStat(GameStatSO statData)
         {
             if (statData == null)
             {
@@ -226,15 +227,16 @@ namespace TH.Attribute.Stat
         
         #region bind/unbind stat event
 
-        public void BindEvent(GameStatSO type, Action action)
+        public IGameStat BindEvent(GameStatSO type, Action action)
         {
             if (type.IsNull() || !statIdMap.TryGetValue(type.LegacyId, out var stat))
             {
                 Logg.Log($"[{gameObject.name}.{nameof(StatHolder)}] failed to bind event to stat '{type}'");
-                return;
+                return null;
             }
 
             stat.OnStatChanged += action;
+            return stat;
         }
         
         public void UnBindEvent(GameStatSO type, Action action)
@@ -249,7 +251,7 @@ namespace TH.Attribute.Stat
         }
 
         // 아직 생성되지 않은 스탯을 기다리는 대기 콜백 목록
-        private Dictionary<GameStatSO, List<Action<float>>> pendingListeners = new();
+        private readonly Dictionary<GameStatSO, List<Action<float>>> pendingListeners = new();
 
         // 스탯 이벤트 구독 (외부 호출용)
         public void BindStatChanged(GameStatSO statSO, Action<float> callback)

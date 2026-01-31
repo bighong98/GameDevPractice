@@ -1,140 +1,140 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using UnityEngine;
-using TH.Attribute.Stat;
+// using System;
+// using System.Collections.Generic;
+// using System.Collections.ObjectModel;
+// using UnityEngine;
+// using TH.Attribute.Stat;
 
-[Serializable]
-public class CombatStat
-{
-    public float BaseValue;
+// [Serializable]
+// public class CombatStat
+// {
+//     public float BaseValue;
     
-    protected bool isDirty = true;
-    protected float value;
-    protected float lastBaseValue = float.MinValue;
+//     protected bool isDirty = true;
+//     protected float value;
+//     protected float lastBaseValue = float.MinValue;
 
-    protected readonly List<StatModifier> statModifiers;
-    public readonly ReadOnlyCollection<StatModifier> StatModifiers;
+//     protected readonly List<StatModifier> statModifiers;
+//     public readonly ReadOnlyCollection<StatModifier> StatModifiers;
 
-    public delegate void OnStatChanged();
+//     public delegate void OnStatChanged();
     
-    public virtual float Value
-    {
-        get
-        {
-            if (isDirty || !Mathf.Approximately(BaseValue, lastBaseValue)) // 값에 변동사항이 있다면
-            {
-                lastBaseValue = BaseValue;
-                value = CalculateFinalValue();
-                isDirty = false;
-            }
+//     public virtual float Value
+//     {
+//         get
+//         {
+//             if (isDirty || !Mathf.Approximately(BaseValue, lastBaseValue)) // 값에 변동사항이 있다면
+//             {
+//                 lastBaseValue = BaseValue;
+//                 value = CalculateFinalValue();
+//                 isDirty = false;
+//             }
 
-            return value;
-        }
-    }
+//             return value;
+//         }
+//     }
 
-    public CombatStat()
-    {
-        statModifiers = new List<StatModifier>();
-        StatModifiers = statModifiers.AsReadOnly();
-    }
+//     public CombatStat()
+//     {
+//         statModifiers = new List<StatModifier>();
+//         StatModifiers = statModifiers.AsReadOnly();
+//     }
 
-    public CombatStat(float baseValue) : this()
-    {
-        BaseValue = baseValue;
-    }
+//     public CombatStat(float baseValue) : this()
+//     {
+//         BaseValue = baseValue;
+//     }
 
-    // 모드 추가
-    public virtual void AddModifier(StatModifier mod, OnStatChanged onStatChanged = null)
-    {
-        isDirty = true;
-        statModifiers.Add(mod);
-        statModifiers.Sort(CompareModOrder); // CompareOrder() 규칙에 따라 모드 재정렬
-        onStatChanged?.Invoke(); // 해당 스탯 변경 시 필요한 작업이 있다면 실행
-    }
+//     // 모드 추가
+//     public virtual void AddModifier(StatModifier mod, OnStatChanged onStatChanged = null)
+//     {
+//         isDirty = true;
+//         statModifiers.Add(mod);
+//         statModifiers.Sort(CompareModOrder); // CompareOrder() 규칙에 따라 모드 재정렬
+//         onStatChanged?.Invoke(); // 해당 스탯 변경 시 필요한 작업이 있다면 실행
+//     }
 
-    // 특정 모드 제거
-    public virtual bool RemoveModifier(StatModifier mod, OnStatChanged onStatChanged = null)
-    {
-        if (statModifiers.Remove(mod))
-        {
-            isDirty = true;
-            onStatChanged?.Invoke();
-            return true; // 제거 성공: true 반환
-        }
-        return false; // 제거 시도한 모드가 없는 경우: false 반환
-    }
+//     // 특정 모드 제거
+//     public virtual bool RemoveModifier(StatModifier mod, OnStatChanged onStatChanged = null)
+//     {
+//         if (statModifiers.Remove(mod))
+//         {
+//             isDirty = true;
+//             onStatChanged?.Invoke();
+//             return true; // 제거 성공: true 반환
+//         }
+//         return false; // 제거 시도한 모드가 없는 경우: false 반환
+//     }
     
-    // 특정 출처(장비, 스킬 등)으로부터 추가된 모드 전부 제거
-    public virtual bool RemoveModifiersFromSource(object source)
-    {
-        bool removeDone = false; 
+//     // 특정 출처(장비, 스킬 등)으로부터 추가된 모드 전부 제거
+//     public virtual bool RemoveModifiersFromSource(object source)
+//     {
+//         bool removeDone = false; 
 
-        for (int i = statModifiers.Count; i >= 0; i--) // 역순(= 가장 최근에 추가된 모드부터) 조회
-        {
-            if (statModifiers[i].Source == source)
-            {
-                isDirty = true;
-                removeDone = true; // 제거된 모드가 한 개라도 있다면: true 반환
-                statModifiers.RemoveAt(i);
-            }
-        }
+//         for (int i = statModifiers.Count; i >= 0; i--) // 역순(= 가장 최근에 추가된 모드부터) 조회
+//         {
+//             if (statModifiers[i].Source == source)
+//             {
+//                 isDirty = true;
+//                 removeDone = true; // 제거된 모드가 한 개라도 있다면: true 반환
+//                 statModifiers.RemoveAt(i);
+//             }
+//         }
 
-        return removeDone;
-    }
+//         return removeDone;
+//     }
 
-    protected virtual int CompareModOrder(StatModifier a, StatModifier b)
-    {
-        if (a.Order < b.Order)
-            return -1;
+//     protected virtual int CompareModOrder(StatModifier a, StatModifier b)
+//     {
+//         if (a.Order < b.Order)
+//             return -1;
         
-        if (a.Order > b.Order)
-            return 1;
+//         if (a.Order > b.Order)
+//             return 1;
 
-        return 0; // case if (a.Order == b.Order)
-    }
+//         return 0; // case if (a.Order == b.Order)
+//     }
 
-    protected virtual float CalculateFinalValue()
-    {
-        float finalValue = BaseValue;
-        float sumPerAdd = 0;
-        int length = statModifiers.Count;
-        for (int i = 0; i < length; i++)
-        {
-            var mod = statModifiers[i];
-            switch (mod.Type)
-            {
-                case StatModCalcType.Add:
-                    finalValue += mod.Value;
-                    break;
-                case StatModCalcType.PerAdd:
-                    sumPerAdd += mod.Value;
-                    if ((i + 1 >= length) || (statModifiers[i + 1].Type != StatModCalcType.PerAdd)) // 더이상 퍼센트 합연산 모드가 없는 경우
-                    {
-                        finalValue *= 1 + sumPerAdd;
-                        sumPerAdd = 0;
-                    }
-                    break;
-                case StatModCalcType.PerMul:
-                    finalValue *= 1 + mod.Value;
-                    break;
-                default:
-                    break;
-            }
-        }
+//     protected virtual float CalculateFinalValue()
+//     {
+//         float finalValue = BaseValue;
+//         float sumPerAdd = 0;
+//         int length = statModifiers.Count;
+//         for (int i = 0; i < length; i++)
+//         {
+//             var mod = statModifiers[i];
+//             switch (mod.Type)
+//             {
+//                 case StatModCalcType.Add:
+//                     finalValue += mod.Value;
+//                     break;
+//                 case StatModCalcType.PerAdd:
+//                     sumPerAdd += mod.Value;
+//                     if ((i + 1 >= length) || (statModifiers[i + 1].Type != StatModCalcType.PerAdd)) // 더이상 퍼센트 합연산 모드가 없는 경우
+//                     {
+//                         finalValue *= 1 + sumPerAdd;
+//                         sumPerAdd = 0;
+//                     }
+//                     break;
+//                 case StatModCalcType.PerMul:
+//                     finalValue *= 1 + mod.Value;
+//                     break;
+//                 default:
+//                     break;
+//             }
+//         }
 
-        return (float)Math.Round(finalValue, 4); // 소수점 다섯번째 자리에서 반올림
-    }
+//         return (float)Math.Round(finalValue, 4); // 소수점 다섯번째 자리에서 반올림
+//     }
 
-    #region Usage example
+//     #region Usage example
 
-    // // 불가능
-    // statModifiers = null;
-    // statModifiers = new List<StatModifier>();
-    //
-    // // 가능
-    // statModifiers[0] = null;
-    // statModifiers.Add(new StatModifier());
+//     // // 불가능
+//     // statModifiers = null;
+//     // statModifiers = new List<StatModifier>();
+//     //
+//     // // 가능
+//     // statModifiers[0] = null;
+//     // statModifiers.Add(new StatModifier());
     
-    #endregion
-}
+//     #endregion
+// }
