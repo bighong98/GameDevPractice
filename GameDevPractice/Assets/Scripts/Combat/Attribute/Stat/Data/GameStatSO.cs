@@ -26,5 +26,6 @@ namespace TH.Attribute.Stat
         Resource,
         Attribute,
         Experience,
+        Others,
     }
 }

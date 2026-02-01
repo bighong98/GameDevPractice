@@ -33,3 +33,8 @@ MonoBehaviour:
     - source: {fileID: 11400000, guid: 951140a1eab4079458785564169d0fbf, type: 2}
       calculation: 0
       valuePerPoint: 10
+  - key: {fileID: 11400000, guid: f1e5c30f9cdf16849b1138083aad69d2, type: 2}
+    value:
+    - source: {fileID: 11400000, guid: 3a7cc61c3042aa04387e312907199547, type: 2}
+      calculation: 0
+      valuePerPoint: 0.2

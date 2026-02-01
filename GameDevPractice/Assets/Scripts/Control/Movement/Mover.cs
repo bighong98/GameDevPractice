@@ -1,5 +1,6 @@
 using System;
 using TH.Attribute;
+using TH.Attribute.Stat;
 using TH.SaveLoad;
 using TH.Utils;
 using UnityEngine;
@@ -16,12 +17,15 @@ namespace TH.Control.Movement
     
     public class Mover : MonoBehaviour, ISavable, IMover
     {
+        [SerializeField] private GameStatSO moveSpeedStatSO;
         [SerializeField] private float walkSpeed = 2f;
         [SerializeField] private float runSpeed = 6f;
         [SerializeField] private float speedFraction = 1f;
         
         private NavMeshAgent navMeshAgent;
         private Health health;
+        private IStatHolder statHolder;
+        private IGameStat moveSpeedStat;
         
         public event Action OnDestinationSet;   
         public event Action OnArrived;
@@ -33,6 +37,20 @@ namespace TH.Control.Movement
         {
             TryGetComponent(out navMeshAgent);
             TryGetComponent(out health);
+            TryGetComponent(out statHolder);
+
+            if (moveSpeedStatSO.IsNull() || moveSpeedStatSO.LegacyId == default)
+                this.LogWarning($"[{gameObject.name}.{GetType().Name}] invalid moveSpeedStatSO", context: this);
+        }
+
+        private void OnEnable()
+        {
+            SyncMoveSpeedStat();
+        }
+
+        private void OnDisable()
+        {
+            UnSyncMoveSpeedStat();
         }
 
         private void Update()
@@ -75,6 +93,39 @@ namespace TH.Control.Movement
             Move(moveType);
         }
         
+        private void SyncMoveSpeedStat()
+        {
+            if (statHolder.IsNull()) return;
+            if (moveSpeedStatSO.IsNull() || moveSpeedStatSO.LegacyId == default) return;
+
+            if (statHolder.BindEvent(moveSpeedStatSO, OnMoveSpeedStatDirty) is { } bindResult)
+            {
+                moveSpeedStat = bindResult;
+                OnMoveSpeedStatDirty();
+            }
+        }
+
+        private void UnSyncMoveSpeedStat()
+        {
+            if (statHolder.IsNull() || moveSpeedStatSO.IsNull()) return;
+
+            statHolder.UnBindEvent(moveSpeedStatSO, OnMoveSpeedStatDirty);
+            moveSpeedStat = null;
+        }
+
+        private void OnMoveSpeedStatDirty()
+        {
+            if (statHolder == null) return;
+            if (moveSpeedStat == null && !statHolder.TryGetStat(moveSpeedStatSO, out moveSpeedStat))
+            {
+                this.LogWarning($"OnMoveSpeedStatDirty() - failed to get move speed stat from statholder. moveSpeedStatSO: {moveSpeedStatSO}", context: this);
+                return;
+            }
+
+            walkSpeed = moveSpeedStat.Value;
+            runSpeed = moveSpeedStat.Value * 2f;
+        }
+
         #region ISavable
         
         public object CaptureState()

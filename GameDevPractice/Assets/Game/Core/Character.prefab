@@ -99,8 +99,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3158f4ba81cef3247ad0891f2bb3ed33, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  HPBarPrefab: {fileID: 2676722583102593113, guid: 23d1f639e15c7f74cb905caf3aef5bed, type: 3}
   hpStatSO: {fileID: 11400000, guid: 9e86dca11c02ff94396bdadebb64b5cb, type: 2}
+  maxHp: 1
+  hp: 1
 --- !u!136 &-4321172655345262780
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -189,6 +190,7 @@ MonoBehaviour:
   characterType: 0
   progression: {fileID: 0}
   level: 0
+  editorStats: []
 --- !u!114 &3578163855223342188
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -227,6 +229,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bdd2503e2fe5ee0408f24be7b7c958cc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TH.Control.Movement.MoverRefactoring
+  moveSpeedStatSO: {fileID: 11400000, guid: f1e5c30f9cdf16849b1138083aad69d2, type: 2}
   walkSpeed: 2
   runSpeed: 6
   speedFraction: 1
