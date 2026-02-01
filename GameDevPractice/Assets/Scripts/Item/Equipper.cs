@@ -127,103 +127,8 @@ namespace TH.Item
             }
         }
 
-        // private void DeSpawnWeapon()
-        // {
-        //     if (currentWeapon != null && weaponPools.TryGetValue(currentWeapon.Type, out var pool))
-        //     {
-        //         pool.Release(currentWeapon);
-        //     }
-        // }
-                // private bool SpawnWeapon(WeaponTypeSO weaponType)
-        // {
-        //     if (!isInit) return false;
-        //     
-        //     if (!weaponPools.TryGetValue(weaponType, out var weaponPool))
-        //     {
-        //         weaponPool = PoolManager.Instance.GetPool(
-        //             weaponType.EquippedPrefab, 
-        //             GetHandGrip(weaponType), 
-        //             registerPool: false);
-        //         weaponPools[weaponType] = weaponPool; // 풀 딕셔너리에 신규 풀 등록
-        //     }
-        //     
-        //     if (weaponPool is { } pool && pool.Get() is WeaponTypeHolder result)
-        //     {
-        //         result.owner = fighter;
-        //         currentWeapon = result;
-        //         return true;
-        //     }
-        //
-        //     return false;
-        // }
-
         private readonly Dictionary<WeaponTypeHolder, List<(Transform, Vector3, Quaternion)>> _cachedLocalTransforms = new();
-        // private bool SpawnWeapon(WeaponTypeSO weaponType)
-        // {
-        //     if (!isInit) return false;
-        //
-        //     if (!weaponPools.TryGetValue(weaponType, out var weaponPool))
-        //     {
-        //         weaponPool = PoolManager.Instance.GetPool(
-        //             weaponType.EquippedPrefab,
-        //             GetHandGrip(weaponType),
-        //             registerPool: false);
-        //
-        //         weaponPools[weaponType] = weaponPool;
-        //     }
-        //
-        //     if (weaponPool is not { } pool || pool.Get() is not WeaponTypeHolder result)
-        //         return false;
-        //
-        //     result.owner = fighter;
-        //     currentWeapon = result;
-        //
-        //     if (ignoreLocalPosition)
-        //     {
-        //         var list = new List<(Transform, Vector3, Quaternion)>();
-        //         var root = result.transform;
-        //
-        //         // 자기 자신 제외, 모든 자식 대상으로 캐싱
-        //         foreach (var t in root.GetComponentsInChildren<Transform>(includeInactive: true))
-        //         {
-        //             if (t == root) continue;
-        //
-        //             list.Add((t, t.localPosition, t.localRotation));
-        //             t.localPosition = Vector3.zero;
-        //             // t.localRotation = Quaternion.identity;
-        //             t.localRotation = Quaternion.Euler(0f, 0f, -180f);
-        //         }   
-        //
-        //         _cachedLocalTransforms[result] = list;
-        //     }
-        //
-        //     return true;
-        // }
-        //
-        //
-        // private void DeSpawnWeapon()
-        // {
-        //     if (currentWeapon == null) return;
-        //
-        //     // ignoreLocalPosition 케이스였다면 원복
-        //     if (ignoreLocalPosition && _cachedLocalTransforms.TryGetValue(currentWeapon, out var cached))
-        //     {
-        //         foreach (var (t, pos, rot) in cached)
-        //         {
-        //             if (!t) continue;
-        //             t.localPosition = pos;
-        //             t.localRotation = rot;
-        //         }
-        //         _cachedLocalTransforms.Remove(currentWeapon);
-        //     }
-        //
-        //     if (weaponPools.TryGetValue(currentWeapon.Type, out var pool))
-        //     {
-        //         pool.Release(currentWeapon);
-        //     }
-        //
-        //     currentWeapon = null;
-        // }
+        
         
         private bool SpawnWeapon(WeaponTypeSO weaponType)
         {
@@ -244,9 +149,14 @@ namespace TH.Item
 
             result.owner = fighter;
 
-            if (weaponType.HasProjectile && result.TryGetComponent(out ProjectileSpawner projectileSpawner))
+            if (weaponType.HasProjectile && weaponType.GetProjectilePrefab is { } projectilePrefab && projectilePrefab.IsNotNull())
             {
+                var projectileSpawner = result.gameObject.GetOrAddComponent<ProjectileSpawner>();
                 projectileSpawner.InitializeProjectileSpawner(fighter, weaponType);
+                if (projectileSpawner.pool == null)
+                {
+                    projectileSpawner.SetPool(projectilePrefab);
+                }
             }
 
             currentWeapon = result;

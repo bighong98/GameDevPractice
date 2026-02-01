@@ -21,13 +21,17 @@ namespace TH.Item
             
                 if (!Type.HasProjectile 
                     || Type.GetProjectilePrefab is not { } projectilePrefab || !projectilePrefab.IsNotNull()) return;
-            
-                if (gameObject.GetOrAddComponent<ProjectileSpawner>() is { } projectileSpawner)
+
+                if (!isActiveAndEnabled || owner.IsNull()) return;
+                if (owner.GetWeaponEquipperInfo.weapon != Type) return;
+
+                var projectileSpawner = gameObject.GetOrAddComponent<ProjectileSpawner>();
+                // todo: 필요하다면 투사체가 생성(onGet), 생성해제(onRelease)에 필요한 작업 추가
+                projectileSpawner.InitializeProjectileSpawner(owner, Type);
+                if (projectileSpawner.pool == null)
                 {
-                    // todo: 필요하다면 투사체가 생성(onGet), 생성해제(onRelease)에 필요한 작업 추가
-                    projectileSpawner.InitializeProjectileSpawner(owner, Type);
                     projectileSpawner.SetPool(projectilePrefab);
-                };
+                }
             }
             catch (Exception e)
             {

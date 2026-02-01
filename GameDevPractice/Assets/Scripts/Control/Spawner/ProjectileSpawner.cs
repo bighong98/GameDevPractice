@@ -18,8 +18,15 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
     private ICombatSystem combatSystem;
     private IAttacker currentOwner;
     private IGameStat cachedAdStat;
-    
+
     [SerializeField] private GameObject onHitParticlePrefab;
+
+    private const string AllyLayerName = "Ally";
+    private const string EnemyLayerName = "Enemy";
+    private const string AllyAttackLayerName = "AllyAttack";
+    private const string EnemyAttackLayerName = "EnemyAttack";
+
+    private int projectileLayer = -1;
 
     protected override void Start()
     {
@@ -44,20 +51,31 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
         {
             Logg.Log("Trying to Add PlayOnHitEffect as delegate");
             onHitParticlePrefab = particlePrefab;
-            
-            onCreate = obj =>
-            {
-                if (obj is not AttackProjectile projectile) return;
-                projectile.SetProjectile(combatSystem, projectileAttackSource);
-                projectile.OnHit += PlayOnHitEffect; // todo: 현 구조는 Spawner가 사라지면 PlayOnHitEffect 실행이 불가능함. 오류 발생 가능성이 존재한다면 수정 필요
-            };
-
-            onGet = obj =>
-            {
-                if (obj is not AttackProjectile projectile) return;
-                projectile.SetProjectile(projectileAttackSource);
-            };
         }
+        else
+        {
+            onHitParticlePrefab = null;
+        }
+
+        onCreate = obj =>
+        {
+            if (obj is not AttackProjectile projectile) return;
+            projectile.SetProjectile(combatSystem, projectileAttackSource);
+            ApplyProjectileLayer(projectile);
+            projectile.OnHit -= PlayOnHitEffect;
+            if (onHitParticlePrefab != null)
+                projectile.OnHit += PlayOnHitEffect;
+        };
+
+        onGet = obj =>
+        {
+            if (obj is not AttackProjectile projectile) return;
+            projectile.SetProjectile(projectileAttackSource);
+            ApplyProjectileLayer(projectile);
+            projectile.OnHit -= PlayOnHitEffect;
+            if (onHitParticlePrefab != null)
+                projectile.OnHit += PlayOnHitEffect;
+        };
     }
 
     private void OnDisable()
@@ -71,7 +89,9 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
         currentOwner = owner;
 
         if (currentOwner.IsNull()) return;
-        
+
+        projectileLayer = ResolveProjectileLayer(currentOwner);
+
         currentOwner.OnTargetSet += SetTarget;
         currentOwner.OnAttack += Shoot;
 
@@ -101,10 +121,51 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
         }
 
         currentOwner = null;
+        projectileLayer = -1;
         hasTarget = false;
         projectileTarget = null;
     }
 
+    private int ResolveProjectileLayer(IAttacker owner)
+    {
+        if (owner is not Component ownerComponent) return -1;
+
+        var ownerLayer = ownerComponent.gameObject.layer;
+        var ownerLayerName = LayerMask.LayerToName(ownerLayer);
+
+        var targetLayerName = ownerLayerName switch
+        {
+            AllyLayerName => AllyAttackLayerName,
+            EnemyLayerName => EnemyAttackLayerName,
+            _ => ownerLayerName
+        };
+
+        var targetLayer = LayerMask.NameToLayer(targetLayerName);
+        return targetLayer >= 0 ? targetLayer : ownerLayer;
+    }
+
+    private void ApplyProjectileLayer(AttackProjectile projectile)
+    {
+        if (projectile == null) return;
+        var layer = projectileLayer;
+        if (layer < 0 && currentOwner.IsNotNull())
+            layer = ResolveProjectileLayer(currentOwner);
+        if (layer < 0) return;
+
+        SetLayerRecursively(projectile.gameObject, layer);
+    }
+
+    private static void SetLayerRecursively(GameObject root, int layer)
+    {
+        root.layer = layer;
+        foreach (Transform child in root.transform)
+        {
+            if (child == null) continue;
+            SetLayerRecursively(child.gameObject, layer);
+        }
+    }
+
+    
     private void OnAttackStatChanged()
     {
         if (currentOwner.IsNull() || cachedAdStat == null) return;
@@ -124,13 +185,18 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
     
     private void Shoot()
     {
-        if (!hasTarget) return; // 타겟이 없다면 쏘지 않음
+        if (!hasTarget) return; // ?寃잛씠 ?녿떎硫??섏? ?딆쓬
 
         combatSystem ??= ServiceLocator.Get<ICombatSystem>();
         var projectile = base.Spawn(transform.position);
         if (projectile == null) return;
 
-        // 풀 콜백이 stale한 경우를 대비해 발사 시점에 최신 소스 주입
+        ApplyProjectileLayer(projectile);
+        projectile.OnHit -= PlayOnHitEffect;
+        if (onHitParticlePrefab != null)
+            projectile.OnHit += PlayOnHitEffect;
+
+        // Ensure latest attack source is applied before launch.
         projectile.SetProjectile(combatSystem, projectileAttackSource);
         projectile.SetTargetAndShoot(projectileTarget, isHoming);
     }

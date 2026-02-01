@@ -8,6 +8,7 @@ using TH.Core.Pool;
 using TH.Core.Service;
 
 using Vector3 = UnityEngine.Vector3;
+using TH.Utils;
 
 public class AttackProjectile : MonoBehaviour, IPoolObject
 {
@@ -123,10 +124,12 @@ public class AttackProjectile : MonoBehaviour, IPoolObject
         //todo: Target이 아닐 때 처리
         //todo: 대상이 사망 상태일 때 처리
         //todo: 논타겟팅/타겟팅 스킬의 투사체일 때 처리
-        if (other.GetComponent<IDamageable>() is { } victim)
+
+        if (other.TryGetComponent(out IDamageable victim))
         {
             combatSystem.ApplyHit(attackSource.ToRequest(victim));
         }
+        this.Log($"OnTriggerEnter(): collided with {other}", Logg.LoggingMode.InProgress);
         OnHit?.Invoke(transform.position);
         KillSelf();
     }
