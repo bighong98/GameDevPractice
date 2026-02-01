@@ -80,7 +80,10 @@ namespace TH.Item
                 return;
             }
 
+            // 스토리지(Model) 이벤트 바인드
+            BindStorageEvents(pStorage); // 드랍 장비 아이템 자동 장착 버그 대응(Start -> Awake)
             RenewPlayerReference();
+            
             UpdatePlayerStatusPanel();
             SceneManager.sceneLoaded += OnSceneLoaded;
         }
@@ -115,10 +118,6 @@ namespace TH.Item
                               $"{nameof(IEquipmentHolderUI)} from {nameof(IPlayerInventoryUI)}");
                 return;
             }
-
-            // 스토리지(Model) 이벤트 바인드
-            BindStorageEvents(pStorage);
-            BindStorageEvents(pEquipHolder);
 
             // UI(View) 이벤트 바인드
             BindStorageUIEvents(pStorage);

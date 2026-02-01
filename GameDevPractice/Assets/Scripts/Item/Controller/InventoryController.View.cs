@@ -50,7 +50,17 @@ namespace TH.Item
             if (slot is not { HasItem: true, GetItem: { } item, GetItemInfo: { } itemData }) return;
             if (!itemData.isUsable) return;
 
+            if (storage == pStorage && pEquipHolder == null)
+            {
+                RenewPlayerReference();
+            }
+
             IGameItemStorage dest = storage == pStorage ? pEquipHolder : pStorage;
+            if (dest == null)
+            {
+                Logg.LogWarning($"[{nameof(InventoryController)}] OnSlotItemTryUsed - destination storage is null. storage: {storage}");
+                return;
+            }
 
             switch (item.Type)
             {
