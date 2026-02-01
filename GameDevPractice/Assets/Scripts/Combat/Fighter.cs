@@ -37,6 +37,7 @@ public class Fighter : MonoBehaviour, IFighter
     private ICombatSystem combatSystem;
     // 객체 컴포넌트
     private IStatHolder statHolder;
+    private IGameStat attackStat;
     private IEquipmentHolder equipHolder;
     private Animator animator;
     
@@ -79,7 +80,8 @@ public class Fighter : MonoBehaviour, IFighter
             equipHolder.OnEquipmentChanged += OnEquipmentChanged;
 
         if (statHolder.IsNotNull())
-            statHolder.BindStatChanged(GameStats.AD, OnAttackStatChanged);
+            statHolder.BindEvent(GameStats.AD, OnAttackStatDirty);
+        
     }
 
     private void OnDisable()
@@ -88,7 +90,9 @@ public class Fighter : MonoBehaviour, IFighter
             equipHolder.OnEquipmentChanged -= OnEquipmentChanged;
 
         if (statHolder.IsNotNull())
-            statHolder.UnbindStatChanged(GameStats.AD, OnAttackStatChanged);
+            statHolder.UnBindEvent(GameStats.AD, OnAttackStatDirty);
+
+        attackStat = null;
     }
 
     private float timeBetweenAttacks = 1f; // todo: move to equipped weapon
@@ -166,6 +170,7 @@ public class Fighter : MonoBehaviour, IFighter
     {
         if (statHolder?.GetStat(statType: GameStats.AD) is { } result)
         {
+            attackStat = result;
             currAttackSource = new AttackSource(this, result.Value);
         }
         else
@@ -174,10 +179,18 @@ public class Fighter : MonoBehaviour, IFighter
         }
     }
 
-    private void OnAttackStatChanged(float amount)
+    private void OnAttackStatDirty()
     {
-        currAttackSource = new AttackSource(this, amount);
+        if (statHolder == null) return;
+        if (attackStat == null)
+            attackStat = statHolder.GetStat(GameStats.AD);
+
+        if (attackStat == null) return;
+        currAttackSource = new AttackSource(this, attackStat.Value);
     }
+
+
+
 
 
     #endregion

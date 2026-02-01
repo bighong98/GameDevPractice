@@ -35,9 +35,9 @@ namespace TH.Combat.Service
 
 #if UNITY_EDITOR
             float beforeXp = attackerExpHolder.GetCurrXp;
-            Logg.Log($"[KillEventHandler] reward:{rewardXpAmount.Value} attacker:{ac.name}({ac.GetInstanceID()}) scene:{ac.gameObject.scene.name} xp:{beforeXp}", Logg.LoggingMode.InProgress, ac);
+            Logg.Log($"[KillEventHandler] reward:{rewardXpAmount.Value} attacker:{ac.name}({ac.GetInstanceID()}) scene:{ac.gameObject.scene.name} xp:{beforeXp}", Logg.LoggingMode.Completed, ac);
             attackerExpHolder.GainXp(rewardXpAmount.Value);
-            Logg.Log($"[KillEventHandler] xp after:{attackerExpHolder.GetCurrXp}", Logg.LoggingMode.InProgress, ac);
+            Logg.Log($"[KillEventHandler] xp after:{attackerExpHolder.GetCurrXp}", Logg.LoggingMode.Completed, ac);
 #else
             attackerExpHolder.GainXp(rewardXpAmount.Value);
 #endif

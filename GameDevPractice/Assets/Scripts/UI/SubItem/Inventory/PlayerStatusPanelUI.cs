@@ -20,6 +20,9 @@ public class PlayerStatusPanelUI : BaseUI
     private StatHolder statHolder;
 
     private readonly Dictionary<GameStatSO, StatEntryBinding> statEntries = new();
+    private readonly HashSet<StatEntryBinding> pendingEntryUpdates = new();
+    private readonly List<StatEntryBinding> pendingEntryBuffer = new();
+    private bool hasPendingEntryUpdates;
     private readonly List<PlayerStatusPanelStatEntryUI> entryPool = new();
     private int entryPoolIndex;
     private readonly Dictionary<GameStatCategory, PlayerStatusPanelSectionUI> sectionLookup = new();
@@ -232,7 +235,7 @@ public class PlayerStatusPanelUI : BaseUI
                 Stat = stat,
             };
 
-            binding.OnChanged = () => UpdateStatValue(binding);
+            binding.OnChanged = () => MarkStatDirty(binding);
             statEntries[statType] = binding;
             statHolder.BindEvent(statType, binding.OnChanged);
 
@@ -254,6 +257,32 @@ public class PlayerStatusPanelUI : BaseUI
                 Logg.LoggingMode.Completed);
         }
     }
+
+    private void MarkStatDirty(StatEntryBinding binding)
+    {
+        if (binding?.Entry == null || binding.Stat == null) return;
+        if (pendingEntryUpdates.Add(binding))
+            hasPendingEntryUpdates = true;
+    }
+
+
+    private void LateUpdate()
+    {
+        if (!hasPendingEntryUpdates) return;
+        hasPendingEntryUpdates = false;
+
+        pendingEntryBuffer.Clear();
+        pendingEntryBuffer.AddRange(pendingEntryUpdates);
+        pendingEntryUpdates.Clear();
+
+        foreach (var binding in pendingEntryBuffer)
+        {
+            UpdateStatValue(binding);
+        }
+
+        pendingEntryBuffer.Clear();
+    }
+
 
     private void RebuildLayouts()
     {
@@ -345,6 +374,9 @@ public class PlayerStatusPanelUI : BaseUI
                 entry.Entry.gameObject.SetActive(false);
         }
         statEntries.Clear();
+        pendingEntryUpdates.Clear();
+        pendingEntryBuffer.Clear();
+        hasPendingEntryUpdates = false;
         entryPoolIndex = 0;
     }
     private void OnDestroy()

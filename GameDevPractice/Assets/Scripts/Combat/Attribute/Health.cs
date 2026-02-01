@@ -26,6 +26,7 @@ namespace TH.Attribute
         [SerializeField] private float hp = 1;
 
         private IStatHolder statHolder;
+        private IGameStat maxHpStat;
         private GameObject characterHpBarPrefab;
         
         // 외부 서비스
@@ -66,10 +67,7 @@ namespace TH.Attribute
 
         private void OnEnable()
         {
-            if (statHolder.IsNotNull())
-            {
-                statHolder.BindStatChanged(hpStatSO, OnHealthStatChanged);
-            }
+            SyncHpStat();
 
             textSpawner?.Register(this, FloatingTextEventType.Damage);
             textSpawner?.Register(this, FloatingTextEventType.Heal);
@@ -79,14 +77,11 @@ namespace TH.Attribute
 
         private void OnDisable()
         {
-            if (statHolder.IsNotNull())
-            {
-                statHolder.UnbindStatChanged(hpStatSO, OnHealthStatChanged);
-            }
-            
+            UnSyncHpStat();
+
             textSpawner?.UnRegister(this, FloatingTextEventType.Damage);
             textSpawner?.UnRegister(this, FloatingTextEventType.Heal);
-            
+
             ReleaseHPBar();
         }
 
@@ -124,7 +119,7 @@ namespace TH.Attribute
             if (IsDead && !byForce) return; // 사망 상태인 경우 체력 조정x
             
             Logg.Log($"[{gameObject.name}.{GetType()}] SetCurrentHp ({amount})", Logg.LoggingMode.Completed);
-            hp = Mathf.Clamp(amount, 0, maxHp);
+            hp = Mathf.Round(Mathf.Clamp(amount, 0, maxHp)); // 소숫점 버림
 
             OnHealthRatioChanged?.Invoke(hp / maxHp);
             OnCurrHealthChanged?.Invoke(hp);
@@ -194,10 +189,38 @@ namespace TH.Attribute
             OnRevived?.Invoke();
         }
 
-        private void OnHealthStatChanged(float amount)
+        private void SyncHpStat()
         {
-            SetMaxHp(amount);
+            if (statHolder.IsNull()) return;
+            if (statHolder.BindEvent(hpStatSO, OnHealthStatDirty) is {} bindResult)
+            {
+                maxHpStat = bindResult;
+                OnHealthStatDirty();
+            } 
         }
+
+        private void UnSyncHpStat()
+        {
+            if (statHolder.IsNull()) return;
+
+            statHolder.UnBindEvent(hpStatSO, OnHealthStatDirty);
+            maxHpStat = null;
+        }
+
+        private void OnHealthStatDirty()
+        {
+            if (statHolder == null) return;
+            if (maxHpStat == null && !statHolder.TryGetStat(hpStatSO, out maxHpStat))
+            {
+                this.LogWarning($"OnHealthStatDirty() - failed to get maxHp stat from statholder. hpStatSO: {hpStatSO}", context: this);
+                return;
+            }
+
+            SetMaxHp(maxHpStat.Value);
+        }
+
+
+
 
         #region ISavable
         

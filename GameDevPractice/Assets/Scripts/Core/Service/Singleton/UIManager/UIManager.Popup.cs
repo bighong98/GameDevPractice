@@ -18,7 +18,6 @@ namespace TH.Core.Service
 
         /// <summary>팝업 중복 오픈 체크용 딕셔너리</summary>
         private readonly Dictionary<Type, bool> popupDuplicateCheck = new();
-        private bool logInventoryOpenFrame = true;
         
         #region Popup UI Method
 
@@ -338,10 +337,7 @@ namespace TH.Core.Service
 
         private void ShowInventoryUI()
         {
-            if (logInventoryOpenFrame)
-            {
-                Logg.Log($"[UIManager] Inventory open frame: {Time.frameCount}", Logg.LoggingMode.InProgress);
-            }
+            Logg.Log($"[UIManager] Inventory open frame: {Time.frameCount}", Logg.LoggingMode.Completed);
             ShowPopupUI<InventoryUI>(InventoryUIKey);
         }
 

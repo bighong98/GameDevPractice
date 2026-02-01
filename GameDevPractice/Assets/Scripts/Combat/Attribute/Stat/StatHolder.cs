@@ -16,9 +16,9 @@ namespace TH.Attribute.Stat
         [SerializeField] private CharacterType characterType;
         [SerializeField] private ProgressionSO progression; // serialize for debug
 
-        private readonly Dictionary<int, GameStat> statIdMap = new();
-        private Dictionary<GameStatSO, GameStat> stats = new Dictionary<GameStatSO, GameStat>();
-        public IReadOnlyDictionary<GameStatSO, GameStat> Stats => stats;
+        private readonly Dictionary<int, IGameStat> statIdMap = new();
+        private Dictionary<GameStatSO, IGameStat> stats = new ();
+        public IReadOnlyDictionary<GameStatSO, IGameStat> Stats => stats;
 
         private int startingLevel; 
         [SerializeField] private int level; // serialize for debug
@@ -117,7 +117,7 @@ namespace TH.Attribute.Stat
         {
             stats[statSO] = gameStat;
             statIdMap[statSO.LegacyId] = gameStat;
-            RegisterStat(statSO, gameStat);
+            InvokePendingCallbacks(statSO, gameStat);
             AddEditorStatList(statSO, gameStat);
         }
 
@@ -146,6 +146,17 @@ namespace TH.Attribute.Stat
         }
 
         #region Get Stat
+
+        public bool TryGetStat(GameStatSO statType, out IGameStat stat)
+        {
+            if (statType == null)
+            {
+                stat = default;
+                return false;
+            }
+
+            return statIdMap.TryGetValue(statType.LegacyId, out stat);
+        }
 
 #nullable enable
         // statData 기반으로 능력치 조회 + 등록된 능력치가 없을 경우 임의의 기본값으로 생성 및 추가 
@@ -183,7 +194,7 @@ namespace TH.Attribute.Stat
             return null;
         }
 
-        public float GetStat(GameStatSO statType, int lv)
+        public float GetStatForLevel(GameStatSO statType, int lv)
         {
             Logg.Log($"[from '{gameObject.name}'] GetStat({statType}, {characterType}, {lv})", Logg.LoggingMode.InProgress);
             return progression.GetProgressionStat(statType, characterType, lv);
@@ -227,11 +238,21 @@ namespace TH.Attribute.Stat
         
         #region bind/unbind stat event
 
-        public IGameStat BindEvent(GameStatSO type, Action action)
+        public IGameStat BindEvent(GameStatSO type, Action action, bool pending = true)
         {
-            if (type.IsNull() || !statIdMap.TryGetValue(type.LegacyId, out var stat))
+            if (action == null || type.IsNull()) return null;
+            if (!statIdMap.TryGetValue(type.LegacyId, out var stat))
             {
-                Logg.Log($"[{gameObject.name}.{nameof(StatHolder)}] failed to bind event to stat '{type}'");
+                Logg.Log($"[{gameObject.name}.{nameof(StatHolder)}] stat is not initialized for '{type}'" 
+                     + $"{(pending ? "instead register callback in pendingList" : string.Empty)}");
+
+                if (pending)
+                {
+                    if (!pendingVoidListeners.ContainsKey(type))
+                        pendingVoidListeners[type] = new List<Action>();
+                    pendingVoidListeners[type].Add(action);
+                }
+
                 return null;
             }
 
@@ -239,77 +260,89 @@ namespace TH.Attribute.Stat
             return stat;
         }
         
-        public void UnBindEvent(GameStatSO type, Action action)
+        public void UnBindEvent(GameStatSO statSO, Action callback)
         {
-            if (type.IsNull() || !statIdMap.TryGetValue(type.LegacyId, out var stat))
+            if (callback == null) return;
+            if (statSO.IsNull() || !statIdMap.TryGetValue(statSO.LegacyId, out var stat))
             {
-                Logg.Log($"[{gameObject.name}.{nameof(StatHolder)}] failed to bind event to stat '{type}'");
+                Logg.Log($"[{gameObject.name}.{nameof(StatHolder)}] failed to bind event to stat '{statSO}'");
                 return;
             }
 
-            stat.OnStatChanged -= action;
+            stat.OnStatChanged -= callback;
+
+            if (!pendingVoidListeners.TryGetValue(statSO, out var pendingActions)) return;
+            pendingActions.Remove(callback);
         }
 
         // 아직 생성되지 않은 스탯을 기다리는 대기 콜백 목록
+        private readonly Dictionary<GameStatSO, List<Action>> pendingVoidListeners = new();
         private readonly Dictionary<GameStatSO, List<Action<float>>> pendingListeners = new();
 
-        // 스탯 이벤트 구독 (외부 호출용)
-        public void BindStatChanged(GameStatSO statSO, Action<float> callback)
+        // 스탯 이벤트 구독 (스탯 변동이 Eager 하게 계산되어야 하는 경우 사용)
+        // -> notice: BindStatChanged로 IGameStat.OnStatChangedWithValue에 콜백이 등록된 스탯 인스턴스는 더이상 lazy하게 작동하지 않음
+        public void BindStatChanged(GameStatSO statSO, Action<float> callback, bool pending = false)
         {
             if (statSO == null || callback == null) return;
 
-            // Case 1: 스탯이 이미 존재하는 경우 -> 즉시 연결
+            // 스탯이 이미 캐릭터 스탯 목록에 존재하는 경우 -> 즉시 콜백 등록 및 현재 값 전달
             if (stats.TryGetValue(statSO, out var stat))
             {
                 stat.OnStatChangedWithValue += callback;
                 callback.Invoke(stat.Value); // 현재 값으로 초기화 보장
+                return;
             }
-            // Case 2: 스탯이 아직 없는 경우 -> 대기 명단(Pending)에 등록
-            else
-            {
-                if (!pendingListeners.ContainsKey(statSO))
-                    pendingListeners[statSO] = new List<Action<float>>();
-                
-                pendingListeners[statSO].Add(callback);
-                
-                // 주의: 스탯이 없으므로 invokeImmediately가 true여도 
-                // 현재 값을 줄 수 없음. 생성될 때 호출되기를 기다려야 함.
-            }
+
+            // 스탯이 아직 없는 경우 -> 대기 명단(Pending)에 등록
+            if (!pendingListeners.ContainsKey(statSO))
+                pendingListeners[statSO] = new List<Action<float>>();
+            
+            pendingListeners[statSO].Add(callback);
         }
 
         // 스탯 이벤트 구독 해제 
         public void UnbindStatChanged(GameStatSO statSO, Action<float> callback)
         {
-            if (statSO == null) return;
-
-            // 이미 존재하는 스탯에서 해제
-            if (stats.TryGetValue(statSO, out var stat))
+            if (callback == null) return;
+            if (statSO.IsNull() || !statIdMap.TryGetValue(statSO.LegacyId, out var stat))
             {
-                stat.OnStatChangedWithValue -= callback;
+                this.Log($"[{gameObject.name}] failed to bind event to stat '{statSO}'");
+                return;
             }
 
-            // 대기 명단에서도 제거 (아직 생성 안 됐는데 리스너가 죽는 경우 대비)
-            if (pendingListeners.TryGetValue(statSO, out var list))
-            {
-                list.Remove(callback);
-                if (list.Count == 0) pendingListeners.Remove(statSO);
-            }
+            // 스탯 콜백 연결 해제
+            stat.OnStatChangedWithValue -= callback;
+
+            // 대기 명단에서도 제거
+            if (!pendingListeners.TryGetValue(statSO, out var pendingList)) return;
+            pendingList.Remove(callback);
         }
 
-        // 실제로 스탯이 생성(초기화)되는 시점에 호출
-        // TypeHolder에서 데이터를 받아 스탯을 생성한 직후 이 메서드를 불러줘야 함
-        private void RegisterStat(GameStatSO statSO, GameStat newStat)
+        // 특정 스탯 생성을 대기 중인 콜백 목록을 조회하고 일괄 처리(스탯 값 전달 + 이벤트 연결)
+        // 실제로 스탯이 생성(초기화)되는 시점에 호출되어야함
+        private void InvokePendingCallbacks(GameStatSO statSO, GameStat newStat)
         {
-            // 대기 중이던 리스너가 있다면 일괄 연결 및 처리
-            if (!pendingListeners.TryGetValue(statSO, out var callbacks)) return;
-            
-            foreach (var callback in callbacks)
+            // Action<float> 타입 콜백 대기열 처리 
+            if (pendingListeners.TryGetValue(statSO, out var floatCallbacks))
             {
-                newStat.OnStatChangedWithValue += callback; // 이벤트 연결
-                callback.Invoke(newStat.Value);    // 초기값 동기화 (Health의 MaxHp 갱신)
+                foreach (var callback in floatCallbacks)
+                {
+                    newStat.OnStatChangedWithValue += callback; // 이벤트 연결
+                    callback.Invoke(newStat.Value);             // 초기값 동기화
+                }
+                pendingListeners.Remove(statSO);
             }
-            // 대기 목록에서 제거 
-            pendingListeners.Remove(statSO);
+
+            // Action 타입 콜백 대기열 처리
+            if (pendingVoidListeners.TryGetValue(statSO, out var voidCallbacks))
+            {
+                foreach (var callback in voidCallbacks)
+                {
+                    newStat.OnStatChanged += callback; // 이벤트 연결
+                    callback.Invoke(); // 초기값 동기화 (ex: Health의 MaxHp 갱신)
+                }
+                pendingVoidListeners.Remove(statSO);
+            }
         }
 
         #endregion
