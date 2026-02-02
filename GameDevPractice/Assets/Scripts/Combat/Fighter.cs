@@ -18,20 +18,16 @@ public class Fighter : MonoBehaviour, IFighter
     public event Action<Health> OnTargetSet; // 공격 타겟(target) 변경 시
     public event Action OnAttackReady; // 공격 준비 완료 시 (공격 가능한 적 한정)
     
-    
-    public event Action<AttackSource> OnAttackSourceChanged;
-
-    public AttackSource CurrentAttackSource => currAttackSource;
     public bool IsTargetInRange 
         => target.IsNotNull() && (Vector3.Distance(transform.position, target.transform.position) <= currentWeapon.Value.AttackRange);
     public bool IsTargetValid => target.IsNotNull() && !target.IsDead;
     public Health Target => target;
 
     // IWeaponEquipHandler
-    public event Action<WeaponTypeSO, Animator> OnEquipWeapon;
+    public event Action<WeaponTypeSO> OnEquipWeapon;
     
     public bool IsEquippingWeapon => currentWeapon != null;
-    public (WeaponTypeSO weapon, Animator animator) GetWeaponEquipperInfo => (currentWeapon.Value, animator);
+    public WeaponTypeSO GetEquippedWeaponInfo => currentWeapon.Value;
     
     private LazyValue<WeaponTypeSO> currentWeapon; // 현재 장착 중인 무기
     [SerializeField] private WeaponTypeSO defaultWeapon; // 장비 장착해제시 적용되어야할 무기종(ex-Unarmed)
@@ -40,10 +36,7 @@ public class Fighter : MonoBehaviour, IFighter
     private ICombatSystem combatSystem;
     // 객체 컴포넌트
     private IStatHolder statHolder;
-    private IGameStat attackStat;
-    private GameStatSO attackSourceStatSO;
     private IEquipmentHolder equipHolder;
-    private Animator animator;
     
     private void Awake()
     {
@@ -53,8 +46,6 @@ public class Fighter : MonoBehaviour, IFighter
             Logg.LogWarning($"[{gameObject.name}.{GetType().Name}] No IStatHolder found");
         if (!TryGetComponent(out equipHolder))
             Logg.LogWarning($"[{gameObject.name}.{GetType().Name}] No IEquipmentHolder found");
-        if (!TryGetComponent(out animator))
-            Logg.LogWarning($"[{gameObject.name}.{GetType().Name}] No Animator found");
 
         currentWeapon = new LazyValue<WeaponTypeSO>(SetDefaultWeapon);
     }
@@ -82,18 +73,12 @@ public class Fighter : MonoBehaviour, IFighter
     {
         if (equipHolder.IsNotNull())
             equipHolder.OnEquipmentChanged += OnEquipmentChanged;
-
-        if (statHolder.IsNotNull() && attackSourceStatSO.IsNotNull())
-            attackStat = statHolder.BindEvent(attackSourceStatSO, OnAttackStatDirty);
-        
     }
 
     private void OnDisable()
     {
         if (equipHolder.IsNotNull())
             equipHolder.OnEquipmentChanged -= OnEquipmentChanged;
-
-        UnbindAttackSourceStat();
     }
 
     private float timeBetweenAttacks = 1f; // todo: move to equipped weapon
@@ -177,70 +162,14 @@ public class Fighter : MonoBehaviour, IFighter
             return;
         }
 
-        BindAttackSourceStat(newAtkSrcStatSO);
-        if (attackStat == null)
+        if (!statHolder.TryGetStat(newAtkSrcStatSO, out var atkSrcStat))
         {
-            if (!statHolder.TryGetStat(newAtkSrcStatSO, out var atkSrcStat))
-            {
-                this.LogWarning($"ChangeAttackSource() - failed to find stat '{newAtkSrcStatSO}'", context: this);
-                return;
-            }
-
-            attackStat = atkSrcStat;
-        }
-        currAttackSource = new AttackSource(this, attackStat.Value);
-        OnAttackSourceChanged?.Invoke(currAttackSource);
-
-        // if (statHolder?.GetStat(statType: GameStats.AD) is { } result)
-        // {
-        //     attackStat = result;
-        //     currAttackSource = new AttackSource(this, result.Value);
-        // }
-        // else
-        // {
-        //     Logg.LogError($"[{gameObject.name}.Fighter] Failed to get AD stat for attack source");
-        // }
-    }
-
-    private void OnAttackStatDirty()
-    {
-        if (statHolder == null || attackSourceStatSO.IsNull()) return;
-        if (attackStat == null)
-            attackStat = statHolder.GetStat(attackSourceStatSO);
-
-        if (attackStat == null) return;
-        currAttackSource = new AttackSource(this, attackStat.Value);
-        OnAttackSourceChanged?.Invoke(currAttackSource);
-    }
-
-    private void BindAttackSourceStat(GameStatSO statSO)
-    {
-        if (statHolder == null || statSO.IsNull()) return;
-        if (attackSourceStatSO == statSO)
-        {
-            if (attackStat == null)
-                attackStat = statHolder.BindEvent(attackSourceStatSO, OnAttackStatDirty);
+            this.LogWarning($"ChangeAttackSource() - failed to find stat '{newAtkSrcStatSO}'", context: this);
             return;
         }
 
-        if (attackSourceStatSO.IsNotNull())
-            statHolder.UnBindEvent(attackSourceStatSO, OnAttackStatDirty);
-
-        attackSourceStatSO = statSO;
-        attackStat = statHolder.BindEvent(attackSourceStatSO, OnAttackStatDirty);
+        currAttackSource = new AttackSource(this, atkSrcStat);
     }
-
-    private void UnbindAttackSourceStat()
-    {
-        if (statHolder.IsNotNull() && attackSourceStatSO.IsNotNull())
-            statHolder.UnBindEvent(attackSourceStatSO, OnAttackStatDirty);
-
-        attackStat = null;
-    }
-
-
-
-
 
     #endregion
 
@@ -265,17 +194,16 @@ public class Fighter : MonoBehaviour, IFighter
     {
         this.currentWeapon.Value = weaponTypeSO;
         ChangeAttackSource();
-        OnEquipWeapon?.Invoke(weaponTypeSO, animator);
+        OnEquipWeapon?.Invoke(weaponTypeSO);
     }
 
     private void UnEquipWeapon()
     {
-        if (defaultWeapon != null)
-        {
-            currentWeapon.Value = defaultWeapon;
-            ChangeAttackSource();
-            OnEquipWeapon?.Invoke(defaultWeapon, animator);
-        }
+        if (defaultWeapon == null) return;
+        
+        currentWeapon.Value = defaultWeapon;
+        ChangeAttackSource();
+        OnEquipWeapon?.Invoke(defaultWeapon);
     }
 
     #endregion

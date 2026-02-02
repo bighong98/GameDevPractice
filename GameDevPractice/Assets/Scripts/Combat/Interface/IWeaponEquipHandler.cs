@@ -8,10 +8,11 @@ namespace TH.Combat
     // 장착하는 무기 관련 정보 
     public interface IWeaponEquipHandler
     {
-        event Action<WeaponTypeSO, Animator> OnEquipWeapon;
+        // event Action<WeaponTypeSO, Animator> OnEquipWeapon;
+        event Action<WeaponTypeSO> OnEquipWeapon;
         
         public bool IsEquippingWeapon { get; }
-        public (WeaponTypeSO weapon, Animator animator) GetWeaponEquipperInfo { get; }
+        public WeaponTypeSO GetEquippedWeaponInfo { get; }
     }
 }
 

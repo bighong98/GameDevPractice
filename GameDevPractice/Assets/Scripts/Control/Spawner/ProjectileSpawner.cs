@@ -1,7 +1,5 @@
-using System;
 using TH.Combat;
 using TH.Attribute;
-using TH.Attribute.Stat;
 using UnityEngine;
 using TH.Core.Pool;
 using TH.Core.Service;
@@ -13,14 +11,12 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
     [SerializeField] private Health projectileTarget; // serialized for debug
     private bool hasTarget;
     private bool isHoming;
+
+    private ICombatSystem combatSystem;
     
     private AttackSource projectileAttackSource; // 투사체에 적용될 AttackSource
-    private ICombatSystem combatSystem;
+    
     private IAttacker currentOwner;
-    private Fighter fighterOwner;
-    private IStatHolder ownerStatHolder;
-    private GameStatSO attackSourceStatSO;
-
     [SerializeField] private GameObject onHitParticlePrefab;
 
     private const string AllyLayerName = "Ally";
@@ -36,7 +32,7 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
         combatSystem = ServiceLocator.Get<ICombatSystem>();
     }
     
-    public void InitializeProjectileSpawner(IAttacker owner, WeaponTypeSO weaponTypeSO)
+    public void InitializeProjectileSpawner(IAttacker owner, WeaponTypeSO weaponTypeSO, AttackSource attackSource)
     {
         combatSystem ??= ServiceLocator.Get<ICombatSystem>();
 
@@ -47,7 +43,11 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
             return;
         }
         
-        BindOwner(shootingWeaponOwner, weaponTypeSO);
+        if (attackSource.Attacker == null)
+            Logg.LogWarning($"[{name}.{nameof(ProjectileSpawner)}] AttackSource is default");
+
+        projectileAttackSource = attackSource;
+        BindOwner(shootingWeaponOwner);
 
         if (weaponTypeSO is { HasImpactEffect: true, GetImpactEffect: { } particlePrefab })
         {
@@ -62,9 +62,11 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
         onCreate = obj =>
         {
             if (obj is not AttackProjectile projectile) return;
+            
             projectile.SetProjectile(combatSystem, projectileAttackSource);
             ApplyProjectileLayer(projectile);
             projectile.OnHit -= PlayOnHitEffect;
+            
             if (onHitParticlePrefab != null)
                 projectile.OnHit += PlayOnHitEffect;
         };
@@ -72,9 +74,11 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
         onGet = obj =>
         {
             if (obj is not AttackProjectile projectile) return;
+            
             projectile.SetProjectile(projectileAttackSource);
             ApplyProjectileLayer(projectile);
             projectile.OnHit -= PlayOnHitEffect;
+            
             if (onHitParticlePrefab != null)
                 projectile.OnHit += PlayOnHitEffect;
         };
@@ -85,37 +89,16 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
         UnbindOwner();
     }
 
-    private void BindOwner(IAttacker owner, WeaponTypeSO weaponTypeSO)
+    private void BindOwner(IAttacker owner)
     {
         UnbindOwner();
+        if (owner.IsNull()) return;
+        
         currentOwner = owner;
-
-        if (currentOwner.IsNull()) return;
-
         projectileLayer = ResolveProjectileLayer(currentOwner);
 
         currentOwner.OnTargetSet += SetTarget;
         currentOwner.OnAttack += Shoot;
-
-        if (currentOwner is Fighter fighter)
-        {
-            fighterOwner = fighter;
-            fighterOwner.OnAttackSourceChanged += OnOwnerAttackSourceChanged;
-            projectileAttackSource = fighterOwner.CurrentAttackSource;
-            return;
-        }
-
-        if (currentOwner is not Component c || !c.TryGetComponent(out IStatHolder statHolder)) return;
-
-        var statSO = weaponTypeSO != null ? weaponTypeSO.AttackSourceStatSO : null;
-        if (statSO.IsNull())
-            statSO = GameStats.AD;
-
-        if (statSO.IsNull()) return;
-
-        ownerStatHolder = statHolder;
-        attackSourceStatSO = statSO;
-        ownerStatHolder.BindStatChanged(attackSourceStatSO, OnAttackStatChanged);
     }
 
     private void UnbindOwner()
@@ -125,18 +108,6 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
             currentOwner.OnTargetSet -= SetTarget;
             currentOwner.OnAttack -= Shoot;
         }
-
-        if (fighterOwner != null)
-        {
-            fighterOwner.OnAttackSourceChanged -= OnOwnerAttackSourceChanged;
-            fighterOwner = null;
-        }
-
-        if (ownerStatHolder.IsNotNull() && attackSourceStatSO.IsNotNull())
-            ownerStatHolder.UnbindStatChanged(attackSourceStatSO, OnAttackStatChanged);
-
-        ownerStatHolder = null;
-        attackSourceStatSO = null;
 
         currentOwner = null;
         projectileLayer = -1;
@@ -181,23 +152,6 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
             if (child == null) continue;
             SetLayerRecursively(child.gameObject, layer);
         }
-    }
-
-    
-    private void OnAttackStatChanged(float value)
-    {
-        if (currentOwner.IsNull()) return;
-        SetAttackSource(currentOwner, value);
-    }
-
-    private void OnOwnerAttackSourceChanged(AttackSource source)
-    {
-        projectileAttackSource = source;
-    }
-    
-    private void SetAttackSource(IAttacker owner, float damage)
-    {
-        projectileAttackSource = new AttackSource(owner, damage);
     }
 
     private void SetTarget(Health target)

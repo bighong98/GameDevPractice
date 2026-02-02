@@ -129,7 +129,7 @@ public class AttackProjectile : MonoBehaviour, IPoolObject
         {
             combatSystem.ApplyHit(attackSource.ToRequest(victim));
         }
-        this.Log($"OnTriggerEnter(): collided with {other}", Logg.LoggingMode.InProgress);
+        this.Log($"OnTriggerEnter(): collided with {other}", Logg.LoggingMode.Completed);
         OnHit?.Invoke(transform.position);
         KillSelf();
     }

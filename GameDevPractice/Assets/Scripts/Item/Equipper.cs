@@ -6,6 +6,7 @@ using UnityEngine.Pool;
 using TH.Core.Pool;
 using TH.Utils;
 using TH.Resource;
+using TH.Attribute.Stat;
 using TH.Core.Service;
 
 // 무기 장착/장착해제 시 무기 오브젝트 생성/생성해제(오브젝트 풀 기반)
@@ -15,14 +16,16 @@ namespace TH.Item
 {
     public class Equipper : MonoBehaviour
     {
-        private IEquipmentHolder equipHolder;
-        private IFighter fighter; // serialize for debug
         [SerializeField] private Transform bodyRootTransform;
         [SerializeField] private Transform rightHandTransform;
         [SerializeField] private Transform leftHandTransform;
 
         [SerializeField] private bool ignoreLocalPosition = false;
         
+        private IFighter fighter;
+        private IStatHolder statHolder;
+        private Animator animator;
+
         private bool isInit = false;
         private WeaponTypeHolder currentWeapon;
         private readonly Dictionary<WeaponTypeSO, ObjectPool<IPoolObject>> weaponPools = new();
@@ -37,8 +40,9 @@ namespace TH.Item
         {
             FindAvatarAnchors();
 
-            TryGetComponent(out equipHolder);
             TryGetComponent(out fighter);
+            TryGetComponent(out animator);
+            TryGetComponent(out statHolder);
         }
 
         private void FindAvatarAnchors()
@@ -80,34 +84,33 @@ namespace TH.Item
     
             isInit = true;
             
-            fighter.OnEquipWeapon += this.OnEquipWeapon;
-            if (fighter is { IsEquippingWeapon: true, GetWeaponEquipperInfo: ({ } weapon, { } anim) })
+            fighter.OnEquipWeapon += this.HandleOnEquipWeapon;
+            if (fighter is { IsEquippingWeapon: true, GetEquippedWeaponInfo: {} weapon })
             {
-                this.OnEquipWeapon(weapon, anim);
+                this.HandleOnEquipWeapon(weapon);
             }
         }
 
-        private void OnEquipWeapon(WeaponTypeSO weaponType, Animator animator)
+        // private void OnEquipWeapon(WeaponTypeSO weaponType, Animator animator)
+        private void HandleOnEquipWeapon(WeaponTypeSO weaponType)
         {
             if (!isInit)
             {
                 Logg.LogWarning($"[{gameObject.name}.Equipper] OnEquipWeapon called before initialization");
                 return;
             }
-            
+
             if (animator == null)
             {
                 Logg.LogError($"[{gameObject.name}.Equipper] Animator is null");
                 return;
             }
 
-            if (currentWeapon?.Type is { } currWeaponType)
+            if (currentWeapon.IsNotNull())
             {
-                if (currWeaponType == weaponType)
-                {
-                    return; // 현재 장착중인 무기와 동일한 무기라면 중복 방지
-                }
-                
+                // 현재 장착중인 무기와 동일한 무기라면 중복 (장착해제 -> 장착) 방지
+                if (currentWeapon.Type == weaponType) return;
+                // 기존 무기 디스폰
                 DeSpawnWeapon();
             }
 
@@ -116,7 +119,18 @@ namespace TH.Item
                 Logg.LogError($"[{gameObject.name}.Equipper] Failed to spawn weapon: {weaponType?.name ?? "null"}");
                 return;
             }
-            
+
+            OverrideWeaponAnimator(weaponType);
+        }
+
+        private void OverrideWeaponAnimator(WeaponTypeSO weaponType)
+        {
+            if (weaponType.IsNull())
+            {
+                this.LogWarning($"{nameof(OverrideWeaponAnimator)} - invalid weaponType data", context: this);
+                return;
+            } 
+
             if (weaponType.weaponAnimatorOverride is { } newWeaponAnimatorOverride)
             {
                 animator.runtimeAnimatorController = newWeaponAnimatorOverride;
@@ -148,21 +162,12 @@ namespace TH.Item
                 return false;
 
             result.owner = fighter;
-
-            if (weaponType.HasProjectile && weaponType.GetProjectilePrefab is { } projectilePrefab && projectilePrefab.IsNotNull())
-            {
-                var projectileSpawner = result.gameObject.GetOrAddComponent<ProjectileSpawner>();
-                projectileSpawner.InitializeProjectileSpawner(fighter, weaponType);
-                if (projectileSpawner.pool == null)
-                {
-                    projectileSpawner.SetPool(projectilePrefab);
-                }
-            }
+            EnsureWeaponProjectileSpawner(weaponType, result);
 
             currentWeapon = result;
 
             if (!ignoreLocalPosition) return true;
-            
+
             var root = result.transform;
 
             // 1) 자식 로컬 트랜스폼 캐싱
@@ -181,7 +186,7 @@ namespace TH.Item
             // 3) 루트는 건드리지 않고, modeling의 localPosition/localRotation만 조정해서
             //    handle이 grip(=root의 부모) 기준으로 (0, identity)에 오도록 보정
             if (!modeling || !handle) return true;
-                
+
             // handle의 "modeling 로컬 기준" 위치/회전 (현재 포즈 1회 계산)
             var handlePosInModeling = modeling.InverseTransformPoint(handle.position);
             var handleRotInModeling = Quaternion.Inverse(modeling.rotation) * handle.rotation;
@@ -194,10 +199,60 @@ namespace TH.Item
             modeling.localPosition = -(modelingLocalRot * handlePosInModeling);
 
             result.transform.localRotation = Quaternion.Euler(0f, 0f, -180f);
-            
+
             return true;
         }
-        
+
+        private void EnsureWeaponProjectileSpawner(WeaponTypeSO weaponType, EquippedWeapon result)
+        {
+            this.Log($"EnsureWeaponProjectileSpawner() invoked weaponType: {weaponType}, equippedWeaponInstance: {result}", Logg.LoggingMode.Completed);
+            if (weaponType.IsNull()) return; 
+            if (weaponType is not { HasProjectile: true, GetProjectilePrefab: {} projectilePrefab}) return;
+            if (projectilePrefab.IsNull()) return;
+            
+            AttackSource attackSource;
+            if (statHolder == null)
+            {
+                this.LogWarning($"{nameof(EnsureWeaponProjectileSpawner)} - no IStatHolder found, fallback to 1 damage", context: this);
+                attackSource = new AttackSource(fighter, 1f);
+            }
+            else
+            {
+                var statSO = weaponType.AttackSourceStatSO;
+                if (statSO.IsNull())
+                {
+                    this.LogWarning($"{nameof(EnsureWeaponProjectileSpawner)} - invalid AttackSourceStatSO, falling back to AD", context: this);
+                    statSO = GameStats.AD;
+                }
+
+                if (statSO.IsNotNull() && statHolder.TryGetStat(statSO, out var attackSourceStat))
+                {
+                    attackSource = new AttackSource(fighter, attackSourceStat);
+                }
+                else
+                {
+                    this.LogWarning($"{nameof(EnsureWeaponProjectileSpawner)} - failed to get stat by {statSO}, fallback to 1 damage", context: this);
+                    attackSource = new AttackSource(fighter, 1f);
+                }
+            }
+
+            var projectileSpawner = result.gameObject.GetOrAddComponent<ProjectileSpawner>();
+            projectileSpawner.InitializeProjectileSpawner(fighter, weaponType, attackSource);
+            if (projectileSpawner.pool == null)
+            {
+                projectileSpawner.SetPool(projectilePrefab);
+            }
+            // if (weaponType.HasProjectile && weaponType.GetProjectilePrefab is { } projectilePrefab && projectilePrefab.IsNotNull())
+            // {
+            //     var projectileSpawner = result.gameObject.GetOrAddComponent<ProjectileSpawner>();
+            //     projectileSpawner.InitializeProjectileSpawner(fighter, weaponType);
+            //     if (projectileSpawner.pool == null)
+            //     {
+            //         projectileSpawner.SetPool(projectilePrefab);
+            //     }
+            // }
+        }
+
         private void DeSpawnWeapon()
         {
             if (currentWeapon == null) return;
