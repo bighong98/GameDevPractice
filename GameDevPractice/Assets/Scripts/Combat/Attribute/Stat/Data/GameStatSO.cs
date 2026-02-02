@@ -22,10 +22,11 @@ namespace TH.Attribute.Stat
 
     public enum GameStatCategory
     {
-        Attack,
-        Resource,
-        Attribute,
-        Experience,
-        Others,
+        Attack, // 공격 관련 능력치
+        Resource, // 캐릭터의 자원 관련 능력치 (hp, mp)
+        Attribute, // 힘민지
+        Experience, // 경험치 관련
+        Others, // 나머지
+        Defence, // 방어 관련 능력치
     }
 }

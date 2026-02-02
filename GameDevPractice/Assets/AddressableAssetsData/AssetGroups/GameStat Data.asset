@@ -18,32 +18,79 @@ MonoBehaviour:
   - m_GUID: 084013cbdb346d4428cb29a47d22b70e
     m_Address: Assets/Game/Attributes/ChracterStat/StatType/Resource/Mana.asset
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1e740bd9a6c8102498dccea3aaad3595
+    m_Address: Assets/Game/Attributes/ChracterStat/StatType/Exp/ExperienceToLevelUp.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 3a7cc61c3042aa04387e312907199547
     m_Address: Assets/Game/Attributes/ChracterStat/StatType/Basic/Agility.asset
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 951140a1eab4079458785564169d0fbf
     m_Address: Assets/Game/Attributes/ChracterStat/StatType/Basic/Intelligence.asset
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 9e86dca11c02ff94396bdadebb64b5cb
     m_Address: Assets/Game/Attributes/ChracterStat/StatType/Resource/Health.asset
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b797748de61cfca49a43e772b4ceaaa4
+    m_Address: Assets/Game/Attributes/ChracterStat/StatType/Defence/Armor.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: cf7022ca8cb84ae4395e9b8e2edbcdf2
+    m_Address: Assets/Game/Attributes/ChracterStat/StatType/Attack/AD.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d1f737d637ad61c4b83c036babd96fc0
+    m_Address: Assets/Game/Attributes/ChracterStat/StatType/Defence/MagicResistance.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e3eea70b5cde0694eb6d179932efe3c0
     m_Address: Assets/Game/Attributes/ChracterStat/StatType/Basic/Strength.asset
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: eb610ac4bc4ab4f408d8533075f7d56c
     m_Address: Assets/Game/Attributes/ChracterStat/StatType/Exp/ExperienceReward.asset
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f33892e137b94bf4e9d027c090bd8c4f
+    m_Address: Assets/Game/Attributes/ChracterStat/StatType/Attack/AP.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: ba2aeaf5da86ad943b7448d84aa19f98, type: 2}
