@@ -1,33 +1,36 @@
 using System;
-using TH.Combat;
-using TH.Core.Service;
 using UnityEngine;
 using TH.Resource;
 using TH.Utils;
+using TH.Attribute;
 
-public sealed class CombatSystem : ICombatSystem
+namespace TH.Combat.Service
 {
-    private DamageRuleSO damageRule;
-    private readonly IDamageCalculator damageCalc;
+    public sealed class CombatSystem : ICombatSystem
+    {
+        private DamageRuleSO damageRule;
+        private readonly IDamageCalculator damageCalc;
 
-    public CombatSystem(IResourceLoader resourceLoader, IDamageCalculator damageCalc)
-    {
-        this.damageCalc = damageCalc;
-        resourceLoader.OnLabelResourcesLoadedAll += (label) =>
+        public CombatSystem(IResourceLoader resourceLoader, IDamageCalculator damageCalc)
         {
-            if (!string.Equals(label, Constants.PreLoadLabel)) return;
-            if (!resourceLoader.TryLoad("DamageRuleSO", out damageRule))
-                Logg.LogError($"[CombatSystem] failed to load DamageRuleSO");
-        };
-    }
-    
-    public void ApplyHit(in HitRequest hitRequest)
-    {
-        var result = damageCalc.Resolve(hitRequest, damageRule);
-        if (hitRequest.Target is Component { gameObject: { activeSelf: true } })
+            this.damageCalc = damageCalc;
+            resourceLoader.OnLabelResourcesLoadedAll += (label) =>
+            {
+                if (!string.Equals(label, Constants.PreLoadLabel)) return;
+                if (!resourceLoader.TryLoad("DamageRuleSO", out damageRule))
+                    Logg.LogError($"[CombatSystem] failed to load DamageRuleSO");
+            };
+        }
+        
+        public void ApplyHit(in HitRequest hitRequest)
         {
-            Logg.Log($"[{nameof(CombatSystem)}.{nameof(ApplyHit)}]", Logg.LoggingMode.Completed);
-            hitRequest.Target.TakeDamage(result);
+            var result = damageCalc.Resolve(hitRequest, damageRule);
+            if (hitRequest.Target is Component { gameObject: { activeSelf: true } })
+            {
+                Logg.Log($"[{nameof(CombatSystem)}.{nameof(ApplyHit)}]", Logg.LoggingMode.Completed);
+                hitRequest.Target.TakeDamage(result);
+            }
         }
     }
 }
+

@@ -1,4 +1,5 @@
 using UnityEngine;
+using TH.Attribute;
 
 namespace TH.Combat
 {

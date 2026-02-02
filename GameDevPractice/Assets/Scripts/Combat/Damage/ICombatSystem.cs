@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace TH.Combat
+namespace TH.Combat.Service
 {
     public interface ICombatSystem
     {

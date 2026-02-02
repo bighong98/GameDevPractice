@@ -35,6 +35,7 @@ MonoBehaviour:
   weaponAnimatorOverride: {fileID: 22100000, guid: d790194a637262f45a1ea9df7bf7fdad, type: 2}
   EquippedPrefab: {fileID: 8076619319902921802, guid: 6dd5bc81c7e17b74c8c5782a5824dd91, type: 3}
   attackSourceStatSO: {fileID: 11400000, guid: cf7022ca8cb84ae4395e9b8e2edbcdf2, type: 2}
+  damageType: 1
   range: 8
   hand: 1
   projectilePrefab: {fileID: 1765392690148027140, guid: 0ed9004fb430f6a4a9c87da6061553bc, type: 3}

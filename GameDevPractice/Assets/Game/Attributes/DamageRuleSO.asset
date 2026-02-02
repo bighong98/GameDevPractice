@@ -12,3 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86c1421852b9b344598a7649d30e72e9, type: 3}
   m_Name: DamageRuleSO
   m_EditorClassIdentifier: Assembly-CSharp::DamageRuleSO
+  defenceStatRuleSO: {fileID: 11400000, guid: a111d254c5b928941b0e1cbabe388a5b, type: 2}

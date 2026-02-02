@@ -214,7 +214,7 @@ namespace TH.Item
             if (statHolder == null)
             {
                 this.LogWarning($"{nameof(EnsureWeaponProjectileSpawner)} - no IStatHolder found, fallback to 1 damage", context: this);
-                attackSource = new AttackSource(fighter, 1f);
+                attackSource = new AttackSource(fighter, 1f, weaponType.DamageType);
             }
             else
             {
@@ -227,12 +227,12 @@ namespace TH.Item
 
                 if (statSO.IsNotNull() && statHolder.TryGetStat(statSO, out var attackSourceStat))
                 {
-                    attackSource = new AttackSource(fighter, attackSourceStat);
+                    attackSource = new AttackSource(fighter, attackSourceStat, weaponType.DamageType);
                 }
                 else
                 {
                     this.LogWarning($"{nameof(EnsureWeaponProjectileSpawner)} - failed to get stat by {statSO}, fallback to 1 damage", context: this);
-                    attackSource = new AttackSource(fighter, 1f);
+                    attackSource = new AttackSource(fighter, 1f, weaponType.DamageType);
                 }
             }
 
@@ -242,15 +242,6 @@ namespace TH.Item
             {
                 projectileSpawner.SetPool(projectilePrefab);
             }
-            // if (weaponType.HasProjectile && weaponType.GetProjectilePrefab is { } projectilePrefab && projectilePrefab.IsNotNull())
-            // {
-            //     var projectileSpawner = result.gameObject.GetOrAddComponent<ProjectileSpawner>();
-            //     projectileSpawner.InitializeProjectileSpawner(fighter, weaponType);
-            //     if (projectileSpawner.pool == null)
-            //     {
-            //         projectileSpawner.SetPool(projectilePrefab);
-            //     }
-            // }
         }
 
         private void DeSpawnWeapon()
@@ -263,8 +254,7 @@ namespace TH.Item
                 foreach (var (t, pos, rot) in cached)
                 {
                     if (!t) continue;
-                    t.localPosition = pos;
-                    t.localRotation = rot;
+                    t.SetLocalPositionAndRotation(pos, rot);
                 }
                 _cachedLocalTransforms.Remove(currentWeapon);
             }

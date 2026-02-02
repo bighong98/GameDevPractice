@@ -3,6 +3,7 @@ using TH.Attribute;
 using TH.Attribute.Stat;
 using TH.Combat;
 using TH.Core.Service;
+using TH.Combat.Service;
 using TH.Item;
 using TH.Resource;
 using TH.Utils;
@@ -154,9 +155,9 @@ public class Fighter : MonoBehaviour, IFighter
 
     private void ChangeAttackSource()
     {
-        if (currentWeapon.Value.IsNull() || 
-            currentWeapon.Value.AttackSourceStatSO is not {} newAtkSrcStatSO || newAtkSrcStatSO.IsNull() || 
-            statHolder.IsNull())
+        if (!currentWeapon.Initialized || currentWeapon.Value is not {} currentWeaponValue || currentWeaponValue.IsNull() ||
+            currentWeaponValue.AttackSourceStatSO is not {} newAtkSrcStatSO || newAtkSrcStatSO.IsNull() || 
+            statHolder.IsNull()) 
         {
             this.LogWarning($"ChangeAttackSource() - invalid currentWeapon value", context: this);
             return;
@@ -168,7 +169,7 @@ public class Fighter : MonoBehaviour, IFighter
             return;
         }
 
-        currAttackSource = new AttackSource(this, atkSrcStat);
+        currAttackSource = new AttackSource(this, atkSrcStat, currentWeaponValue.DamageType);
     }
 
     #endregion

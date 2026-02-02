@@ -3,6 +3,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using TH.Attribute;
 using TH.Combat;
+using TH.Combat.Service;
 using UnityEngine;
 using TH.Core.Pool;
 using TH.Core.Service;

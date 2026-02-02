@@ -1,6 +1,7 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using TH.Attribute.Stat;
+using TH.Combat;
 using TH.Utils;
 using UnityEngine;
 
@@ -15,6 +16,7 @@ namespace TH.Resource
         public GameObject EquippedPrefab;
     
         [SerializeField] private GameStatSO attackSourceStatSO;
+        [SerializeField] private DamageType damageType;
         [SerializeField] private float range;
         [SerializeField] private Hand hand;
 
@@ -23,6 +25,7 @@ namespace TH.Resource
         [SerializeField] private AssetReferenceAudioClip attackSFXReference;
     
         public GameStatSO AttackSourceStatSO => attackSourceStatSO;
+        public DamageType DamageType => damageType;
         public float AttackRange => range;
         public Hand GripHand => hand;
     
