@@ -17,7 +17,9 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
     private AttackSource projectileAttackSource; // 투사체에 적용될 AttackSource
     private ICombatSystem combatSystem;
     private IAttacker currentOwner;
-    private IGameStat cachedAdStat;
+    private Fighter fighterOwner;
+    private IStatHolder ownerStatHolder;
+    private GameStatSO attackSourceStatSO;
 
     [SerializeField] private GameObject onHitParticlePrefab;
 
@@ -45,7 +47,7 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
             return;
         }
         
-        BindOwner(shootingWeaponOwner);
+        BindOwner(shootingWeaponOwner, weaponTypeSO);
 
         if (weaponTypeSO is { HasImpactEffect: true, GetImpactEffect: { } particlePrefab })
         {
@@ -83,7 +85,7 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
         UnbindOwner();
     }
 
-    private void BindOwner(IAttacker owner)
+    private void BindOwner(IAttacker owner, WeaponTypeSO weaponTypeSO)
     {
         UnbindOwner();
         currentOwner = owner;
@@ -95,15 +97,25 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
         currentOwner.OnTargetSet += SetTarget;
         currentOwner.OnAttack += Shoot;
 
-        if (currentOwner is Component c && c.TryGetComponent(out IStatHolder statHolder))
+        if (currentOwner is Fighter fighter)
         {
-            if (statHolder.GetStat(GameStats.AD) is { } stat)
-            {
-                cachedAdStat = stat;
-                cachedAdStat.OnStatChanged += OnAttackStatChanged;
-                SetAttackSource(currentOwner, stat.Value);
-            }
+            fighterOwner = fighter;
+            fighterOwner.OnAttackSourceChanged += OnOwnerAttackSourceChanged;
+            projectileAttackSource = fighterOwner.CurrentAttackSource;
+            return;
         }
+
+        if (currentOwner is not Component c || !c.TryGetComponent(out IStatHolder statHolder)) return;
+
+        var statSO = weaponTypeSO != null ? weaponTypeSO.AttackSourceStatSO : null;
+        if (statSO.IsNull())
+            statSO = GameStats.AD;
+
+        if (statSO.IsNull()) return;
+
+        ownerStatHolder = statHolder;
+        attackSourceStatSO = statSO;
+        ownerStatHolder.BindStatChanged(attackSourceStatSO, OnAttackStatChanged);
     }
 
     private void UnbindOwner()
@@ -114,11 +126,17 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
             currentOwner.OnAttack -= Shoot;
         }
 
-        if (cachedAdStat != null)
+        if (fighterOwner != null)
         {
-            cachedAdStat.OnStatChanged -= OnAttackStatChanged;
-            cachedAdStat = null;
+            fighterOwner.OnAttackSourceChanged -= OnOwnerAttackSourceChanged;
+            fighterOwner = null;
         }
+
+        if (ownerStatHolder.IsNotNull() && attackSourceStatSO.IsNotNull())
+            ownerStatHolder.UnbindStatChanged(attackSourceStatSO, OnAttackStatChanged);
+
+        ownerStatHolder = null;
+        attackSourceStatSO = null;
 
         currentOwner = null;
         projectileLayer = -1;
@@ -166,10 +184,15 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
     }
 
     
-    private void OnAttackStatChanged()
+    private void OnAttackStatChanged(float value)
     {
-        if (currentOwner.IsNull() || cachedAdStat == null) return;
-        SetAttackSource(currentOwner, cachedAdStat.Value);
+        if (currentOwner.IsNull()) return;
+        SetAttackSource(currentOwner, value);
+    }
+
+    private void OnOwnerAttackSourceChanged(AttackSource source)
+    {
+        projectileAttackSource = source;
     }
     
     private void SetAttackSource(IAttacker owner, float damage)

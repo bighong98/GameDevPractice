@@ -1,5 +1,6 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using TH.Attribute.Stat;
 using TH.Utils;
 using UnityEngine;
 
@@ -13,7 +14,7 @@ namespace TH.Resource
         public AnimatorOverrideController weaponAnimatorOverride;
         public GameObject EquippedPrefab;
     
-        [SerializeField] private float damage;
+        [SerializeField] private GameStatSO attackSourceStatSO;
         [SerializeField] private float range;
         [SerializeField] private Hand hand;
 
@@ -21,9 +22,9 @@ namespace TH.Resource
         [SerializeField] private GameObject impactParticlePrefab;
         [SerializeField] private AssetReferenceAudioClip attackSFXReference;
     
-        public float GetDamage => damage;
-        public float GetRange => range;
-        public Hand GetGripHand => hand;
+        public GameStatSO AttackSourceStatSO => attackSourceStatSO;
+        public float AttackRange => range;
+        public Hand GripHand => hand;
     
         public bool HasProjectile { get; protected set; }
         public GameObject GetProjectilePrefab => projectilePrefab;

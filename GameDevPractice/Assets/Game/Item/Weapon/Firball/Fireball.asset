@@ -28,13 +28,13 @@ MonoBehaviour:
   equipmentType: 1
   slotType: 0
   equipmentStats:
-  - type: {fileID: 11400000, guid: cf7022ca8cb84ae4395e9b8e2edbcdf2, type: 2}
+  - type: {fileID: 11400000, guid: f33892e137b94bf4e9d027c090bd8c4f, type: 2}
     calculation: 0
     value: 20
   weaponType: 0
   weaponAnimatorOverride: {fileID: 22100000, guid: 02612d1855855bf40972d636cba04f13, type: 2}
   EquippedPrefab: {fileID: 3327907661040384045, guid: 8d0abf9e8c434e44bbfa79ef7ce6693f, type: 3}
-  damage: 5
+  attackSourceStatSO: {fileID: 11400000, guid: f33892e137b94bf4e9d027c090bd8c4f, type: 2}
   range: 20
   hand: 1
   projectilePrefab: {fileID: 1111895543867379590, guid: 4d654d0ea2ce7e44aa38d9e4596715f7, type: 3}

@@ -227,7 +227,7 @@ namespace TH.Item
 
         private Transform GetHandGrip(WeaponTypeSO weapon)
         {
-            return weapon.GetGripHand switch
+            return weapon.GripHand switch
             {
                 WeaponTypeSO.Hand.Right => rightHandTransform,
                 WeaponTypeSO.Hand.Left => leftHandTransform,
