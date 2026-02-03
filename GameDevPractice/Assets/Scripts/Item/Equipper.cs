@@ -198,7 +198,7 @@ namespace TH.Item
             modeling.localRotation = modelingLocalRot;
             modeling.localPosition = -(modelingLocalRot * handlePosInModeling);
 
-            result.transform.localRotation = Quaternion.Euler(0f, 0f, -180f);
+            result.transform.localRotation = Quaternion.Euler(90f, 0f, -180f);
 
             return true;
         }
