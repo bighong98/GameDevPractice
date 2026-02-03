@@ -13,7 +13,7 @@ using TH.Utils;
 // HP Bar Controller using UI Component Image, Slider
 namespace TH.UI
 {
-    public class HPBar : BaseUI, IPoolObject, ICullingTargetView, IHUDCullingBindable
+    public class HPBar : BaseUI, IPoolObject, ICullingTargetView, IHUDCullingBindable, ISharedCanvasUI
     {
         private static readonly Dictionary<Health, HPBar> ActiveByOwner = new();
 

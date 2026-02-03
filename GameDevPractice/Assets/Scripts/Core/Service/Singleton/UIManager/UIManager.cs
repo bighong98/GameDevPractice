@@ -242,7 +242,6 @@ namespace TH.Core.Service
                 uiCanvasSettingSO.GetCanvasSetting(canvasType) is not {} setting) 
                 return false;
             
-            // var setting = uiCanvasSettingSO?.GetCanvasSetting(canvasType);
             int capacity = DefaultReadyMadePopupCount;
             int maxSize = MaxDuplicatePopupCount;
             if (setting != null)
@@ -254,8 +253,9 @@ namespace TH.Core.Service
             var cullingSystem = ServiceLocator.Get<IHUDCullingSystem>();
             Action<IPoolObject> createAction = obj =>
             {
-                if (obj is Component comp)
+                if (obj is Component comp && obj is not ISharedCanvasUI)
                     SetCanvas(comp.gameObject, canvasType);
+                
                 if (obj is IHUDCullingBindable bindable)
                     bindable.ConfigureCulling(view => cullingSystem.Register(view), handle => cullingSystem.Unregister(handle));
             };

@@ -149,8 +149,10 @@ namespace TH.Core.Service
             // 이미 해당 UICanvas 타입용 컨테이너가 있을 경우 반환
             if (uiPoolContainers.TryGetValue(prefab, out var existing) && existing != null)
                 return existing;
-            // 
+            
             var containerGo = new GameObject($"{prefab.name}", typeof(RectTransform), typeof(LayoutElement));
+            if (canvasType == UICanvas.HUD)
+                SetCanvas(containerGo, canvasType, isInteractable: false); //todo: 추후 HUD 타입에도 상호작용이 필요해지면 변경 필요
             var container = containerGo.GetComponent<RectTransform>();
             container.SetParent(parent, worldPositionStays: false);
 
