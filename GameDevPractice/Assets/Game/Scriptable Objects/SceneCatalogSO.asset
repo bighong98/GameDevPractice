@@ -43,16 +43,26 @@ MonoBehaviour:
       m_EditorAssetChanged: 1
       sceneName: Sandbox2
     SaveTargetScene: 1
-  defaultSceneEntry:
-    key: Sandbox
-    sceneId: cbcc82c65a311f84994a9d24cf0b2546
+  - key: Sandbox3
+    sceneId: fcbe5ba31e0032c4e9c21609c31fc184
     sceneRef:
-      m_AssetGUID: cbcc82c65a311f84994a9d24cf0b2546
+      m_AssetGUID: fcbe5ba31e0032c4e9c21609c31fc184
       m_SubObjectName: 
       m_SubObjectType: 
       m_SubObjectGUID: 
       m_EditorAssetChanged: 0
-      sceneName: Sandbox
+      sceneName: Sandbox3
+    SaveTargetScene: 1
+  defaultSceneEntry:
+    key: Sandbox3
+    sceneId: fcbe5ba31e0032c4e9c21609c31fc184
+    sceneRef:
+      m_AssetGUID: fcbe5ba31e0032c4e9c21609c31fc184
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+      sceneName: Sandbox3
     SaveTargetScene: 1
   mainMenuSceneEntry:
     key: MainMenuScene

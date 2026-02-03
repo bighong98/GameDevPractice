@@ -52,3 +52,16 @@ MonoBehaviour:
       m_SubObjectType: 
       m_SubObjectGUID: 
       m_EditorAssetChanged: 0
+  - scene:
+      m_AssetGUID: fcbe5ba31e0032c4e9c21609c31fc184
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+      sceneName: Sandbox3
+    sceneUI:
+      m_AssetGUID: f4b6d0ae00e87324ebb263cc752bab4b
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
