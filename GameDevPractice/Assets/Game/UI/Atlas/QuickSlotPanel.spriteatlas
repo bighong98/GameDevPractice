@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!687078895 &4343727234628468602
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: QuickSlotPanel
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 2
+      anisoLevel: 1
+      compressionQuality: 50
+      maxTextureSize: 2048
+      textureCompression: 0
+      filterMode: 1
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      sRGB: 1
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 1
+      allowAlphaSplitting: 0
+      enableRotation: 1
+      enableTightPacking: 0
+      enableAlphaDilation: 0
+    secondaryTextureSettings: {}
+    variantMultiplier: 1
+    packables:
+    - {fileID: 2800000, guid: 1012f58a33331d24882571b8b0c4af2a, type: 3}
+    - {fileID: 2800000, guid: c9b00ab864b403f45afb81839c9a68d5, type: 3}
+    - {fileID: 2800000, guid: b6c7eaf1e91b22740bef74350a852ec2, type: 3}
+    - {fileID: 2800000, guid: 3dc7f98de12cfbd4fb6d2b6f89c6ca92, type: 3}
+    bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
+    packedSpriteRenderDataKeys:
+    - b6c7eaf1e91b22740bef74350a852ec2: 21300000
+    - c9b00ab864b403f45afb81839c9a68d5: 21300000
+    - 1012f58a33331d24882571b8b0c4af2a: 21300000
+    - 3dc7f98de12cfbd4fb6d2b6f89c6ca92: 21300000
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites:
+  - {fileID: 21300000, guid: b6c7eaf1e91b22740bef74350a852ec2, type: 3}
+  - {fileID: 21300000, guid: c9b00ab864b403f45afb81839c9a68d5, type: 3}
+  - {fileID: 21300000, guid: 1012f58a33331d24882571b8b0c4af2a, type: 3}
+  - {fileID: 21300000, guid: 3dc7f98de12cfbd4fb6d2b6f89c6ca92, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - P09_DemoUI_MainFrame_B
+  - little_background_frame
+  - inventory_frame
+  - Shape_18 1
+  m_RenderDataMap: {}
+  m_Tag: QuickSlotPanel
+  m_IsVariant: 0
