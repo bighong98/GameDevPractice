@@ -42,6 +42,9 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: CombatText
+    uniqueID: 3879532025
+    locked: 0
   m_RenderingLayers:
   - Default
   - Light Layer 1
