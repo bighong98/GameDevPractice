@@ -195,7 +195,7 @@ namespace TH.Control
 
             if (_outlinedTarget == null) return;
 
-            var renderers = _outlinedTarget.GetComponentsInChildren<Renderer>(true);
+            var renderers = _outlinedTarget.GetComponentsInChildren<Renderer>(false);
             if (renderers == null || renderers.Length == 0) return;
 
             SkinnedMeshRenderer skinnedRenderer = null;

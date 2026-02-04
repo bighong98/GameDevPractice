@@ -16,6 +16,7 @@ namespace TH.Item
 {
     public class Equipper : MonoBehaviour
     {
+        [SerializeField] private AvatarAnchorProvider avatarAnchorProvider;
         [SerializeField] private Transform bodyRootTransform;
         [SerializeField] private Transform rightHandTransform;
         [SerializeField] private Transform leftHandTransform;
@@ -47,6 +48,17 @@ namespace TH.Item
 
         private void FindAvatarAnchors()
         {
+            if (avatarAnchorProvider == null)
+                avatarAnchorProvider = Util.FindChild<AvatarAnchorProvider>(gameObject, recursive: false);
+            if (avatarAnchorProvider != null)
+            {
+                avatarAnchorProvider.EnsureInitialized();
+                bodyRootTransform = avatarAnchorProvider.BodyRootTransform;
+                rightHandTransform = avatarAnchorProvider.RightHandTransform;
+                leftHandTransform = avatarAnchorProvider.LeftHandTransform;
+                return;
+            }
+
             if (bodyRootTransform == null)
                 bodyRootTransform = Util.FindChild<Transform>(gameObject, DefaultRootName, recursive: true);
             if (bodyRootTransform == null)
