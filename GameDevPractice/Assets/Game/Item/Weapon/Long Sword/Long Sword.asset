@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WeaponTypeSO
   prefab: {fileID: 7059132959080541948, guid: e5d2ab5e01f3aa045bd855ee0c6c1dca, type: 3}
   nameString: Long Sword
-  sprite: {fileID: 21300000, guid: 9e2d50d6e850d2243ba96c6297dfee1f, type: 3}
+  sprite: {fileID: 21300000, guid: 95052c6b62fb3de4695beaa99f842ac2, type: 3}
   itemType: 1
   maxAmount: 1
   desc: Long Sword Test1 Description
@@ -30,10 +30,11 @@ MonoBehaviour:
   equipmentStats:
   - type: {fileID: 11400000, guid: cf7022ca8cb84ae4395e9b8e2edbcdf2, type: 2}
     calculation: 0
-    value: 15
+    value: 20
   weaponType: 0
-  weaponAnimatorOverride: {fileID: 22100000, guid: bad3b4482a681fb4bb377898a52a866d, type: 2}
+  weaponAnimatorOverride: {fileID: 22100000, guid: bb775ed55d1346646a899626d7d4b3bf, type: 2}
   EquippedPrefab: {fileID: 8466340430826345119, guid: e1c637a337d952d4eb438a72be1b848d, type: 3}
+  equippedPrefabLeft: {fileID: 0}
   attackSourceStatSO: {fileID: 11400000, guid: cf7022ca8cb84ae4395e9b8e2edbcdf2, type: 2}
   damageType: 1
   range: 4

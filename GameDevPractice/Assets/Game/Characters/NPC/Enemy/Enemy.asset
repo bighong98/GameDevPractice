@@ -19,5 +19,6 @@ MonoBehaviour:
   characterBaseStats: {fileID: 11400000, guid: 7e507f31a56583d42923f7e4b8a1f0d8, type: 2}
   height: 0
   startingLevel: 1
-  defaultEquipments: []
+  defaultEquipments:
+  - {fileID: 11400000, guid: 24a647810f57bb345a370aa349b7758c, type: 2}
   hpBarPrefab: {fileID: 2676722583102593113, guid: 23d1f639e15c7f74cb905caf3aef5bed, type: 3}

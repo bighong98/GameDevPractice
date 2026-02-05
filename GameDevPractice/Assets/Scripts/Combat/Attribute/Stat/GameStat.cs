@@ -9,7 +9,7 @@ namespace TH.Attribute.Stat
     public class GameStat : IGameStat
     {
         [SerializeField] protected float baseValue;
-        protected float value;
+        [SerializeField] protected float value;
         protected bool isDirty = true;
         
         protected readonly List<StatModifier> statModifiers;

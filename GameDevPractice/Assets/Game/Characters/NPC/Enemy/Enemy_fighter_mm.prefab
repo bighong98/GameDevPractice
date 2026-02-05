@@ -74,6 +74,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Enemy_fighter_mm
       objectReference: {fileID: 0}
+    - target: {fileID: 873599889185342099, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}
+      propertyPath: typeRef.m_AssetGUID
+      value: fe7395905599e2842b084cf3eaaf2cd6
+      objectReference: {fileID: 0}
     - target: {fileID: 2395544938457194976, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -134,14 +138,14 @@ PrefabInstance:
       propertyPath: avatarAnchorProvider
       value: 
       objectReference: {fileID: 6184137159158400651}
+    - target: {fileID: 5174886537910745246, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}
+      propertyPath: uniqueIdentifier
+      value: a1dd7b93-0d2b-4954-9b44-d07e43091643
+      objectReference: {fileID: 0}
     - target: {fileID: 5989074092566981504, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}
       propertyPath: m_Avatar
       value: 
       objectReference: {fileID: 9000000, guid: d49c65de9fce66146b5d0e164b1f9d2d, type: 3}
-    - target: {fileID: 6827767924862625474, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}
-      propertyPath: defaultWeapon
-      value: 
-      objectReference: {fileID: 11400000, guid: 9c28bcdec3e86fb4dbee350fb3cc7f89, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects:
     - {fileID: 4962896568797552320, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}

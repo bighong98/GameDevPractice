@@ -28,8 +28,11 @@ namespace TH.Item
         private Animator animator;
 
         private bool isInit = false;
-        private WeaponTypeHolder currentWeapon;
-        private readonly Dictionary<WeaponTypeSO, ObjectPool<IPoolObject>> weaponPools = new();
+
+        private WeaponTypeSO currentWeaponType;
+        private WeaponTypeHolder currentRightWeapon;
+        private WeaponTypeHolder currentLeftWeapon;
+        private readonly Dictionary<(WeaponTypeSO, WeaponTypeSO.Hand), ObjectPool<IPoolObject>> weaponPools = new();
 
         private const string DefaultRootName = "Root";
         private const string DefaultRightHandContainerName = "hand_r";
@@ -44,6 +47,23 @@ namespace TH.Item
             TryGetComponent(out fighter);
             TryGetComponent(out animator);
             TryGetComponent(out statHolder);
+        }
+
+        private void Start()
+        {
+            if (fighter == null || leftHandTransform == null || rightHandTransform == null)
+            {
+                Logg.LogError($"[{gameObject.name}] {nameof(Equipper)} failed to initialize");
+                return;
+            }
+    
+            isInit = true;
+            
+            fighter.OnEquipWeapon += this.HandleOnEquipWeapon;
+            if (fighter is { IsEquippingWeapon: true, GetEquippedWeaponInfo: {} weapon })
+            {
+                this.HandleOnEquipWeapon(weapon);
+            }
         }
 
         private void FindAvatarAnchors()
@@ -86,24 +106,6 @@ namespace TH.Item
             }
         }
 
-        private void Start()
-        {
-            if (fighter == null || leftHandTransform == null || rightHandTransform == null)
-            {
-                Logg.LogError($"[{gameObject.name}] {nameof(Equipper)} failed to initialize");
-                return;
-            }
-    
-            isInit = true;
-            
-            fighter.OnEquipWeapon += this.HandleOnEquipWeapon;
-            if (fighter is { IsEquippingWeapon: true, GetEquippedWeaponInfo: {} weapon })
-            {
-                this.HandleOnEquipWeapon(weapon);
-            }
-        }
-
-        // private void OnEquipWeapon(WeaponTypeSO weaponType, Animator animator)
         private void HandleOnEquipWeapon(WeaponTypeSO weaponType)
         {
             if (!isInit)
@@ -118,11 +120,20 @@ namespace TH.Item
                 return;
             }
 
-            if (currentWeapon.IsNotNull())
+            if (weaponType.IsNull())
             {
-                // 현재 장착중인 무기와 동일한 무기라면 중복 (장착해제 -> 장착) 방지
-                if (currentWeapon.Type == weaponType) return;
-                // 기존 무기 디스폰
+                Logg.LogError($"[{gameObject.name}.Equipper] WeaponType is null");
+                return;
+            }
+
+            if (currentWeaponType == weaponType &&
+                (currentRightWeapon.IsNotNull() || currentLeftWeapon.IsNotNull()))
+            {
+                return;
+            }
+
+            if (currentRightWeapon.IsNotNull() || currentLeftWeapon.IsNotNull())
+            {
                 DeSpawnWeapon();
             }
 
@@ -158,61 +169,127 @@ namespace TH.Item
         
         private bool SpawnWeapon(WeaponTypeSO weaponType)
         {
-            if (!isInit) return false;
+            if (!isInit || weaponType.IsNull()) return false;
 
-            if (!weaponPools.TryGetValue(weaponType, out var weaponPool))
+            bool SpawnOnHand(WeaponTypeSO.Hand hand, ref WeaponTypeHolder slot)
             {
-                weaponPool = PoolManager.Instance.GetPool(
-                    weaponType.EquippedPrefab,
-                    GetHandGrip(weaponType),
-                    registerPool: false);
+                var key = (weaponType, hand);
+                if (!weaponPools.TryGetValue(key, out var weaponPool))
+                {
+                    var prefab = (hand == WeaponTypeSO.Hand.Left)
+                        ? weaponType.EquippedPrefabLeft
+                        : weaponType.EquippedPrefab;
 
-                weaponPools[weaponType] = weaponPool;
+                    if (prefab.IsNull()) return false;
+
+                    weaponPool = PoolManager.Instance.GetPool(
+                        prefab,
+                        GetHandGrip(hand),
+                        registerPool: false);
+
+                    weaponPools[key] = weaponPool;
+                }
+
+                if (weaponPool is not { } pool || pool.Get() is not EquippedWeapon result)
+                    return false;
+
+                result.owner = fighter;
+                EnsureWeaponProjectileSpawner(weaponType, result);
+
+                slot = result;
+
+                if (ignoreLocalPosition)
+                    ApplyIgnoreLocalPosition(result);
+
+                return true;
             }
 
-            if (weaponPool is not { } pool || pool.Get() is not EquippedWeapon result)
-                return false;
-
-            result.owner = fighter;
-            EnsureWeaponProjectileSpawner(weaponType, result);
-
-            currentWeapon = result;
-
-            if (!ignoreLocalPosition) return true;
-
-            var root = result.transform;
-
-            // 1) 자식 로컬 트랜스폼 캐싱
-            var cached = new List<(Transform, Vector3, Quaternion)>();
-            foreach (var t in root.GetComponentsInChildren<Transform>(includeInactive: true))
+            bool spawned;
+            switch (weaponType.GripHand)
             {
-                if (t == root) continue;
-                cached.Add((t, t.localPosition, t.localRotation));
+                case WeaponTypeSO.Hand.Right:
+                    spawned = SpawnOnHand(WeaponTypeSO.Hand.Right, ref currentRightWeapon);
+                    break;
+                case WeaponTypeSO.Hand.Left:
+                    spawned = SpawnOnHand(WeaponTypeSO.Hand.Left, ref currentLeftWeapon);
+                    break;
+                case WeaponTypeSO.Hand.Both:
+                    if (!SpawnOnHand(WeaponTypeSO.Hand.Right, ref currentRightWeapon))
+                        return false;
+
+                    if (!SpawnOnHand(WeaponTypeSO.Hand.Left, ref currentLeftWeapon))
+                    {
+                        DeSpawnWeapon();
+                        return false;
+                    }
+
+                    spawned = true;
+                    break;
+                default:
+                    spawned = false;
+                    break;
             }
-            _cachedLocalTransforms[result] = cached;
 
-            // 2) handle/modeling은 보정에 쓰이므로 "제로잉 대상에서 제외"
-            var modeling = result.Model;
-            var handle = result.Handle;
+            if (spawned)
+                currentWeaponType = weaponType;
 
-            // 3) 루트는 건드리지 않고, modeling의 localPosition/localRotation만 조정해서
-            //    handle이 grip(=root의 부모) 기준으로 (0, identity)에 오도록 보정
-            if (!modeling || !handle) return true;
+            return spawned;
 
-            // handle의 "modeling 로컬 기준" 위치/회전 (현재 포즈 1회 계산)
-            var handlePosInModeling = modeling.InverseTransformPoint(handle.position);
-            var handleRotInModeling = Quaternion.Inverse(modeling.rotation) * handle.rotation;
+            void ApplyIgnoreLocalPosition(EquippedWeapon result)
+            {
+                var root = result.transform;
 
-            // 목표:
-            // (modelingLocalRot * handleRotInModeling) == identity
-            // (modelingLocalPos + modelingLocalRot * handlePosInModeling) == zero
-            var modelingLocalRot = Quaternion.Inverse(handleRotInModeling);
-            modeling.localRotation = modelingLocalRot;
-            modeling.localPosition = -(modelingLocalRot * handlePosInModeling);
+                var cached = new List<(Transform, Vector3, Quaternion)>();
+                foreach (var t in root.GetComponentsInChildren<Transform>(includeInactive: true))
+                {
+                    if (t == root) continue;
+                    cached.Add((t, t.localPosition, t.localRotation));
+                }
+                _cachedLocalTransforms[result] = cached;
 
-            result.transform.localRotation = Quaternion.Euler(90f, 0f, -180f);
+                var modeling = result.Model;
+                var handle = result.Handle;
 
-            return true;
+                if (!modeling || !handle) return;
+
+                var handlePosInModeling = modeling.InverseTransformPoint(handle.position);
+                var handleRotInModeling = Quaternion.Inverse(modeling.rotation) * handle.rotation;
+
+                var modelingLocalRot = Quaternion.Inverse(handleRotInModeling);
+                modeling.localRotation = modelingLocalRot;
+                modeling.localPosition = -(modelingLocalRot * handlePosInModeling);
+
+                result.transform.localRotation = Quaternion.Euler(90f, 0f, -180f);
+            }
+        }
+
+        private void DeSpawnWeapon()
+        {
+            void ReleaseOnHand(WeaponTypeSO.Hand hand, ref WeaponTypeHolder weapon)
+            {
+                if (weapon == null) return;
+
+                if (_cachedLocalTransforms.TryGetValue(weapon, out var cached))
+                {
+                    foreach (var (t, pos, rot) in cached)
+                    {
+                        if (!t) continue;
+                        t.SetLocalPositionAndRotation(pos, rot);
+                    }
+                    _cachedLocalTransforms.Remove(weapon);
+                }
+
+                if (weaponPools.TryGetValue((weapon.Type, hand), out var pool))
+                {
+                    pool.Release(weapon);
+                }
+
+                weapon = null;
+            }
+
+            ReleaseOnHand(WeaponTypeSO.Hand.Right, ref currentRightWeapon);
+            ReleaseOnHand(WeaponTypeSO.Hand.Left, ref currentLeftWeapon);
+            currentWeaponType = null;
         }
 
         private void EnsureWeaponProjectileSpawner(WeaponTypeSO weaponType, EquippedWeapon result)
@@ -256,35 +333,10 @@ namespace TH.Item
             }
         }
 
-        private void DeSpawnWeapon()
+
+        private Transform GetHandGrip(WeaponTypeSO.Hand hand)
         {
-            if (currentWeapon == null) return;
-
-            // 캐시가 있으면(= ignoreLocalPosition 케이스였으면) 원복
-            if (_cachedLocalTransforms.TryGetValue(currentWeapon, out var cached))
-            {
-                foreach (var (t, pos, rot) in cached)
-                {
-                    if (!t) continue;
-                    t.SetLocalPositionAndRotation(pos, rot);
-                }
-                _cachedLocalTransforms.Remove(currentWeapon);
-            }
-
-            if (weaponPools.TryGetValue(currentWeapon.Type, out var pool))
-            {
-                pool.Release(currentWeapon);
-            }
-
-            currentWeapon = null;
-        }
-
-
-
-
-        private Transform GetHandGrip(WeaponTypeSO weapon)
-        {
-            return weapon.GripHand switch
+            return hand switch
             {
                 WeaponTypeSO.Hand.Right => rightHandTransform,
                 WeaponTypeSO.Hand.Left => leftHandTransform,
