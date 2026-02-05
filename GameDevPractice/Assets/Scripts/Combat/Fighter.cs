@@ -9,7 +9,7 @@ using TH.Resource;
 using TH.Utils;
 using UnityEngine;
 
-public interface IFighter : IAttacker, IWeaponEquipHandler {}
+public interface IFighter : IAttacker {}
 public class Fighter : MonoBehaviour, IFighter
 {
     [SerializeField] private Health target;
@@ -18,26 +18,19 @@ public class Fighter : MonoBehaviour, IFighter
     public event Action OnAttack; // 공격 시도 시
     public event Action<Health> OnTargetSet; // 공격 타겟(target) 변경 시
     public event Action OnAttackReady; // 공격 준비 완료 시 (공격 가능한 적 한정)
-    
     public bool IsTargetInRange 
-        => target.IsNotNull() && (Vector3.Distance(transform.position, target.transform.position) <= currentWeapon.Value.AttackRange);
+        => target.IsNotNull() && currentWeapon.IsNotNull() &&
+           (Vector3.Distance(transform.position, target.transform.position) <= currentWeapon.AttackRange);
     public bool IsTargetValid => target.IsNotNull() && !target.IsDead;
     public Health Target => target;
-
-    // IWeaponEquipHandler
-    public event Action<WeaponTypeSO> OnEquipWeapon;
-    
-    public bool IsEquippingWeapon => currentWeapon != null;
-    public WeaponTypeSO GetEquippedWeaponInfo => currentWeapon.Value;
-    
-    private LazyValue<WeaponTypeSO> currentWeapon; // 현재 장착 중인 무기
-    [SerializeField] private WeaponTypeSO defaultWeapon; // 장비 장착해제시 적용되어야할 무기종(ex-Unarmed)
+    private bool IsEquippingWeapon => currentWeapon != null;
+    private WeaponTypeSO currentWeapon; // 현재 장착 중인 무기
     
     // 외부 서비스
     private ICombatSystem combatSystem;
     // 객체 컴포넌트
     private IStatHolder statHolder;
-    private IEquipmentHolder equipHolder;
+    private EquipmentHolder equipHolder;
     
     private void Awake()
     {
@@ -46,40 +39,24 @@ public class Fighter : MonoBehaviour, IFighter
         if (!TryGetComponent(out statHolder))
             Logg.LogWarning($"[{gameObject.name}.{GetType().Name}] No IStatHolder found");
         if (!TryGetComponent(out equipHolder))
-            Logg.LogWarning($"[{gameObject.name}.{GetType().Name}] No IEquipmentHolder found");
-
-        currentWeapon = new LazyValue<WeaponTypeSO>(SetDefaultWeapon);
+            Logg.LogWarning($"[{gameObject.name}.{GetType().Name}] No EquipmentHolder found");
     }
 
     private void Start()
     {
-        var equipSlots = equipHolder.ItemSlots;
-        if (equipSlots.Count == 0)
-        {
-            EquipWeapon(defaultWeapon);
-            return;
-        }
-
-        foreach (var slot in equipSlots)
-        {
-            if (slot?.GetItem is { GetItemInfo: WeaponTypeSO weaponData })
-            {
-                EquipWeapon(weaponData);
-                break;
-            }
-        }
+        SyncEquippedWeaponFromHolder();
     }
 
     private void OnEnable()
     {
         if (equipHolder.IsNotNull())
-            equipHolder.OnEquipmentChanged += OnEquipmentChanged;
+            equipHolder.OnEquipWeapon += HandleEquipWeapon;
     }
 
     private void OnDisable()
     {
         if (equipHolder.IsNotNull())
-            equipHolder.OnEquipmentChanged -= OnEquipmentChanged;
+            equipHolder.OnEquipWeapon -= HandleEquipWeapon;
     }
 
     private float timeBetweenAttacks = 1f; // todo: move to equipped weapon
@@ -143,7 +120,7 @@ public class Fighter : MonoBehaviour, IFighter
 
     void Shoot()
     {
-        SoundManager.Instance.Play(Enums.AudioType.Effect, currentWeapon.Value.AttackSFX);
+                SoundManager.Instance.Play(Enums.AudioType.Effect, currentWeapon.AttackSFX);
         OnAttack?.Invoke();
     }
 
@@ -151,12 +128,14 @@ public class Fighter : MonoBehaviour, IFighter
 
     #region CombatSystem Base (임시)
 
-    private AttackSource currAttackSource;
+        private AttackSource currAttackSource;
+    private GameStatSO pendingAttackStat;
+    private bool isAttackStatPending;
 
     private void ChangeAttackSource()
     {
-        if (!currentWeapon.Initialized || currentWeapon.Value is not {} currentWeaponValue || currentWeaponValue.IsNull() ||
-            currentWeaponValue.AttackSourceStatSO is not {} newAtkSrcStatSO || newAtkSrcStatSO.IsNull() || 
+        if (currentWeapon is not { } currentWeaponValue || currentWeaponValue.IsNull() ||
+            currentWeaponValue.AttackSourceStatSO is not { } newAtkSrcStatSO || newAtkSrcStatSO.IsNull() || 
             statHolder.IsNull()) 
         {
             this.LogWarning($"ChangeAttackSource() - invalid currentWeapon value", context: this);
@@ -165,46 +144,67 @@ public class Fighter : MonoBehaviour, IFighter
 
         if (!statHolder.TryGetStat(newAtkSrcStatSO, out var atkSrcStat))
         {
-            this.LogWarning($"ChangeAttackSource() - failed to find stat '{newAtkSrcStatSO}'", context: this);
+            QueueAttackSourceRefresh(newAtkSrcStatSO);
             return;
         }
 
+        ClearPendingAttackStat();
         currAttackSource = new AttackSource(this, atkSrcStat, currentWeaponValue.DamageType);
     }
 
+    private void QueueAttackSourceRefresh(GameStatSO statSO)
+    {
+        if (statSO.IsNull() || statHolder.IsNull()) return;
+        if (isAttackStatPending) return;
+
+        pendingAttackStat = statSO;
+        isAttackStatPending = true;
+        statHolder.BindEvent(statSO, HandleAttackStatReady, pending: true);
+    }
+
+    private void HandleAttackStatReady()
+    {
+        if (!isAttackStatPending || pendingAttackStat.IsNull() || statHolder.IsNull()) return;
+        if (!statHolder.TryGetStat(pendingAttackStat, out _)) return;
+
+        
+        ClearPendingAttackStat();
+        
+        ChangeAttackSource();
+    }
+
+    private void ClearPendingAttackStat()
+    {
+        isAttackStatPending = false;
+        pendingAttackStat = null;
+    }
+
+
     #endregion
+    #region Weapon Sync
 
-    #region IWeaponEquipHandler
-
-    private void OnEquipmentChanged(object sender, EquipArgs args)
+    private void HandleEquipWeapon(WeaponTypeSO weaponType)
     {
-        Logg.Log($"[{gameObject.name}.Fighter] OnEquipmentChanged called {args.Item.GetItemInfo.nameString}", Logg.LoggingMode.Completed);
-        if (args.Item is not { GetItemInfo: WeaponTypeSO weaponData }) return;
-        
-        if (args.State == EquipArgs.EquipEventState.Equip)
-            EquipWeapon(weaponData);
-        else UnEquipWeapon();
+        ApplyEquippedWeapon(weaponType, forceNotify: true);
     }
 
-    private WeaponTypeSO SetDefaultWeapon() 
+    private void SyncEquippedWeaponFromHolder()
     {
-        return defaultWeapon; // defaultWeapon:null 인 케이스 방어 없음
+        if (equipHolder.IsNull()) return;
+
+        var weapon = equipHolder.GetEquippedWeaponInfo;
+        if (weapon.IsNotNull())
+            ApplyEquippedWeapon(weapon);
     }
-        
-    private void EquipWeapon(WeaponTypeSO weaponTypeSO)
+
+    private void ApplyEquippedWeapon(WeaponTypeSO weaponType, bool forceNotify = false)
     {
-        this.currentWeapon.Value = weaponTypeSO;
+        if (weaponType.IsNull()) return;
+        if (!forceNotify && currentWeapon == weaponType) return;
+
+        currentWeapon = weaponType;
         ChangeAttackSource();
-        OnEquipWeapon?.Invoke(weaponTypeSO);
-    }
-
-    private void UnEquipWeapon()
-    {
-        if (defaultWeapon == null) return;
         
-        currentWeapon.Value = defaultWeapon;
-        ChangeAttackSource();
-        OnEquipWeapon?.Invoke(defaultWeapon);
     }
 
     #endregion

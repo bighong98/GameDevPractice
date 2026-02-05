@@ -22,8 +22,8 @@ namespace TH.Item
         [SerializeField] private Transform leftHandTransform;
 
         [SerializeField] private bool ignoreLocalPosition = false;
-        
         private IFighter fighter;
+        private EquipmentHolder equipHolder;
         private IStatHolder statHolder;
         private Animator animator;
 
@@ -45,13 +45,14 @@ namespace TH.Item
             FindAvatarAnchors();
 
             TryGetComponent(out fighter);
+            TryGetComponent(out equipHolder);
             TryGetComponent(out animator);
             TryGetComponent(out statHolder);
         }
 
         private void Start()
         {
-            if (fighter == null || leftHandTransform == null || rightHandTransform == null)
+            if (fighter == null || equipHolder == null || leftHandTransform == null || rightHandTransform == null)
             {
                 Logg.LogError($"[{gameObject.name}] {nameof(Equipper)} failed to initialize");
                 return;
@@ -59,8 +60,8 @@ namespace TH.Item
     
             isInit = true;
             
-            fighter.OnEquipWeapon += this.HandleOnEquipWeapon;
-            if (fighter is { IsEquippingWeapon: true, GetEquippedWeaponInfo: {} weapon })
+            equipHolder.OnEquipWeapon += this.HandleOnEquipWeapon;
+            if (equipHolder is { IsEquippingWeapon: true, GetEquippedWeaponInfo: {} weapon })
             {
                 this.HandleOnEquipWeapon(weapon);
             }

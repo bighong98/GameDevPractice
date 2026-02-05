@@ -13,6 +13,13 @@ namespace TH.Item
         public event EventHandler<EquipArgs> OnEquipmentChanged;
         public event Action<IGameItemSlot> OnSlotChanged;
         public event Action OnStorageChanged;
+        public event Action<WeaponTypeSO> OnEquipWeapon;
+
+        public bool IsEquippingWeapon => currentWeapon != null;
+        public WeaponTypeSO GetEquippedWeaponInfo => currentWeapon;
+
+        [SerializeField] private WeaponTypeSO defaultWeapon; // 장비 장착해제시 적용되어야할 무기종(ex-Unarmed)
+        private WeaponTypeSO currentWeapon;
 
         public IReadOnlyCollection<IGameItemSlot> ItemSlots => equipments;
         private readonly IGameItemSlot[] equipments = new IGameItemSlot[DefaultSlotNums];
@@ -21,16 +28,26 @@ namespace TH.Item
         private const int DefaultSlotNums = (int)Enums.EquippedItemSlotType.Max;
 
         private IStorageEventBatcher eventBatcher;
-        
+
         private void Awake()
         {
             InitializeEventBatcher();
             FillEquipmentSlots();
+            OnEquipmentChanged += HandleEquipmentChanged;
+
+            if (defaultWeapon.IsNotNull())
+                currentWeapon = defaultWeapon;
         }
 
         private void Start()
         {
             NotifyStorageChanged(); // todo: 기본 장비, 저장 장비 착용 로직 추가 후 호출 시점 조정
+            InitializeEquippedWeapon();
+        }
+
+        private void OnDestroy()
+        {
+            OnEquipmentChanged -= HandleEquipmentChanged;
         }
 
         #region Initialization
@@ -270,6 +287,60 @@ namespace TH.Item
         private void NotifyStorageChangedImmediate()
         {
             OnStorageChanged?.Invoke();
+        }
+
+        #endregion
+        #region Weapon Handling
+
+        private void InitializeEquippedWeapon()
+        {
+            var weapon = FindEquippedWeaponInSlots();
+            if (weapon.IsNotNull())
+            {
+                SetCurrentWeapon(weapon);
+                return;
+            }
+
+            if (defaultWeapon.IsNotNull())
+            {
+                SetCurrentWeapon(defaultWeapon, forceNotify: true);
+            }
+        }
+
+        private void HandleEquipmentChanged(object sender, EquipArgs args)
+        {
+            if (args.Item is not { GetItemInfo: WeaponTypeSO weaponData }) return;
+
+            if (args.State == EquipArgs.EquipEventState.Equip)
+            {
+                SetCurrentWeapon(weaponData, forceNotify: true);
+                return;
+            }
+
+            if (defaultWeapon.IsNotNull())
+            {
+                SetCurrentWeapon(defaultWeapon, forceNotify: true);
+            }
+        }
+
+        private WeaponTypeSO FindEquippedWeaponInSlots()
+        {
+            foreach (var slot in equipments)
+            {
+                if (slot?.GetItem is { GetItemInfo: WeaponTypeSO weaponData })
+                    return weaponData;
+            }
+
+            return null;
+        }
+
+        private void SetCurrentWeapon(WeaponTypeSO weaponType, bool forceNotify = false)
+        {
+            if (weaponType.IsNull()) return;
+            if (!forceNotify && currentWeapon == weaponType) return;
+
+            currentWeapon = weaponType;
+            OnEquipWeapon?.Invoke(weaponType);
         }
 
         #endregion

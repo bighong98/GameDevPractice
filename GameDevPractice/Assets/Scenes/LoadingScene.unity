@@ -217,7 +217,7 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: 2cfd3ae6d0d617a44b232d48607edbab, type: 2}
     - target: {fileID: 4336856667516042916, guid: df9e86d862d87ba4da7b8f17a8eaadc4, type: 3}
       propertyPath: loadMainMenuInEditor
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7630140644809386613, guid: df9e86d862d87ba4da7b8f17a8eaadc4, type: 3}
       propertyPath: m_LocalPosition.x
