@@ -15,8 +15,29 @@ MonoBehaviour:
   m_GroupName: Item Data
   m_GUID: a25171184736bb8458128c85cac69efa
   m_SerializeEntries:
+  - m_GUID: 036de0a3f8e42d0438cabffcf9ce5701
+    m_Address: Armor_F_Mage_Bottom
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0463cbb3d4b9df34e9334b3b9c277912
+    m_Address: Armor_M_Mage_Bottom
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 0a8fc87d049409749b518d0d97acf68f
     m_Address: HealthPotion
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1402452763e322e4aab789f482469db9
+    m_Address: Armor_M_Sorcerer_BishopHat
     m_ReadOnly: 0
     m_SerializedLabels:
     - PreLoad_DataSO
@@ -29,8 +50,155 @@ MonoBehaviour:
     - PreLoad_DataSO
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1c39adf1ffffe23419557ca8260048ea
+    m_Address: Armor_F_Witch_Top
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2a7f83aaa96747a4db9e5a3c0f7ae546
+    m_Address: Armor_M_Swordsman_Bottom
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2b3c2c7f219f9cd4b83958abbc0d1a2c
+    m_Address: Armor_M_Knight_Bottom
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2b6123528a1c309459b72c95906aa52e
+    m_Address: Armor_M_Hunter_Top
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2b77f4c864e133743bba4b34a2d8e924
+    m_Address: Armor_F_Mage_Top
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 34d007539102c254394ddc02f3d1857d
+    m_Address: Armor_F_Rogue_Bottom
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 36475763c3e32514a8ead4fa52f682bd
+    m_Address: Armor_F_Swordsman_Top
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 38b3cd3e9fcbe9846a3f5df1e21fa484
+    m_Address: Armor_M_Hunter_Bottom
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 410961ff96a66344faa3b51953e3d0f6
+    m_Address: Armor_M_Rogue_Bottom
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 42653d126914a3743b4e9fd0cb3baea0
+    m_Address: Armor_F_Hunter_Top
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 43ffbd71201265041aa16993519e1f5b
+    m_Address: Armor_F_Rogue_Top
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 49b697bb68e5e274c9d112699bf2f336
+    m_Address: Armor_M_Fighter_Top
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4dc6a512836bf0245b7793001c63b782
+    m_Address: Armor_F_Hunter_Bottom
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 535933c7ae531cc4db5f4c5bb2c852b6
+    m_Address: Armor_M_Sorcerer_Bottom
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5863717cb7a08c4419642b579ae66994
+    m_Address: Armor_M_Mage_Top
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 59eac324f78b0b544903b943e727c3ef
+    m_Address: Armor_M_Warlock_Bottom
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5ff48650d897ad849a6ebde329e16e15
+    m_Address: Armor_F_Sorcerer_Bottom
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 60beb3c4fe248b148b2ccb3ce8c63cca
+    m_Address: Armor_M_Fighter_Headband
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 66d589e352cbb3e408b3e21683964f47
+    m_Address: Armor_F_Archer_Bottom
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 6a1d98e681787c6488733dcec1768613
     m_Address: ManaPotion
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6bb048e8b0b5c9a4fbaefe75f52f7721
+    m_Address: Armor_F_Swordsman_Bottom
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7238da7b75ca7334e88646e1bbe163d6
+    m_Address: Armor_M_Archer_TyroleanHat
     m_ReadOnly: 0
     m_SerializedLabels:
     - PreLoad_DataSO
@@ -43,8 +211,85 @@ MonoBehaviour:
     - PreLoad_DataSO
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7871548a36f035d4fa7b3d5c6a83631f
+    m_Address: Armor_M_Mage_Headwear
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7c6f70cc027cac64aa69e25eadb3aa98
+    m_Address: Armor_F_Knight_Top
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7c70b66ef2ff8df488ec61f587230727
+    m_Address: Armor_F_Fighter_Bottom
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8162dec7cc7e7b14aab58fd1e68b953f
+    m_Address: Armor_M_Archer_Bottom
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 912a11ff2d345ae4d836389d1c508d2a
+    m_Address: Armor_M_Swordsman_SkullCap
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 99213834396249f42a7095af4ec18385
     m_Address: Wood Log
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9a6d50477b433c74e845ee34e923ecd0
+    m_Address: Armor_F_Archer_Top
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b4d4399f8d1345443b50ef4588b422af
+    m_Address: Armor_F_Sorcerer_Top
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bad02dc34a816fe4a9958cdac7be3d65
+    m_Address: Armor_M_Hunter_FeltedHat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c1baf27e82d66684f8a5154fd990dee3
+    m_Address: Armor_M_Sorcerer_Top
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c3839a8bc1ce8f4479b08f4d17a079f3
+    m_Address: Armor_M_Archer_Top
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c450206705f10e44aa9ff7a6065c7894
+    m_Address: Armor_F_Witch_Bottom
     m_ReadOnly: 0
     m_SerializedLabels:
     - PreLoad_DataSO
@@ -57,8 +302,78 @@ MonoBehaviour:
     - PreLoad_DataSO
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c8ddfd85a036a35439372e259893d3f3
+    m_Address: Armor_M_Warlock_Top
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d41540213a249d442b1d66ca28ff621c
+    m_Address: Armor_M_Rogue_Top
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: dd2079b39a3dae64491f845960010bef
+    m_Address: Armor_M_Rogue_Eyepatch
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: df497543d24e28c41802b2e3d08e99c8
+    m_Address: Armor_F_Fighter_Top
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: dfce98f045d03db458dd32118c9cb376
+    m_Address: Armor_M_Fighter_Bottom
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e078cee0516037147bbe51b55169595f
+    m_Address: Armor_M_Warlock_Hood
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e16d5ce7ce7b32647ad06e1843cdaea8
+    m_Address: Armor_M_Swordsman_Top
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e262debc4f2e8454abeb469e4344a79e
+    m_Address: Armor_F_Knight_Bottom
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e3fe86b9ce978c447b8d43e66859b5a9
     m_Address: SlimeGel
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e8309a1406867ba4c88bcc5bfbf0cfcb
+    m_Address: Armor_M_Knight_GreatHelm
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f175fc738c1bf5a4dab47625363749d2
+    m_Address: Armor_M_Knight_Top
     m_ReadOnly: 0
     m_SerializedLabels:
     - PreLoad_DataSO

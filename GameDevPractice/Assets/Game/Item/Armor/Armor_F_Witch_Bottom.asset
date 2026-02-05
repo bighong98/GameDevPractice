@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2127a28afdb0e474781023dba74f3231, type: 3}
+  m_Name: Armor_F_Witch_Bottom
+  m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.ArmorTypeSO
+  prefab: {fileID: 0}
+  nameString: Witch's Swift Greaves
+  sprite: {fileID: 21300000, guid: b17850e7e7347a949a90b8c22d8cc8a4, type: 3}
+  itemType: 1
+  maxAmount: 1
+  desc: 'A test greaves tuned for the Witch outfit line (key: F_Witch_Bottom). Adds
+    Armor and MagicResistance while improving MoveSpeed and Agility.'
+  itemUseEffects: []
+  itemUseSFXReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
+  equipmentType: 0
+  slotType: 4
+  equipmentStats:
+  - type: {fileID: 11400000, guid: b797748de61cfca49a43e772b4ceaaa4, type: 2}
+    calculation: 0
+    value: 7
+  - type: {fileID: 11400000, guid: d1f737d637ad61c4b83c036babd96fc0, type: 2}
+    calculation: 0
+    value: 3
+  - type: {fileID: 11400000, guid: f1e5c30f9cdf16849b1138083aad69d2, type: 2}
+    calculation: 0
+    value: 0.55
+  - type: {fileID: 11400000, guid: 3a7cc61c3042aa04387e312907199547, type: 2}
+    calculation: 0
+    value: 4
+  outfitKeySO: {fileID: 11400000, guid: 6d9e4c2bf8aaec441b9e296a26bc549b, type: 2}
+  armorType: 0

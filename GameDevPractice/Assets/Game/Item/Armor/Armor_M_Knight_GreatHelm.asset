@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2127a28afdb0e474781023dba74f3231, type: 3}
+  m_Name: Armor_M_Knight_GreatHelm
+  m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.ArmorTypeSO
+  prefab: {fileID: 0}
+  nameString: Knight's Iron Helm
+  sprite: {fileID: 21300000, guid: a2d394081d456074fab4de79623f219e, type: 3}
+  itemType: 1
+  maxAmount: 1
+  desc: 'A test helm tuned for the Knight outfit line (key: M_Knight_GreatHelm).
+    Improves Armor and MagicResistance with mana-oriented support stats.'
+  itemUseEffects: []
+  itemUseSFXReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
+  equipmentType: 0
+  slotType: 1
+  equipmentStats:
+  - type: {fileID: 11400000, guid: b797748de61cfca49a43e772b4ceaaa4, type: 2}
+    calculation: 0
+    value: 5
+  - type: {fileID: 11400000, guid: d1f737d637ad61c4b83c036babd96fc0, type: 2}
+    calculation: 0
+    value: 2
+  - type: {fileID: 11400000, guid: 951140a1eab4079458785564169d0fbf, type: 2}
+    calculation: 0
+    value: 2
+  - type: {fileID: 11400000, guid: 084013cbdb346d4428cb29a47d22b70e, type: 2}
+    calculation: 0
+    value: 4
+  outfitKeySO: {fileID: 11400000, guid: 61ba714a39a275a4ab9be5f6217373d1, type: 2}
+  armorType: 0

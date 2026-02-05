@@ -90,3 +90,38 @@ MonoBehaviour:
       m_SubObjectGUID: 
       m_EditorAssetChanged: 1
     value: 1
+  - key:
+      m_AssetGUID: 5863717cb7a08c4419642b579ae66994
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    value: 1
+  - key:
+      m_AssetGUID: 0463cbb3d4b9df34e9334b3b9c277912
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 1
+    value: 1
+  - key:
+      m_AssetGUID: dfce98f045d03db458dd32118c9cb376
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 1
+    value: 1
+  - key:
+      m_AssetGUID: 60beb3c4fe248b148b2ccb3ce8c63cca
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 1
+    value: 1
+  - key:
+      m_AssetGUID: 49b697bb68e5e274c9d112699bf2f336
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    value: 1

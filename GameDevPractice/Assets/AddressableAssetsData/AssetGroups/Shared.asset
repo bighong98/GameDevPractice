@@ -15,6 +15,20 @@ MonoBehaviour:
   m_GroupName: Shared
   m_GUID: 1ad787ea84b605f4e84971a74e7ed2c8
   m_SerializeEntries:
+  - m_GUID: 018ab45b87d87104a96213ffcf5f4599
+    m_Address: Outfit_Head
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 05d90a2556c9ce0478d30f3d943def18
+    m_Address: Outfit_HeadGear
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 36f3e6bc2976551408b1cf79527feca9
     m_Address: Assets/Game/Control/Character/Action/WalkActionSO.asset
     m_ReadOnly: 0
@@ -98,6 +112,13 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: cb295a351ce0b53498efda497244bcbd
+    m_Address: Outfit_Bottom
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: ccae2dc6cf6f0c4479b782fedd0c8172
     m_Address: Assets/Asset Packs/Synty - Polygon Student Sample/Materials/PolyKnights_Character_Mat_Black.mat
     m_ReadOnly: 0
@@ -128,6 +149,13 @@ MonoBehaviour:
     m_Address: Assets/Asset Packs/Synty - Polygon Student Sample/Materials/PolyAdventureMaterial_01.mat
     m_ReadOnly: 0
     m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fd30e9a5a190fdd4091932361debee0f
+    m_Address: Outfit_Top
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: fe393ace9b354375a9cb14cdbbc28be4
     m_Address: Assets/TextMesh Pro/Shaders/TMP_SDF-Mobile.shader

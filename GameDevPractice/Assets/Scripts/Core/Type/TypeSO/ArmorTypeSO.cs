@@ -6,7 +6,11 @@ namespace TH.Resource
     public class ArmorTypeSO : EquipmentTypeSO
     {
         [Header("Armor")] 
-        public Enums.ArmorType armorType;
+        [SerializeField] private OutfitKeySO outfitKeySO;
+        [SerializeField] private Enums.ArmorType armorType;
+
+        public OutfitKeySO OutfitKey => outfitKeySO;
+        public Enums.ArmorType ArmorType => armorType;
     }
 }
 
