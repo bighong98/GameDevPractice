@@ -6,16 +6,19 @@ using System.Linq;
 using System.Reflection;
 using TH.Item;
 using UnityEditor;
+using UnityEditor.AddressableAssets;
+using UnityEditor.AddressableAssets.Settings;
 using UnityEngine;
 
 public static class OutfitRendererToggleReadinessTool
 {
-    private const string PrefabRootPath = "Assets/Asset Packs/PolysplitGames/LowPolyMedievalFantasyHeroes/BasicHeroes/All-in-One_SeparateGenders/prefabs";
+    private const string MaleTemplateAddressKey = "BasicHero_M Variant Template";
+    private const string FemaleTemplateAddressKey = "BasicHero_F Variant Template";
 
-    private static readonly string[] TemplatePrefabPaths =
+    private static readonly string[] TemplatePrefabAddressKeys =
     {
-        "Assets/Asset Packs/PolysplitGames/LowPolyMedievalFantasyHeroes/BasicHeroes/All-in-One_SeparateGenders/prefabs/BasicHero_F Variant Template.prefab",
-        "Assets/Asset Packs/PolysplitGames/LowPolyMedievalFantasyHeroes/BasicHeroes/All-in-One_SeparateGenders/prefabs/BasicHero_M Variant Template.prefab"
+        MaleTemplateAddressKey,
+        FemaleTemplateAddressKey
     };
 
     [MenuItem("Tools/Outfit/Audit Renderer Toggle Readiness (BasicHero Templates+Variants)")]
@@ -187,18 +190,28 @@ public static class OutfitRendererToggleReadinessTool
 
     private static List<string> CollectTargetPrefabPaths()
     {
-        var templateSet = new HashSet<string>(TemplatePrefabPaths, StringComparer.OrdinalIgnoreCase);
-        var result = new List<string>();
+        var templatePaths = ResolveTemplatePrefabPaths();
+        if (templatePaths.Count == 0)
+            return new List<string>();
 
-        foreach (var templatePath in TemplatePrefabPaths)
+        var templateSet = new HashSet<string>(templatePaths, StringComparer.OrdinalIgnoreCase);
+        var result = new List<string>(templatePaths);
+        var searchFolders = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        for (int i = 0; i < templatePaths.Count; i++)
         {
-            if (AssetDatabase.LoadAssetAtPath<GameObject>(templatePath) != null)
-                result.Add(templatePath);
-            else
-                Debug.LogWarning($"[{nameof(OutfitRendererToggleReadinessTool)}] Missing template prefab: {templatePath}");
+            var folder = Path.GetDirectoryName(templatePaths[i])?.Replace("\\", "/");
+            if (!string.IsNullOrEmpty(folder) && AssetDatabase.IsValidFolder(folder))
+                searchFolders.Add(folder);
         }
 
-        var allPrefabGuids = AssetDatabase.FindAssets("t:Prefab", new[] { PrefabRootPath });
+        if (searchFolders.Count == 0)
+        {
+            result.Sort(StringComparer.OrdinalIgnoreCase);
+            return result;
+        }
+
+        var allPrefabGuids = AssetDatabase.FindAssets("t:Prefab", searchFolders.ToArray());
         foreach (var guid in allPrefabGuids)
         {
             var path = AssetDatabase.GUIDToAssetPath(guid);
@@ -213,6 +226,68 @@ public static class OutfitRendererToggleReadinessTool
 
         result.Sort(StringComparer.OrdinalIgnoreCase);
         return result;
+    }
+
+    private static List<string> ResolveTemplatePrefabPaths()
+    {
+        var paths = new List<string>();
+
+        for (int i = 0; i < TemplatePrefabAddressKeys.Length; i++)
+        {
+            var path = ResolvePathByAddressKey(TemplatePrefabAddressKeys[i]);
+            if (string.IsNullOrEmpty(path))
+                continue;
+
+            if (AssetDatabase.LoadAssetAtPath<GameObject>(path) == null)
+            {
+                Debug.LogWarning($"[{nameof(OutfitRendererToggleReadinessTool)}] Address key points to missing/non-prefab asset: key={TemplatePrefabAddressKeys[i]}, path={path}");
+                continue;
+            }
+
+            if (!paths.Contains(path))
+                paths.Add(path);
+        }
+
+        if (paths.Count == 0)
+            Debug.LogError($"[{nameof(OutfitRendererToggleReadinessTool)}] No template prefab path resolved.");
+
+        return paths;
+    }
+
+    private static string ResolvePathByAddressKey(string addressKey)
+    {
+        if (string.IsNullOrWhiteSpace(addressKey))
+            return null;
+
+        var settings = AddressableAssetSettingsDefaultObject.Settings;
+        if (settings == null)
+        {
+            Debug.LogError($"[{nameof(OutfitRendererToggleReadinessTool)}] Addressable settings not found. key={addressKey}");
+            return null;
+        }
+
+        for (int g = 0; g < settings.groups.Count; g++)
+        {
+            var group = settings.groups[g];
+            if (group == null)
+                continue;
+
+            foreach (var entry in group.entries)
+            {
+                if (entry == null)
+                    continue;
+
+                if (!string.Equals(entry.address, addressKey, StringComparison.Ordinal))
+                    continue;
+
+                var path = AssetDatabase.GUIDToAssetPath(entry.guid);
+                if (!string.IsNullOrEmpty(path))
+                    return path;
+            }
+        }
+
+        Debug.LogError($"[{nameof(OutfitRendererToggleReadinessTool)}] Addressable key not found: {addressKey}");
+        return null;
     }
 
     private static bool IsVariantOfAnyTemplate(string prefabPath, HashSet<string> templateSet)

@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using TH.Core.Pool;
 using TH.Core.Service;
@@ -7,29 +6,26 @@ public class SimplePooledParticlePlayer : MonoBehaviour, IPoolObject
 {
     private bool init;
     [SerializeField] private ParticleSystem particle;
+    [SerializeField] private ParticleSystemStoppedRelay relay;
 
     private void Init()
     {
         if (init) return;
 
-        if (particle == null)
-        {
-            if (GetComponent<ParticleSystem>() is { } getCompoResult)
-            {
-                particle = getCompoResult;
-            }
-            else if (Util.FindChild<ParticleSystem>(gameObject, recursive: true) is {} findChildResult)
-            {
-                particle = findChildResult;
-            }
-        }
-        
-        init = (particle != null);
-    }
+        if (particle == null) 
+            particle = Util.FindChild<ParticleSystem>(gameObject, recursive: true);
+        if (particle == null) return;
 
-    private void OnParticleSystemStopped()
-    {
-        PoolManager.Instance.ReleaseFromPool(this, releaseToDefaultContainer: true);
+        if (relay == null)
+            relay = particle.gameObject.GetOrAddComponent<ParticleSystemStoppedRelay>();
+        if (relay == null) return;
+
+        var main = particle.main;
+        if (main.stopAction != ParticleSystemStopAction.Callback)
+            main.stopAction = ParticleSystemStopAction.Callback;
+
+        relay.Bind(this);
+        init = true;
     }
 
     public GameObject Origin { get; set; }
@@ -41,18 +37,20 @@ public class SimplePooledParticlePlayer : MonoBehaviour, IPoolObject
 
     public void OnGetFromPool()
     {
-        if (init)
-            particle.Play();
+        if (!init)
+            Init();
+
+        if (!init) return;
+
+        particle.Play(withChildren: true);
     }
 
     public void OnReleaseFromPool()
     {
-        
     }
 
     public void OnDestroyFromPool()
     {
-        
     }
 
     public void ReleaseSelf()
@@ -61,3 +59,4 @@ public class SimplePooledParticlePlayer : MonoBehaviour, IPoolObject
             PoolManager.Instance.ReleaseFromPool(this, releaseToDefaultContainer: true);
     }
 }
+
