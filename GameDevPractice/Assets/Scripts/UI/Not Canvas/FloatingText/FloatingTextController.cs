@@ -10,43 +10,51 @@ using TH.Core.Service;
 
 public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextController
 {
-    [SerializeField] private TextMeshPro text;
+    [SerializeField] private TMP_Text text;
     [Header("Animation")]
     [SerializeField] private FloatingTextSO animationData;
 
+    [Header("Canvas Tuning")]
+    [SerializeField] private float canvasFontScale = 12f;
+    [SerializeField] private float minCanvasFontSize = 18f;
+
     private Transform textTrs;
+    private Canvas rootCanvas;
+    private RectTransform rootCanvasRect;
+    private Transform worldAnchor;
+    private Vector3 worldPosition;
+    private Vector3 worldOffset;
     private IFloatingTextData AnimationData => animationData;
-    
+
     private CancellationTokenSource _animCts;
-    
-    private Camera cam;
+    private Camera worldCamera;
 
     private void Awake()
     {
-        if (text == null && Util.FindChild<TextMeshPro>(gameObject, "text", true) is { } found)
+        text = ResolveText();
+        if (text == null)
         {
-            text = found;
+            Logg.LogError($"[{nameof(FloatingTextController)}] failed to resolve text component");
+            enabled = false;
+            return;
         }
 
         textTrs = text.transform;
+        ResolveCanvasContext();
     }
 
     private void OnEnable()
     {
-        cam = Camera.main;
+        worldCamera = Camera.main;
+        ResolveCanvasContext();
     }
 
-    private void LateUpdate()
-    {
-        LookAtCamera();
-    }
-    
     #region IFloatingTextController
 
-    public void Set(FloatingTextSO data, string text)
+    public void Set(FloatingTextSO data, string textValue)
     {
         SetSetting(data);
-        SetText(text);
+        SetText(textValue);
     }
 
     public void SetSetting(FloatingTextSO data)
@@ -56,44 +64,59 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
 
     public void SetText(string s)
     {
+        if (text == null) return;
+
         text.SetText(s);
         Refresh();
     }
 
     #endregion
 
+    public void SetWorldAnchor(Transform anchor)
+    {
+        worldAnchor = anchor;
+        if (worldAnchor != null)
+            worldPosition = worldAnchor.position;
+    }
+
+    public void SetWorldPosition(Vector3 position)
+    {
+        worldAnchor = null;
+        worldPosition = position;
+    }
+
     private void Refresh()
     {
-        // 텍스트 설정(SO) 값 적용
+        if (text == null) return;
+
         ApplySetting();
-        // 텍스트 매쉬 업데이트
         text.enabled = true;
         text.havePropertiesChanged = true;
         text.ForceMeshUpdate();
         text.UpdateVertexData(TMP_VertexDataUpdateFlags.All);
 
-        // 기존 애니메이션 UniTask 취소
         CancelAnimationTask();
-        // 새 애니메이션 시작
         StartFloatAndFadeTask();
     }
 
     private void ApplySetting()
     {
-        textTrs.localPosition = AnimationData.StartOffset;
+        worldOffset = AnimationData.StartOffset;
         text.color = AnimationData.TextColor;
-        text.fontSize = AnimationData.TextSize;
+        text.fontSize = ResolveFontSize(AnimationData.TextSize);
+        UpdateScreenPosition();
     }
 
-    private void LookAtCamera()
+    private float ResolveFontSize(float configuredSize)
     {
-        var rotation = cam.transform.rotation;
-        textTrs.LookAt(textTrs.position + rotation * Vector3.forward,
-            rotation * Vector3.up);
-    }
+        if (text is TextMeshProUGUI)
+            return Mathf.Max(minCanvasFontSize, configuredSize * canvasFontScale);
 
+        return configuredSize;
+    }
 
     #region IPoolObject
+
     public GameObject Origin { get; set; }
     public void OnCreateFromPool() {}
     public void OnGetFromPool() {}
@@ -102,8 +125,9 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
     {
         CancelAnimationTask();
 
-        // 위치/색상 원복
-        textTrs.localPosition = AnimationData.StartOffset;
+        worldAnchor = null;
+        worldOffset = Vector3.zero;
+        worldPosition = Vector3.zero;
         if (text)
         {
             text.enabled = false;
@@ -120,7 +144,7 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
     {
         if (Util.IsQuitting) return;
         if (!gameObject.activeSelf) return;
-        
+
         PoolManager.Instance.ReleaseFromPool(this);
     }
 
@@ -135,7 +159,10 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
             if (!_animCts.IsCancellationRequested)
                 _animCts.Cancel();
         }
-        catch (Exception) { Logg.LogWarning($"invalid animation CTS"); }
+        catch (Exception)
+        {
+            Logg.LogWarning("invalid animation CTS");
+        }
         finally
         {
             _animCts.Dispose();
@@ -145,11 +172,8 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
 
     private void StartFloatAndFadeTask()
     {
-        // 오브젝트 파괴 시 자동 취소되도록 Destroy 토큰과 링크
         var destroyToken = this.GetCancellationTokenOnDestroy();
         _animCts = CancellationTokenSource.CreateLinkedTokenSource(destroyToken);
-
-        // fire-and-forget
         FloatAndFadeAsync(_animCts.Token).Forget();
     }
 
@@ -159,11 +183,10 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
 
         float fDuration = AnimationData.FadeOutDuration;
         float lTime = AnimationData.LifeTime;
-        float fadeStart = Mathf.Max(0f, lTime - fDuration); // 페이드 구간 계산(끝에서부터 fadeOutDuration만큼)
-        
+        float fadeStart = Mathf.Max(0f, lTime - fDuration);
+
         Color c = text.color;
 
-        // 위로 떠오르면서 페이드
         while (t < lTime)
         {
             if (token.IsCancellationRequested)
@@ -171,18 +194,16 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
 
             float dt = Time.unscaledDeltaTime;
             t = Mathf.Min(t + dt, lTime);
-            
-            // 위로 이동
-            if (textTrs != null)
-                textTrs.localPosition += Vector3.up * (AnimationData.RiseSpeed * dt); 
-            
+
+            worldOffset += Vector3.up * (AnimationData.RiseSpeed * dt);
+            UpdateScreenPosition();
+
             if (text == null)
                 break;
 
-            // 페이드아웃 (마지막 fadeOutDuration(초) 만큼만)
             if (t >= fadeStart && fDuration > 0f)
             {
-                float u = Mathf.InverseLerp(fadeStart, lTime, t); // 0to1
+                float u = Mathf.InverseLerp(fadeStart, lTime, t);
                 c.a = Mathf.Lerp(1f, 0f, u);
                 text.color = c;
             }
@@ -191,5 +212,104 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
         }
 
         ReleaseSelf();
+    }
+
+    private TMP_Text ResolveText()
+    {
+        if (text != null)
+            return EnsureCanvasText(text);
+
+        if (Util.FindChild<TextMeshProUGUI>(gameObject, "text", true) is { } uiText)
+            return uiText;
+
+        if (Util.FindChild<TextMeshPro>(gameObject, "text", true) is { } worldText)
+            return ConvertLegacyText(worldText);
+
+        return null;
+    }
+
+    private TMP_Text EnsureCanvasText(TMP_Text tmp)
+    {
+        if (tmp is TextMeshProUGUI)
+            return tmp;
+        if (tmp is TextMeshPro worldText)
+            return ConvertLegacyText(worldText);
+        return tmp;
+    }
+
+    private TextMeshProUGUI ConvertLegacyText(TextMeshPro legacy)
+    {
+        if (legacy == null) return null;
+
+        var go = legacy.gameObject;
+        var ugui = go.GetComponent<TextMeshProUGUI>() ?? go.AddComponent<TextMeshProUGUI>();
+        ugui.font = legacy.font;
+        ugui.fontSize = legacy.fontSize;
+        ugui.color = legacy.color;
+        ugui.alignment = legacy.alignment;
+        ugui.text = legacy.text;
+        ugui.raycastTarget = false;
+
+        legacy.enabled = false;
+        if (go.TryGetComponent<MeshRenderer>(out var renderer))
+            renderer.enabled = false;
+
+        return ugui;
+    }
+
+    private void ResolveCanvasContext()
+    {
+        rootCanvas = text != null ? text.GetComponentInParent<Canvas>() : null;
+        rootCanvasRect = rootCanvas != null ? rootCanvas.rootCanvas.transform as RectTransform : null;
+    }
+
+    private void UpdateScreenPosition()
+    {
+        if (textTrs == null || text == null) return;
+
+        if (worldAnchor != null)
+            worldPosition = worldAnchor.position;
+
+        if (worldCamera == null)
+            worldCamera = Camera.main;
+        if (worldCamera == null)
+            worldCamera = FindFirstObjectByType<Camera>();
+        if (worldCamera == null)
+        {
+            text.enabled = false;
+            return;
+        }
+
+        Vector3 targetWorldPos = worldPosition + worldOffset;
+        Vector3 screenPos = worldCamera.WorldToScreenPoint(targetWorldPos);
+        if (screenPos.z <= 0f)
+        {
+            text.enabled = false;
+            return;
+        }
+
+        if (rootCanvas != null && rootCanvas.renderMode == RenderMode.ScreenSpaceOverlay)
+        {
+            textTrs.position = screenPos;
+        }
+        else if (rootCanvasRect != null &&
+                 RectTransformUtility.ScreenPointToWorldPointInRectangle(
+                     rootCanvasRect, screenPos, GetCanvasCamera(), out var uiWorld))
+        {
+            textTrs.position = uiWorld;
+        }
+        else
+        {
+            textTrs.position = screenPos;
+        }
+
+        if (!text.enabled)
+            text.enabled = true;
+    }
+
+    private Camera GetCanvasCamera()
+    {
+        if (rootCanvas == null) return null;
+        return rootCanvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : rootCanvas.worldCamera;
     }
 }

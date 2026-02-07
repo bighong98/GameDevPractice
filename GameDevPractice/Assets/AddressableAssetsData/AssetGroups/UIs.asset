@@ -57,13 +57,6 @@ MonoBehaviour:
     - PreLoad_Prefab
     - UI
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: ac05670feee7784439f9920a05bdf52d
-    m_Address: DamageText
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - PreLoad_Prefab
-    - UI
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: c91010d41f187134caba9eec03a0960d
     m_Address: InvenSlotUI
     m_ReadOnly: 0

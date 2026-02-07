@@ -5,6 +5,7 @@ using TH.Attribute;
 using TH.Combat;
 using TH.Resource;
 using TH.UI.Data;
+using TH.UI;
 using UnityEngine;
 using TH.Core.Service;
 
@@ -25,6 +26,7 @@ namespace TH.Utils
         private const string textCatalogSOKey = "FloatingTextCatalogSO";
         
         private readonly IResourceLoader resourceLoader;
+        private RectTransform feedbackCanvasRect;
         
         public FloatingTextSpawner(IResourceLoader rLoader)
         {
@@ -129,13 +131,40 @@ namespace TH.Utils
 
         private void ShowFloatingText(FloatingTextEventType type, Transform anchor, in string str)
         {
-            Logg.Log($"[FTSpawner] print {type} ({anchor.name}, {str} using {textPrefab})", Logg.LoggingMode.Completed);
-            var s = PoolManager.Instance.GetFromPool<FloatingTextController>(textPrefab, null, anchor.position);
-            if (textCatalogSO.TryGetValue(type, out var setting))
+            if (anchor == null)
             {
-                s.SetSetting(setting);
-                s.SetText(str);
+                Logg.LogWarning($"[FTSpawner] skipped {type} floating text because anchor is null");
+                return;
             }
+            if (textPrefab == null || textCatalogSO == null)
+            {
+                Logg.LogWarning($"[FTSpawner] skipped {type} floating text because prefab or catalog is not ready");
+                return;
+            }
+            if (!textCatalogSO.TryGetValue(type, out var setting))
+            {
+                Logg.LogWarning($"[FTSpawner] missing setting for floating text type {type}");
+                return;
+            }
+
+            feedbackCanvasRect ??= UIManager.Instance.GetCanvasRect(UICanvas.FeedbackOverlay);
+            if (feedbackCanvasRect == null)
+            {
+                Logg.LogWarning($"[FTSpawner] skipped {type} floating text because FeedbackOverlay canvas is not ready");
+                return;
+            }
+
+            Logg.Log($"[FTSpawner] print {type} ({anchor.name}, {str} using {textPrefab})", Logg.LoggingMode.Completed);
+            var s = PoolManager.Instance.GetFromPool<FloatingTextController>(textPrefab, feedbackCanvasRect, anchor.position);
+            if (s == null)
+            {
+                Logg.LogWarning($"[FTSpawner] failed to get {nameof(FloatingTextController)} from pool");
+                return;
+            }
+
+            s.SetWorldAnchor(anchor);
+            s.SetSetting(setting);
+            s.SetText(str);
         }
 
         private sealed class FloatingTextEventBinder<TSource, TPayload, TEvent> : IFloatingTextEventBinder 
