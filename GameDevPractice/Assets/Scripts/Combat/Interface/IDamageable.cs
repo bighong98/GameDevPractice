@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
@@ -9,6 +10,7 @@ namespace TH.Combat
     {
         // event Action<HitResult> OnDamaged;
         event HitEvent OnDamaged;
+        event Action<IReadOnlyList<float>> OnDamagedBatch;
         void TakeDamage(in HitResult hitResult);
     }
 

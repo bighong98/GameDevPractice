@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using Cysharp.Threading.Tasks;
 using TH.Attribute;
 using TH.Combat;
 using TH.Resource;
@@ -18,12 +19,15 @@ namespace TH.Utils
     public class FloatingTextSpawner : IFloatingTextSpawner
     {
         private readonly Dictionary<FloatingTextEventType, IFloatingTextEventBinder> _binders = new();
+        private readonly Dictionary<BatchKey, PendingBatch> _pendingBatches = new();
         
         private GameObject textPrefab;
         private FloatingTextCatalogSO textCatalogSO;
 
         private const string textPrefabKey = "FloatingText";
         private const string textCatalogSOKey = "FloatingTextCatalogSO";
+        private const int MaxMergedTexts = 6;
+        private static readonly TimeSpan MergeWindow = TimeSpan.FromSeconds(0.08f);
         
         private readonly IResourceLoader resourceLoader;
         private RectTransform feedbackCanvasRect;
@@ -53,12 +57,11 @@ namespace TH.Utils
         private void AddBinders()
         {
             var damageType = FloatingTextEventType.Damage;
-            AddBinder<IDamageable, HitResult, HitEvent>(
-                damageType,
-                (subject, h) => subject.OnDamaged += h,
-                (subject, h) => subject.OnDamaged -= h,
-                (IDamageable subject, in HitResult data) => ShowFloatingText(damageType, AnchorOf(subject), in data.Damage),
-                adapter: ph => new HitEvent((in HitResult x) => ph(in x)) 
+            _binders[damageType] = new DamageFloatingTextBinder(
+                onSingleDamage: (IDamageable subject, in HitResult data) =>
+                    ShowFloatingText(damageType, AnchorOf(subject), in data.Damage),
+                onBatchDamage: (IDamageable subject, IReadOnlyList<float> values) =>
+                    SpawnBatch(damageType, AnchorOf(subject), values, FloatingTextBatchLayout.Line)
             );
             var xpGainType = FloatingTextEventType.GetXp;
             AddBinder<IExperience, float, Action<float>>(
@@ -117,6 +120,94 @@ namespace TH.Utils
             foreach (var b in _binders.Values) b.Unbind(source);
         }
 
+        public void SpawnBatch(FloatingTextEventType type, Transform anchor, IReadOnlyCollection<float> values, FloatingTextBatchLayout layout = FloatingTextBatchLayout.Line)
+        {
+            if (values == null || values.Count == 0)
+            {
+                Logg.LogWarning($"[FTSpawner] skipped {type} floating text batch because values are empty");
+                return;
+            }
+
+            int visibleCount = Mathf.Min(values.Count, MaxMergedTexts);
+            int overflowCount = values.Count - visibleCount;
+            var groupedTexts = new List<string>(visibleCount);
+
+            int index = 0;
+            foreach (var value in values)
+            {
+                if (index >= visibleCount)
+                    break;
+
+                groupedTexts.Add(value.ToString(CultureInfo.InvariantCulture));
+                index++;
+            }
+
+            if (overflowCount > 0)
+            {
+                string anchorName = anchor != null ? anchor.name : "NullAnchor";
+                Logg.LogWarning($"[FTSpawner] merged text overflow for {type} at {anchorName}. hidden count: {overflowCount}");
+            }
+
+            SpawnBatch(type, anchor, groupedTexts, layout);
+        }
+
+        public void SpawnBatch(FloatingTextEventType type, Transform anchor, IReadOnlyList<string> values, FloatingTextBatchLayout layout = FloatingTextBatchLayout.Line)
+        {
+            if (anchor == null)
+            {
+                Logg.LogWarning($"[FTSpawner] skipped {type} floating text batch because anchor is null");
+                return;
+            }
+
+            if (values == null || values.Count == 0)
+            {
+                Logg.LogWarning($"[FTSpawner] skipped {type} floating text batch because values are empty");
+                return;
+            }
+
+            if (textPrefab == null || textCatalogSO == null)
+            {
+                Logg.LogWarning($"[FTSpawner] skipped {type} floating text batch because prefab or catalog is not ready");
+                return;
+            }
+
+            if (!textCatalogSO.TryGetValue(type, out var setting))
+            {
+                Logg.LogWarning($"[FTSpawner] missing setting for floating text type {type}");
+                return;
+            }
+
+            if (!EnsureFeedbackCanvasReady())
+                return;
+
+            int visibleCount = Mathf.Min(values.Count, MaxMergedTexts);
+            int overflowCount = values.Count - visibleCount;
+            var groupedTexts = new List<string>(visibleCount);
+            for (int i = 0; i < visibleCount; i++)
+            {
+                groupedTexts.Add(values[i] ?? string.Empty);
+            }
+
+            if (overflowCount > 0)
+            {
+                Logg.LogWarning($"[FTSpawner] merged text overflow for {type} at {anchor.name}. hidden count: {overflowCount}");
+            }
+
+            Logg.Log($"[FTSpawner] print immediate merged {type} ({groupedTexts.Count})", Logg.LoggingMode.Completed);
+            var s = PoolManager.Instance.GetFromPool<FloatingTextController>(textPrefab, feedbackCanvasRect, anchor.position);
+            if (s == null)
+            {
+                Logg.LogWarning($"[FTSpawner] failed to get {nameof(FloatingTextController)} from pool");
+                return;
+            }
+
+            s.SetWorldAnchor(anchor, anchor.position);
+            s.SetSetting(setting);
+            s.SetBatchTexts(groupedTexts, layout);
+        }
+
+
+
         #endregion
 
         private void ShowFloatingText(FloatingTextEventType type, Transform anchor, in float value)
@@ -147,24 +238,208 @@ namespace TH.Utils
                 return;
             }
 
-            feedbackCanvasRect ??= UIManager.Instance.GetCanvasRect(UICanvas.FeedbackOverlay);
+            if (!EnsureFeedbackCanvasReady())
+                return;
+
+            EnqueueFloatingText(type, anchor, setting, str);
+        }
+
+        private bool EnsureFeedbackCanvasReady()
+        {
+            if (feedbackCanvasRect == null)
+                feedbackCanvasRect = UIManager.Instance.GetCanvasRect(UICanvas.FeedbackOverlay);
             if (feedbackCanvasRect == null)
             {
-                Logg.LogWarning($"[FTSpawner] skipped {type} floating text because FeedbackOverlay canvas is not ready");
+                Logg.LogWarning("[FTSpawner] skipped floating text because FeedbackOverlay canvas is not ready");
+                return false;
+            }
+
+            return true;
+        }
+
+        private void EnqueueFloatingText(FloatingTextEventType type, Transform anchor, FloatingTextSO setting, string str)
+        {
+            var key = new BatchKey(anchor.GetInstanceID(), type);
+            if (!_pendingBatches.TryGetValue(key, out var batch))
+            {
+                batch = new PendingBatch(anchor, setting, anchor.position);
+                _pendingBatches.Add(key, batch);
+            }
+            else
+            {
+                batch.Anchor = anchor;
+                batch.Setting = setting;
+                batch.LastWorldPosition = anchor.position;
+            }
+
+            if (batch.Texts.Count < MaxMergedTexts)
+                batch.Texts.Add(str);
+            else
+                batch.OverflowCount += 1;
+
+            if (batch.FlushScheduled)
+                return;
+
+            batch.FlushScheduled = true;
+            FlushBatchDelayedAsync(key).Forget();
+        }
+
+        private async UniTaskVoid FlushBatchDelayedAsync(BatchKey key)
+        {
+            try
+            {
+                await UniTask.Delay(MergeWindow, DelayType.UnscaledDeltaTime, PlayerLoopTiming.Update);
+                FlushBatch(key);
+            }
+            catch (Exception e)
+            {
+                Logg.LogWarning($"[FTSpawner] failed to flush floating text batch: {e.Message}");
+            }
+        }
+
+        private void FlushBatch(BatchKey key)
+        {
+            if (!_pendingBatches.TryGetValue(key, out var batch))
+                return;
+
+            _pendingBatches.Remove(key);
+            batch.FlushScheduled = false;
+
+            if (batch.Texts.Count == 0)
+                return;
+
+            if (batch.OverflowCount > 0)
+            {
+                var anchorName = batch.Anchor != null ? batch.Anchor.name : "DestroyedAnchor";
+                Logg.LogWarning($"[FTSpawner] merged text overflow for {key.Type} at {anchorName}. hidden count: {batch.OverflowCount}");
+            }
+
+            if (textPrefab == null || textCatalogSO == null)
+            {
+                Logg.LogWarning($"[FTSpawner] skipped {key.Type} floating text because prefab or catalog is not ready");
                 return;
             }
 
-            Logg.Log($"[FTSpawner] print {type} ({anchor.name}, {str} using {textPrefab})", Logg.LoggingMode.Completed);
-            var s = PoolManager.Instance.GetFromPool<FloatingTextController>(textPrefab, feedbackCanvasRect, anchor.position);
+            if (!EnsureFeedbackCanvasReady())
+                return;
+
+            var anchor = batch.Anchor;
+            var spawnPosition = anchor != null ? anchor.position : batch.LastWorldPosition;
+
+            Logg.Log($"[FTSpawner] print merged {key.Type} ({batch.Texts.Count})", Logg.LoggingMode.Completed);
+            var s = PoolManager.Instance.GetFromPool<FloatingTextController>(textPrefab, feedbackCanvasRect, spawnPosition);
             if (s == null)
             {
                 Logg.LogWarning($"[FTSpawner] failed to get {nameof(FloatingTextController)} from pool");
                 return;
             }
 
-            s.SetWorldAnchor(anchor);
-            s.SetSetting(setting);
-            s.SetText(str);
+            s.SetWorldAnchor(anchor, spawnPosition);
+            s.SetSetting(batch.Setting);
+            s.SetBatchTexts(batch.Texts, FloatingTextBatchLayout.Spread);
+        }
+
+        private readonly struct BatchKey : IEquatable<BatchKey>
+        {
+            public readonly int AnchorId;
+            public readonly FloatingTextEventType Type;
+
+            public BatchKey(int anchorId, FloatingTextEventType type)
+            {
+                AnchorId = anchorId;
+                Type = type;
+            }
+
+            public bool Equals(BatchKey other)
+            {
+                return AnchorId == other.AnchorId && Type == other.Type;
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is BatchKey other && Equals(other);
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(AnchorId, (int)Type);
+            }
+        }
+
+        private sealed class PendingBatch
+        {
+            public Transform Anchor;
+            public FloatingTextSO Setting;
+            public readonly List<string> Texts;
+            public Vector3 LastWorldPosition;
+            public int OverflowCount;
+            public bool FlushScheduled;
+
+            public PendingBatch(Transform anchor, FloatingTextSO setting, Vector3 lastWorldPosition)
+            {
+                Anchor = anchor;
+                Setting = setting;
+                LastWorldPosition = lastWorldPosition;
+                OverflowCount = 0;
+                FlushScheduled = false;
+                Texts = new List<string>(MaxMergedTexts);
+            }
+        }
+
+        private delegate void DamageSingleEventHandler(IDamageable source, in HitResult payload);
+        private delegate void DamageBatchEventHandler(IDamageable source, IReadOnlyList<float> payload);
+
+        private sealed class DamageFloatingTextBinder : IFloatingTextEventBinder
+        {
+            private readonly DamageSingleEventHandler _onSingleDamage;
+            private readonly DamageBatchEventHandler _onBatchDamage;
+            private readonly Dictionary<IDamageable, DamageEventHandlers> _handlers = new();
+
+            public DamageFloatingTextBinder(
+                DamageSingleEventHandler onSingleDamage,
+                DamageBatchEventHandler onBatchDamage)
+            {
+                _onSingleDamage = onSingleDamage ?? throw new ArgumentNullException(nameof(onSingleDamage));
+                _onBatchDamage = onBatchDamage ?? throw new ArgumentNullException(nameof(onBatchDamage));
+            }
+
+            public void Bind(object o)
+            {
+                if (o is not IDamageable source || _handlers.ContainsKey(source))
+                    return;
+
+                HitEvent singleHandler = (in HitResult payload) => _onSingleDamage(source, in payload);
+                Action<IReadOnlyList<float>> batchHandler = payload => _onBatchDamage(source, payload);
+
+                source.OnDamaged += singleHandler;
+                source.OnDamagedBatch += batchHandler;
+                _handlers[source] = new DamageEventHandlers(singleHandler, batchHandler);
+            }
+
+            public void Unbind(object o)
+            {
+                if (o is not IDamageable source)
+                    return;
+
+                if (!_handlers.TryGetValue(source, out var handlers))
+                    return;
+
+                source.OnDamaged -= handlers.Single;
+                source.OnDamagedBatch -= handlers.Batch;
+                _handlers.Remove(source);
+            }
+
+            private readonly struct DamageEventHandlers
+            {
+                public readonly HitEvent Single;
+                public readonly Action<IReadOnlyList<float>> Batch;
+
+                public DamageEventHandlers(HitEvent single, Action<IReadOnlyList<float>> batch)
+                {
+                    Single = single;
+                    Batch = batch;
+                }
+            }
         }
 
         private sealed class FloatingTextEventBinder<TSource, TPayload, TEvent> : IFloatingTextEventBinder 

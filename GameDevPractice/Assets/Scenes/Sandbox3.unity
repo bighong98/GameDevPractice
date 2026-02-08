@@ -13490,6 +13490,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1046575486}
   - component: {fileID: 1046575487}
+  - component: {fileID: 1046575488}
   m_Layer: 0
   m_Name: EnemySpawner_test
   m_TagString: Untagged
@@ -13524,6 +13525,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3116b4bd6728e6f4b9224754b6ce9955, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemySpawner
+  prefab: {fileID: 0}
   enemyPrefab: {fileID: 9097116913552378909, guid: 034a99e523c4d8d4397a29c53eae244c, type: 3}
   capacity: 10
   max: 30
@@ -13535,8 +13537,31 @@ MonoBehaviour:
     m_Bits: 6208
   navMeshSampleDistance: 1.5
   maxSpawnAttempts: 8
-  drawGizmoAlways: 0
   spawnOnStart: 1
+  drawGizmoAlways: 0
+--- !u!114 &1046575488
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1046575485}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4edf884c4c15f9d45b4eee5ca0f564bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TH.Utils.FloatingTextPlayModeProbe
+  playerAnchor: {fileID: 631020003}
+  eventType: 0
+  batchLayout: 1
+  emitInterval: 0.5
+  damageRange: {x: 5, y: 20}
+  hitCountRange: {x: 2, y: 4}
+  useRandomHitCount: 0
+  fixedHitCount: 5
+  roundDamageToInt: 1
+  useUnscaledTime: 1
+  autoStartOnEnable: 1
 --- !u!1 &1066566349
 GameObject:
   m_ObjectHideFlags: 0

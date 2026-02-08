@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using TH.Core.Pool;
@@ -10,15 +11,21 @@ using TH.Core.Service;
 
 public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextController
 {
-    [SerializeField] private TMP_Text text;
+    [SerializeField] private TextMeshProUGUI text;
     [Header("Animation")]
     [SerializeField] private FloatingTextSO animationData;
 
     [Header("Canvas Tuning")]
     [SerializeField] private float canvasFontScale = 12f;
     [SerializeField] private float minCanvasFontSize = 18f;
+    
+    [Header("Batch Layout")]
+    [SerializeField] private float batchLineHeightMultiplier = 0.9f;
+    [SerializeField] private float batchHorizontalStep = 18f;
+    [SerializeField] private int maxBatchEntries = 6;
 
-    private Transform textTrs;
+    private readonly List<TextMeshProUGUI> textItems = new();
+    private RectTransform rootRect;
     private Canvas rootCanvas;
     private RectTransform rootCanvasRect;
     private Transform worldAnchor;
@@ -28,10 +35,14 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
 
     private CancellationTokenSource _animCts;
     private Camera worldCamera;
+    private CanvasGroup canvasGroup;
+    private FloatingTextBatchLayout currentBatchLayout = FloatingTextBatchLayout.Spread;
+    private int visibleTextCount = 1;
 
     private void Awake()
     {
-        text = ResolveText();
+        if (text == null)
+            text = Util.FindChild<TextMeshProUGUI>(gameObject, "text", true);
         if (text == null)
         {
             Logg.LogError($"[{nameof(FloatingTextController)}] failed to resolve text component");
@@ -39,7 +50,15 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
             return;
         }
 
-        textTrs = text.transform;
+        rootRect = transform as RectTransform;
+        canvasGroup = GetComponent<CanvasGroup>();
+        if (canvasGroup == null)
+            canvasGroup = gameObject.AddComponent<CanvasGroup>();
+        
+        textItems.Clear();
+        textItems.Add(text);
+        ResetTextItems();
+
         ResolveCanvasContext();
     }
 
@@ -48,8 +67,6 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
         worldCamera = Camera.main;
         ResolveCanvasContext();
     }
-
-    #region IFloatingTextController
 
     public void Set(FloatingTextSO data, string textValue)
     {
@@ -66,11 +83,41 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
     {
         if (text == null) return;
 
-        text.SetText(s);
+        currentBatchLayout = FloatingTextBatchLayout.Spread;
+        EnsureTextItemCount(1);
+        visibleTextCount = 1;
+        ApplyTextValue(textItems[0], s);
+        DeactivateTextItemsFrom(1);
         Refresh();
     }
 
-    #endregion
+    public void SetBatchTexts(IReadOnlyList<string> values)
+    {
+        SetBatchTexts(values, FloatingTextBatchLayout.Spread);
+    }
+
+    public void SetBatchTexts(IReadOnlyList<string> values, FloatingTextBatchLayout layout)
+    {
+        if (text == null) return;
+
+        if (values == null || values.Count == 0)
+        {
+            SetText(string.Empty);
+            return;
+        }
+
+        currentBatchLayout = layout;
+        int count = Mathf.Clamp(values.Count, 1, Mathf.Max(1, maxBatchEntries));
+        EnsureTextItemCount(count);
+        visibleTextCount = count;
+
+        for (int i = 0; i < count; i++)
+            ApplyTextValue(textItems[i], values[i]);
+
+        DeactivateTextItemsFrom(count);
+        Refresh();
+    }
+
 
     public void SetWorldAnchor(Transform anchor)
     {
@@ -78,22 +125,28 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
         if (worldAnchor != null)
             worldPosition = worldAnchor.position;
     }
-
-    public void SetWorldPosition(Vector3 position)
+    
+    public void SetWorldAnchor(Transform anchor, Vector3 fallbackWorldPosition)
     {
-        worldAnchor = null;
-        worldPosition = position;
+        worldAnchor = anchor;
+        if (worldAnchor != null)
+            worldPosition = worldAnchor.position;
+        else
+            worldPosition = fallbackWorldPosition;
     }
 
     private void Refresh()
     {
-        if (text == null) return;
+        if (text == null || animationData == null) return;
 
         ApplySetting();
-        text.enabled = true;
-        text.havePropertiesChanged = true;
-        text.ForceMeshUpdate();
-        text.UpdateVertexData(TMP_VertexDataUpdateFlags.All);
+        for (int i = 0; i < visibleTextCount; i++)
+        {
+            var item = textItems[i];
+            item.havePropertiesChanged = true;
+            item.ForceMeshUpdate();
+            item.UpdateVertexData(TMP_VertexDataUpdateFlags.All);
+        }
 
         CancelAnimationTask();
         StartFloatAndFadeTask();
@@ -102,17 +155,110 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
     private void ApplySetting()
     {
         worldOffset = AnimationData.StartOffset;
-        text.color = AnimationData.TextColor;
-        text.fontSize = ResolveFontSize(AnimationData.TextSize);
+        float fontSize = ResolveFontSize(AnimationData.TextSize);
+        Color color = AnimationData.TextColor;
+
+        if (canvasGroup != null)
+            canvasGroup.alpha = 1f;
+
+        for (int i = 0; i < visibleTextCount; i++)
+        {
+            var item = textItems[i];
+            item.fontSize = fontSize;
+            item.color = color;
+            item.enabled = true;
+            item.gameObject.SetActive(true);
+        }
+
+        LayoutVisibleTextItems(fontSize);
         UpdateScreenPosition();
     }
 
     private float ResolveFontSize(float configuredSize)
     {
-        if (text is TextMeshProUGUI)
-            return Mathf.Max(minCanvasFontSize, configuredSize * canvasFontScale);
+        return Mathf.Max(minCanvasFontSize, configuredSize * canvasFontScale);
+    }
+    
+    private void LayoutVisibleTextItems(float fontSize)
+    {
+        float lineStep = Mathf.Max(1f, fontSize * batchLineHeightMultiplier);
 
-        return configuredSize;
+        if (currentBatchLayout == FloatingTextBatchLayout.Line)
+        {
+            for (int i = 0; i < visibleTextCount; i++)
+            {
+                var itemRect = textItems[i].rectTransform;
+                float y = i * lineStep;
+                itemRect.anchoredPosition = new Vector2(0f, y);
+            }
+            return;
+        }
+
+        for (int i = 0; i < visibleTextCount; i++)
+        {
+            var itemRect = textItems[i].rectTransform;
+            float x = 0f;
+            if (i > 0)
+            {
+                float spread = Mathf.Ceil(i * 0.5f);
+                x = ((i & 1) == 1 ? 1f : -1f) * spread * batchHorizontalStep;
+            }
+
+            float y = i * lineStep;
+            itemRect.anchoredPosition = new Vector2(x, y);
+        }
+    }
+
+    private void EnsureTextItemCount(int requiredCount)
+    {
+        if (text == null)
+            return;
+
+        if (textItems.Count == 0)
+            textItems.Add(text);
+
+        while (textItems.Count < requiredCount)
+        {
+            var clonedText = Instantiate(text, text.transform.parent);
+            clonedText.name = $"{text.name}_{textItems.Count}";
+            clonedText.raycastTarget = false;
+            clonedText.enabled = false;
+            clonedText.gameObject.SetActive(false);
+            textItems.Add(clonedText);
+        }
+    }
+
+    private void ApplyTextValue(TextMeshProUGUI item, string value)
+    {
+        if (item == null)
+            return;
+
+        item.gameObject.SetActive(true);
+        item.enabled = true;
+        item.SetText(value);
+    }
+
+    private void DeactivateTextItemsFrom(int startIndex)
+    {
+        for (int i = startIndex; i < textItems.Count; i++)
+        {
+            var item = textItems[i];
+            if (item == null)
+                continue;
+
+            item.SetText(string.Empty);
+            item.enabled = false;
+            item.rectTransform.anchoredPosition = Vector2.zero;
+            if (i > 0)
+                item.gameObject.SetActive(false);
+        }
+    }
+
+    private void ResetTextItems()
+    {
+        DeactivateTextItemsFrom(0);
+        if (text != null)
+            text.gameObject.SetActive(true);
     }
 
     #region IPoolObject
@@ -128,10 +274,19 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
         worldAnchor = null;
         worldOffset = Vector3.zero;
         worldPosition = Vector3.zero;
-        if (text)
+        visibleTextCount = 1;
+        currentBatchLayout = FloatingTextBatchLayout.Spread;
+
+        if (canvasGroup != null)
+            canvasGroup.alpha = 1f;
+
+        ResetTextItems();
+        if (text != null)
         {
             text.enabled = false;
-            text.color = AnimationData.TextColor;
+            text.rectTransform.anchoredPosition = Vector2.zero;
+            if (animationData != null)
+                text.color = animationData.TextColor;
         }
     }
 
@@ -185,8 +340,6 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
         float lTime = AnimationData.LifeTime;
         float fadeStart = Mathf.Max(0f, lTime - fDuration);
 
-        Color c = text.color;
-
         while (t < lTime)
         {
             if (token.IsCancellationRequested)
@@ -198,63 +351,20 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
             worldOffset += Vector3.up * (AnimationData.RiseSpeed * dt);
             UpdateScreenPosition();
 
-            if (text == null)
+            if (visibleTextCount <= 0)
                 break;
 
             if (t >= fadeStart && fDuration > 0f)
             {
                 float u = Mathf.InverseLerp(fadeStart, lTime, t);
-                c.a = Mathf.Lerp(1f, 0f, u);
-                text.color = c;
+                if (canvasGroup != null)
+                    canvasGroup.alpha = Mathf.Lerp(1f, 0f, u);
             }
 
             await UniTask.Yield(PlayerLoopTiming.Update, token).SuppressCancellationThrow();
         }
 
         ReleaseSelf();
-    }
-
-    private TMP_Text ResolveText()
-    {
-        if (text != null)
-            return EnsureCanvasText(text);
-
-        if (Util.FindChild<TextMeshProUGUI>(gameObject, "text", true) is { } uiText)
-            return uiText;
-
-        if (Util.FindChild<TextMeshPro>(gameObject, "text", true) is { } worldText)
-            return ConvertLegacyText(worldText);
-
-        return null;
-    }
-
-    private TMP_Text EnsureCanvasText(TMP_Text tmp)
-    {
-        if (tmp is TextMeshProUGUI)
-            return tmp;
-        if (tmp is TextMeshPro worldText)
-            return ConvertLegacyText(worldText);
-        return tmp;
-    }
-
-    private TextMeshProUGUI ConvertLegacyText(TextMeshPro legacy)
-    {
-        if (legacy == null) return null;
-
-        var go = legacy.gameObject;
-        var ugui = go.GetComponent<TextMeshProUGUI>() ?? go.AddComponent<TextMeshProUGUI>();
-        ugui.font = legacy.font;
-        ugui.fontSize = legacy.fontSize;
-        ugui.color = legacy.color;
-        ugui.alignment = legacy.alignment;
-        ugui.text = legacy.text;
-        ugui.raycastTarget = false;
-
-        legacy.enabled = false;
-        if (go.TryGetComponent<MeshRenderer>(out var renderer))
-            renderer.enabled = false;
-
-        return ugui;
     }
 
     private void ResolveCanvasContext()
@@ -265,7 +375,8 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
 
     private void UpdateScreenPosition()
     {
-        if (textTrs == null || text == null) return;
+        if (text == null)
+            return;
 
         if (worldAnchor != null)
             worldPosition = worldAnchor.position;
@@ -276,7 +387,7 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
             worldCamera = FindFirstObjectByType<Camera>();
         if (worldCamera == null)
         {
-            text.enabled = false;
+            SetVisibleTexts(false);
             return;
         }
 
@@ -284,27 +395,42 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
         Vector3 screenPos = worldCamera.WorldToScreenPoint(targetWorldPos);
         if (screenPos.z <= 0f)
         {
-            text.enabled = false;
+            SetVisibleTexts(false);
             return;
         }
 
+        var targetTransform = rootRect != null ? (Transform)rootRect : transform;
         if (rootCanvas != null && rootCanvas.renderMode == RenderMode.ScreenSpaceOverlay)
         {
-            textTrs.position = screenPos;
+            targetTransform.position = screenPos;
         }
         else if (rootCanvasRect != null &&
                  RectTransformUtility.ScreenPointToWorldPointInRectangle(
                      rootCanvasRect, screenPos, GetCanvasCamera(), out var uiWorld))
         {
-            textTrs.position = uiWorld;
+            targetTransform.position = uiWorld;
         }
         else
         {
-            textTrs.position = screenPos;
+            targetTransform.position = screenPos;
         }
 
-        if (!text.enabled)
-            text.enabled = true;
+        SetVisibleTexts(true);
+    }
+
+    private void SetVisibleTexts(bool isVisible)
+    {
+        int count = Mathf.Min(visibleTextCount, textItems.Count);
+        for (int i = 0; i < count; i++)
+        {
+            var item = textItems[i];
+            if (item == null)
+                continue;
+
+            if (isVisible)
+                item.gameObject.SetActive(true);
+            item.enabled = isVisible;
+        }
     }
 
     private Camera GetCanvasCamera()
