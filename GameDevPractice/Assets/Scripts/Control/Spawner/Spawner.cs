@@ -38,20 +38,8 @@ public class Spawner<T> : MonoBehaviour where T : UnityEngine.Component, IPoolOb
         SetPool(capacity, max);
     }
     
-    // public virtual void SetPool(GameObject prefab, Action<T> createAction = null, Action<T> getAction = null, Action<T> releaseAction = null, int capacity = 0, int max = 0)
-    // {
-    //     this.prefab = prefab;
-    //     
-    //     onCreate += createAction;
-    //     onGet += getAction;
-    //     onRelease += releaseAction;
-    //     
-    //     SetPool(capacity, max);
-    // }
     protected virtual void SetPool(int capacity, int max)
     {
-        // if (PoolingManager.Instance.GetPool<T>(prefab, null, onCreate, onGet, onRelease, capacity, max)
-        //     is { } newPool)
         if (PoolManager.Instance.GetPool(prefab, null, onCreate, onGet, onRelease, capacity, max)
                 is { } newPool)
         {

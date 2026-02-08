@@ -75,6 +75,8 @@ namespace TH.Control.Movement
 
         public void Move(MoveType moveType = MoveType.Run)
         {
+            if (currentDestination == Vector3.zero) return;
+
             navMeshAgent.destination = currentDestination;
             navMeshAgent.speed = (moveType == MoveType.Run ? runSpeed : walkSpeed) * Mathf.Clamp01(speedFraction);
             navMeshAgent.isStopped = false;
@@ -84,6 +86,17 @@ namespace TH.Control.Movement
         {
             navMeshAgent.isStopped = true;
         }
+
+        public void ResetMovementState()
+        {
+            currentDestination = Vector3.zero;
+
+            if (navMeshAgent == null) return;
+
+            navMeshAgent.ResetPath();
+            navMeshAgent.isStopped = true;
+        }
+
 
         public void CancelAction() => Stop();
 
