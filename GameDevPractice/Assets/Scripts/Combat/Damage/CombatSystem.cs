@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using UnityEngine;
 using TH.Resource;
 using TH.Utils;
@@ -8,29 +9,46 @@ namespace TH.Combat.Service
 {
     public sealed class CombatSystem : ICombatSystem
     {
+        private static int _attackSequence;
+
         private DamageRuleSO damageRule;
         private readonly IDamageCalculator damageCalc;
 
         public CombatSystem(IResourceLoader resourceLoader, IDamageCalculator damageCalc)
         {
             this.damageCalc = damageCalc;
-            resourceLoader.OnLabelResourcesLoadedAll += (label) =>
+            resourceLoader.OnLabelResourcesLoadedAll += label =>
             {
-                if (!string.Equals(label, Constants.PreLoadLabel)) return;
+                if (!string.Equals(label, Constants.PreLoadLabel))
+                    return;
                 if (!resourceLoader.TryLoad("DamageRuleSO", out damageRule))
-                    Logg.LogError($"[CombatSystem] failed to load DamageRuleSO");
+                    Logg.LogError("[CombatSystem] failed to load DamageRuleSO");
             };
         }
-        
+
         public void ApplyHit(in HitRequest hitRequest)
         {
-            var result = damageCalc.Resolve(hitRequest, damageRule);
-            if (hitRequest.Target is Component { gameObject: { activeSelf: true } })
+            var normalizedRequest = NormalizeAttackInstanceId(hitRequest);
+            var result = damageCalc.Resolve(normalizedRequest, damageRule);
+            if (normalizedRequest.Target is Component { gameObject: { activeSelf: true } })
             {
                 Logg.Log($"[{nameof(CombatSystem)}.{nameof(ApplyHit)}]", Logg.LoggingMode.Completed);
-                hitRequest.Target.TakeDamage(result);
+                normalizedRequest.Target.TakeDamage(result);
             }
+        }
+
+        private static HitRequest NormalizeAttackInstanceId(in HitRequest request)
+        {
+            if (request.AttackInstanceId > 0)
+                return request;
+
+            return new HitRequest(
+                request.Attacker,
+                request.BaseDamage,
+                request.Target,
+                request.DamageType,
+                Interlocked.Increment(ref _attackSequence),
+                request.HitDamages);
         }
     }
 }
-

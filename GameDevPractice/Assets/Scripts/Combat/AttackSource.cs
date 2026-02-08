@@ -1,35 +1,53 @@
+using System.Collections.Generic;
 using TH.Attribute.Stat;
 using UnityEngine;
 
 namespace TH.Combat
 {
-    public readonly struct AttackSource // 무기, 스킬, 투사체, 장판 등 대미지를 발생시키는 모든 개별 공격의 정보 구조체
+    public readonly struct AttackSource
     {
-        public readonly IAttacker Attacker; // 공격자(AttackSource를 생성한 주체)
-        public readonly IGameStat AttackSourceStat; // 공격 대미지 기준 스탯 (AttackSourceStat != null 이면 BaseDamage 무시)
-        public readonly float BaseDamage; // 공격 대미지 (치명타, 회피, 방어 등 요소 처리 전)
+        public readonly IAttacker Attacker;
+        public readonly IGameStat AttackSourceStat;
+        public readonly float BaseDamage;
         public readonly DamageType DamageType;
+        public readonly int AttackInstanceId;
+        public readonly IReadOnlyList<float> HitDamages;
 
-
-        public AttackSource(IAttacker attacker, IGameStat attackSourceStat, float baseDamage, DamageType damageType)
+        public AttackSource(
+            IAttacker attacker,
+            IGameStat attackSourceStat,
+            float baseDamage,
+            DamageType damageType,
+            int attackInstanceId = 0,
+            IReadOnlyList<float> hitDamages = null)
         {
-            this.Attacker = attacker;
-            this.AttackSourceStat = attackSourceStat;
-            this.BaseDamage = baseDamage;
-            this.DamageType = damageType;
+            Attacker = attacker;
+            AttackSourceStat = attackSourceStat;
+            BaseDamage = baseDamage;
+            DamageType = damageType;
+            AttackInstanceId = attackInstanceId;
+            HitDamages = hitDamages;
         }
 
-        // 스탯 기반 공격용 생성자
-        public AttackSource(IAttacker attacker, IGameStat attackSourceStat, DamageType damageType) 
-            : this(attacker, attackSourceStat, 0, damageType) { }
+        public AttackSource(IAttacker attacker, IGameStat attackSourceStat, DamageType damageType)
+            : this(attacker, attackSourceStat, 0f, damageType, 0, null)
+        {
+        }
 
-        // 비 스탯 기반 공격용 생성자 (고정 수치 데미지)
-        public AttackSource(IAttacker attacker, float fixedDamage, DamageType damageType) 
-            : this(attacker, null, fixedDamage, damageType) { }
+        public AttackSource(IAttacker attacker, float fixedDamage, DamageType damageType)
+            : this(attacker, null, fixedDamage, damageType, 0, null)
+        {
+        }
 
         public HitRequest ToRequest(IDamageable target)
         {
-            return new HitRequest(Attacker, AttackSourceStat?.Value ?? BaseDamage, target, DamageType);
+            return new HitRequest(
+                Attacker,
+                AttackSourceStat?.Value ?? BaseDamage,
+                target,
+                DamageType,
+                AttackInstanceId,
+                HitDamages);
         }
     }
 
@@ -41,5 +59,3 @@ namespace TH.Combat
         TrueDamage,
     }
 }
-
-

@@ -57,11 +57,12 @@ namespace TH.Utils
         private void AddBinders()
         {
             var damageType = FloatingTextEventType.Damage;
-            _binders[damageType] = new DamageFloatingTextBinder(
-                onSingleDamage: (IDamageable subject, in HitResult data) =>
-                    ShowFloatingText(damageType, AnchorOf(subject), in data.Damage),
-                onBatchDamage: (IDamageable subject, IReadOnlyList<float> values) =>
-                    SpawnBatch(damageType, AnchorOf(subject), values, FloatingTextBatchLayout.Line)
+            AddBinder<IDamageable, HitResult, HitEvent>(
+                damageType,
+                (subject, h) => subject.OnDamaged += h,
+                (subject, h) => subject.OnDamaged -= h,
+                onEvent: HandleDamageEvent,
+                adapter: ph => new HitEvent((in HitResult x) => ph(in x))
             );
             var xpGainType = FloatingTextEventType.GetXp;
             AddBinder<IExperience, float, Action<float>>(
@@ -79,6 +80,50 @@ namespace TH.Utils
                 (IHealable subject, in float v) => ShowFloatingText(healType, AnchorOf(subject), in v),
                 adapter: ph => (float v) => ph(in v)
             );
+        }
+
+        private void HandleDamageEvent(IDamageable subject, in HitResult data)
+        {
+            var anchor = AnchorOf(subject);
+            if (anchor == null)
+            {
+                Logg.LogWarning("[FTSpawner] skipped damage floating text because anchor is null");
+                return;
+            }
+
+            if (data.HasBatchDamages)
+            {
+                SpawnBatch(FloatingTextEventType.Damage, anchor, data.HitDamages, FloatingTextBatchLayout.Line);
+                return;
+            }
+
+            if (data.AttackInstanceId > 0)
+            {
+                if (textPrefab == null || textCatalogSO == null)
+                {
+                    Logg.LogWarning("[FTSpawner] skipped damage floating text because prefab or catalog is not ready");
+                    return;
+                }
+
+                if (!textCatalogSO.TryGetValue(FloatingTextEventType.Damage, out var setting))
+                {
+                    Logg.LogWarning("[FTSpawner] missing setting for floating text type Damage");
+                    return;
+                }
+
+                if (!EnsureFeedbackCanvasReady())
+                    return;
+
+                EnqueueFloatingText(
+                    FloatingTextEventType.Damage,
+                    anchor,
+                    setting,
+                    data.Damage.ToString(CultureInfo.InvariantCulture),
+                    data.AttackInstanceId);
+                return;
+            }
+
+            ShowFloatingText(FloatingTextEventType.Damage, anchor, in data.Damage);
         }
 
         private static Transform AnchorOf(object s)
@@ -257,9 +302,14 @@ namespace TH.Utils
             return true;
         }
 
-        private void EnqueueFloatingText(FloatingTextEventType type, Transform anchor, FloatingTextSO setting, string str)
+        private void EnqueueFloatingText(
+            FloatingTextEventType type,
+            Transform anchor,
+            FloatingTextSO setting,
+            string str,
+            int attackInstanceId = 0)
         {
-            var key = new BatchKey(anchor.GetInstanceID(), type);
+            var key = new BatchKey(anchor.GetInstanceID(), type, attackInstanceId);
             if (!_pendingBatches.TryGetValue(key, out var batch))
             {
                 batch = new PendingBatch(anchor, setting, anchor.position);
@@ -336,23 +386,28 @@ namespace TH.Utils
 
             s.SetWorldAnchor(anchor, spawnPosition);
             s.SetSetting(batch.Setting);
-            s.SetBatchTexts(batch.Texts, FloatingTextBatchLayout.Spread);
+            var layout = key.AttackInstanceId > 0 ? FloatingTextBatchLayout.Line : FloatingTextBatchLayout.Spread;
+            s.SetBatchTexts(batch.Texts, layout);
         }
 
         private readonly struct BatchKey : IEquatable<BatchKey>
         {
             public readonly int AnchorId;
             public readonly FloatingTextEventType Type;
+            public readonly int AttackInstanceId;
 
-            public BatchKey(int anchorId, FloatingTextEventType type)
+            public BatchKey(int anchorId, FloatingTextEventType type, int attackInstanceId)
             {
                 AnchorId = anchorId;
                 Type = type;
+                AttackInstanceId = attackInstanceId;
             }
 
             public bool Equals(BatchKey other)
             {
-                return AnchorId == other.AnchorId && Type == other.Type;
+                return AnchorId == other.AnchorId
+                       && Type == other.Type
+                       && AttackInstanceId == other.AttackInstanceId;
             }
 
             public override bool Equals(object obj)
@@ -362,7 +417,7 @@ namespace TH.Utils
 
             public override int GetHashCode()
             {
-                return HashCode.Combine(AnchorId, (int)Type);
+                return HashCode.Combine(AnchorId, (int)Type, AttackInstanceId);
             }
         }
 
@@ -383,62 +438,6 @@ namespace TH.Utils
                 OverflowCount = 0;
                 FlushScheduled = false;
                 Texts = new List<string>(MaxMergedTexts);
-            }
-        }
-
-        private delegate void DamageSingleEventHandler(IDamageable source, in HitResult payload);
-        private delegate void DamageBatchEventHandler(IDamageable source, IReadOnlyList<float> payload);
-
-        private sealed class DamageFloatingTextBinder : IFloatingTextEventBinder
-        {
-            private readonly DamageSingleEventHandler _onSingleDamage;
-            private readonly DamageBatchEventHandler _onBatchDamage;
-            private readonly Dictionary<IDamageable, DamageEventHandlers> _handlers = new();
-
-            public DamageFloatingTextBinder(
-                DamageSingleEventHandler onSingleDamage,
-                DamageBatchEventHandler onBatchDamage)
-            {
-                _onSingleDamage = onSingleDamage ?? throw new ArgumentNullException(nameof(onSingleDamage));
-                _onBatchDamage = onBatchDamage ?? throw new ArgumentNullException(nameof(onBatchDamage));
-            }
-
-            public void Bind(object o)
-            {
-                if (o is not IDamageable source || _handlers.ContainsKey(source))
-                    return;
-
-                HitEvent singleHandler = (in HitResult payload) => _onSingleDamage(source, in payload);
-                Action<IReadOnlyList<float>> batchHandler = payload => _onBatchDamage(source, payload);
-
-                source.OnDamaged += singleHandler;
-                source.OnDamagedBatch += batchHandler;
-                _handlers[source] = new DamageEventHandlers(singleHandler, batchHandler);
-            }
-
-            public void Unbind(object o)
-            {
-                if (o is not IDamageable source)
-                    return;
-
-                if (!_handlers.TryGetValue(source, out var handlers))
-                    return;
-
-                source.OnDamaged -= handlers.Single;
-                source.OnDamagedBatch -= handlers.Batch;
-                _handlers.Remove(source);
-            }
-
-            private readonly struct DamageEventHandlers
-            {
-                public readonly HitEvent Single;
-                public readonly Action<IReadOnlyList<float>> Batch;
-
-                public DamageEventHandlers(HitEvent single, Action<IReadOnlyList<float>> batch)
-                {
-                    Single = single;
-                    Batch = batch;
-                }
             }
         }
 

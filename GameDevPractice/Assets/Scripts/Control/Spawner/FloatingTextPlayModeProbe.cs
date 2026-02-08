@@ -1,5 +1,7 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using TH.Attribute;
 using TH.Combat;
 using TH.Control;
 using TH.Core.Service;
@@ -7,16 +9,30 @@ using UnityEngine;
 
 namespace TH.Utils
 {
-    // Play mode probe component for validating floating damage text output.
+    // Play mode probe component for validating floating text output paths.
     public sealed class FloatingTextPlayModeProbe : MonoBehaviour
     {
 #if UNITY_EDITOR
+        private enum ProbeDispatchMode
+        {
+            DamageableBatchHitResult,
+            DamageableRepeatedSingle,
+            DirectSpawnerBatch,
+        }
+
         [Header("Target")]
         [SerializeField] private Transform playerAnchor;
+        [SerializeField] private Component damageableTarget;
 
-        [Header("Emit")]
+        [Header("Dispatch")]
+        [SerializeField] private ProbeDispatchMode dispatchMode = ProbeDispatchMode.DamageableBatchHitResult;
+        [SerializeField] private bool logDispatchDetails;
+
+        [Header("Direct Spawner Mode")]
         [SerializeField] private FloatingTextEventType eventType = FloatingTextEventType.Damage;
         [SerializeField] private FloatingTextBatchLayout batchLayout = FloatingTextBatchLayout.Line;
+
+        [Header("Emit")]
         [SerializeField] private float emitInterval = 0.5f;
         [SerializeField] private Vector2 damageRange = new Vector2(5f, 20f);
         [SerializeField] private Vector2Int hitCountRange = new Vector2Int(2, 4);
@@ -27,10 +43,17 @@ namespace TH.Utils
 
         [Header("Control")]
         [SerializeField] private bool autoStartOnEnable = true;
+        [SerializeField] private int initialAttackInstanceId = 1;
 
         private IFloatingTextSpawner floatingTextSpawner;
         private IPlayerHolder playerHolder;
         private Coroutine emitRoutine;
+        private int nextAttackInstanceId;
+
+        private void Awake()
+        {
+            nextAttackInstanceId = Mathf.Max(1, initialAttackInstanceId);
+        }
 
         private void OnEnable()
         {
@@ -79,7 +102,7 @@ namespace TH.Utils
                     continue;
                 }
 
-                EmitBatchOnce(anchor);
+                EmitOnce(anchor);
 
                 float wait = Mathf.Max(0.01f, emitInterval);
                 if (useUnscaledTime)
@@ -91,7 +114,7 @@ namespace TH.Utils
 
         private bool TryResolveServices()
         {
-            if (floatingTextSpawner == null)
+            if (dispatchMode == ProbeDispatchMode.DirectSpawnerBatch && floatingTextSpawner == null)
             {
                 floatingTextSpawner = TryGetService<IFloatingTextSpawner>();
                 if (floatingTextSpawner == null)
@@ -126,36 +149,129 @@ namespace TH.Utils
             return playerController != null ? playerController.transform : null;
         }
 
-        private void EmitBatchOnce(Transform anchor)
+        private IDamageable ResolveDamageable(Transform anchor)
         {
-            int hitCount;
+            if (damageableTarget is IDamageable assigned)
+                return assigned;
+
+            if (anchor != null)
+            {
+                if (anchor.TryGetComponent<IDamageable>(out var onAnchor))
+                    return onAnchor;
+                if (anchor.TryGetComponent<Health>(out var healthOnAnchor))
+                    return healthOnAnchor;
+            }
+
+            if (playerHolder?.GetPlayerInstance is Component c)
+            {
+                if (c.TryGetComponent<IDamageable>(out var fromHolder))
+                    return fromHolder;
+            }
+
+            return FindAnyObjectByType<Health>();
+        }
+
+        private void EmitOnce(Transform anchor)
+        {
+            int hitCount = ResolveHitCount();
+            var damages = BuildDamageValues(hitCount);
+
+            switch (dispatchMode)
+            {
+                case ProbeDispatchMode.DirectSpawnerBatch:
+                    EmitByDirectSpawner(anchor, damages);
+                    break;
+                case ProbeDispatchMode.DamageableRepeatedSingle:
+                    EmitByRepeatedSingles(anchor, damages);
+                    break;
+                default:
+                    EmitByBatchHitResult(anchor, damages);
+                    break;
+            }
+        }
+
+        private int ResolveHitCount()
+        {
             if (useRandomHitCount)
             {
                 int minHit = Mathf.Max(1, Mathf.Min(hitCountRange.x, hitCountRange.y));
                 int maxHit = Mathf.Max(minHit, Mathf.Max(hitCountRange.x, hitCountRange.y));
-                hitCount = UnityEngine.Random.Range(minHit, maxHit + 1);
-            }
-            else
-            {
-                hitCount = Mathf.Max(1, fixedHitCount);
+                return UnityEngine.Random.Range(minHit, maxHit + 1);
             }
 
+            return Mathf.Max(1, fixedHitCount);
+        }
+
+        private List<float> BuildDamageValues(int hitCount)
+        {
             float minDamage = Mathf.Min(damageRange.x, damageRange.y);
             float maxDamage = Mathf.Max(damageRange.x, damageRange.y);
+            var damages = new List<float>(hitCount);
 
-            var values = new System.Collections.Generic.List<string>(hitCount);
             for (int i = 0; i < hitCount; i++)
             {
                 float damage = UnityEngine.Random.Range(minDamage, maxDamage);
-                if (roundDamageToInt)
-                    values.Add(Mathf.RoundToInt(damage).ToString());
-                else
-                    values.Add(damage.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture));
+                damages.Add(roundDamageToInt ? Mathf.Round(damage) : damage);
             }
 
-            floatingTextSpawner.SpawnBatch(eventType, anchor, values, batchLayout);
+            return damages;
         }
 
+        private void EmitByDirectSpawner(Transform anchor, IReadOnlyList<float> damages)
+        {
+            if (floatingTextSpawner == null)
+                return;
+
+            floatingTextSpawner.SpawnBatch(eventType, anchor, damages, batchLayout);
+            LogDispatch($"DirectSpawnerBatch count={damages.Count}, layout={batchLayout}, eventType={eventType}");
+        }
+
+        private void EmitByBatchHitResult(Transform anchor, IReadOnlyList<float> damages)
+        {
+            var damageable = ResolveDamageable(anchor);
+            if (damageable == null)
+                return;
+
+            int attackInstanceId = TakeNextAttackInstanceId();
+            float totalDamage = 0f;
+            for (int i = 0; i < damages.Count; i++)
+                totalDamage += damages[i];
+
+            var hitResult = new HitResult(default, totalDamage, attackInstanceId, damages);
+            damageable.TakeDamage(hitResult);
+            LogDispatch($"DamageableBatchHitResult count={damages.Count}, attackId={attackInstanceId}, total={totalDamage:0.##}");
+        }
+
+        private void EmitByRepeatedSingles(Transform anchor, IReadOnlyList<float> damages)
+        {
+            var damageable = ResolveDamageable(anchor);
+            if (damageable == null)
+                return;
+
+            int attackInstanceId = TakeNextAttackInstanceId();
+            for (int i = 0; i < damages.Count; i++)
+            {
+                var hitResult = new HitResult(default, damages[i], attackInstanceId, null);
+                damageable.TakeDamage(hitResult);
+            }
+
+            LogDispatch($"DamageableRepeatedSingle count={damages.Count}, attackId={attackInstanceId}");
+        }
+
+        private int TakeNextAttackInstanceId()
+        {
+            int current = nextAttackInstanceId;
+            nextAttackInstanceId = current == int.MaxValue ? 1 : current + 1;
+            return current;
+        }
+
+        private void LogDispatch(string message)
+        {
+            if (!logDispatchDetails)
+                return;
+
+            Logg.Log($"[FloatingTextProbe] {message}", Logg.LoggingMode.InProgress);
+        }
 
         private static T TryGetService<T>() where T : class
         {

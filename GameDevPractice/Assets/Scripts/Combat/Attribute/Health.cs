@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using TH.SaveLoad;
 using TH.Utils;
@@ -37,7 +36,6 @@ namespace TH.Attribute
         public event Action OnDead;
         public event Action OnRevived;
         public event HitEvent OnDamaged; // 피해를 입은 경우
-        public event Action<IReadOnlyList<float>> OnDamagedBatch; // 배치 피해 텍스트 출력용
         public event Action<float> OnHealed; // 회복 받은 경우
         
         public Action<float> OnHealthRatioChanged; // 현재 체력에 변동이 생긴 경우 (피격, 회복 등)
