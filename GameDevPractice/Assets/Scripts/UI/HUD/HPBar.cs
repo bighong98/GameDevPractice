@@ -39,7 +39,7 @@ namespace TH.UI
 
         #endregion
 
-        private CancellationToken token;
+        private CancellationToken destroyToken;
         private Health owner;
         private bool isReleasing;
 
@@ -62,7 +62,7 @@ namespace TH.UI
                 ReleaseSelf();
             }
 
-            token = destroyCancellationToken;
+            destroyToken = destroyCancellationToken;
         }
 
         private void SetFill(float ratio)
@@ -92,27 +92,30 @@ namespace TH.UI
         
         private async UniTask ChangeFillSlowly(Slider slider, float from, float to, float speed)
         {
-            if (easing) StopBarAnimation(); // 기존 바 애니메이션 중지
+            if (easing) StopBarAnimation();
             ClarifyToken();
-            
+
             float curr = from;
             easing = true;
             while (!barAnimToken.IsCancellationRequested && !Mathf.Approximately(curr, to))
             {
                 try
                 {
-                    await UniTask.NextFrame(PlayerLoopTiming.LastUpdate, barAnimToken).SuppressCancellationThrow();
+                    var canceled = await UniTask.NextFrame(PlayerLoopTiming.LastUpdate, barAnimToken).SuppressCancellationThrow();
+                    if (canceled) break; // Token에 의한 
+
+                    curr = Mathf.MoveTowards(curr, to, speed * Time.deltaTime);
+                    slider.value = curr;
                 }
+                catch (MissingReferenceException) { break; } // slider 참조를 잃어버려서 발생한 예외는 무시
                 catch (Exception e)
                 {
                     Logg.LogError($"[{nameof(HPBar)}] error occurred while {nameof(ChangeFillSlowly)}(). {e}");
                     break;
                 }
-                curr = Mathf.MoveTowards(curr, to, speed * Time.deltaTime);
-                slider.value = curr;
             }
-            
-            if (slider.IsNotNull())
+
+            if (!destroyToken.IsCancellationRequested && slider.IsNotNull())
                 slider.value = to;
             easing = false;
         }
@@ -143,7 +146,7 @@ namespace TH.UI
             {
                 await UniTask
                     .Delay(deathDelaySpan, DelayType.Realtime, PlayerLoopTiming.PreLateUpdate,
-                        token).SuppressCancellationThrow();
+                        destroyToken).SuppressCancellationThrow();
             }
             catch (Exception e) { Logg.LogError($"[{nameof(HPBar)}] unexpected error occurred while {nameof(HideAfterSecond)}. {e}"); }
             Hide(keepHiding);

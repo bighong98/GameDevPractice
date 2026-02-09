@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using TH.Attribute;
 using TH.Combat;
@@ -31,6 +32,7 @@ namespace TH.Utils
         
         private readonly IResourceLoader resourceLoader;
         private RectTransform feedbackCanvasRect;
+        private readonly CancellationTokenSource flushCts = new CancellationTokenSource();
         
         public FloatingTextSpawner(IResourceLoader rLoader)
         {
@@ -338,7 +340,13 @@ namespace TH.Utils
         {
             try
             {
-                await UniTask.Delay(MergeWindow, DelayType.UnscaledDeltaTime, PlayerLoopTiming.Update);
+                var canceled = await UniTask
+                    .Delay(MergeWindow, DelayType.UnscaledDeltaTime, PlayerLoopTiming.Update, flushCts.Token)
+                    .SuppressCancellationThrow();
+
+                if (canceled)
+                    return;
+
                 FlushBatch(key);
             }
             catch (Exception e)
