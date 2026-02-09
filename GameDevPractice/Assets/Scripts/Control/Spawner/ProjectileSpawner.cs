@@ -33,7 +33,7 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
         combatSystem = ServiceLocator.Get<ICombatSystem>();
     }
     
-    public void InitializeProjectileSpawner(IAttacker owner, WeaponTypeSO weaponTypeSO, AttackSource attackSource)
+    public void InitializeProjectileSpawner(IAttacker owner, SkillTypeSO skillTypeSO, AttackSource attackSource)
     {
         combatSystem ??= ServiceLocator.Get<ICombatSystem>();
 
@@ -43,16 +43,15 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
             UnbindOwner();
             return;
         }
-        
+
         if (attackSource.Attacker == null)
             Logg.LogWarning($"[{name}.{nameof(ProjectileSpawner)}] AttackSource is default");
 
         projectileAttackSource = attackSource;
         BindOwner(shootingWeaponOwner);
 
-        if (weaponTypeSO is { HasImpactEffect: true, GetImpactEffect: { } particlePrefab })
+        if (skillTypeSO is { HasImpactEffect: true, ImpactParticlePrefab: { } particlePrefab })
         {
-            Logg.Log("Trying to Add PlayOnHitEffect as delegate");
             onHitParticlePrefab = particlePrefab;
         }
         else
@@ -63,11 +62,11 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
         onCreate = obj =>
         {
             if (obj is not AttackProjectile projectile) return;
-            
+
             projectile.SetProjectile(combatSystem, projectileAttackSource);
             ApplyProjectileLayer(projectile);
             projectile.OnHit -= PlayOnHitEffect;
-            
+
             if (onHitParticlePrefab != null)
                 projectile.OnHit += PlayOnHitEffect;
         };
@@ -75,11 +74,11 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
         onGet = obj =>
         {
             if (obj is not AttackProjectile projectile) return;
-            
+
             projectile.SetProjectile(projectileAttackSource);
             ApplyProjectileLayer(projectile);
             projectile.OnHit -= PlayOnHitEffect;
-            
+
             if (onHitParticlePrefab != null)
                 projectile.OnHit += PlayOnHitEffect;
         };

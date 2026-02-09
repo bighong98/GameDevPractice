@@ -39,6 +39,7 @@ MonoBehaviour:
   damageType: 1
   range: 4
   hand: 0
+  defaultSkill: {fileID: 11400000, guid: 9b314ff0f32b1e440b4626b01bbbb750, type: 2}
   projectilePrefab: {fileID: 0}
   impactParticlePrefab: {fileID: 0}
   attackSFXReference:

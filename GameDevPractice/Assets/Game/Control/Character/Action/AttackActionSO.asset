@@ -9,6 +9,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8c89ec28e42f6954b81be5011e5be5ce, type: 3}
+  m_Script: {fileID: 11500000, guid: c3679e6bb7cb1e442ba4df1a8dc96d8c, type: 3}
   m_Name: AttackActionSO
-  m_EditorClassIdentifier: Assembly-CSharp::TH.Control.Data.AttackActionSO
+  m_EditorClassIdentifier: Assembly-CSharp::TH.Control.Data.CastActiveSkillActionSO

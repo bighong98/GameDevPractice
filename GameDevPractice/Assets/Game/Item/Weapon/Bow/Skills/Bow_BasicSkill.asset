@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ae70b95bc711424ab96997d90ea21eb, type: 3}
+  m_Name: Bow_BasicSkill
+  m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.SkillTypeSO
+  skillId: Bow
+  attackSourceStatSO: {fileID: 11400000, guid: cf7022ca8cb84ae4395e9b8e2edbcdf2, type: 2}
+  baseDamage: 1
+  damageType: 1
+  range: 8
+  cooldown: 1
+  castSfx: {fileID: 8300000, guid: 1f53a5fc6bd934e46a5d8cfa8fd27b64, type: 3}
+  projectilePrefab: {fileID: 1765392690148027140, guid: 0ed9004fb430f6a4a9c87da6061553bc, type: 3}
+  impactParticlePrefab: {fileID: 2315604679874030509, guid: 8e2324eab89da3144ab9f07a2edf6cba, type: 3}

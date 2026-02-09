@@ -34,10 +34,12 @@ MonoBehaviour:
   weaponType: 0
   weaponAnimatorOverride: {fileID: 22100000, guid: 02612d1855855bf40972d636cba04f13, type: 2}
   EquippedPrefab: {fileID: 3327907661040384045, guid: 8d0abf9e8c434e44bbfa79ef7ce6693f, type: 3}
+  equippedPrefabLeft: {fileID: 0}
   attackSourceStatSO: {fileID: 11400000, guid: f33892e137b94bf4e9d027c090bd8c4f, type: 2}
   damageType: 2
   range: 20
   hand: 1
+  defaultSkill: {fileID: 11400000, guid: 8f79b74127da75d42b7b7db7ca5534fb, type: 2}
   projectilePrefab: {fileID: 1111895543867379590, guid: 4d654d0ea2ce7e44aa38d9e4596715f7, type: 3}
   impactParticlePrefab: {fileID: 2302457091093092515, guid: 69d1b1037536b504884c93bb73d662db, type: 3}
   attackSFXReference:

@@ -21,6 +21,7 @@ GameObject:
   - component: {fileID: 1090721780878730714}
   - component: {fileID: 7177356247128519180}
   - component: {fileID: 5373889179622131043}
+  - component: {fileID: 7759138488823613898}
   m_Layer: 6
   m_Name: Character
   m_TagString: Untagged
@@ -249,3 +250,20 @@ MonoBehaviour:
   initialState: {fileID: 0}
   globalTransitions: []
   stateTime: 0
+--- !u!114 &7759138488823613898
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6061633697407881761}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce3bafdb483a1b848bdd31c8339cef82, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TH.Combat.SkillController
+  initialSkills: []
+  defaultActiveSkill: {fileID: 0}
+  syncWithEquippedWeapon: 1
+  activeSkillDebug: {fileID: 0}
+  activeSkillRemainCooldownDebug: 0

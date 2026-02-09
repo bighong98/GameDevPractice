@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ae70b95bc711424ab96997d90ea21eb, type: 3}
+  m_Name: Fireball_BasicSkill
+  m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.SkillTypeSO
+  skillId: Fireball
+  attackSourceStatSO: {fileID: 11400000, guid: f33892e137b94bf4e9d027c090bd8c4f, type: 2}
+  baseDamage: 1
+  damageType: 2
+  range: 20
+  cooldown: 1
+  castSfx: {fileID: 8300000, guid: da396a16a7f24f64cbb0054f5a56b46a, type: 3}
+  projectilePrefab: {fileID: 1111895543867379590, guid: 4d654d0ea2ce7e44aa38d9e4596715f7, type: 3}
+  impactParticlePrefab: {fileID: 2302457091093092515, guid: 69d1b1037536b504884c93bb73d662db, type: 3}

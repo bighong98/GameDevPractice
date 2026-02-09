@@ -15,6 +15,11 @@ MonoBehaviour:
   m_GroupName: Editor
   m_GUID: 3fbaffe2dadc6714d9cba333aa0975e7
   m_SerializeEntries:
+  - m_GUID: 15731073cb28eff42af7913afc11c2a0
+    m_Address: Legacy Weapon Data Folder
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 1ee9e1f79d6e53940a1d00edab2ea747
     m_Address: Outfit Source Presets_wHeadwear
     m_ReadOnly: 0

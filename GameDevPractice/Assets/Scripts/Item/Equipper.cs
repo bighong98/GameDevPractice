@@ -6,7 +6,6 @@ using UnityEngine.Pool;
 using TH.Core.Pool;
 using TH.Utils;
 using TH.Resource;
-using TH.Attribute.Stat;
 using TH.Core.Service;
 
 // 무기 장착/장착해제 시 무기 오브젝트 생성/생성해제(오브젝트 풀 기반)
@@ -24,7 +23,7 @@ namespace TH.Item
         [SerializeField] private bool ignoreLocalPosition = false;
         private IFighter fighter;
         private EquipmentHolder equipHolder;
-        private IStatHolder statHolder;
+        private ISkillController skillController;
         private Animator animator;
 
         private bool isInit = false;
@@ -47,7 +46,7 @@ namespace TH.Item
             TryGetComponent(out fighter);
             TryGetComponent(out equipHolder);
             TryGetComponent(out animator);
-            TryGetComponent(out statHolder);
+            TryGetComponent(out skillController);
         }
 
         private void Start()
@@ -296,41 +295,18 @@ namespace TH.Item
         private void EnsureWeaponProjectileSpawner(WeaponTypeSO weaponType, EquippedWeapon result)
         {
             this.Log($"EnsureWeaponProjectileSpawner() invoked weaponType: {weaponType}, equippedWeaponInstance: {result}", Logg.LoggingMode.Completed);
-            if (weaponType.IsNull()) return; 
-            if (weaponType is not { HasProjectile: true, GetProjectilePrefab: {} projectilePrefab}) return;
-            if (projectilePrefab.IsNull()) return;
-            
-            AttackSource attackSource;
-            if (statHolder == null)
-            {
-                this.LogWarning($"{nameof(EnsureWeaponProjectileSpawner)} - no IStatHolder found, fallback to 1 damage", context: this);
-                attackSource = new AttackSource(fighter, 1f, weaponType.DamageType);
-            }
-            else
-            {
-                var statSO = weaponType.AttackSourceStatSO;
-                if (statSO.IsNull())
-                {
-                    this.LogWarning($"{nameof(EnsureWeaponProjectileSpawner)} - invalid AttackSourceStatSO, falling back to AD", context: this);
-                    statSO = GameStats.AD;
-                }
+            if (weaponType.IsNull() || result.IsNull()) return;
 
-                if (statSO.IsNotNull() && statHolder.TryGetStat(statSO, out var attackSourceStat))
-                {
-                    attackSource = new AttackSource(fighter, attackSourceStat, weaponType.DamageType);
-                }
-                else
-                {
-                    this.LogWarning($"{nameof(EnsureWeaponProjectileSpawner)} - failed to get stat by {statSO}, fallback to 1 damage", context: this);
-                    attackSource = new AttackSource(fighter, 1f, weaponType.DamageType);
-                }
-            }
+            var skill = weaponType.DefaultSkill;
+            if (skill.IsNull() || !skill.HasProjectile || skill.ProjectilePrefab.IsNull()) return;
+            if (skillController.IsNull()) return;
+            if (!skillController.TryBuildPreviewAttackSource(fighter, out var attackSource)) return;
 
             var projectileSpawner = result.gameObject.GetOrAddComponent<ProjectileSpawner>();
-            projectileSpawner.InitializeProjectileSpawner(fighter, weaponType, attackSource);
+            projectileSpawner.InitializeProjectileSpawner(fighter, skill, attackSource);
             if (projectileSpawner.pool == null)
             {
-                projectileSpawner.SetPool(projectilePrefab);
+                projectileSpawner.SetPool(skill.ProjectilePrefab);
             }
         }
 
