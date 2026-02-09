@@ -14,6 +14,14 @@ namespace TH.Control.Data
         {
             if (!controller.Components.TryGet(out Animator animator)) return;
 
+            IDisposable runtimeLock = null;
+            if (!controller.IsTransitionLocked)
+            {
+                runtimeLock = controller.AcquireTransitionLock(this);
+                MonitorAnimationAsync(animator, () => runtimeLock.Dispose(), controller.StateToken)
+                    .Forget();
+            }
+
             if (animator.GetCurrentAnimatorStateInfo(AnimatorBaseLayer).shortNameHash == AttackASSHash)
             {
                 animator.CrossFade(

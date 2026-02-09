@@ -24,7 +24,6 @@ namespace TH.Item
         private IFighter fighter;
         private EquipmentHolder equipHolder;
         private ISkillController skillController;
-        private Animator animator;
 
         private bool isInit = false;
 
@@ -45,7 +44,6 @@ namespace TH.Item
 
             TryGetComponent(out fighter);
             TryGetComponent(out equipHolder);
-            TryGetComponent(out animator);
             TryGetComponent(out skillController);
         }
 
@@ -114,12 +112,6 @@ namespace TH.Item
                 return;
             }
 
-            if (animator == null)
-            {
-                Logg.LogError($"[{gameObject.name}.Equipper] Animator is null");
-                return;
-            }
-
             if (weaponType.IsNull())
             {
                 Logg.LogError($"[{gameObject.name}.Equipper] WeaponType is null");
@@ -143,25 +135,6 @@ namespace TH.Item
                 return;
             }
 
-            OverrideWeaponAnimator(weaponType);
-        }
-
-        private void OverrideWeaponAnimator(WeaponTypeSO weaponType)
-        {
-            if (weaponType.IsNull())
-            {
-                this.LogWarning($"{nameof(OverrideWeaponAnimator)} - invalid weaponType data", context: this);
-                return;
-            } 
-
-            if (weaponType.weaponAnimatorOverride is { } newWeaponAnimatorOverride)
-            {
-                animator.runtimeAnimatorController = newWeaponAnimatorOverride;
-            }
-            else if (animator.runtimeAnimatorController is AnimatorOverrideController overrideController)
-            {
-                animator.runtimeAnimatorController = overrideController.runtimeAnimatorController;
-            }
         }
 
         private readonly Dictionary<WeaponTypeHolder, List<(Transform, Vector3, Quaternion)>> _cachedLocalTransforms = new();

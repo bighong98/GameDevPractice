@@ -19,6 +19,14 @@ namespace TH.Control.State
 
         public ComponentProvider Components { get; private set; }
         public CancellationToken StateToken { get; private set; }
+        public bool IsTransitionLocked => _transitionLockCount > 0;
+
+        private int _transitionLockCount;
+        private IActionState _pendingState;
+        private IDisposable _transitionUnlockHandler;
+        private bool _stateEntryLockActive;
+        private int _nextRuntimeLockId = 1;
+        private readonly HashSet<int> _runtimeLockIds = new();
 
         private void Awake()
         {
@@ -46,6 +54,7 @@ namespace TH.Control.State
         {
             // 씬 언로드/비활성화 시 유령 전환 방지
             UnbindTransitions();
+            ResetTransitionLocksOnStateChange();
             TryCancelDisposeStateToken();
         }
 
@@ -71,11 +80,8 @@ namespace TH.Control.State
 
         public void TransitionToState(IActionState nextState, bool ignoreLock = false)
         {
-            // nextState 유효성 검사
             if (nextState == remainState || nextState == null) return;
-            // initialState 전환 분기 체크
-            // InitialStateSO(초기 상태 복귀용 가짜 StateSO) 사용
-            // -> 현재 ActionStateMachine.initialState로 상태 전환
+
             if (nextState is InitialStateSO)
             {
                 if (initialState == null)
@@ -83,61 +89,55 @@ namespace TH.Control.State
                     Logg.LogError($"[{gameObject.name}] TransitionToState - initialState and nextState is invalid", this);
                     return;
                 }
-                
+
                 TransitionToState(initialState, ignoreLock);
                 return;
             }
-            
+
             this.Log($"{gameObject.name}: {currentState} -> {nextState}");
-            
-            if (!ignoreLock && _isLocked)
+
+            if (!ignoreLock && IsTransitionLocked)
             {
                 this.Log($"[{gameObject.name}] TransitionToState() - new pendingState updated: ({nextState})", Logg.LoggingMode.Completed);
                 _pendingState = nextState;
                 return;
             }
-            
+
             RenewStateToken();
-            
+
             _stateArmed.Clear();
-            // 기존 상태 event-driven 전환 조건 구독 해제 및 핸들러 정리
+            _pendingState = null;
             UnbindTransitions();
-            // 기존 상태 전환 잠금 이벤트 구독 해제 및 핸들러 정리
-            DisposeTransitionLockHandler();
-            
-            // 기존 상태 퇴장 로직 실행
+            ResetTransitionLocksOnStateChange();
+
             if (currentState.IsNotNull())
                 currentState.ExitState(this);
-            
-            
+
 #if UNITY_EDITOR
-            var prevState = currentState; // 디버깅 로그용 이전 상태 캐싱
+            var prevState = currentState;
 #endif
-            // 상태 전환
             currentState = nextState;
-            stateTime = 0;
+            stateTime = 0f;
 #if UNITY_EDITOR
-            this.Log($"[{gameObject.name}] TransitionToState({prevState?.GetType().Name} -> {nextState.GetType().Name})"
-                , Logg.LoggingMode.Completed);
-#endif   
-            // 새 상태 진입 로직 실행
+            this.Log($"[{gameObject.name}] TransitionToState({prevState?.GetType().Name} -> {nextState.GetType().Name})",
+                Logg.LoggingMode.Completed);
+#endif
             if (currentState.IsNotNull())
                 currentState.EnterState(this);
-            
-            // 대기 상태, 상태 전환 락(lock) 초기화
-            _pendingState = null;
-            _isLocked = currentState.TransitionLockRequired;
-            // 상태 전환 lock이 필요하다면 현재 상태 객체(currentState)에게 unlock 이벤트 구독
-            // -> unlock 핸들러 반환받아서 캐싱 -> 상태 전환 이후 핸들러 정리
-            if (_isLocked)
-            {
-                _transitionUnlockHandler 
-                    = currentState.BindTransitionUnlock(this, OnUnlockTransition);
-            }
-            
-            // 새 상태 event-driven 전환 조건 구독
+
+            BeginStateEntryLock(currentState);
             BindTransitions();
         }
+
+        public IDisposable AcquireTransitionLock(object owner = null)
+        {
+            int lockId = _nextRuntimeLockId++;
+            _runtimeLockIds.Add(lockId);
+            _transitionLockCount++;
+
+            return new DisposableDelegate(() => ReleaseRuntimeTransitionLock(lockId));
+        }
+
 
         #endregion
 
@@ -242,30 +242,47 @@ namespace TH.Control.State
 
         #region Transition Lock Handle
 
-        private bool _isLocked;
-        private IActionState _pendingState;
-        
-        // 상태 전환 잠금 해제 이벤트를 구독 해제하기 위한 핸들러
-        private IDisposable _transitionUnlockHandler;
-
-        // 이전 상태의 Ready 핸들러 해제
-        private void DisposeTransitionLockHandler()
+        private void BeginStateEntryLock(IActionState state)
         {
-            _transitionUnlockHandler?.Dispose(); 
-            _transitionUnlockHandler = null;
+            if (state is null || !state.TransitionLockRequired) return;
+
+            _stateEntryLockActive = true;
+            _transitionLockCount++;
+            _transitionUnlockHandler = state.BindTransitionUnlock(this, OnUnlockTransition);
         }
-        
+
+        private void ResetTransitionLocksOnStateChange()
+        {
+            _transitionUnlockHandler?.Dispose();
+            _transitionUnlockHandler = null;
+            _stateEntryLockActive = false;
+            _runtimeLockIds.Clear();
+            _transitionLockCount = 0;
+        }
+
+        private void ReleaseRuntimeTransitionLock(int lockId)
+        {
+            if (!_runtimeLockIds.Remove(lockId)) return;
+            ReleaseTransitionLock();
+        }
+
         private void OnUnlockTransition()
         {
-            if (!_isLocked) return;
-            _isLocked = false;
-            
-            if (_pendingState == null) return;
-            
-            // 대기 중인 전환이 있다면 수행
-            var next = _pendingState;
+            if (!_stateEntryLockActive) return;
+
+            _stateEntryLockActive = false;
+            ReleaseTransitionLock();
+        }
+
+        private void ReleaseTransitionLock()
+        {
+            if (_transitionLockCount <= 0) return;
+
+            _transitionLockCount--;
+            if (_transitionLockCount > 0 || _pendingState is not { } nextState) return;
+
             _pendingState = null;
-            TransitionToState(next);
+            TransitionToState(nextState);
         }
         
 

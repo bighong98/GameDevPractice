@@ -7,7 +7,7 @@ namespace TH.Resource
     {
         [Header("Weapon")]
         public Enums.WeaponType weaponType;
-        public AnimatorOverrideController weaponAnimatorOverride;
+        
         [Tooltip("GripHand: Both - 오른손 무기 프리펩으로 사용")]
         public GameObject EquippedPrefab;
         [SerializeField] private GameObject equippedPrefabLeft;

@@ -10,15 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7ae70b95bc711424ab96997d90ea21eb, type: 3}
-  m_Name: Long Sword_BasicSkill
+  m_Name: Sword_ComboSkillTest
   m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.SkillTypeSO
-  skillId: Long Sword
+  skillId: Sword
   attackSourceStatSO: {fileID: 11400000, guid: cf7022ca8cb84ae4395e9b8e2edbcdf2, type: 2}
   baseDamage: 1
   damageType: 1
-  range: 4
+  range: 3
   cooldown: 1
-  animatorOverride: {fileID: 22100000, guid: bb775ed55d1346646a899626d7d4b3bf, type: 2}
-  castSfx: {fileID: 8300000, guid: 4e7a9f408abdba8459fdccbeaea95215, type: 3}
+  comboSequence: {fileID: 11400000, guid: 6d5aa315a4aef5240902c6f556ad2687, type: 2}
   projectilePrefab: {fileID: 0}
   impactParticlePrefab: {fileID: 0}
+  animatorOverride: {fileID: 22100000, guid: bad3b4482a681fb4bb377898a52a866d, type: 2}
+  castSfx: {fileID: 8300000, guid: 4e7a9f408abdba8459fdccbeaea95215, type: 3}

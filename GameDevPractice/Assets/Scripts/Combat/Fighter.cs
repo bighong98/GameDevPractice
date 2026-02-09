@@ -35,6 +35,7 @@ public class Fighter : MonoBehaviour, IFighter
     private ISkillController skillController;
 
     private AttackSource currAttackSource;
+    private AudioClip currAttackSfx;
 
     private void Awake()
     {
@@ -75,7 +76,10 @@ public class Fighter : MonoBehaviour, IFighter
     public void Attack()
     {
         if (skillController.IsNull()) return;
+        currAttackSfx = null;
         if (!skillController.TryConsumeActiveSkill(this, out currAttackSource)) return;
+
+        currAttackSfx = skillController.ResolvedSkillSFX;
     }
 
     public void SetTarget(Health attackTarget)
@@ -140,6 +144,12 @@ public class Fighter : MonoBehaviour, IFighter
 
     private AudioClip ResolveCurrentAttackSfx()
     {
+        if (currAttackSfx != null)
+            return currAttackSfx;
+
+        if (skillController.IsNotNull() && skillController.HasResolvedSkill)
+            return skillController.ResolvedSkillSFX;
+
         if (skillController.IsNotNull() && skillController.HasActiveSkill)
             return skillController.ActiveSkillSFX;
 

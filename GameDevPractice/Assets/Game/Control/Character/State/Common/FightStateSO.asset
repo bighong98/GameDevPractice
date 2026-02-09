@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TH.Control.Data.CombatStateSO
   onEnterActions:
   - {fileID: 11400000, guid: f74d07e8a295fb9499c63066d465bdb9, type: 2}
-  - {fileID: 11400000, guid: 1ae8a8d9e54a66749944c4318d7c5b1a, type: 2}
   - {fileID: 11400000, guid: a68038a294969554a9c9b536c112d164, type: 2}
+  - {fileID: 11400000, guid: 1ae8a8d9e54a66749944c4318d7c5b1a, type: 2}
   updateActions: []
   onExitActions: []
   transitions:
