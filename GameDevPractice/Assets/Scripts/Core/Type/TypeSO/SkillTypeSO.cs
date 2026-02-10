@@ -18,6 +18,8 @@ namespace TH.Resource
         [SerializeField] private GameStatSO attackSourceStatSO;
         // 콤보 단계 스킬은 각 SkillTypeSO에서 데미지/사거리 값을 개별 설정.
         [SerializeField] private float baseDamage = 1f;
+        [SerializeField, Min(1)] private int hitCount = 1;
+        [SerializeField, Min(0f)] private float attackCoefficient = 1f;
         [SerializeField] private DamageType damageType = DamageType.Physical;
         [SerializeField, Min(0f)] private float range = 2f;
         // 베이스 스킬 공용 쿨다운. comboTimeout 초과 시 콤보 연계 단절 가능.
@@ -40,6 +42,8 @@ namespace TH.Resource
         public string SkillId => string.IsNullOrWhiteSpace(skillId) ? name : skillId;
         public GameStatSO AttackSourceStatSO => attackSourceStatSO;
         public float BaseDamage => baseDamage;
+        public int HitCount => Mathf.Max(1, hitCount);
+        public float AttackCoefficient => Mathf.Max(0f, attackCoefficient);
         public DamageType DamageType => damageType;
         public float Range => range;
         public float Cooldown => cooldown;
@@ -98,6 +102,16 @@ namespace TH.Resource
                 errors.Add("baseDamage must be a finite number.");
             }
 
+            if (hitCount < 1)
+            {
+                errors.Add("hitCount must be >= 1.");
+            }
+
+            if (float.IsNaN(attackCoefficient) || float.IsInfinity(attackCoefficient) || attackCoefficient < 0f)
+            {
+                errors.Add("attackCoefficient must be a finite value >= 0.");
+            }
+
             if (float.IsNaN(range) || float.IsInfinity(range) || range < 0f)
             {
                 errors.Add("range must be a finite value >= 0.");
@@ -111,6 +125,11 @@ namespace TH.Resource
             if (attackSourceStatSO == null && baseDamage <= 0f)
             {
                 warnings.Add("attackSourceStatSO is null and baseDamage <= 0. Actual damage may become 0.");
+            }
+
+            if (attackCoefficient <= 0f)
+            {
+                warnings.Add("attackCoefficient is 0. Actual damage may become 0.");
             }
 
             if (comboSequence != null && !comboSequence.HasSteps)

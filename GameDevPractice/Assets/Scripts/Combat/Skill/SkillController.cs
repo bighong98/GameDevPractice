@@ -370,16 +370,54 @@ namespace TH.Combat
 
             if (skill.IsNull() || attacker.IsNull()) return false;
 
-            if (statHolder.IsNotNull() &&
-                skill.AttackSourceStatSO.IsNotNull() &&
-                statHolder.TryGetStat(skill.AttackSourceStatSO, out var attackSourceStat))
+            bool hasAttackSourceStat = TryResolveAttackSourceStat(skill, out var attackSourceStat);
+            float sourceDamage = hasAttackSourceStat ? attackSourceStat.Value : skill.BaseDamage;
+            float perHitDamage = Mathf.Max(0f, sourceDamage * skill.AttackCoefficient);
+            int hitCount = Mathf.Max(1, skill.HitCount);
+
+            if (hitCount <= 1)
             {
-                attackSource = new AttackSource(attacker, attackSourceStat, skill.DamageType);
+                if (hasAttackSourceStat && Mathf.Approximately(skill.AttackCoefficient, 1f))
+                {
+                    attackSource = new AttackSource(attacker, attackSourceStat, skill.DamageType);
+                    return true;
+                }
+
+                attackSource = new AttackSource(attacker, perHitDamage, skill.DamageType);
                 return true;
             }
 
-            attackSource = new AttackSource(attacker, skill.BaseDamage, skill.DamageType);
+            var hitDamages = BuildHitDamages(perHitDamage, hitCount);
+            attackSource = new AttackSource(attacker, null, perHitDamage, skill.DamageType, 0, hitDamages);
             return true;
+        }
+
+        private bool TryResolveAttackSourceStat(SkillTypeSO skill, out IGameStat attackSourceStat)
+        {
+            attackSourceStat = null;
+            if (skill.IsNull()) return false;
+
+            if (statHolder.IsNotNull() &&
+                skill.AttackSourceStatSO.IsNotNull() &&
+                statHolder.TryGetStat(skill.AttackSourceStatSO, out var resolvedAttackSourceStat))
+            {
+                attackSourceStat = resolvedAttackSourceStat;
+                return true;
+            }
+
+            return false;
+        }
+
+        private static List<float> BuildHitDamages(float perHitDamage, int hitCount)
+        {
+            int resolvedHitCount = Mathf.Max(1, hitCount);
+            var hitDamages = new List<float>(resolvedHitCount);
+            for (int i = 0; i < resolvedHitCount; i++)
+            {
+                hitDamages.Add(perHitDamage);
+            }
+
+            return hitDamages;
         }
 
         private void SyncDebugValues()

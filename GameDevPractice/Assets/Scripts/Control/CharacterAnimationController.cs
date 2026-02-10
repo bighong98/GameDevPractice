@@ -17,6 +17,8 @@ namespace TH.Control
         [Header("Debug")]
         [SerializeField] private SkillTypeSO activeSkillDebug;
         [SerializeField] private SkillTypeSO resolvedSkillDebug;
+        [SerializeField, Min(1)] private int resolvedHitCountDebug = 1;
+        [SerializeField, Min(0f)] private float resolvedAttackCoefficientDebug = 1f;
 #endif
 
         private ISkillController skillController;
@@ -132,6 +134,9 @@ namespace TH.Control
         {
             activeSkillDebug = skill;
             resolvedSkillDebug = skillController.IsNotNull() ? skillController.ResolvedSkill : null;
+            var debugSkill = resolvedSkillDebug.IsNotNull() ? resolvedSkillDebug : skill;
+            resolvedHitCountDebug = debugSkill.IsNotNull() ? debugSkill.HitCount : 1;
+            resolvedAttackCoefficientDebug = debugSkill.IsNotNull() ? debugSkill.AttackCoefficient : 1f;
         }
 #endif
     }
