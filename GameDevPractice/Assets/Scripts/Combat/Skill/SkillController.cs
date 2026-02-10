@@ -1,7 +1,11 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
+using TH.Attribute;
 using TH.Attribute.Stat;
+using TH.Combat.Service;
+using TH.Core.Service;
 using TH.Item;
 using TH.Resource;
 using TH.Utils;
@@ -52,10 +56,18 @@ namespace TH.Combat
         bool TryConsumeActiveSkill(IAttacker attacker, out AttackSource attackSource);
         // 소비 없이 현재 기준 공격 소스 미리보기 생성.
         bool TryBuildPreviewAttackSource(IAttacker attacker, out AttackSource attackSource);
+        bool TryExecutePendingAttack(IAttacker attacker, Health target);
+        void SetProjectileExecutor(ISkillProjectileExecutor executor);
+        void ClearProjectileExecutor(ISkillProjectileExecutor executor);
+    }
+
+    public interface ISkillProjectileExecutor
+    {
+        bool TryExecuteProjectile(in AttackSource attackSource, Health target, SkillTypeSO skill);
     }
 
     // 플레이어(또는 전투 유닛)의 스킬 실행 상태를 관리하는 핵심 컨트롤러.
-    public sealed class SkillController : MonoBehaviour, ISkillController
+    public sealed class SkillController : MonoBehaviour, ISkillController, ISkillExecutionServices
     {
         // AttackSource 식별자 충돌을 막기 위한 전역 시퀀스.
         private static int attackSequence;
@@ -72,6 +84,8 @@ namespace TH.Combat
         private IStatHolder statHolder;
         // 장비 변경 이벤트 구독 대상.
         private EquipmentHolder equipHolder;
+        private ICombatSystem combatSystem;
+        private ISkillProjectileExecutor projectileExecutor;
 
         // 등록 스킬/활성 스킬 저장소.
         private SkillBook skillBook;
@@ -88,6 +102,12 @@ namespace TH.Combat
         private int currentComboStepIndex;
         // 현재 콤보 총 스텝 수.
         private int currentComboStepCount = 1;
+        private bool hasPendingAttack;
+        private AttackSource pendingAttackSource;
+        private SkillTypeSO pendingAttackSkill;
+        private IAttacker pendingAttacker;
+        private readonly List<Health> areaTargetsBuffer = new();
+        private Collider[] overlapBuffer = new Collider[32];
 
         // 활성 스킬이 바뀔 때 발행.
         public event Action<SkillTypeSO> OnActiveSkillChanged;
@@ -242,6 +262,7 @@ namespace TH.Combat
             if (changed)
             {
                 ResetComboProgress(skill);
+                ClearPendingAttack();
                 OnActiveSkillChanged?.Invoke(skill);
             }
 
@@ -281,6 +302,7 @@ namespace TH.Combat
 
             CommitComboProgress(baseSkill, stepIndex, stepCount);
             SetResolvedSkill(resolved, baseSkill, stepIndex, stepCount, forceNotify: true);
+            SetPendingAttack(attacker, resolved, attackSource);
             OnSkillConsumed?.Invoke(resolved);
             SyncDebugValues();
             return true;
@@ -296,6 +318,34 @@ namespace TH.Combat
             if (previewSkill.IsNull()) return false;
 
             return TryBuildAttackSource(attacker, previewSkill, 0, out attackSource);
+        }
+
+        public bool TryExecutePendingAttack(IAttacker attacker, Health target)
+        {
+            if (!hasPendingAttack) return false;
+            if (attacker.IsNull() || target.IsNull()) return false;
+            if (!ReferenceEquals(pendingAttacker, attacker)) return false;
+
+            bool executed = ExecutePendingAttack(target);
+            if (executed)
+            {
+                ClearPendingAttack();
+            }
+
+            return executed;
+        }
+
+        public void SetProjectileExecutor(ISkillProjectileExecutor executor)
+        {
+            projectileExecutor = executor;
+        }
+
+        public void ClearProjectileExecutor(ISkillProjectileExecutor executor)
+        {
+            if (projectileExecutor == executor)
+            {
+                projectileExecutor = null;
+            }
         }
 
         // 활성 스킬 기준으로 현재 프리뷰 스킬(콤보 반영)을 반환한다.
@@ -434,6 +484,210 @@ namespace TH.Combat
         }
 
         // 스킬 데이터와 공격자 정보를 바탕으로 최종 AttackSource를 구성한다.
+        private bool ExecutePendingAttack(Health target)
+        {
+            var skill = pendingAttackSkill;
+            if (skill.IsNotNull() && skill.ExecutionProfile is { HasActions: true } executionProfile)
+            {
+                var context = new SkillExecutionContext(pendingAttacker, target, skill, pendingAttackSource);
+                StartCoroutine(ExecuteWithProfileRoutine(executionProfile, context));
+                return true;
+            }
+
+            if (skill.IsNotNull() && skill.HasProjectile)
+            {
+                if (projectileExecutor.IsNotNull() &&
+                    projectileExecutor.TryExecuteProjectile(pendingAttackSource, target, skill))
+                {
+                    return true;
+                }
+
+                Logg.LogWarning($"[{gameObject.name}.{nameof(SkillController)}] Projectile executor missing. Falling back to direct hit.");
+            }
+
+            combatSystem ??= ServiceLocator.Get<ICombatSystem>();
+            if (combatSystem == null)
+            {
+                return false;
+            }
+
+            combatSystem.ApplyHit(pendingAttackSource.ToRequest(target));
+            return true;
+        }
+
+        private IEnumerator ExecuteWithProfileRoutine(SkillExecutionProfileSO executionProfile, SkillExecutionContext context)
+        {
+            yield return executionProfile.Execute(context, this);
+        }
+
+        #region ISkillExecutionServices
+
+        public bool TryApplyHit(SkillExecutionContext context, Health target, float damageScale = 1f, int hitCountOverride = 0)
+        {
+            if (target.IsNull() || target.IsDead)
+            {
+                return false;
+            }
+
+            var attackSource = BuildModifiedAttackSource(context.AttackSource, damageScale, hitCountOverride);
+            return TryApplyHitWithSource(attackSource, target);
+        }
+
+        public bool TryLaunchProjectile(SkillExecutionContext context, Health target, float damageScale = 1f, int hitCountOverride = 0)
+        {
+            if (target.IsNull() || target.IsDead)
+            {
+                return false;
+            }
+
+            var attackSource = BuildModifiedAttackSource(context.AttackSource, damageScale, hitCountOverride);
+            if (projectileExecutor.IsNotNull() &&
+                projectileExecutor.TryExecuteProjectile(attackSource, target, context.Skill))
+            {
+                return true;
+            }
+
+            return TryApplyHitWithSource(attackSource, target);
+        }
+
+        public IReadOnlyList<Health> FindTargetsInRadius(Vector3 center, float radius, int maxTargets, Health primaryTarget, bool includePrimary)
+        {
+            areaTargetsBuffer.Clear();
+
+            if (radius <= 0f || maxTargets <= 0)
+            {
+                return areaTargetsBuffer;
+            }
+
+            EnsureOverlapBufferSize(maxTargets);
+            int hitCount = Physics.OverlapSphereNonAlloc(center, radius, overlapBuffer);
+
+            if (includePrimary && primaryTarget.IsNotNull() && !primaryTarget.IsDead &&
+                Vector3.Distance(center, primaryTarget.transform.position) <= radius)
+            {
+                areaTargetsBuffer.Add(primaryTarget);
+            }
+
+            int scanCount = Mathf.Min(hitCount, overlapBuffer.Length);
+            for (int i = 0; i < scanCount && areaTargetsBuffer.Count < maxTargets; i++)
+            {
+                var collider = overlapBuffer[i];
+                if (collider == null)
+                {
+                    continue;
+                }
+
+                if (!collider.TryGetComponent<Health>(out var health))
+                {
+                    continue;
+                }
+
+                if (health.IsNull() || health.IsDead)
+                {
+                    continue;
+                }
+
+                if (!includePrimary && health == primaryTarget)
+                {
+                    continue;
+                }
+
+                if (areaTargetsBuffer.Contains(health))
+                {
+                    continue;
+                }
+
+                areaTargetsBuffer.Add(health);
+            }
+
+            return areaTargetsBuffer;
+        }
+
+        #endregion
+
+        private bool TryApplyHitWithSource(in AttackSource attackSource, Health target)
+        {
+            combatSystem ??= ServiceLocator.Get<ICombatSystem>();
+            if (combatSystem == null)
+            {
+                return false;
+            }
+
+            combatSystem.ApplyHit(attackSource.ToRequest(target));
+            return true;
+        }
+
+        private void EnsureOverlapBufferSize(int requiredSize)
+        {
+            if (requiredSize <= overlapBuffer.Length)
+            {
+                return;
+            }
+
+            int resized = Mathf.NextPowerOfTwo(requiredSize);
+            overlapBuffer = new Collider[Mathf.Max(32, resized)];
+        }
+
+        private static AttackSource BuildModifiedAttackSource(in AttackSource source, float damageScale, int hitCountOverride)
+        {
+            float resolvedDamageScale = Mathf.Max(0f, damageScale);
+            int resolvedHitCount = Mathf.Max(0, hitCountOverride);
+            float sourceBaseDamage = source.AttackSourceStat?.Value ?? source.BaseDamage;
+
+            if (source.HitDamages != null && source.HitDamages.Count > 0)
+            {
+                var scaledHitDamages = new List<float>(source.HitDamages.Count);
+                for (int i = 0; i < source.HitDamages.Count; i++)
+                {
+                    scaledHitDamages.Add(source.HitDamages[i] * resolvedDamageScale);
+                }
+
+                if (resolvedHitCount > 0 && resolvedHitCount != scaledHitDamages.Count)
+                {
+                    float perHitDamage = scaledHitDamages.Count > 0 ? scaledHitDamages[0] : sourceBaseDamage * resolvedDamageScale;
+                    scaledHitDamages.Clear();
+                    for (int i = 0; i < resolvedHitCount; i++)
+                    {
+                        scaledHitDamages.Add(perHitDamage);
+                    }
+                }
+
+                float firstDamage = scaledHitDamages.Count > 0 ? scaledHitDamages[0] : sourceBaseDamage * resolvedDamageScale;
+                return new AttackSource(source.Attacker, null, firstDamage, source.DamageType, source.AttackInstanceId, scaledHitDamages);
+            }
+
+            if (resolvedHitCount > 1)
+            {
+                float perHitDamage = sourceBaseDamage * resolvedDamageScale;
+                var hitDamages = new List<float>(resolvedHitCount);
+                for (int i = 0; i < resolvedHitCount; i++)
+                {
+                    hitDamages.Add(perHitDamage);
+                }
+
+                return new AttackSource(source.Attacker, null, perHitDamage, source.DamageType, source.AttackInstanceId, hitDamages);
+            }
+
+            float scaledBaseDamage = sourceBaseDamage * resolvedDamageScale;
+            return new AttackSource(source.Attacker, null, scaledBaseDamage, source.DamageType, source.AttackInstanceId, null);
+        }
+
+        private void SetPendingAttack(IAttacker attacker, SkillTypeSO skill, in AttackSource attackSource)
+        {
+            pendingAttacker = attacker;
+            pendingAttackSkill = skill;
+            pendingAttackSource = attackSource;
+            hasPendingAttack = true;
+        }
+
+        private void ClearPendingAttack()
+        {
+            hasPendingAttack = false;
+            pendingAttackSource = default;
+            pendingAttackSkill = null;
+            pendingAttacker = null;
+        }
+
         private bool TryBuildAttackSource(IAttacker attacker, SkillTypeSO skill, int attackInstanceId, out AttackSource attackSource)
         {
             attackSource = default;

@@ -32,6 +32,7 @@ namespace TH.Resource
         [SerializeField, Min(0f)] private float cooldown = 1f;
         // 콤보 사용 시 ComboSequenceSO 에셋 연결. null이면 단일 스킬 동작
         [SerializeField] private ComboSequenceSO comboSequence;
+        [SerializeField] private SkillExecutionProfileSO executionProfile;
 
         [Header("VFX")]
         // 발사체 기반 스킬일 때 사용할 프리팹
@@ -65,6 +66,7 @@ namespace TH.Resource
         public float Cooldown => cooldown;
         // 콤보 시퀀스 참조
         public ComboSequenceSO ComboSequence => comboSequence;
+        public SkillExecutionProfileSO ExecutionProfile => executionProfile;
         // 스킬 캐스트 SFX
         public AudioClip CastSFX => castSfx;
         // 공격 애니메이션 오버라이드
@@ -78,6 +80,7 @@ namespace TH.Resource
         // 적중 이펙트 프리팹
         public GameObject ImpactParticlePrefab => impactParticlePrefab;
 
+        #region Debug (Editor Only)
 #if UNITY_EDITOR
         // 인스펙터 컨텍스트 메뉴에서 수동 검증을 실행
         [ContextMenu("Validate Skill (Editor)")]
@@ -162,6 +165,11 @@ namespace TH.Resource
             if (comboSequence != null && !comboSequence.HasSteps)
             {
                 errors.Add("comboSequence is assigned but has no combo steps.");
+            }
+
+            if (executionProfile != null && !executionProfile.HasActions)
+            {
+                errors.Add("executionProfile is assigned but has no actions.");
             }
 
             ValidateAnimatorOverride(errors, warnings);
@@ -265,5 +273,7 @@ namespace TH.Resource
             return clip != null && clip.name.IndexOf("Attack", StringComparison.OrdinalIgnoreCase) >= 0;
         }
 #endif
+        #endregion
+    
     }
 }

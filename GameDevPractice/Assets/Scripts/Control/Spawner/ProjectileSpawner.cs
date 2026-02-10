@@ -1,22 +1,21 @@
-using TH.Combat;
 using TH.Attribute;
-using UnityEngine;
+using TH.Combat;
+using TH.Combat.Service;
 using TH.Core.Pool;
 using TH.Core.Service;
-using TH.Combat.Service;
-using TH.Utils;
 using TH.Resource;
+using TH.Utils;
+using UnityEngine;
 
-public class ProjectileSpawner : Spawner<AttackProjectile>
+public class ProjectileSpawner : Spawner<AttackProjectile>, ISkillProjectileExecutor
 {
-    [SerializeField] private Health projectileTarget; // serialized for debug
+    [SerializeField] private Health projectileTarget;
     private bool hasTarget;
     private bool isHoming;
 
     private ICombatSystem combatSystem;
-    
-    private AttackSource projectileAttackSource; // 투사체에 적용될 AttackSource
-    
+    private AttackSource projectileAttackSource;
+
     private IAttacker currentOwner;
     [SerializeField] private GameObject onHitParticlePrefab;
 
@@ -32,7 +31,7 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
         base.Start();
         combatSystem = ServiceLocator.Get<ICombatSystem>();
     }
-    
+
     public void InitializeProjectileSpawner(IAttacker owner, SkillTypeSO skillTypeSO, AttackSource attackSource)
     {
         combatSystem ??= ServiceLocator.Get<ICombatSystem>();
@@ -44,20 +43,9 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
             return;
         }
 
-        if (attackSource.Attacker == null)
-            Logg.LogWarning($"[{name}.{nameof(ProjectileSpawner)}] AttackSource is default");
-
         projectileAttackSource = attackSource;
         BindOwner(shootingWeaponOwner);
-
-        if (skillTypeSO is { HasImpactEffect: true, ImpactParticlePrefab: { } particlePrefab })
-        {
-            onHitParticlePrefab = particlePrefab;
-        }
-        else
-        {
-            onHitParticlePrefab = null;
-        }
+        ConfigureImpactEffect(skillTypeSO);
 
         onCreate = obj =>
         {
@@ -84,6 +72,28 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
         };
     }
 
+    public bool TryExecuteProjectile(in AttackSource attackSource, Health target, SkillTypeSO skill)
+    {
+        projectileAttackSource = attackSource;
+        ConfigureImpactEffect(skill);
+
+        if (target != null)
+            SetTarget(target);
+
+        return Shoot();
+    }
+
+    private void ConfigureImpactEffect(SkillTypeSO skillTypeSO)
+    {
+        if (skillTypeSO is { HasImpactEffect: true, ImpactParticlePrefab: { } particlePrefab })
+        {
+            onHitParticlePrefab = particlePrefab;
+            return;
+        }
+
+        onHitParticlePrefab = null;
+    }
+
     private void OnDisable()
     {
         UnbindOwner();
@@ -93,12 +103,10 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
     {
         UnbindOwner();
         if (owner.IsNull()) return;
-        
+
         currentOwner = owner;
         projectileLayer = ResolveProjectileLayer(currentOwner);
-
         currentOwner.OnTargetSet += SetTarget;
-        currentOwner.OnAttack += Shoot;
     }
 
     private void UnbindOwner()
@@ -106,7 +114,6 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
         if (currentOwner.IsNotNull())
         {
             currentOwner.OnTargetSet -= SetTarget;
-            currentOwner.OnAttack -= Shoot;
         }
 
         currentOwner = null;
@@ -157,25 +164,25 @@ public class ProjectileSpawner : Spawner<AttackProjectile>
     private void SetTarget(Health target)
     {
         projectileTarget = target;
-        hasTarget = (target != null); // target이 null이라면 hasTarget = false
+        hasTarget = target != null;
     }
-    
-    private void Shoot()
+
+    private bool Shoot()
     {
-        if (!hasTarget) return; // ?寃잛씠 ?녿떎硫??섏? ?딆쓬
+        if (!hasTarget) return false;
 
         combatSystem ??= ServiceLocator.Get<ICombatSystem>();
         var projectile = base.Spawn(transform.position);
-        if (projectile == null) return;
+        if (projectile == null) return false;
 
         ApplyProjectileLayer(projectile);
         projectile.OnHit -= PlayOnHitEffect;
         if (onHitParticlePrefab != null)
             projectile.OnHit += PlayOnHitEffect;
 
-        // Ensure latest attack source is applied before launch.
         projectile.SetProjectile(combatSystem, projectileAttackSource);
         projectile.SetTargetAndShoot(projectileTarget, isHoming);
+        return true;
     }
 
     private void PlayOnHitEffect(Vector3 pos)

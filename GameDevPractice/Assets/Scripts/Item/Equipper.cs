@@ -252,6 +252,11 @@ namespace TH.Item
                     _cachedLocalTransforms.Remove(weapon);
                 }
 
+                if (skillController.IsNotNull() && weapon.TryGetComponent<ProjectileSpawner>(out var equippedProjectileSpawner))
+                {
+                    skillController.ClearProjectileExecutor(equippedProjectileSpawner);
+                }
+
                 if (weaponPools.TryGetValue((weapon.Type, hand), out var pool))
                 {
                     pool.Release(weapon);
@@ -273,7 +278,7 @@ namespace TH.Item
             var skill = weaponType.DefaultSkill;
             if (skill.IsNull() || !skill.HasProjectile || skill.ProjectilePrefab.IsNull()) return;
             if (skillController.IsNull()) return;
-            if (!skillController.TryBuildPreviewAttackSource(fighter, out var attackSource)) return;
+            skillController.TryBuildPreviewAttackSource(fighter, out var attackSource);
 
             var projectileSpawner = result.gameObject.GetOrAddComponent<ProjectileSpawner>();
             projectileSpawner.InitializeProjectileSpawner(fighter, skill, attackSource);
@@ -281,6 +286,8 @@ namespace TH.Item
             {
                 projectileSpawner.SetPool(skill.ProjectilePrefab);
             }
+
+            skillController.SetProjectileExecutor(projectileSpawner);
         }
 
 

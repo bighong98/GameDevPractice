@@ -21,6 +21,7 @@ MonoBehaviour:
   range: 4
   cooldown: 1
   comboSequence: {fileID: 0}
+  executionProfile: {fileID: 11400000, guid: 191c39a59b71a9d4a86e0366198e604f, type: 2}
   projectilePrefab: {fileID: 0}
   impactParticlePrefab: {fileID: 0}
   animatorOverride: {fileID: 22100000, guid: bb775ed55d1346646a899626d7d4b3bf, type: 2}
