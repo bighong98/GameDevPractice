@@ -13,27 +13,38 @@ using TH.Core.Service;
 
 namespace TH.Utils
 {   
-    // 인게임 텍스트 오브젝트 출력 시스템
-    // 텍스트 출력 가능성이 있는 오브젝트 개수 * 컴포넌트 개수 만큼의 이벤트 인스턴스가 생성됨
-    // -> 이벤트 파라미터가 구조체인 경우 이벤트 호출마다 값 복사가 발생
-    // -> 구조체에 값 형식 데이터가 많아질 경우 event Action 대신 커스텀 델리게이트 사용 + in 키워드 사용하여 수정 필요
+    // 전투/성장 이벤트를 UI 플로팅 텍스트로 변환해 풀링 오브젝트로 출력하는 스포너 구현체
+    // 소스별 이벤트 바인딩, 프레임 단위 머지 배치, 캔버스 좌표계 연계를 단일 진입점으로 통합
+    // 구조체 payload 전달 비용 완화를 위해 커스텀 delegate + in 전달 패턴 사용
     public class FloatingTextSpawner : IFloatingTextSpawner
     {
+        // 이벤트 타입별 바인더 테이블
         private readonly Dictionary<FloatingTextEventType, IFloatingTextEventBinder> _binders = new();
+        // 앵커 + 이벤트 타입별 대기 배치 테이블
         private readonly Dictionary<BatchKey, PendingBatch> _pendingBatches = new();
         
+        // 풀 매니저에서 꺼낼 플로팅 텍스트 프리팹
         private GameObject textPrefab;
+        // 이벤트 타입 -> 텍스트 설정 매핑 카탈로그
         private FloatingTextCatalogSO textCatalogSO;
 
+        // 리소스 키 플로팅 텍스트 프리팹
         private const string textPrefabKey = "FloatingText";
+        // 리소스 키 플로팅 텍스트 카탈로그 SO
         private const string textCatalogSOKey = "FloatingTextCatalogSO";
+        // 배치당 최대 노출 텍스트 개수
         private const int MaxMergedTexts = 10;
+        // 머지 배치 윈도우 지연 시간
         private static readonly TimeSpan MergeWindow = TimeSpan.FromSeconds(0.08f);
         
+        // 프리로드 이후 프리팹/SO 조회용 로더
         private readonly IResourceLoader resourceLoader;
+        // 실제 플로팅 텍스트 생성 부모 캔버스 RectTransform
         private RectTransform feedbackCanvasRect;
+        // 비동기 배치 flush 취소 토큰 소스
         private readonly CancellationTokenSource flushCts = new CancellationTokenSource();
         
+        // 생성자 바인더 초기화 + 프리로드 완료 콜백 등록
         public FloatingTextSpawner(IResourceLoader rLoader)
         {
             AddBinders();
@@ -41,6 +52,7 @@ namespace TH.Utils
             resourceLoader.WaitForPreLoad(Constants.PreLoadLabel, InitializeTextPools);
         }
 
+        // 프리팹/카탈로그 로딩 초기화 루틴
         private void InitializeTextPools()
         {
             if (!resourceLoader.TryLoad(textCatalogSOKey, out textCatalogSO))
@@ -56,6 +68,7 @@ namespace TH.Utils
             }
         }
 
+        // 지원 이벤트 타입별 기본 바인더 등록 루틴
         private void AddBinders()
         {
             var damageType = FloatingTextEventType.Damage;
@@ -84,6 +97,7 @@ namespace TH.Utils
             );
         }
 
+        // 피해 이벤트 payload를 단건/다건 조건에 따라 배치 출력 루틴으로 전달
         private void HandleDamageEvent(IDamageable subject, in HitResult data)
         {
             var anchor = AnchorOf(subject);
@@ -137,12 +151,14 @@ namespace TH.Utils
             ShowFloatingText(FloatingTextEventType.Damage, anchor, in data.Damage);
         }
 
+        // 이벤트 소스 객체에서 월드 앵커 Transform 추출 헬퍼
         private static Transform AnchorOf(object s)
         {
             if (!s.IsNotNull()) return null;
             return (s as Component)?.transform;
         }
 
+        // 제네릭 이벤트 바인더 생성 후 타입 테이블 등록
         private void AddBinder<TSource, TPayload, TEvent>(
             FloatingTextEventType type,
             Action<TSource, TEvent> subscribe,
@@ -162,20 +178,24 @@ namespace TH.Utils
 
         #region Register/UnRegister (IFloatingTextSpawner)
 
+        // 소스 객체 + 이벤트 타입 바인딩 등록
         public void Register(object source, FloatingTextEventType type)
         {
             if (_binders.TryGetValue(type, out var b)) b.Bind(source);
         }
+        // 소스 객체 + 이벤트 타입 바인딩 해제
         public void UnRegister(object source, FloatingTextEventType type)
         {
             if (_binders.TryGetValue(type, out var b)) b.Unbind(source);
         }
         
+        // 특정 소스에 연결된 모든 이벤트 바인딩 해제
         public void UnregisterAll(object source)
         {
             foreach (var b in _binders.Values) b.Unbind(source);
         }
 
+        // float 목록 배치를 문자열 목록으로 변환 후 공통 출력 경로 호출
         public void SpawnBatch(FloatingTextEventType type, Transform anchor, IReadOnlyCollection<float> values, FloatingTextBatchLayout layout = FloatingTextBatchLayout.Line)
         {
             if (values == null || values.Count == 0)
@@ -207,6 +227,7 @@ namespace TH.Utils
             SpawnBatch(type, anchor, groupedTexts, layout);
         }
 
+        // 문자열 목록 배치 즉시 출력 경로
         public void SpawnBatch(FloatingTextEventType type, Transform anchor, IReadOnlyList<string> values, FloatingTextBatchLayout layout = FloatingTextBatchLayout.Line)
         {
             if (anchor == null)
@@ -266,16 +287,19 @@ namespace TH.Utils
 
         #endregion
 
+        // float payload 단건 출력 오버로드
         private void ShowFloatingText(FloatingTextEventType type, Transform anchor, in float value)
         {
             ShowFloatingText(type, anchor, value.ToString(CultureInfo.InvariantCulture));
         }
 
+        // int payload 단건 출력 오버로드
         private void ShowFloatingText(FloatingTextEventType type, Transform anchor, in int value)
         {
             ShowFloatingText(type, anchor, value.ToString(CultureInfo.InvariantCulture));
         }
 
+        // 문자열 payload 단건 출력 공통 루틴
         private void ShowFloatingText(FloatingTextEventType type, Transform anchor, in string str)
         {
             if (anchor == null)
@@ -300,6 +324,7 @@ namespace TH.Utils
             EnqueueFloatingText(type, anchor, setting, str);
         }
 
+        // 피드백 오버레이 캔버스 참조 확보 루틴
         private bool EnsureFeedbackCanvasReady()
         {
             if (feedbackCanvasRect == null)
@@ -313,6 +338,7 @@ namespace TH.Utils
             return true;
         }
 
+        // 앵커/타입 키 기준 대기 배치 큐 적재 + flush 예약
         private void EnqueueFloatingText(
             FloatingTextEventType type,
             Transform anchor,
@@ -350,6 +376,7 @@ namespace TH.Utils
             FlushBatchDelayedAsync(key).Forget();
         }
 
+        // 머지 윈도우 이후 배치 flush 트리거 비동기 루틴
         private async UniTaskVoid FlushBatchDelayedAsync(BatchKey key)
         {
             try
@@ -369,6 +396,7 @@ namespace TH.Utils
             }
         }
 
+        // 대기 배치 확정 출력 + 풀 오브젝트 세팅 루틴
         private void FlushBatch(BatchKey key)
         {
             if (!_pendingBatches.TryGetValue(key, out var batch))
@@ -411,44 +439,60 @@ namespace TH.Utils
             s.SetBatchTexts(batch.Texts, batch.AttackInstanceIds);
         }
 
+        // 대기 배치 딕셔너리 키 구조체 앵커 인스턴스 ID + 이벤트 타입 조합
         private readonly struct BatchKey : IEquatable<BatchKey>
         {
+            // 앵커 transform instance id
             public readonly int AnchorId;
+            // 이벤트 타입 키 값
             public readonly FloatingTextEventType Type;
 
+            // 키 생성자
             public BatchKey(int anchorId, FloatingTextEventType type)
             {
                 AnchorId = anchorId;
                 Type = type;
             }
 
+            // 값 동일성 비교 구현
             public bool Equals(BatchKey other)
             {
                 return AnchorId == other.AnchorId
                        && Type == other.Type;
             }
 
+            // object 기반 동일성 비교 오버라이드
             public override bool Equals(object obj)
             {
                 return obj is BatchKey other && Equals(other);
             }
 
+            // 딕셔너리 해시코드 오버라이드
             public override int GetHashCode()
             {
                 return HashCode.Combine(AnchorId, (int)Type);
             }
         }
 
+        // 머지 윈도우 동안 누적되는 배치 임시 버퍼
         private sealed class PendingBatch
         {
+            // 최신 앵커 참조
             public Transform Anchor;
+            // 출력 설정 데이터
             public FloatingTextSO Setting;
+            // 누적 문자열 텍스트 목록
             public readonly List<string> Texts;
+            // 텍스트 항목별 공격 인스턴스 ID 목록
             public readonly List<int> AttackInstanceIds;
+            // 앵커 소실 대비 마지막 월드 좌표
             public Vector3 LastWorldPosition;
+            // 노출 한도 초과 숨김 개수
             public int OverflowCount;
+            // flush 예약 상태 플래그
             public bool FlushScheduled;
 
+            // 배치 버퍼 생성자
             public PendingBatch(Transform anchor, FloatingTextSO setting, Vector3 lastWorldPosition)
             {
                 Anchor = anchor;
@@ -461,18 +505,26 @@ namespace TH.Utils
             }
         }
 
+        // 타입 안전 이벤트 바인딩/해제 처리를 담당하는 제네릭 바인더 구현
         private sealed class FloatingTextEventBinder<TSource, TPayload, TEvent> : IFloatingTextEventBinder 
             where TSource : class
             where TEvent : Delegate
         {
+            // object -> TSource 캐스팅 함수
             private readonly Func<object, TSource> _tryCast;
+            // 외부 이벤트 구독 함수
             private readonly Action<TSource, TEvent> _subscribe;
+            // 외부 이벤트 해제 함수
             private readonly Action<TSource, TEvent> _unsubscribe;
+            // payload 수신 시 실행할 처리 함수
             private readonly OnEventHandler<TSource, TPayload> _onEvent;
+            // payload 핸들러를 이벤트 delegate로 변환하는 어댑터
             private readonly Func<PayloadHandler<TPayload>, TEvent> _adapter;
             
+            // 소스별 생성된 delegate 핸들 저장소
             private readonly Dictionary<TSource, TEvent> _handlers = new();
             
+            // 바인더 생성자 인자 검증 + 핸들러 저장
             public FloatingTextEventBinder(
                 Action<TSource, TEvent> subscribe,
                 Action<TSource, TEvent> unsubscribe,
@@ -486,6 +538,7 @@ namespace TH.Utils
                 _adapter   = adapter ?? throw new ArgumentNullException(nameof(adapter));
             }
             
+            // 소스 객체 이벤트 구독 등록 중복 등록 방지 포함
             public void Bind(object o)
             {
                 var src = _tryCast(o);
@@ -498,6 +551,7 @@ namespace TH.Utils
                 _subscribe(src, ev);
             }
 
+            // 소스 객체 이벤트 구독 해제 + 핸들 테이블 정리
             public void Unbind(object o)
             {
                 var src = _tryCast(o);
@@ -510,14 +564,17 @@ namespace TH.Utils
         }
     }
     
-    
+    // in 전달 payload 수신 delegate
     public delegate void PayloadHandler<TPayload>(in TPayload payload);
+    // 소스 + payload 이벤트 처리 delegate
     public delegate void OnEventHandler<in TSource, TPayload>(TSource source, in TPayload payload);
 
-    
+    // 공통 바인더 동작 인터페이스
     public interface IFloatingTextEventBinder
     {
+        // 이벤트 바인딩 등록
         void Bind(object o);
+        // 이벤트 바인딩 해제
         void Unbind(object o);
     }
 }
