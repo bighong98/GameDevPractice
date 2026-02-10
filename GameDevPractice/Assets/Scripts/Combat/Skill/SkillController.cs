@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using TH.Attribute.Stat;
 using TH.Item;
 using TH.Resource;
@@ -35,6 +36,8 @@ namespace TH.Combat
 
     public sealed class SkillController : MonoBehaviour, ISkillController
     {
+        private static int attackSequence;
+
         [Header("Initial Skills")]
         [SerializeField] private List<SkillTypeSO> initialSkills = new();
         [SerializeField] private SkillTypeSO defaultActiveSkill;
@@ -212,7 +215,9 @@ namespace TH.Combat
             var baseSkill = skillBook.ActiveSkill;
             if (!skillCaster.IsReady(baseSkill)) return false;
             if (!TryResolveSkillPreview(baseSkill, out var resolved, out var stepIndex, out var stepCount)) return false;
-            if (!TryBuildAttackSource(attacker, resolved, out attackSource)) return false;
+
+            int attackInstanceId = TakeNextAttackInstanceId();
+            if (!TryBuildAttackSource(attacker, resolved, attackInstanceId, out attackSource)) return false;
 
             if (!skillCaster.Consume(baseSkill, baseSkill.Cooldown))
             {
@@ -235,7 +240,7 @@ namespace TH.Combat
             var previewSkill = GetPreviewSkill();
             if (previewSkill.IsNull()) return false;
 
-            return TryBuildAttackSource(attacker, previewSkill, out attackSource);
+            return TryBuildAttackSource(attacker, previewSkill, 0, out attackSource);
         }
 
         private SkillTypeSO GetPreviewSkill()
@@ -364,7 +369,7 @@ namespace TH.Combat
             }
         }
 
-        private bool TryBuildAttackSource(IAttacker attacker, SkillTypeSO skill, out AttackSource attackSource)
+        private bool TryBuildAttackSource(IAttacker attacker, SkillTypeSO skill, int attackInstanceId, out AttackSource attackSource)
         {
             attackSource = default;
 
@@ -379,17 +384,37 @@ namespace TH.Combat
             {
                 if (hasAttackSourceStat && Mathf.Approximately(skill.AttackCoefficient, 1f))
                 {
-                    attackSource = new AttackSource(attacker, attackSourceStat, skill.DamageType);
+                    attackSource = new AttackSource(
+                        attacker,
+                        attackSourceStat,
+                        0f,
+                        skill.DamageType,
+                        attackInstanceId);
                     return true;
                 }
 
-                attackSource = new AttackSource(attacker, perHitDamage, skill.DamageType);
+                attackSource = new AttackSource(
+                    attacker,
+                    null,
+                    perHitDamage,
+                    skill.DamageType,
+                    attackInstanceId);
                 return true;
             }
 
             var hitDamages = BuildHitDamages(perHitDamage, hitCount);
-            attackSource = new AttackSource(attacker, null, perHitDamage, skill.DamageType, 0, hitDamages);
+            attackSource = new AttackSource(attacker, null, perHitDamage, skill.DamageType, attackInstanceId, hitDamages);
             return true;
+        }
+
+        private static int TakeNextAttackInstanceId()
+        {
+            int next = Interlocked.Increment(ref attackSequence);
+            if (next > 0)
+                return next;
+
+            Interlocked.CompareExchange(ref attackSequence, 1, next);
+            return 1;
         }
 
         private bool TryResolveAttackSourceStat(SkillTypeSO skill, out IGameStat attackSourceStat)

@@ -23,6 +23,7 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
     [SerializeField] private float batchLineHeightMultiplier = 0.9f;
     [SerializeField] private float batchHorizontalStep = 18f;
     [SerializeField] private int maxBatchEntries = 6;
+    [SerializeField] private float batchItemStaggerDelay = 0.04f;
 
     private readonly List<TextMeshProUGUI> textItems = new();
     private RectTransform rootRect;
@@ -37,6 +38,9 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
     private Camera worldCamera;
     private CanvasGroup canvasGroup;
     private FloatingTextBatchLayout currentBatchLayout = FloatingTextBatchLayout.Spread;
+    private readonly List<int> batchGroupKeys = new();
+    private bool useGroupedBatchLayout;
+    private bool useBatchTimingStagger;
     private int visibleTextCount = 1;
 
     private void Awake()
@@ -84,6 +88,9 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
         if (text == null) return;
 
         currentBatchLayout = FloatingTextBatchLayout.Spread;
+        useGroupedBatchLayout = false;
+        useBatchTimingStagger = false;
+        batchGroupKeys.Clear();
         EnsureTextItemCount(1);
         visibleTextCount = 1;
         ApplyTextValue(textItems[0], s);
@@ -107,12 +114,48 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
         }
 
         currentBatchLayout = layout;
+        useGroupedBatchLayout = false;
         int count = Mathf.Clamp(values.Count, 1, Mathf.Max(1, maxBatchEntries));
+        useBatchTimingStagger = count > 1;
+        batchGroupKeys.Clear();
         EnsureTextItemCount(count);
         visibleTextCount = count;
 
         for (int i = 0; i < count; i++)
             ApplyTextValue(textItems[i], values[i]);
+
+        DeactivateTextItemsFrom(count);
+        Refresh();
+    }
+
+    public void SetBatchTexts(IReadOnlyList<string> values, IReadOnlyList<int> attackInstanceIds)
+    {
+        if (text == null) return;
+
+        if (values == null || values.Count == 0)
+        {
+            SetText(string.Empty);
+            return;
+        }
+
+        currentBatchLayout = FloatingTextBatchLayout.Spread;
+        useGroupedBatchLayout = true;
+        int count = Mathf.Clamp(values.Count, 1, Mathf.Max(1, maxBatchEntries));
+        useBatchTimingStagger = count > 1;
+        EnsureTextItemCount(count);
+        visibleTextCount = count;
+
+        batchGroupKeys.Clear();
+        for (int i = 0; i < count; i++)
+        {
+            ApplyTextValue(textItems[i], values[i]);
+
+            int attackInstanceId = (attackInstanceIds != null && i < attackInstanceIds.Count)
+                ? attackInstanceIds[i]
+                : 0;
+            int groupKey = attackInstanceId > 0 ? attackInstanceId : int.MinValue + i;
+            batchGroupKeys.Add(groupKey);
+        }
 
         DeactivateTextItemsFrom(count);
         Refresh();
@@ -171,7 +214,16 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
         }
 
         LayoutVisibleTextItems(fontSize);
-        UpdateScreenPosition();
+        bool isVisibleOnScreen = UpdateScreenPosition();
+        if (useBatchTimingStagger && isVisibleOnScreen)
+        {
+            ApplyStaggeredItemVisuals(
+                0f,
+                AnimationData.LifeTime,
+                Mathf.Max(0f, AnimationData.LifeTime - AnimationData.FadeOutDuration),
+                AnimationData.FadeOutDuration,
+                Mathf.Max(0f, batchItemStaggerDelay));
+        }
     }
 
     private float ResolveFontSize(float configuredSize)
@@ -182,6 +234,11 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
     private void LayoutVisibleTextItems(float fontSize)
     {
         float lineStep = Mathf.Max(1f, fontSize * batchLineHeightMultiplier);
+        if (useGroupedBatchLayout)
+        {
+            LayoutGroupedBatchItems(lineStep);
+            return;
+        }
 
         if (currentBatchLayout == FloatingTextBatchLayout.Line)
         {
@@ -206,6 +263,43 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
 
             float y = i * lineStep;
             itemRect.anchoredPosition = new Vector2(x, y);
+        }
+    }
+
+    private void LayoutGroupedBatchItems(float lineStep)
+    {
+        int count = Mathf.Min(visibleTextCount, textItems.Count);
+        if (count <= 0)
+            return;
+
+        float horizontalStep = Mathf.Max(batchHorizontalStep, lineStep * 0.8f);
+        var groupOrder = new List<int>(count);
+        var columnByItem = new int[count];
+
+        for (int i = 0; i < count; i++)
+        {
+            int groupKey = i < batchGroupKeys.Count ? batchGroupKeys[i] : int.MinValue + i;
+            int column = groupOrder.IndexOf(groupKey);
+            if (column < 0)
+            {
+                column = groupOrder.Count;
+                groupOrder.Add(groupKey);
+            }
+
+            columnByItem[i] = column;
+        }
+
+        int columnCount = Mathf.Max(1, groupOrder.Count);
+        float center = (columnCount - 1) * 0.5f;
+        var rowByColumn = new int[columnCount];
+
+        for (int i = 0; i < count; i++)
+        {
+            int column = columnByItem[i];
+            int row = rowByColumn[column]++;
+            float x = (column - center) * horizontalStep;
+            float y = row * lineStep;
+            textItems[i].rectTransform.anchoredPosition = new Vector2(x, y);
         }
     }
 
@@ -276,6 +370,9 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
         worldPosition = Vector3.zero;
         visibleTextCount = 1;
         currentBatchLayout = FloatingTextBatchLayout.Spread;
+        useGroupedBatchLayout = false;
+        useBatchTimingStagger = false;
+        batchGroupKeys.Clear();
 
         if (canvasGroup != null)
             canvasGroup.alpha = 1f;
@@ -339,22 +436,32 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
         float fDuration = AnimationData.FadeOutDuration;
         float lTime = AnimationData.LifeTime;
         float fadeStart = Mathf.Max(0f, lTime - fDuration);
+        float staggerDelay = useBatchTimingStagger ? Mathf.Max(0f, batchItemStaggerDelay) : 0f;
+        float totalLife = lTime + (visibleTextCount > 1 ? staggerDelay * (visibleTextCount - 1) : 0f);
 
-        while (t < lTime)
+        while (t < totalLife)
         {
             if (token.IsCancellationRequested)
                 break;
 
             float dt = Time.unscaledDeltaTime;
-            t = Mathf.Min(t + dt, lTime);
+            t = Mathf.Min(t + dt, totalLife);
 
             worldOffset += Vector3.up * (AnimationData.RiseSpeed * dt);
-            UpdateScreenPosition();
+            bool isVisibleOnScreen = UpdateScreenPosition();
 
             if (visibleTextCount <= 0)
                 break;
 
-            if (t >= fadeStart && fDuration > 0f)
+            if (useBatchTimingStagger)
+            {
+                if (canvasGroup != null)
+                    canvasGroup.alpha = 1f;
+
+                if (isVisibleOnScreen)
+                    ApplyStaggeredItemVisuals(t, lTime, fadeStart, fDuration, staggerDelay);
+            }
+            else if (t >= fadeStart && fDuration > 0f)
             {
                 float u = Mathf.InverseLerp(fadeStart, lTime, t);
                 if (canvasGroup != null)
@@ -373,10 +480,10 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
         rootCanvasRect = rootCanvas != null ? rootCanvas.rootCanvas.transform as RectTransform : null;
     }
 
-    private void UpdateScreenPosition()
+    private bool UpdateScreenPosition()
     {
         if (text == null)
-            return;
+            return false;
 
         if (worldAnchor != null)
             worldPosition = worldAnchor.position;
@@ -388,7 +495,7 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
         if (worldCamera == null)
         {
             SetVisibleTexts(false);
-            return;
+            return false;
         }
 
         Vector3 targetWorldPos = worldPosition + worldOffset;
@@ -396,7 +503,7 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
         if (screenPos.z <= 0f)
         {
             SetVisibleTexts(false);
-            return;
+            return false;
         }
 
         var targetTransform = rootRect != null ? (Transform)rootRect : transform;
@@ -416,6 +523,7 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
         }
 
         SetVisibleTexts(true);
+        return true;
     }
 
     private void SetVisibleTexts(bool isVisible)
@@ -429,7 +537,52 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
 
             if (isVisible)
                 item.gameObject.SetActive(true);
-            item.enabled = isVisible;
+
+            if (!isVisible)
+            {
+                item.enabled = false;
+                continue;
+            }
+
+            if (!useBatchTimingStagger)
+                item.enabled = true;
+        }
+    }
+
+    private void ApplyStaggeredItemVisuals(float elapsed, float itemLife, float fadeStart, float fadeDuration, float staggerDelay)
+    {
+        if (AnimationData == null)
+            return;
+
+        int count = Mathf.Min(visibleTextCount, textItems.Count);
+        Color baseColor = AnimationData.TextColor;
+
+        for (int i = 0; i < count; i++)
+        {
+            var item = textItems[i];
+            if (item == null)
+                continue;
+
+            float itemElapsed = elapsed - (staggerDelay * i);
+            bool isAlive = itemElapsed >= 0f && itemElapsed < itemLife;
+            if (!isAlive)
+            {
+                item.enabled = false;
+                continue;
+            }
+
+            float alpha = 1f;
+            if (fadeDuration > 0f && itemElapsed >= fadeStart)
+            {
+                float u = Mathf.InverseLerp(fadeStart, itemLife, itemElapsed);
+                alpha = Mathf.Lerp(1f, 0f, u);
+            }
+
+            var tint = baseColor;
+            tint.a *= alpha;
+            item.color = tint;
+            item.enabled = true;
+            item.gameObject.SetActive(true);
         }
     }
 

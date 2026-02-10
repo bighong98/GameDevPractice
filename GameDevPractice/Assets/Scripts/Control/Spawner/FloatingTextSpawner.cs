@@ -27,7 +27,7 @@ namespace TH.Utils
 
         private const string textPrefabKey = "FloatingText";
         private const string textCatalogSOKey = "FloatingTextCatalogSO";
-        private const int MaxMergedTexts = 6;
+        private const int MaxMergedTexts = 10;
         private static readonly TimeSpan MergeWindow = TimeSpan.FromSeconds(0.08f);
         
         private readonly IResourceLoader resourceLoader;
@@ -93,13 +93,7 @@ namespace TH.Utils
                 return;
             }
 
-            if (data.HasBatchDamages)
-            {
-                SpawnBatch(FloatingTextEventType.Damage, anchor, data.HitDamages, FloatingTextBatchLayout.Line);
-                return;
-            }
-
-            if (data.AttackInstanceId > 0)
+            if (data.HasBatchDamages || data.AttackInstanceId > 0)
             {
                 if (textPrefab == null || textCatalogSO == null)
                 {
@@ -116,12 +110,27 @@ namespace TH.Utils
                 if (!EnsureFeedbackCanvasReady())
                     return;
 
-                EnqueueFloatingText(
-                    FloatingTextEventType.Damage,
-                    anchor,
-                    setting,
-                    data.Damage.ToString(CultureInfo.InvariantCulture),
-                    data.AttackInstanceId);
+                if (data.HasBatchDamages)
+                {
+                    for (int i = 0; i < data.HitDamages.Count; i++)
+                    {
+                        EnqueueFloatingText(
+                            FloatingTextEventType.Damage,
+                            anchor,
+                            setting,
+                            data.HitDamages[i].ToString(CultureInfo.InvariantCulture),
+                            data.AttackInstanceId);
+                    }
+                }
+                else
+                {
+                    EnqueueFloatingText(
+                        FloatingTextEventType.Damage,
+                        anchor,
+                        setting,
+                        data.Damage.ToString(CultureInfo.InvariantCulture),
+                        data.AttackInstanceId);
+                }
                 return;
             }
 
@@ -311,7 +320,7 @@ namespace TH.Utils
             string str,
             int attackInstanceId = 0)
         {
-            var key = new BatchKey(anchor.GetInstanceID(), type, attackInstanceId);
+            var key = new BatchKey(anchor.GetInstanceID(), type);
             if (!_pendingBatches.TryGetValue(key, out var batch))
             {
                 batch = new PendingBatch(anchor, setting, anchor.position);
@@ -325,9 +334,14 @@ namespace TH.Utils
             }
 
             if (batch.Texts.Count < MaxMergedTexts)
+            {
                 batch.Texts.Add(str);
+                batch.AttackInstanceIds.Add(attackInstanceId);
+            }
             else
+            {
                 batch.OverflowCount += 1;
+            }
 
             if (batch.FlushScheduled)
                 return;
@@ -394,28 +408,24 @@ namespace TH.Utils
 
             s.SetWorldAnchor(anchor, spawnPosition);
             s.SetSetting(batch.Setting);
-            var layout = key.AttackInstanceId > 0 ? FloatingTextBatchLayout.Line : FloatingTextBatchLayout.Spread;
-            s.SetBatchTexts(batch.Texts, layout);
+            s.SetBatchTexts(batch.Texts, batch.AttackInstanceIds);
         }
 
         private readonly struct BatchKey : IEquatable<BatchKey>
         {
             public readonly int AnchorId;
             public readonly FloatingTextEventType Type;
-            public readonly int AttackInstanceId;
 
-            public BatchKey(int anchorId, FloatingTextEventType type, int attackInstanceId)
+            public BatchKey(int anchorId, FloatingTextEventType type)
             {
                 AnchorId = anchorId;
                 Type = type;
-                AttackInstanceId = attackInstanceId;
             }
 
             public bool Equals(BatchKey other)
             {
                 return AnchorId == other.AnchorId
-                       && Type == other.Type
-                       && AttackInstanceId == other.AttackInstanceId;
+                       && Type == other.Type;
             }
 
             public override bool Equals(object obj)
@@ -425,7 +435,7 @@ namespace TH.Utils
 
             public override int GetHashCode()
             {
-                return HashCode.Combine(AnchorId, (int)Type, AttackInstanceId);
+                return HashCode.Combine(AnchorId, (int)Type);
             }
         }
 
@@ -434,6 +444,7 @@ namespace TH.Utils
             public Transform Anchor;
             public FloatingTextSO Setting;
             public readonly List<string> Texts;
+            public readonly List<int> AttackInstanceIds;
             public Vector3 LastWorldPosition;
             public int OverflowCount;
             public bool FlushScheduled;
@@ -446,6 +457,7 @@ namespace TH.Utils
                 OverflowCount = 0;
                 FlushScheduled = false;
                 Texts = new List<string>(MaxMergedTexts);
+                AttackInstanceIds = new List<int>(MaxMergedTexts);
             }
         }
 
