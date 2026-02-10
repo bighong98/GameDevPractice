@@ -13491,6 +13491,7 @@ GameObject:
   - component: {fileID: 1046575486}
   - component: {fileID: 1046575487}
   - component: {fileID: 1046575488}
+  - component: {fileID: 1046575489}
   m_Layer: 0
   m_Name: EnemySpawner_test
   m_TagString: Untagged
@@ -13557,6 +13558,8 @@ MonoBehaviour:
   logDispatchDetails: 0
   eventType: 0
   batchLayout: 1
+  emitsPerInterval: 1
+  spreadEmitsAcrossFrames: 0
   emitInterval: 0.5
   damageRange: {x: 5, y: 20}
   hitCountRange: {x: 2, y: 4}
@@ -13566,6 +13569,30 @@ MonoBehaviour:
   useUnscaledTime: 1
   autoStartOnEnable: 1
   initialAttackInstanceId: 1
+--- !u!114 &1046575489
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1046575485}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e1c6bec73c896c41986301c3f57d60a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TH.Utils.FloatingTextPerfRecorder
+  probe: {fileID: 1046575488}
+  controlProbe: 1
+  autoStartOnEnable: 1
+  warmupSeconds: 3
+  measureSeconds: 30
+  useUnscaledTime: 1
+  outputDirectoryName: PerfLogs
+  outputFilePrefix: floating_text_perf
+  appendTimestamp: 1
+  writeJson: 1
+  appendCsv: 1
+  logSummary: 1
 --- !u!1 &1066566349
 GameObject:
   m_ObjectHideFlags: 0

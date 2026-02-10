@@ -33,6 +33,8 @@ namespace TH.Utils
         [SerializeField] private FloatingTextBatchLayout batchLayout = FloatingTextBatchLayout.Line;
 
         [Header("Emit")]
+        [SerializeField, Min(1)] private int emitsPerInterval = 1;
+        [SerializeField] private bool spreadEmitsAcrossFrames;
         [SerializeField] private float emitInterval = 0.5f;
         [SerializeField] private Vector2 damageRange = new Vector2(5f, 20f);
         [SerializeField] private Vector2Int hitCountRange = new Vector2Int(2, 4);
@@ -85,6 +87,34 @@ namespace TH.Utils
             emitRoutine = null;
         }
 
+        [ContextMenu("Apply High Load Preset")]
+        private void ApplyHighLoadPreset()
+        {
+            dispatchMode = ProbeDispatchMode.DamageableBatchHitResult;
+            useRandomHitCount = false;
+            fixedHitCount = 8;
+            emitInterval = 0.02f;
+            emitsPerInterval = 4;
+            spreadEmitsAcrossFrames = false;
+            logDispatchDetails = false;
+        }
+
+        [ContextMenu("Apply Extreme Load Preset")]
+        private void ApplyExtremeLoadPreset()
+        {
+            dispatchMode = ProbeDispatchMode.DirectSpawnerBatch;
+            batchLayout = FloatingTextBatchLayout.Spread;
+            eventType = FloatingTextEventType.Damage;
+            useRandomHitCount = false;
+            fixedHitCount = 12;
+            emitInterval = 0f;
+            emitsPerInterval = 8;
+            spreadEmitsAcrossFrames = false;
+            logDispatchDetails = false;
+        }
+
+
+
         private IEnumerator ProbeRoutine()
         {
             while (enabled)
@@ -102,13 +132,28 @@ namespace TH.Utils
                     continue;
                 }
 
-                EmitOnce(anchor);
+                int emitCount = Mathf.Max(1, emitsPerInterval);
+                for (int i = 0; i < emitCount; i++)
+                {
+                    EmitOnce(anchor);
 
-                float wait = Mathf.Max(0.01f, emitInterval);
-                if (useUnscaledTime)
+                    if (spreadEmitsAcrossFrames && i < emitCount - 1)
+                        yield return null;
+                }
+
+                float wait = Mathf.Max(0f, emitInterval);
+                if (wait <= 0f)
+                {
+                    yield return null;
+                }
+                else if (useUnscaledTime)
+                {
                     yield return new WaitForSecondsRealtime(wait);
+                }
                 else
+                {
                     yield return new WaitForSeconds(wait);
+                }
             }
         }
 
