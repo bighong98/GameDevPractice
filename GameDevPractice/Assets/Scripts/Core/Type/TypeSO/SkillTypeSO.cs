@@ -7,60 +7,86 @@ using UnityEngine;
 using UnityEditor;
 #endif
 
-
 namespace TH.Resource
 {
+    // 스킬 1개의 전투 데이터/연출 데이터/에디터 검증 규칙을 보관하는 SO
     [CreateAssetMenu(fileName = "SkillTypeSO", menuName = "Scriptable Objects/Type/Skill/SkillTypeSO")]
     public class SkillTypeSO : ScriptableObject
     {
         [Header("Skill Data")]
+        // 런타임 식별자 -> 비어 있으면 에셋 이름으로 대체
         [SerializeField] private string skillId;
+        // 데미지 계산 시 기준이 되는 스탯 SO (-> 없으면 baseDamage 사용)
         [SerializeField] private GameStatSO attackSourceStatSO;
-        // 콤보 단계 스킬은 각 SkillTypeSO에서 데미지/사거리 값을 개별 설정.
+        // 콤보 단계 스킬은 각 SkillTypeSO에서 데미지/사거리 값을 개별 설정
         [SerializeField] private float baseDamage = 1f;
+        // 타격 횟수(최소 1).
         [SerializeField, Min(1)] private int hitCount = 1;
+        // 공격 계수(최소 0). 최종 데미지 = sourceDamage * attackCoefficient
         [SerializeField, Min(0f)] private float attackCoefficient = 1f;
+        // 데미지 속성 타입
         [SerializeField] private DamageType damageType = DamageType.Physical;
+        // 스킬 유효 사거리
         [SerializeField, Min(0f)] private float range = 2f;
-        // 베이스 스킬 공용 쿨다운. comboTimeout 초과 시 콤보 연계 단절 가능.
+        // 베이스 스킬 공용 쿨다운. comboTimeout 초과 시 콤보 연계 단절 가능
         [SerializeField, Min(0f)] private float cooldown = 1f;
-        // 콤보 사용 시 ComboSequenceSO 에셋 연결. null이면 단일 스킬 동작.
+        // 콤보 사용 시 ComboSequenceSO 에셋 연결. null이면 단일 스킬 동작
         [SerializeField] private ComboSequenceSO comboSequence;
 
         [Header("VFX")]
+        // 발사체 기반 스킬일 때 사용할 프리팹
         [SerializeField] private GameObject projectilePrefab;
+        // 적중 시 재생할 이펙트 프리팹
         [SerializeField] private GameObject impactParticlePrefab;
 
         [Header("Animation")]
-        // 콤보 단계별 애니메이션 오버라이드 개별 설정.
+        // 콤보 단계별 애니메이션 오버라이드 개별 설정
         [SerializeField] private AnimatorOverrideController animatorOverride;
 
         [Header("SFX")]
-        // 콤보 단계별 캐스트 SFX 개별 설정.
+        // 콤보 단계별 캐스트 SFX 개별 설정
         [SerializeField] private AudioClip castSfx;
 
+        // 유효한 스킬 ID(없으면 에셋 이름 대체)
         public string SkillId => string.IsNullOrWhiteSpace(skillId) ? name : skillId;
+        // 공격 소스 스탯 SO
         public GameStatSO AttackSourceStatSO => attackSourceStatSO;
+        // 기본 데미지
         public float BaseDamage => baseDamage;
+        // 보정된 히트 수(최소 1)
         public int HitCount => Mathf.Max(1, hitCount);
+        // 보정된 공격 계수(최소 0)
         public float AttackCoefficient => Mathf.Max(0f, attackCoefficient);
+        // 데미지 타입
         public DamageType DamageType => damageType;
+        // 스킬 사거리
         public float Range => range;
+        // 스킬 쿨다운
         public float Cooldown => cooldown;
+        // 콤보 시퀀스 참조
         public ComboSequenceSO ComboSequence => comboSequence;
+        // 스킬 캐스트 SFX
         public AudioClip CastSFX => castSfx;
+        // 공격 애니메이션 오버라이드
         public AnimatorOverrideController AnimatorOverride => animatorOverride;
+        // 발사체 사용 여부
         public bool HasProjectile => projectilePrefab != null;
+        // 발사체 프리팹
         public GameObject ProjectilePrefab => projectilePrefab;
+        // 적중 이펙트 사용 여부
         public bool HasImpactEffect => impactParticlePrefab != null;
+        // 적중 이펙트 프리팹
         public GameObject ImpactParticlePrefab => impactParticlePrefab;
+
 #if UNITY_EDITOR
+        // 인스펙터 컨텍스트 메뉴에서 수동 검증을 실행
         [ContextMenu("Validate Skill (Editor)")]
         private void ValidateSkillInEditor()
         {
             ValidateAndLogInEditor();
         }
 
+        // 에디터 검증 수행 후 로그를 출력
         public bool ValidateAndLogInEditor(string logPrefix = null)
         {
             var isValid = ValidateInEditor(out var errors, out var warnings);
@@ -87,6 +113,7 @@ namespace TH.Resource
             return isValid;
         }
 
+        // 스킬 데이터의 정합성을 점검하고 에러/경고 목록을 반환
         public bool ValidateInEditor(out List<string> errors, out List<string> warnings)
         {
             errors = new List<string>();
@@ -141,6 +168,7 @@ namespace TH.Resource
             return errors.Count == 0;
         }
 
+        // 애니메이션 오버라이드와 Hit 이벤트 설정을 검증
         private void ValidateAnimatorOverride(List<string> errors, List<string> warnings)
         {
             if (animatorOverride == null)
@@ -161,6 +189,7 @@ namespace TH.Resource
             var attackClips = new HashSet<AnimationClip>();
             var fallbackClips = new HashSet<AnimationClip>();
 
+            // Attack 명명 규칙을 우선 적용하고, 없으면 전체 클립을 폴백으로 사용
             for (int i = 0; i < overridePairs.Count; i++)
             {
                 var original = overridePairs[i].Key;
@@ -230,11 +259,11 @@ namespace TH.Resource
             }
         }
 
+        // 클립 이름에 Attack 키워드가 포함되는지 확인 (임시 사용)
         private static bool ContainsAttackWord(AnimationClip clip)
         {
             return clip != null && clip.name.IndexOf("Attack", StringComparison.OrdinalIgnoreCase) >= 0;
         }
 #endif
-
     }
 }

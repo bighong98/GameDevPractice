@@ -10,12 +10,8 @@ public class Spawner<T> : MonoBehaviour where T : UnityEngine.Component, IPoolOb
 {
     private bool isInit = false;
     public GameObject prefab;
-    // public ObjectPool<T> pool;
     public ObjectPool<IPoolObject> pool;
 
-    // public Action<T> onCreate;
-    // public Action<T> onGet;
-    // public Action<T> onRelease;
     public Action<IPoolObject> onCreate;
     public Action<IPoolObject> onGet;
     public Action<IPoolObject> onRelease;

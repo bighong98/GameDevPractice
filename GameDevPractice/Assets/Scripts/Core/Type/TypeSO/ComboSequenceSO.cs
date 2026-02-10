@@ -5,23 +5,33 @@ using UnityEngine;
 
 namespace TH.Resource
 {
+    // 베이스 스킬의 콤보 단계 목록과 타임아웃 규칙을 정의하는 SO
     [CreateAssetMenu(fileName = "ComboSequenceSO", menuName = "Scriptable Objects/Type/Skill/ComboSequenceSO")]
     public class ComboSequenceSO : ScriptableObject
     {
+        // 마지막 입력 이후 다음 콤보로 이어질 수 있는 최대 시간
         [SerializeField, Min(0f)] private float comboTimeout = 0.75f;
+        // 콤보 단계별 스킬 목록.
         [SerializeField] private List<SkillTypeSO> comboSteps = new();
 
+        // 보정된 콤보 타임아웃 값
         public float ComboTimeout => Mathf.Max(0f, comboTimeout);
+        // 현재 단계 수
         public int StepCount => comboSteps?.Count ?? 0;
+        // 단계가 하나 이상 존재하는지 여부
         public bool HasSteps => StepCount > 0;
+        // 콤보 단계 목록(읽기 전용 프로퍼티)
         public IReadOnlyList<SkillTypeSO> ComboSteps => comboSteps;
+
 #if UNITY_EDITOR
+        // 인스펙터 컨텍스트 메뉴에서 수동 검증을 실행
         [ContextMenu("Validate Combo Sequence (Editor)")]
         private void ValidateSequenceInEditor()
         {
             ValidateAndLogInEditor();
         }
 
+        // 콤보 시퀀스 검증 후 로그 출력
         public bool ValidateAndLogInEditor(string logPrefix = null, bool includeStepSkillValidation = true)
         {
             var isValid = ValidateInEditor(out var errors, out var warnings, includeStepSkillValidation);
@@ -48,6 +58,7 @@ namespace TH.Resource
             return isValid;
         }
 
+        // 콤보 타임아웃/스텝 목록/각 스텝 스킬의 정합성을 검증
         public bool ValidateInEditor(out List<string> errors, out List<string> warnings, bool includeStepSkillValidation = true)
         {
             errors = new List<string>();
@@ -94,6 +105,7 @@ namespace TH.Resource
                     continue;
                 }
 
+                // 필요 시 각 스텝 스킬의 검증 결과까지 상위 에러/경고로 병합
                 step.ValidateInEditor(out var stepErrors, out var stepWarnings);
                 for (int e = 0; e < stepErrors.Count; e++)
                 {
@@ -110,7 +122,7 @@ namespace TH.Resource
         }
 #endif
 
-
+        // 인덱스에 해당하는 단계 스킬을 반환 -> 유효하지 않으면 fallback을 반환
         public SkillTypeSO GetStepSkill(int index, SkillTypeSO fallback)
         {
             if (!HasSteps) return fallback;

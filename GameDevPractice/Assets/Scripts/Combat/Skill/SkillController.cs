@@ -9,70 +9,108 @@ using UnityEngine;
 
 namespace TH.Combat
 {
+    // 전투 시스템에서 스킬 선택/해결/쿨다운/콤보 진행을 제어 목적 인터페이스
     public interface ISkillController
     {
+        // 현재 활성 스킬이 변경될 때
         event Action<SkillTypeSO> OnActiveSkillChanged;
+        // 실제로 이번 공격에 적용될 스킬(콤보 해석 후)이 변경될 때
         event Action<SkillTypeSO> OnResolvedSkillChanged;
+        // 쿨다운이 끝나 스킬 사용 가능 상태가 될 때
         event Action<SkillTypeSO> OnSkillReady;
+        // 콤보 스텝이 변경될 때 (baseSkill, stepIndex, stepCount)
         event Action<SkillTypeSO, int, int> OnComboStepChanged;
 
+        // 활성 스킬 보유 여부
         bool HasActiveSkill { get; }
+        // 현재 선택된 활성 스킬
         SkillTypeSO ActiveSkill { get; }
+        // 해석 완료 스킬 보유 여부
         bool HasResolvedSkill { get; }
+        // 실제 공격에 적용될 해석 완료 스킬
         SkillTypeSO ResolvedSkill { get; }
+        // 현재 활성 스킬의 즉시 사용 가능 여부
         bool IsActiveSkillReady { get; }
+        // 현재 공격 미리보기 기준 사거리
         float ActiveSkillRange { get; }
+        // 현재 공격 미리보기 기준 SFX
         AudioClip ActiveSkillSFX { get; }
+        // 마지막으로 해석된 스킬 기준 SFX
         AudioClip ResolvedSkillSFX { get; }
+        // 현재 콤보 스텝 인덱스
         int CurrentComboStepIndex { get; }
+        // 현재 콤보 전체 스텝 수
         int CurrentComboStepCount { get; }
 
+        // 스킬 등록.
         bool RegisterSkill(SkillTypeSO skill, bool setActive = false);
+        // 활성 스킬 전환.
         bool SetActiveSkill(SkillTypeSO skill);
+        // 특정 스킬의 남은 쿨다운 조회.
         float GetRemainingCooldown(SkillTypeSO skill);
+        // 활성 스킬을 실제로 소비하고 공격 소스를 생성.
         bool TryConsumeActiveSkill(IAttacker attacker, out AttackSource attackSource);
+        // 소비 없이 현재 기준 공격 소스 미리보기 생성.
         bool TryBuildPreviewAttackSource(IAttacker attacker, out AttackSource attackSource);
     }
 
+    // 플레이어(또는 전투 유닛)의 스킬 실행 상태를 관리하는 핵심 컨트롤러.
     public sealed class SkillController : MonoBehaviour, ISkillController
     {
+        // AttackSource 식별자 충돌을 막기 위한 전역 시퀀스.
         private static int attackSequence;
 
         [Header("Initial Skills")]
+        // 시작 시 자동 등록할 스킬 목록.
         [SerializeField] private List<SkillTypeSO> initialSkills = new();
+        // 시작 시 우선 활성화할 스킬.
         [SerializeField] private SkillTypeSO defaultActiveSkill;
+        // 장착 무기 기본 스킬과 자동 동기화할지 여부.
         [SerializeField] private bool syncWithEquippedWeapon = true;
 
-        [Header("Debug")]
-        [SerializeField] private SkillTypeSO activeSkillDebug;
-        [SerializeField] private SkillTypeSO resolvedSkillDebug;
-        [SerializeField] private int comboStepIndexDebug;
-        [SerializeField] private int comboStepCountDebug;
-        [SerializeField] private float activeSkillRemainCooldownDebug;
-
+        // 능력치 기반 데미지 계산에 사용할 스탯 홀더.
         private IStatHolder statHolder;
+        // 장비 변경 이벤트 구독 대상.
         private EquipmentHolder equipHolder;
 
+        // 등록 스킬/활성 스킬 저장소.
         private SkillBook skillBook;
+        // 쿨다운 및 사용 가능 상태 관리기.
         private SkillCaster skillCaster;
+        // 베이스 스킬별 콤보 진행 상태 캐시.
         private readonly Dictionary<SkillTypeSO, ComboContext> comboContexts = new();
 
+        // 현재 해석 완료된 실제 적용 스킬.
         private SkillTypeSO resolvedSkill;
+        // resolvedSkill의 기준이 된 베이스 스킬.
         private SkillTypeSO resolvedBaseSkill;
+        // 현재 콤보 스텝 인덱스.
         private int currentComboStepIndex;
+        // 현재 콤보 총 스텝 수.
         private int currentComboStepCount = 1;
 
+        // 활성 스킬이 바뀔 때 발행.
         public event Action<SkillTypeSO> OnActiveSkillChanged;
+        // 해석 스킬이 바뀔 때 발행.
         public event Action<SkillTypeSO> OnResolvedSkillChanged;
+        // 스킬이 실제 소비됐을 때 발행.
         public event Action<SkillTypeSO> OnSkillConsumed;
+        // 쿨다운 해제(준비 완료) 시 발행.
         public event Action<SkillTypeSO> OnSkillReady;
+        // 콤보 진행 상태 변경 시 발행.
         public event Action<SkillTypeSO, int, int> OnComboStepChanged;
 
+        // 활성 스킬 존재 여부.
         public bool HasActiveSkill => skillBook != null && skillBook.ActiveSkill.IsNotNull();
+        // 현재 활성 스킬.
         public SkillTypeSO ActiveSkill => skillBook?.ActiveSkill;
+        // 해석된 스킬 존재 여부.
         public bool HasResolvedSkill => resolvedSkill.IsNotNull();
+        // 현재 해석 스킬.
         public SkillTypeSO ResolvedSkill => resolvedSkill;
+        // 활성 스킬의 즉시 사용 가능 여부.
         public bool IsActiveSkillReady => HasActiveSkill && skillCaster.IsReady(skillBook.ActiveSkill);
+        // 현재 프리뷰 스킬 기준 사거리.
         public float ActiveSkillRange
         {
             get
@@ -82,6 +120,7 @@ namespace TH.Combat
             }
         }
 
+        // 현재 프리뷰 스킬 기준 캐스트 SFX.
         public AudioClip ActiveSkillSFX
         {
             get
@@ -91,10 +130,14 @@ namespace TH.Combat
             }
         }
 
+        // 마지막 해석 스킬 기준 캐스트 SFX.
         public AudioClip ResolvedSkillSFX => HasResolvedSkill ? resolvedSkill.CastSFX : null;
+        // 현재 콤보 인덱스.
         public int CurrentComboStepIndex => currentComboStepIndex;
+        // 현재 콤보 스텝 수.
         public int CurrentComboStepCount => currentComboStepCount;
 
+        // 컴포넌트 참조 및 초기 스킬 상태를 구성한다.
         private void Awake()
         {
             TryGetComponent(out statHolder);
@@ -121,6 +164,7 @@ namespace TH.Combat
             SyncDebugValues();
         }
 
+        // 시작 시 이미 장착된 무기의 기본 스킬을 반영한다.
         private void Start()
         {
             if (syncWithEquippedWeapon && equipHolder is { IsEquippingWeapon: true, GetEquippedWeaponInfo: { } weapon })
@@ -129,6 +173,7 @@ namespace TH.Combat
             }
         }
 
+        // 무기 장착 이벤트 구독.
         private void OnEnable()
         {
             if (syncWithEquippedWeapon && equipHolder.IsNotNull())
@@ -137,6 +182,7 @@ namespace TH.Combat
             }
         }
 
+        // 무기 장착 이벤트 구독 해제.
         private void OnDisable()
         {
             if (syncWithEquippedWeapon && equipHolder.IsNotNull())
@@ -145,6 +191,7 @@ namespace TH.Combat
             }
         }
 
+        // 매 프레임 스킬 준비 상태를 폴링하고 디버그 값을 동기화한다.
         private void Update()
         {
             if (skillBook == null || skillCaster == null) return;
@@ -157,6 +204,7 @@ namespace TH.Combat
             SyncDebugValues();
         }
 
+        // 무기 교체 시 해당 무기의 기본 스킬을 등록하고 활성화한다.
         private void HandleEquipWeapon(WeaponTypeSO weapon)
         {
             if (weapon.IsNull() || weapon.DefaultSkill.IsNull()) return;
@@ -164,6 +212,7 @@ namespace TH.Combat
             RegisterSkill(weapon.DefaultSkill, setActive: true);
         }
 
+        // 스킬을 스킬북/캐스터에 등록하고 필요 시 활성 스킬로 설정한다.
         public bool RegisterSkill(SkillTypeSO skill, bool setActive = false)
         {
             if (skill.IsNull() || skillBook == null || skillCaster == null) return false;
@@ -179,6 +228,7 @@ namespace TH.Combat
             return added;
         }
 
+        // 활성 스킬을 교체하고 콤보 상태/프리뷰 해석 결과를 갱신한다.
         public bool SetActiveSkill(SkillTypeSO skill)
         {
             if (skill.IsNull() || skillBook == null) return false;
@@ -200,12 +250,14 @@ namespace TH.Combat
             return changed;
         }
 
+        // 스킬의 남은 쿨다운을 반환한다.
         public float GetRemainingCooldown(SkillTypeSO skill)
         {
             if (skill.IsNull() || skillCaster == null) return 0f;
             return skillCaster.GetRemainingCooldown(skill);
         }
 
+        // 활성 스킬을 실제 소비해 공격 요청에 필요한 AttackSource를 만든다.
         public bool TryConsumeActiveSkill(IAttacker attacker, out AttackSource attackSource)
         {
             attackSource = default;
@@ -213,12 +265,14 @@ namespace TH.Combat
             if (!HasActiveSkill || attacker.IsNull()) return false;
 
             var baseSkill = skillBook.ActiveSkill;
+            // 쿨다운 상태와 콤보 프리뷰 해석을 먼저 검증한다.
             if (!skillCaster.IsReady(baseSkill)) return false;
             if (!TryResolveSkillPreview(baseSkill, out var resolved, out var stepIndex, out var stepCount)) return false;
 
             int attackInstanceId = TakeNextAttackInstanceId();
             if (!TryBuildAttackSource(attacker, resolved, attackInstanceId, out attackSource)) return false;
 
+            // 공격 소스 생성 이후에 쿨다운 소비를 확정해 실패 시 롤백 비용을 줄인다.
             if (!skillCaster.Consume(baseSkill, baseSkill.Cooldown))
             {
                 attackSource = default;
@@ -232,6 +286,7 @@ namespace TH.Combat
             return true;
         }
 
+        // 현재 시점 기준으로 실제 소비 없이 공격 소스 프리뷰를 생성한다.
         public bool TryBuildPreviewAttackSource(IAttacker attacker, out AttackSource attackSource)
         {
             attackSource = default;
@@ -243,6 +298,7 @@ namespace TH.Combat
             return TryBuildAttackSource(attacker, previewSkill, 0, out attackSource);
         }
 
+        // 활성 스킬 기준으로 현재 프리뷰 스킬(콤보 반영)을 반환한다.
         private SkillTypeSO GetPreviewSkill()
         {
             if (!HasActiveSkill) return null;
@@ -253,6 +309,7 @@ namespace TH.Combat
             return skillBook.ActiveSkill;
         }
 
+        // 베이스 스킬을 현재 콤보 문맥에 맞는 실제 사용 스킬로 해석한다.
         private bool TryResolveSkillPreview(SkillTypeSO baseSkill, out SkillTypeSO resolved, out int stepIndex, out int stepCount)
         {
             resolved = null;
@@ -271,6 +328,7 @@ namespace TH.Combat
             var context = GetOrCreateComboContext(baseSkill);
 
             int nextStepIndex = context.NextStepIndex;
+            // 타임아웃 초과 시 콤보를 0번 스텝으로 되돌린다.
             if (ShouldResetCombo(comboSequence.ComboTimeout, context))
             {
                 nextStepIndex = 0;
@@ -286,6 +344,7 @@ namespace TH.Combat
             return true;
         }
 
+        // 마지막 소비 시점과 타임아웃을 비교해 콤보 초기화 필요 여부를 계산한다.
         private static bool ShouldResetCombo(float timeout, ComboContext context)
         {
             if (context.LastConsumeTime < 0f) return true;
@@ -294,6 +353,7 @@ namespace TH.Combat
             return Time.time > context.LastConsumeTime + timeout;
         }
 
+        // 스킬 소비 후 다음 콤보 스텝 인덱스를 계산해 저장한다.
         private void CommitComboProgress(SkillTypeSO baseSkill, int consumedStepIndex, int stepCount)
         {
             var context = GetOrCreateComboContext(baseSkill);
@@ -309,6 +369,7 @@ namespace TH.Combat
             context.NextStepIndex = nextStep < stepCount ? nextStep : 0;
         }
 
+        // 활성 스킬 전환 시 해당 베이스 스킬의 콤보 진행을 초기화한다.
         private void ResetComboProgress(SkillTypeSO baseSkill)
         {
             if (baseSkill.IsNull()) return;
@@ -318,6 +379,7 @@ namespace TH.Combat
             context.LastConsumeTime = -1f;
         }
 
+        // 베이스 스킬에 대응하는 콤보 문맥을 조회하거나 신규 생성한다.
         private ComboContext GetOrCreateComboContext(SkillTypeSO baseSkill)
         {
             if (!comboContexts.TryGetValue(baseSkill, out var context))
@@ -329,6 +391,7 @@ namespace TH.Combat
             return context;
         }
 
+        // 현재 프리뷰 결과를 resolved 상태에 반영한다.
         private void UpdateResolvedSkillFromPreview(bool forceNotify)
         {
             if (!HasActiveSkill)
@@ -346,6 +409,7 @@ namespace TH.Combat
             SetResolvedSkill(preview, skillBook.ActiveSkill, stepIndex, stepCount, forceNotify);
         }
 
+        // resolved 스킬 및 콤보 인덱스를 갱신하고 필요 이벤트를 발행한다.
         private void SetResolvedSkill(SkillTypeSO skill, SkillTypeSO baseSkill, int stepIndex, int stepCount, bool forceNotify)
         {
             bool skillChanged = resolvedSkill != skill;
@@ -369,6 +433,7 @@ namespace TH.Combat
             }
         }
 
+        // 스킬 데이터와 공격자 정보를 바탕으로 최종 AttackSource를 구성한다.
         private bool TryBuildAttackSource(IAttacker attacker, SkillTypeSO skill, int attackInstanceId, out AttackSource attackSource)
         {
             attackSource = default;
@@ -380,6 +445,7 @@ namespace TH.Combat
             float perHitDamage = Mathf.Max(0f, sourceDamage * skill.AttackCoefficient);
             int hitCount = Mathf.Max(1, skill.HitCount);
 
+            // 단일 히트 + 계수 1인 경우에는 스탯 참조형 AttackSource로 전달해 후처리 확장성을 유지한다.
             if (hitCount <= 1)
             {
                 if (hasAttackSourceStat && Mathf.Approximately(skill.AttackCoefficient, 1f))
@@ -402,11 +468,13 @@ namespace TH.Combat
                 return true;
             }
 
+            // 다단 히트는 히트별 데미지 배열을 함께 전달한다.
             var hitDamages = BuildHitDamages(perHitDamage, hitCount);
             attackSource = new AttackSource(attacker, null, perHitDamage, skill.DamageType, attackInstanceId, hitDamages);
             return true;
         }
 
+        // 멀티스레드 환경에서도 중복되지 않는 공격 인스턴스 ID를 발급한다.
         private static int TakeNextAttackInstanceId()
         {
             int next = Interlocked.Increment(ref attackSequence);
@@ -417,6 +485,7 @@ namespace TH.Combat
             return 1;
         }
 
+        // 스킬이 참조하는 공격 스탯을 실제 스탯 홀더에서 조회한다.
         private bool TryResolveAttackSourceStat(SkillTypeSO skill, out IGameStat attackSourceStat)
         {
             attackSourceStat = null;
@@ -433,6 +502,7 @@ namespace TH.Combat
             return false;
         }
 
+        // 다단 히트용 데미지 리스트를 생성한다.
         private static List<float> BuildHitDamages(float perHitDamage, int hitCount)
         {
             int resolvedHitCount = Mathf.Max(1, hitCount);
@@ -445,25 +515,19 @@ namespace TH.Combat
             return hitDamages;
         }
 
-        private void SyncDebugValues()
-        {
-            activeSkillDebug = ActiveSkill;
-            resolvedSkillDebug = ResolvedSkill;
-            comboStepIndexDebug = CurrentComboStepIndex;
-            comboStepCountDebug = CurrentComboStepCount;
-            activeSkillRemainCooldownDebug = HasActiveSkill
-                ? skillCaster.GetRemainingCooldown(skillBook.ActiveSkill)
-                : 0f;
-        }
-
+        // 등록 스킬 목록과 활성 스킬만 보관하는 간단한 컬렉션 래퍼.
         [Serializable]
         private sealed class SkillBook
         {
+            // 등록된 전체 스킬 목록.
             private readonly List<SkillTypeSO> skills = new();
 
+            // 외부 읽기 전용 스킬 목록.
             public IReadOnlyList<SkillTypeSO> Skills => skills;
+            // 현재 활성 스킬.
             public SkillTypeSO ActiveSkill { get; private set; }
 
+            // 스킬을 등록하고 비어 있으면 활성 스킬로도 설정한다.
             public bool Register(SkillTypeSO skill)
             {
                 if (skill.IsNull() || Contains(skill)) return false;
@@ -477,12 +541,14 @@ namespace TH.Combat
                 return true;
             }
 
+            // 스킬 등록 여부 확인
             public bool Contains(SkillTypeSO skill)
             {
                 if (skill.IsNull()) return false;
                 return skills.Contains(skill);
             }
 
+            // 현재 활성화된 스킬을 변경
             public bool SetActive(SkillTypeSO skill)
             {
                 if (!Contains(skill)) return false;
@@ -492,6 +558,7 @@ namespace TH.Combat
                 return true;
             }
 
+            // 첫 번째 유효 스킬을 반환
             public bool TryGetFirst(out SkillTypeSO firstSkill)
             {
                 if (skills.Count > 0 && skills[0].IsNotNull())
@@ -505,12 +572,16 @@ namespace TH.Combat
             }
         }
 
+        // 스킬 쿨다운/준비 상태를 추적하는 런타임 캐시용 클래스
         [Serializable]
         private sealed class SkillCaster
         {
+            // 스킬별 다음 사용 가능 시각 (쿨타임)
             private readonly Dictionary<SkillTypeSO, float> nextReadyAt = new();
+            // 직전 프레임 기준 준비 상태 캐시
             private readonly Dictionary<SkillTypeSO, bool> cachedReadyState = new();
 
+            // 스킬 추적 등록(초기 상태는 즉시 준비 완료)
             public void TrackSkill(SkillTypeSO skill)
             {
                 if (skill.IsNull()) return;
@@ -523,6 +594,7 @@ namespace TH.Combat
                 cachedReadyState[skill] = true;
             }
 
+            // 스킬이 현재 시점에 사용 가능한지 확인
             public bool IsReady(SkillTypeSO skill)
             {
                 if (skill.IsNull()) return false;
@@ -531,6 +603,7 @@ namespace TH.Combat
                 return Time.time >= readyTime;
             }
 
+            // 스킬 사용을 소비하고 다음 사용 가능 시각을 갱신
             public bool Consume(SkillTypeSO skill, float cooldown)
             {
                 if (skill.IsNull() || !IsReady(skill)) return false;
@@ -541,6 +614,7 @@ namespace TH.Combat
                 return true;
             }
 
+            // 남은 쿨다운을 반환
             public float GetRemainingCooldown(SkillTypeSO skill)
             {
                 if (skill.IsNull()) return 0f;
@@ -549,6 +623,7 @@ namespace TH.Combat
                 return Mathf.Max(0f, readyTime - Time.time);
             }
 
+            // 준비 상태 변화를 감지해 Ready 콜백을 발행
             public void PollReady(IReadOnlyList<SkillTypeSO> skills, Action<SkillTypeSO> onReady)
             {
                 if (skills == null) return;
@@ -570,11 +645,45 @@ namespace TH.Combat
             }
         }
 
+        // 베이스 스킬의 콤보 진행 인덱스/마지막 소비 시각을 저장
         [Serializable]
         private sealed class ComboContext
         {
+            // 다음에 사용할 콤보 스텝 인덱스
             public int NextStepIndex;
+            // 마지막 콤보 소비 시각
             public float LastConsumeTime = -1f;
         }
+
+#region For Debug (Editor Only)
+#if UNITY_EDITOR
+        [Header("Debug")]// 인스펙터 디버그용
+        // 현재 활성 스킬
+        [SerializeField] private SkillTypeSO activeSkillDebug;
+        // 현재 해석 스킬
+        [SerializeField] private SkillTypeSO resolvedSkillDebug;
+        // 현재 콤보 인덱스
+        [SerializeField] private int comboStepIndexDebug;
+        // 현재 콤보 스텝 수
+        [SerializeField] private int comboStepCountDebug;
+        // 활성 스킬 남은 쿨다운
+        [SerializeField] private float activeSkillRemainCooldownDebug;
+#endif
+
+        // 에디터 전용 디버깅 관련 필드 동기화 매서드
+        [System.Diagnostics.Conditional("UNITY_EDITOR")]
+        private void SyncDebugValues()
+        {
+#if UNITY_EDITOR
+            activeSkillDebug = ActiveSkill;
+            resolvedSkillDebug = ResolvedSkill;
+            comboStepIndexDebug = CurrentComboStepIndex;
+            comboStepCountDebug = CurrentComboStepCount;
+            activeSkillRemainCooldownDebug = HasActiveSkill
+                ? skillCaster.GetRemainingCooldown(skillBook.ActiveSkill)
+                : 0f;
+#endif
+        }
+#endregion
     }
 }
