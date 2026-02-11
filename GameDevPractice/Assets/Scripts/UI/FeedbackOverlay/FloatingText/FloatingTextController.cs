@@ -32,7 +32,12 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
     // 배치에서 실제 렌더링 허용 최대 항목 수
     [SerializeField] private int maxBatchEntries = 6;
     // 배치 타이밍 스태거 지연 간격 sec
-    [SerializeField] private float batchItemStaggerDelay = 0.04f;
+    [SerializeField] private float batchItemStaggerDelay = 0.1f;
+    // 배치 항목 개별 페이드인 구간 sec
+    [SerializeField] private float batchItemFadeInDuration = 0.08f;
+    // 배치 페이드인 구간 루트 상승 가속 배율
+    [SerializeField] private float batchRiseBoostMultiplier = 1.55f;
+
 
     // 활성/비활성 포함 전체 텍스트 아이템 풀 목록 인스턴스 내부용
     private readonly List<TextMeshProUGUI> textItems = new();
@@ -59,7 +64,7 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
     private CanvasGroup canvasGroup;
     // 현재 배치 레이아웃 모드
     private FloatingTextBatchLayout currentBatchLayout = FloatingTextBatchLayout.Spread;
-    // 배치 항목별 그룹 키 목록 같은 키는 같은 열 배치 용도
+    // 배치 항목별 그룹 키 (같은 키를 공유하는 경우 같은 열 배치하는 용도)
     private readonly List<int> batchGroupKeys = new();
     // 그룹 기반 배치 사용 여부
     private bool useGroupedBatchLayout;
@@ -254,12 +259,15 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
         bool isVisibleOnScreen = UpdateScreenPosition();
         if (useBatchTimingStagger && isVisibleOnScreen)
         {
+            float staggerDelay = Mathf.Max(0f, batchItemStaggerDelay);
+            float fadeInDuration = Mathf.Max(0f, batchItemFadeInDuration);
             ApplyStaggeredItemVisuals(
                 0f,
                 AnimationData.LifeTime,
                 Mathf.Max(0f, AnimationData.LifeTime - AnimationData.FadeOutDuration),
                 AnimationData.FadeOutDuration,
-                Mathf.Max(0f, batchItemStaggerDelay));
+                staggerDelay,
+                fadeInDuration);
         }
     }
 
@@ -279,12 +287,13 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
             return;
         }
 
+        int rowCount = Mathf.Max(1, visibleTextCount);
         if (currentBatchLayout == FloatingTextBatchLayout.Line)
         {
             for (int i = 0; i < visibleTextCount; i++)
             {
                 var itemRect = textItems[i].rectTransform;
-                float y = i * lineStep;
+                float y = ResolveTopDownRowY(i, rowCount, lineStep);
                 itemRect.anchoredPosition = new Vector2(0f, y);
             }
             return;
@@ -300,7 +309,7 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
                 x = ((i & 1) == 1 ? 1f : -1f) * spread * batchHorizontalStep;
             }
 
-            float y = i * lineStep;
+            float y = ResolveTopDownRowY(i, rowCount, lineStep);
             itemRect.anchoredPosition = new Vector2(x, y);
         }
     }
@@ -332,16 +341,28 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
         int columnCount = Mathf.Max(1, groupOrder.Count);
         float center = (columnCount - 1) * 0.5f;
         var rowByColumn = new int[columnCount];
+        var totalRowsByColumn = new int[columnCount];
+
+        for (int i = 0; i < count; i++)
+            totalRowsByColumn[columnByItem[i]]++;
 
         for (int i = 0; i < count; i++)
         {
             int column = columnByItem[i];
             int row = rowByColumn[column]++;
             float x = (column - center) * horizontalStep;
-            float y = row * lineStep;
+            float y = ResolveTopDownRowY(row, totalRowsByColumn[column], lineStep);
             textItems[i].rectTransform.anchoredPosition = new Vector2(x, y);
         }
     }
+
+    private static float ResolveTopDownRowY(int rowIndex, int totalRows, float lineStep)
+    {
+        int clampedRows = Mathf.Max(1, totalRows);
+        int clampedRow = Mathf.Clamp(rowIndex, 0, clampedRows - 1);
+        return -clampedRow * lineStep;
+    }
+
 
     // 필요한 항목 수까지 TMP 텍스트 인스턴스 생성 보장
     private void EnsureTextItemCount(int requiredCount)
@@ -490,6 +511,8 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
         float lTime = AnimationData.LifeTime;
         float fadeStart = Mathf.Max(0f, lTime - fDuration);
         float staggerDelay = useBatchTimingStagger ? Mathf.Max(0f, batchItemStaggerDelay) : 0f;
+        float fadeInDuration = useBatchTimingStagger ? Mathf.Max(0f, batchItemFadeInDuration) : 0f;
+        float batchRevealDuration = ResolveBatchRevealDuration(staggerDelay, fadeInDuration);
         float totalLife = lTime + (visibleTextCount > 1 ? staggerDelay * (visibleTextCount - 1) : 0f);
 
         while (t < totalLife)
@@ -500,7 +523,11 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
             float dt = Time.unscaledDeltaTime;
             t = Mathf.Min(t + dt, totalLife);
 
-            worldOffset += Vector3.up * (AnimationData.RiseSpeed * dt);
+            float riseSpeedMultiplier = 1f;
+            if (useBatchTimingStagger && batchRevealDuration > 0f && t < batchRevealDuration)
+                riseSpeedMultiplier = Mathf.Max(1f, batchRiseBoostMultiplier);
+
+            worldOffset += Vector3.up * (AnimationData.RiseSpeed * riseSpeedMultiplier * dt);
             bool isVisibleOnScreen = UpdateScreenPosition();
 
             if (visibleTextCount <= 0)
@@ -512,7 +539,7 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
                     canvasGroup.alpha = 1f;
 
                 if (isVisibleOnScreen)
-                    ApplyStaggeredItemVisuals(t, lTime, fadeStart, fDuration, staggerDelay);
+                    ApplyStaggeredItemVisuals(t, lTime, fadeStart, fDuration, staggerDelay, fadeInDuration);
             }
             else if (t >= fadeStart && fDuration > 0f)
             {
@@ -526,6 +553,16 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
 
         ReleaseSelf();
     }
+
+    private float ResolveBatchRevealDuration(float staggerDelay, float fadeInDuration)
+    {
+        if (!useBatchTimingStagger || visibleTextCount <= 0)
+            return 0f;
+
+        int additionalItems = Mathf.Max(0, visibleTextCount - 1);
+        return (staggerDelay * additionalItems) + fadeInDuration;
+    }
+
 
     // 현재 텍스트 부모 기준 캔버스 문맥 참조 갱신
     private void ResolveCanvasContext()
@@ -606,7 +643,7 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
     }
 
     // 항목별 시간차 등장/시간차 페이드 계산 후 색상 알파 반영
-    private void ApplyStaggeredItemVisuals(float elapsed, float itemLife, float fadeStart, float fadeDuration, float staggerDelay)
+    private void ApplyStaggeredItemVisuals(float elapsed, float itemLife, float fadeStart, float fadeDuration, float staggerDelay, float fadeInDuration)
     {
         if (AnimationData == null)
             return;
@@ -629,10 +666,13 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
             }
 
             float alpha = 1f;
+            if (fadeInDuration > 0f && itemElapsed < fadeInDuration)
+                alpha *= Mathf.InverseLerp(0f, fadeInDuration, itemElapsed);
+
             if (fadeDuration > 0f && itemElapsed >= fadeStart)
             {
                 float u = Mathf.InverseLerp(fadeStart, itemLife, itemElapsed);
-                alpha = Mathf.Lerp(1f, 0f, u);
+                alpha *= Mathf.Lerp(1f, 0f, u);
             }
 
             var tint = baseColor;

@@ -186,6 +186,9 @@ MonoBehaviour:
   animationData: {fileID: 11400000, guid: c343b627e5f2bf44185be8e9d60672f4, type: 2}
   canvasFontScale: 12
   minCanvasFontSize: 18
-  batchLineHeightMultiplier: 0.9
+  batchLineHeightMultiplier: 0.7
   batchHorizontalStep: 18
-  maxBatchEntries: 6
+  maxBatchEntries: 10
+  batchItemStaggerDelay: 0.1
+  batchItemFadeInDuration: 0.08
+  batchRiseBoostMultiplier: 1.55
