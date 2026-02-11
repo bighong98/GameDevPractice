@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5445f2adf7181ad41adc9dc3e03829b3, type: 3}
+  m_Name: SkillTargetLayerMapSO
+  m_EditorClassIdentifier: Assembly-CSharp::TH.Combat.SkillTargetLayerMapSO
+  casterLayerMappings:
+  - casterLayer: 11
+    allyLayers:
+      serializedVersion: 2
+      m_Bits: 2112
+    enemyLayers:
+      serializedVersion: 2
+      m_Bits: 4096
+    neutralLayers:
+      serializedVersion: 2
+      m_Bits: 0
+    objectLayers:
+      serializedVersion: 2
+      m_Bits: 0
+  - casterLayer: 12
+    allyLayers:
+      serializedVersion: 2
+      m_Bits: 4096
+    enemyLayers:
+      serializedVersion: 2
+      m_Bits: 2112
+    neutralLayers:
+      serializedVersion: 2
+      m_Bits: 0
+    objectLayers:
+      serializedVersion: 2
+      m_Bits: 0
+  - casterLayer: 6
+    allyLayers:
+      serializedVersion: 2
+      m_Bits: 2112
+    enemyLayers:
+      serializedVersion: 2
+      m_Bits: 4096
+    neutralLayers:
+      serializedVersion: 2
+      m_Bits: 0
+    objectLayers:
+      serializedVersion: 2
+      m_Bits: 0

@@ -27,3 +27,5 @@ MonoBehaviour:
     value: 10
   - key: {fileID: 11400000, guid: d1f737d637ad61c4b83c036babd96fc0, type: 2}
     value: 10
+  - key: {fileID: 11400000, guid: eba659075ef9d114aacad8a89f18acc6, type: 2}
+    value: 100

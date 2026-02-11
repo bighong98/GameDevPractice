@@ -21,6 +21,7 @@ namespace TH.Combat
 
             var center = context.PrimaryTarget.transform.position;
             var targets = services.FindTargetsInRadius(
+                context,
                 center,
                 radius,
                 Mathf.Max(1, maxTargets),

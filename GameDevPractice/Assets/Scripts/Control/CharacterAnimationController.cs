@@ -1,3 +1,4 @@
+using TH.Attribute.Stat;
 using TH.Combat;
 using TH.Resource;
 using TH.Utils;
@@ -7,11 +8,26 @@ namespace TH.Control
 {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Animator))]
-    public sealed class CharacterAnimationController : MonoBehaviour
+    public sealed class CharacterAnimationController : MonoBehaviour, ISkillTimingScaleProvider
     {
+        private const int AttackSpeedLegacyId = 203;
+        private const string DefaultAttackSpeedMultiplierParameter = "AttackSpeedMultiplier";
+        private const float DefaultBaseAttackSpeedStatValue = 100f;
+        private const float LegacyCurveTargetNormalizedAttackSpeed = 4f;
+        private const float LegacyCurveTargetMultiplier = 2f;
+
         [Header("Default")]
         [SerializeField] private RuntimeAnimatorController defaultAnimatorController;
         [SerializeField] private Animator animator;
+
+        [Header("Attack Animation Speed")]
+        [SerializeField] private string attackSpeedMultiplierParameter = DefaultAttackSpeedMultiplierParameter;
+        [SerializeField] private GameStatSO attackSpeedStat;
+        [SerializeField, Min(0.01f)] private float baseAttackSpeedStatValue = DefaultBaseAttackSpeedStatValue;
+        [SerializeField] private AnimationCurve attackSpeedToAnimationCurve =
+            new AnimationCurve(new Keyframe(0f, 0.5f), new Keyframe(1f, 1f), new Keyframe(2f, 1.5f), new Keyframe(4f, 2f));
+        [SerializeField, Min(0.01f)] private float minAnimationSpeed = 0.1f;
+        [SerializeField, Min(0.01f)] private float maxAnimationSpeed = 3f;
 
 #if UNITY_EDITOR
         [Header("Debug")]
@@ -19,53 +35,92 @@ namespace TH.Control
         [SerializeField] private SkillTypeSO resolvedSkillDebug;
         [SerializeField, Min(1)] private int resolvedHitCountDebug = 1;
         [SerializeField, Min(0f)] private float resolvedAttackCoefficientDebug = 1f;
+        [SerializeField, Min(0f)] private float attackSpeedStatValueDebug = 100f;
+        [SerializeField, Min(0.01f)] private float attackAnimationSpeedDebug = 1f;
 #endif
 
         private ISkillController skillController;
+        private IStatHolder statHolder;
         private RuntimeAnimatorController baseAnimatorController;
+
+        private GameStatSO resolvedAttackSpeedStat;
+        private float currentAttackSpeedStatValue = 100f;
+        private int attackSpeedMultiplierParameterHash;
+        private bool hasAttackSpeedMultiplierParameter;
+        private bool isAttackSpeedBound;
+        private SkillTypeSO lastEffectiveSkill;
+        public float SkillTimingScale { get; private set; } = 1f;
 
         private void Awake()
         {
             if (animator.IsNull())
                 TryGetComponent(out animator);
-            TryGetComponent(out skillController);
 
+            TryGetComponent(out skillController);
+            TryGetComponent(out statHolder);
+
+            currentAttackSpeedStatValue = ResolveBaseAttackSpeedStatValue();
             CacheBaseAnimatorController();
+            CacheAttackSpeedParameter();
         }
 
         private void Start()
         {
-            if (skillController.IsNotNull() && skillController.HasResolvedSkill)
+            if (skillController != null && skillController.HasResolvedSkill)
             {
                 ApplySkillAnimator(skillController.ResolvedSkill);
                 return;
             }
 
-            if (skillController.IsNotNull() && skillController.HasActiveSkill)
+            if (skillController != null && skillController.HasActiveSkill)
             {
                 ApplySkillAnimator(skillController.ActiveSkill);
                 return;
             }
 
-            RestoreBaseAnimator();
+            ApplySkillAnimator(null);
         }
 
         private void OnEnable()
         {
-            if (skillController.IsNotNull())
+            if (skillController != null)
             {
                 skillController.OnActiveSkillChanged += HandleActiveSkillChanged;
                 skillController.OnResolvedSkillChanged += HandleResolvedSkillChanged;
             }
+
+            BindAttackSpeedStat();
+            RefreshAttackAnimationSpeed();
         }
 
         private void OnDisable()
         {
-            if (skillController.IsNotNull())
+            if (skillController != null)
             {
                 skillController.OnActiveSkillChanged -= HandleActiveSkillChanged;
                 skillController.OnResolvedSkillChanged -= HandleResolvedSkillChanged;
             }
+
+            UnbindAttackSpeedStat();
+        }
+
+        private void Update()
+        {
+            // Initialization order can delay stat registration; keep trying until bound.
+            if (!isAttackSpeedBound)
+            {
+                BindAttackSpeedStat();
+            }
+
+            // Ensure runtime skill/override changes are reflected even if an event is missed.
+            var effectiveSkill = ResolveEffectiveSkill();
+            if (!ReferenceEquals(lastEffectiveSkill, effectiveSkill))
+            {
+                lastEffectiveSkill = effectiveSkill;
+                RefreshAttackAnimationSpeed();
+            }
+
+            SyncAttackSpeedFromStat();
         }
 
         private void HandleActiveSkillChanged(SkillTypeSO skill)
@@ -78,6 +133,12 @@ namespace TH.Control
             ApplySkillAnimator(skill);
         }
 
+        private void HandleAttackSpeedChanged(float value)
+        {
+            currentAttackSpeedStatValue = Mathf.Max(0f, value);
+            RefreshAttackAnimationSpeed();
+        }
+
         public void ApplySkillAnimator(SkillTypeSO skill)
         {
 #if UNITY_EDITOR
@@ -88,10 +149,208 @@ namespace TH.Control
             if (skill.IsNotNull() && skill.AnimatorOverride.IsNotNull())
             {
                 animator.runtimeAnimatorController = skill.AnimatorOverride;
-                return;
+            }
+            else
+            {
+                RestoreBaseAnimator();
             }
 
-            RestoreBaseAnimator();
+            lastEffectiveSkill = ResolveEffectiveSkill();
+            CacheAttackSpeedParameter();
+            RefreshAttackAnimationSpeed();
+        }
+
+        private void BindAttackSpeedStat()
+        {
+            if (isAttackSpeedBound || statHolder == null)
+                return;
+
+            resolvedAttackSpeedStat = ResolveAttackSpeedStat();
+            if (resolvedAttackSpeedStat.IsNull())
+                return;
+
+            if (!statHolder.TryGetStat(resolvedAttackSpeedStat, out var attackSpeedRuntimeStat))
+                return;
+
+            statHolder.BindStatChanged(resolvedAttackSpeedStat, HandleAttackSpeedChanged, pending: true);
+            currentAttackSpeedStatValue = Mathf.Max(0f, attackSpeedRuntimeStat.Value);
+            isAttackSpeedBound = true;
+            RefreshAttackAnimationSpeed();
+        }
+
+        private void UnbindAttackSpeedStat()
+        {
+            if (statHolder != null && resolvedAttackSpeedStat.IsNotNull())
+            {
+                statHolder.UnbindStatChanged(resolvedAttackSpeedStat, HandleAttackSpeedChanged);
+            }
+
+            resolvedAttackSpeedStat = null;
+            isAttackSpeedBound = false;
+        }
+
+        private GameStatSO ResolveAttackSpeedStat()
+        {
+            if (attackSpeedStat.IsNotNull())
+            {
+                return attackSpeedStat;
+            }
+
+            if (GameStats.AttackSpeed.IsNotNull())
+            {
+                return GameStats.AttackSpeed;
+            }
+
+            // Fallback when GameStats cache is not ready yet.
+            if (statHolder is StatHolder concreteHolder)
+            {
+                foreach (var pair in concreteHolder.Stats)
+                {
+                    var statKey = pair.Key;
+                    if (statKey != null && statKey.LegacyId == AttackSpeedLegacyId)
+                    {
+                        return statKey;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        private void SyncAttackSpeedFromStat()
+        {
+            if (!isAttackSpeedBound || statHolder == null || resolvedAttackSpeedStat.IsNull())
+                return;
+
+            if (!statHolder.TryGetStat(resolvedAttackSpeedStat, out var attackSpeedRuntimeStat) || attackSpeedRuntimeStat == null)
+                return;
+
+            float nextValue = Mathf.Max(0f, attackSpeedRuntimeStat.Value);
+            if (Mathf.Approximately(nextValue, currentAttackSpeedStatValue))
+                return;
+
+            currentAttackSpeedStatValue = nextValue;
+            RefreshAttackAnimationSpeed();
+        }
+
+        private void RefreshAttackAnimationSpeed()
+        {
+            SkillTypeSO skill = ResolveEffectiveSkill();
+            float skillMultiplier = skill.IsNotNull() ? skill.AnimationSpeedMultiplier : 1f;
+
+            float attackSpeedMultiplier = 1f;
+            if (skill.IsNotNull() && skill.AffectedByAttackSpeed)
+            {
+                float normalizedAttackSpeed = Mathf.Max(0f, currentAttackSpeedStatValue) /
+                                              ResolveBaseAttackSpeedStatValue();
+                attackSpeedMultiplier = EvaluateAttackSpeedMultiplier(normalizedAttackSpeed);
+            }
+
+            float finalMultiplier = Mathf.Clamp(
+                skillMultiplier * Mathf.Max(0.01f, attackSpeedMultiplier),
+                Mathf.Min(minAnimationSpeed, maxAnimationSpeed),
+                Mathf.Max(minAnimationSpeed, maxAnimationSpeed));
+
+            SkillTimingScale = finalMultiplier;
+            if (!animator.IsNull() && hasAttackSpeedMultiplierParameter)
+            {
+                animator.SetFloat(attackSpeedMultiplierParameterHash, finalMultiplier);
+            }
+
+#if UNITY_EDITOR
+            attackSpeedStatValueDebug = currentAttackSpeedStatValue;
+            attackAnimationSpeedDebug = finalMultiplier;
+#endif
+        }
+
+        private SkillTypeSO ResolveEffectiveSkill()
+        {
+            if (skillController != null && skillController.HasResolvedSkill)
+            {
+                return skillController.ResolvedSkill;
+            }
+
+            if (skillController != null && skillController.HasActiveSkill)
+            {
+                return skillController.ActiveSkill;
+            }
+
+            return null;
+        }
+
+        private void CacheAttackSpeedParameter()
+        {
+            hasAttackSpeedMultiplierParameter = false;
+            string resolvedParameter = ResolveAttackSpeedMultiplierParameter();
+
+            if (animator.IsNull() || string.IsNullOrWhiteSpace(resolvedParameter))
+                return;
+
+            attackSpeedMultiplierParameterHash = Animator.StringToHash(resolvedParameter);
+            var parameters = animator.parameters;
+
+            for (int i = 0; i < parameters.Length; i++)
+            {
+                if (parameters[i].type != AnimatorControllerParameterType.Float)
+                    continue;
+
+                if (parameters[i].nameHash != attackSpeedMultiplierParameterHash)
+                    continue;
+
+                hasAttackSpeedMultiplierParameter = true;
+                break;
+            }
+        }
+
+        private float ResolveBaseAttackSpeedStatValue()
+        {
+            return baseAttackSpeedStatValue > 0.01f
+                ? baseAttackSpeedStatValue
+                : DefaultBaseAttackSpeedStatValue;
+        }
+
+        private float EvaluateAttackSpeedMultiplier(float normalizedAttackSpeed)
+        {
+            float clampedNormalized = Mathf.Max(0f, normalizedAttackSpeed);
+            if (attackSpeedToAnimationCurve != null && attackSpeedToAnimationCurve.length > 0)
+            {
+                var keys = attackSpeedToAnimationCurve.keys;
+                float firstTime = keys[0].time;
+                float lastTime = keys[keys.Length - 1].time;
+
+                // Legacy data can still have a 3-key curve ending at x=2.
+                // Keep that data working while preserving the intended x=4 => 2.0 behavior.
+                if (lastTime < LegacyCurveTargetNormalizedAttackSpeed)
+                {
+                    float safeNormalized = Mathf.Max(firstTime, clampedNormalized);
+                    float lastValue = attackSpeedToAnimationCurve.Evaluate(lastTime);
+
+                    if (safeNormalized <= lastTime)
+                    {
+                        return attackSpeedToAnimationCurve.Evaluate(safeNormalized);
+                    }
+
+                    if (safeNormalized >= LegacyCurveTargetNormalizedAttackSpeed)
+                    {
+                        return Mathf.Max(lastValue, LegacyCurveTargetMultiplier);
+                    }
+
+                    float t = Mathf.InverseLerp(lastTime, LegacyCurveTargetNormalizedAttackSpeed, safeNormalized);
+                    return Mathf.Lerp(lastValue, LegacyCurveTargetMultiplier, t);
+                }
+
+                float safeClamped = Mathf.Clamp(clampedNormalized, firstTime, lastTime);
+                return attackSpeedToAnimationCurve.Evaluate(safeClamped);
+            }
+
+            return clampedNormalized;
+        }
+
+        private string ResolveAttackSpeedMultiplierParameter()
+        {
+            return string.IsNullOrWhiteSpace(attackSpeedMultiplierParameter)
+                ? DefaultAttackSpeedMultiplierParameter
+                : attackSpeedMultiplierParameter;
         }
 
         private void CacheBaseAnimatorController()
@@ -133,7 +392,8 @@ namespace TH.Control
         private void SetDebugActiveSkill(SkillTypeSO skill)
         {
             activeSkillDebug = skill;
-            resolvedSkillDebug = skillController.IsNotNull() ? skillController.ResolvedSkill : null;
+            resolvedSkillDebug = skillController != null ? skillController.ResolvedSkill : null;
+
             var debugSkill = resolvedSkillDebug.IsNotNull() ? resolvedSkillDebug : skill;
             resolvedHitCountDebug = debugSkill.IsNotNull() ? debugSkill.HitCount : 1;
             resolvedAttackCoefficientDebug = debugSkill.IsNotNull() ? debugSkill.AttackCoefficient : 1f;

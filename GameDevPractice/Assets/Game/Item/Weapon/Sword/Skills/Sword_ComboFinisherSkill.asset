@@ -22,6 +22,8 @@ MonoBehaviour:
   cooldown: 1
   comboSequence: {fileID: 0}
   executionProfile: {fileID: 11400000, guid: 9d5a2f2f814813946b4d0b26aa737201, type: 2}
+  animationSpeedMultiplier: 1
+  affectedByAttackSpeed: 1
   projectilePrefab: {fileID: 0}
   impactParticlePrefab: {fileID: 0}
   animatorOverride: {fileID: 22100000, guid: bb775ed55d1346646a899626d7d4b3bf, type: 2}

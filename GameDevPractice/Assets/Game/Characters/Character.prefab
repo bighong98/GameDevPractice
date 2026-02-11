@@ -266,7 +266,11 @@ MonoBehaviour:
   initialSkills: []
   defaultActiveSkill: {fileID: 0}
   syncWithEquippedWeapon: 1
+  skillTargetLayerMap: {fileID: 11400000, guid: b1323a3d53ef57e4baa47343488781f0, type: 2}
   activeSkillDebug: {fileID: 0}
+  resolvedSkillDebug: {fileID: 0}
+  comboStepIndexDebug: 0
+  comboStepCountDebug: 0
   activeSkillRemainCooldownDebug: 0
 --- !u!114 &4036603514088048652
 MonoBehaviour:
@@ -280,5 +284,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 48a7ee1cade99cf4e9a295d07b02025b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TH.Control.CharacterAnimationController
-  fallbackAnimatorController: {fileID: 0}
+  defaultAnimatorController: {fileID: 0}
+  animator: {fileID: 0}
+  attackSpeedStat: {fileID: 11400000, guid: eba659075ef9d114aacad8a89f18acc6, type: 2}
   activeSkillDebug: {fileID: 0}
+  resolvedSkillDebug: {fileID: 0}
+  resolvedHitCountDebug: 1
+  resolvedAttackCoefficientDebug: 1

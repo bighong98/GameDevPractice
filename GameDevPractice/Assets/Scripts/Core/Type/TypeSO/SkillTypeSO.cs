@@ -34,11 +34,18 @@ namespace TH.Resource
         [SerializeField] private ComboSequenceSO comboSequence;
         [SerializeField] private SkillExecutionProfileSO executionProfile;
 
+        [Header("Targeting")]
+        [SerializeField] private SkillTargetPolicy targetPolicy = SkillTargetPolicy.EnemyOnlyDefault;
+
         [Header("VFX")]
         // 발사체 기반 스킬일 때 사용할 프리팹
         [SerializeField] private GameObject projectilePrefab;
         // 적중 시 재생할 이펙트 프리팹
         [SerializeField] private GameObject impactParticlePrefab;
+
+        [Header("Animation Speed")]
+        [SerializeField, Min(0.01f)] private float animationSpeedMultiplier = 1f;
+        [SerializeField] private bool affectedByAttackSpeed = true;
 
         [Header("Animation")]
         // 콤보 단계별 애니메이션 오버라이드 개별 설정
@@ -67,6 +74,11 @@ namespace TH.Resource
         // 콤보 시퀀스 참조
         public ComboSequenceSO ComboSequence => comboSequence;
         public SkillExecutionProfileSO ExecutionProfile => executionProfile;
+        public SkillTargetPolicy TargetPolicy => targetPolicy;
+        // Skill animation speed multiplier
+        public float AnimationSpeedMultiplier => Mathf.Max(0.01f, animationSpeedMultiplier);
+        // Whether to apply attack-speed stat scaling
+        public bool AffectedByAttackSpeed => affectedByAttackSpeed;
         // 스킬 캐스트 SFX
         public AudioClip CastSFX => castSfx;
         // 공격 애니메이션 오버라이드

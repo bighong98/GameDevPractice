@@ -12,9 +12,11 @@ namespace TH.Combat
 
         public IEnumerator Execute(SkillExecutionContext context, ISkillExecutionServices services)
         {
+            float timingScale = Mathf.Max(0.01f, context.TimingScale);
+
             if (startDelay > 0f)
             {
-                yield return new WaitForSeconds(startDelay);
+                yield return new WaitForSeconds(startDelay / timingScale);
             }
 
             int resolvedRepeatCount = Mathf.Max(1, repeatCount);
@@ -23,7 +25,7 @@ namespace TH.Combat
                 ExecuteOnce(context, services, i, resolvedRepeatCount);
                 if (i + 1 < resolvedRepeatCount && repeatInterval > 0f)
                 {
-                    yield return new WaitForSeconds(repeatInterval);
+                    yield return new WaitForSeconds(repeatInterval / timingScale);
                 }
             }
         }

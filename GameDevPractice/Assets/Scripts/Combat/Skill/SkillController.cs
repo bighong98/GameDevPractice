@@ -79,6 +79,8 @@ namespace TH.Combat
         [SerializeField] private SkillTypeSO defaultActiveSkill;
         // 장착 무기 기본 스킬과 자동 동기화할지 여부.
         [SerializeField] private bool syncWithEquippedWeapon = true;
+        [Header("Targeting")]
+        [SerializeField] private SkillTargetLayerMapSO skillTargetLayerMap;
 
         // 능력치 기반 데미지 계산에 사용할 스탯 홀더.
         private IStatHolder statHolder;
@@ -86,6 +88,7 @@ namespace TH.Combat
         private EquipmentHolder equipHolder;
         private ICombatSystem combatSystem;
         private ISkillProjectileExecutor projectileExecutor;
+        private SkillTargetingEvaluator targetingEvaluator;
 
         // 등록 스킬/활성 스킬 저장소.
         private SkillBook skillBook;
@@ -165,6 +168,7 @@ namespace TH.Combat
 
             skillBook = new SkillBook();
             skillCaster = new SkillCaster();
+            targetingEvaluator = new SkillTargetingEvaluator(new SkillTargetLayerMaskResolver(skillTargetLayerMap));
 
             for (int i = 0; i < initialSkills.Count; i++)
             {
@@ -294,7 +298,9 @@ namespace TH.Combat
             if (!TryBuildAttackSource(attacker, resolved, attackInstanceId, out attackSource)) return false;
 
             // 공격 소스 생성 이후에 쿨다운 소비를 확정해 실패 시 롤백 비용을 줄인다.
-            if (!skillCaster.Consume(baseSkill, baseSkill.Cooldown))
+            float cooldownTimingScale = ResolveSkillTimingScale(attacker);
+            float scaledCooldown = baseSkill.Cooldown / Mathf.Max(0.01f, cooldownTimingScale);
+            if (!skillCaster.Consume(baseSkill, scaledCooldown))
             {
                 attackSource = default;
                 return false;
@@ -487,9 +493,15 @@ namespace TH.Combat
         private bool ExecutePendingAttack(Health target)
         {
             var skill = pendingAttackSkill;
+            float timingScale = ResolveSkillTimingScale(pendingAttacker);
+            var context = new SkillExecutionContext(pendingAttacker, target, skill, pendingAttackSource, timingScale);
+            if (!CanTargetWithPolicy(context, target))
+            {
+                return false;
+            }
+
             if (skill.IsNotNull() && skill.ExecutionProfile is { HasActions: true } executionProfile)
             {
-                var context = new SkillExecutionContext(pendingAttacker, target, skill, pendingAttackSource);
                 StartCoroutine(ExecuteWithProfileRoutine(executionProfile, context));
                 return true;
             }
@@ -515,6 +527,17 @@ namespace TH.Combat
             return true;
         }
 
+        private static float ResolveSkillTimingScale(IAttacker attacker)
+        {
+            if (attacker is Component component &&
+                component.TryGetComponent<ISkillTimingScaleProvider>(out var provider))
+            {
+                return Mathf.Max(0.01f, provider.SkillTimingScale);
+            }
+
+            return 1f;
+        }
+
         private IEnumerator ExecuteWithProfileRoutine(SkillExecutionProfileSO executionProfile, SkillExecutionContext context)
         {
             yield return executionProfile.Execute(context, this);
@@ -524,7 +547,7 @@ namespace TH.Combat
 
         public bool TryApplyHit(SkillExecutionContext context, Health target, float damageScale = 1f, int hitCountOverride = 0)
         {
-            if (target.IsNull() || target.IsDead)
+            if (!CanTargetWithPolicy(context, target))
             {
                 return false;
             }
@@ -535,7 +558,7 @@ namespace TH.Combat
 
         public bool TryLaunchProjectile(SkillExecutionContext context, Health target, float damageScale = 1f, int hitCountOverride = 0)
         {
-            if (target.IsNull() || target.IsDead)
+            if (!CanTargetWithPolicy(context, target))
             {
                 return false;
             }
@@ -550,7 +573,13 @@ namespace TH.Combat
             return TryApplyHitWithSource(attackSource, target);
         }
 
-        public IReadOnlyList<Health> FindTargetsInRadius(Vector3 center, float radius, int maxTargets, Health primaryTarget, bool includePrimary)
+        public IReadOnlyList<Health> FindTargetsInRadius(
+            SkillExecutionContext context,
+            Vector3 center,
+            float radius,
+            int maxTargets,
+            Health primaryTarget,
+            bool includePrimary)
         {
             areaTargetsBuffer.Clear();
 
@@ -559,11 +588,23 @@ namespace TH.Combat
                 return areaTargetsBuffer;
             }
 
-            EnsureOverlapBufferSize(maxTargets);
-            int hitCount = Physics.OverlapSphereNonAlloc(center, radius, overlapBuffer);
+            int layerMask = ResolveTargetLayerMask(context);
+            if (layerMask == 0)
+            {
+                return areaTargetsBuffer;
+            }
 
-            if (includePrimary && primaryTarget.IsNotNull() && !primaryTarget.IsDead &&
-                Vector3.Distance(center, primaryTarget.transform.position) <= radius)
+            EnsureOverlapBufferSize(maxTargets);
+            int hitCount = Physics.OverlapSphereNonAlloc(
+                center,
+                radius,
+                overlapBuffer,
+                layerMask,
+                QueryTriggerInteraction.Ignore);
+
+            if (includePrimary && primaryTarget.IsNotNull() &&
+                Vector3.Distance(center, primaryTarget.transform.position) <= radius &&
+                CanTargetWithPolicy(context, primaryTarget))
             {
                 areaTargetsBuffer.Add(primaryTarget);
             }
@@ -582,17 +623,17 @@ namespace TH.Combat
                     continue;
                 }
 
-                if (health.IsNull() || health.IsDead)
-                {
-                    continue;
-                }
-
                 if (!includePrimary && health == primaryTarget)
                 {
                     continue;
                 }
 
                 if (areaTargetsBuffer.Contains(health))
+                {
+                    continue;
+                }
+
+                if (!CanTargetWithPolicy(context, health))
                 {
                     continue;
                 }
@@ -604,6 +645,42 @@ namespace TH.Combat
         }
 
         #endregion
+
+        private SkillTargetingEvaluator GetTargetingEvaluator()
+        {
+            if (targetingEvaluator != null)
+            {
+                return targetingEvaluator;
+            }
+
+            targetingEvaluator = new SkillTargetingEvaluator(new SkillTargetLayerMaskResolver(skillTargetLayerMap));
+            return targetingEvaluator;
+        }
+
+        private bool CanTargetWithPolicy(in SkillExecutionContext context, Health target)
+        {
+            if (target.IsNull())
+            {
+                return false;
+            }
+
+            if (context.Attacker.IsNull() || context.Skill.IsNull())
+            {
+                return !target.IsDead;
+            }
+
+            return GetTargetingEvaluator().CanTarget(context, target);
+        }
+
+        private int ResolveTargetLayerMask(in SkillExecutionContext context)
+        {
+            if (context.Attacker.IsNull() || context.Skill.IsNull())
+            {
+                return 0;
+            }
+
+            return GetTargetingEvaluator().ResolveTargetLayerMask(context);
+        }
 
         private bool TryApplyHitWithSource(in AttackSource attackSource, Health target)
         {

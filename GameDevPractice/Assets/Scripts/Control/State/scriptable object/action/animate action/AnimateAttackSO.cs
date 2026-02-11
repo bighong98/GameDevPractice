@@ -10,6 +10,12 @@ namespace TH.Control.Data
     [CreateAssetMenu(fileName = "AnimateAttackSO", menuName = "Scriptable Objects/CharacterAction/AnimateAction/AnimateAttackSO")]
     public class AnimateAttackSO : CharacterActionSO, IStateTransitionLock
     {
+        [Header("Attack Feel")]
+        [SerializeField, Range(0f, 1f)] private float retriggerTransitionDuration = 0.03f;
+        [SerializeField, Range(0f, 1f)] private float retriggerNormalizedTimeOffset = 0.15f;
+        [SerializeField, Range(0f, 1.5f)] private float stateUnlockNormalizedTime = 0.85f;
+        [SerializeField, Range(0f, 1f)] private float cancelAllowThreshold = 0.8f;
+
         public override void Execute(IActionStateController controller)
         {
             if (!controller.Components.TryGet(out Animator animator)) return;
@@ -26,9 +32,9 @@ namespace TH.Control.Data
             {
                 animator.CrossFade(
                     stateHashName: AttackASSHash, 
-                    normalizedTransitionDuration: 0.1f, 
+                    normalizedTransitionDuration: Mathf.Clamp01(retriggerTransitionDuration), 
                     layer: AnimatorBaseLayer, 
-                    normalizedTimeOffset: 0.2f);
+                    normalizedTimeOffset: Mathf.Clamp01(retriggerNormalizedTimeOffset));
             }
             else
             {
@@ -80,8 +86,8 @@ namespace TH.Control.Data
                     }
                     
                     // 모션 캔슬 가능 조건 체크
-                    if (stateInfo.normalizedTime >= AnimationEndThreshold ||
-                        animator.GetFloat(CancelAllowHash) > CancelAllowThreshold)
+                    if (stateInfo.normalizedTime >= Mathf.Max(0f, stateUnlockNormalizedTime) ||
+                        animator.GetFloat(CancelAllowHash) > Mathf.Clamp01(cancelAllowThreshold))
                     {
                         Logg.Log($"[{GetType().Name}] MonitorAnimationAsync - unlock state transition", Logg.LoggingMode.Completed);
                         return;

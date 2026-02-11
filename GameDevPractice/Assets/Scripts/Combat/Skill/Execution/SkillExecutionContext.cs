@@ -11,14 +11,21 @@ namespace TH.Combat
         public readonly SkillTypeSO Skill;
         public readonly AttackSource AttackSource;
         public readonly Transform Origin;
+        public readonly float TimingScale;
 
-        public SkillExecutionContext(IAttacker attacker, Health primaryTarget, SkillTypeSO skill, AttackSource attackSource)
+        public SkillExecutionContext(
+            IAttacker attacker,
+            Health primaryTarget,
+            SkillTypeSO skill,
+            AttackSource attackSource,
+            float timingScale = 1f)
         {
             Attacker = attacker;
             PrimaryTarget = primaryTarget;
             Skill = skill;
             AttackSource = attackSource;
             Origin = attacker is Component component ? component.transform : null;
+            TimingScale = Mathf.Max(0.01f, timingScale);
         }
     }
 }
