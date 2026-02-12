@@ -10,6 +10,7 @@ using UnityEngine;
 public class ProjectileSpawner : Spawner<AttackProjectile>, ISkillProjectileExecutor
 {
     [SerializeField] private Health projectileTarget;
+    [SerializeField] private SkillTargetLayerMapSO skillTargetLayerMap;
     private bool hasTarget;
     private bool isHoming;
 
@@ -17,11 +18,7 @@ public class ProjectileSpawner : Spawner<AttackProjectile>, ISkillProjectileExec
     private AttackSource projectileAttackSource;
 
     private IAttacker currentOwner;
-
-    private const string AllyLayerName = "Ally";
-    private const string EnemyLayerName = "Enemy";
-    private const string AllyAttackLayerName = "AllyAttack";
-    private const string EnemyAttackLayerName = "EnemyAttack";
+    private SkillTargetLayerMaskResolver projectileLayerResolver;
 
     private int projectileLayer = -1;
 
@@ -85,6 +82,7 @@ public class ProjectileSpawner : Spawner<AttackProjectile>, ISkillProjectileExec
         if (owner.IsNull()) return;
 
         currentOwner = owner;
+        ConfigureLayerResolver(currentOwner);
         projectileLayer = ResolveProjectileLayer(currentOwner);
         currentOwner.OnTargetSet += SetTarget;
     }
@@ -104,20 +102,8 @@ public class ProjectileSpawner : Spawner<AttackProjectile>, ISkillProjectileExec
 
     private int ResolveProjectileLayer(IAttacker owner)
     {
-        if (owner is not Component ownerComponent) return -1;
-
-        var ownerLayer = ownerComponent.gameObject.layer;
-        var ownerLayerName = LayerMask.LayerToName(ownerLayer);
-
-        var targetLayerName = ownerLayerName switch
-        {
-            AllyLayerName => AllyAttackLayerName,
-            EnemyLayerName => EnemyAttackLayerName,
-            _ => ownerLayerName
-        };
-
-        var targetLayer = LayerMask.NameToLayer(targetLayerName);
-        return targetLayer >= 0 ? targetLayer : ownerLayer;
+        projectileLayerResolver ??= new SkillTargetLayerMaskResolver(skillTargetLayerMap);
+        return projectileLayerResolver.ResolveProjectileLayer(owner);
     }
 
     private void ApplyProjectileLayer(AttackProjectile projectile)
@@ -159,5 +145,17 @@ public class ProjectileSpawner : Spawner<AttackProjectile>, ISkillProjectileExec
         projectile.SetProjectile(combatSystem, projectileAttackSource);
         projectile.SetTargetAndShoot(projectileTarget, isHoming);
         return true;
+    }
+
+    private void ConfigureLayerResolver(IAttacker owner)
+    {
+        if (skillTargetLayerMap == null &&
+            owner is Component ownerComponent &&
+            ownerComponent.TryGetComponent<SkillController>(out var skillController))
+        {
+            skillTargetLayerMap = skillController.SkillTargetLayerMap;
+        }
+
+        projectileLayerResolver = new SkillTargetLayerMaskResolver(skillTargetLayerMap);
     }
 }

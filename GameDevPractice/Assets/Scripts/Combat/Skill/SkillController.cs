@@ -159,6 +159,7 @@ namespace TH.Combat
         public int CurrentComboStepIndex => currentComboStepIndex;
         // 현재 콤보 스텝 수.
         public int CurrentComboStepCount => currentComboStepCount;
+        public SkillTargetLayerMapSO SkillTargetLayerMap => skillTargetLayerMap;
 
         // 컴포넌트 참조 및 초기 스킬 상태를 구성한다.
         private void Awake()
