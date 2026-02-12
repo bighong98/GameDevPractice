@@ -157,7 +157,8 @@ namespace TH.Control.Movement
             if (state is not MoverSaveData data) return false;
             if (!TryGetComponent(out navMeshAgent)) return false;
             
-            // NavMeshAgent의 transform 간섭 차단 방지
+            // NavMeshAgent의 transform 간섭 차단 방지 및 기존 경로 제거
+            navMeshAgent.ResetPath();
             navMeshAgent.enabled = false; 
             
             this.Log($"({gameObject.name}) - set position: {data.position.ToVector()}, set rotation: {data.rotation.ToVector()}", Logg.LoggingMode.Completed);
