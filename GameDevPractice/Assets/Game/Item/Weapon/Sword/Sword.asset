@@ -35,4 +35,4 @@ MonoBehaviour:
   EquippedPrefab: {fileID: 8466340430826345119, guid: f88d5b41db4f06b4e8240c80f2f734db, type: 3}
   equippedPrefabLeft: {fileID: 8466340430826345119, guid: 11cda9c8e3d9d034f8df6480f16d820b, type: 3}
   hand: 2
-  defaultSkill: {fileID: 11400000, guid: 3db396ca27d0cc641a0c26cc9c598355, type: 2}
+  defaultSkill: {fileID: 11400000, guid: 265746d0fd0a1cc468b00352e243cf4d, type: 2}

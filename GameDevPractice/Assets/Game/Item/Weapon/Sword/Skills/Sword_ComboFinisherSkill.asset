@@ -33,3 +33,4 @@ MonoBehaviour:
   skillVFXPrefab: {fileID: 0}
   onHitVFXPrefab: {fileID: 5602590985138988741, guid: 20b27818abf007b4c91e694a1931a851, type: 3}
   castSfx: {fileID: 8300000, guid: 4e7a9f408abdba8459fdccbeaea95215, type: 3}
+  skillSlotImage: {fileID: 21300000, guid: 95052c6b62fb3de4695beaa99f842ac2, type: 3}

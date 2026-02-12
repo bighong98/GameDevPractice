@@ -22,6 +22,7 @@ namespace TH.Combat
         event Action<SkillTypeSO> OnResolvedSkillChanged;
         // 쿨다운이 끝나 스킬 사용 가능 상태가 될 때
         event Action<SkillTypeSO> OnSkillReady;
+        event Action OnSkillBookChanged;
         // 콤보 스텝이 변경될 때 (baseSkill, stepIndex, stepCount)
         event Action<SkillTypeSO, int, int> OnComboStepChanged;
 
@@ -45,6 +46,7 @@ namespace TH.Combat
         int CurrentComboStepIndex { get; }
         // 현재 콤보 전체 스텝 수
         int CurrentComboStepCount { get; }
+        IReadOnlyList<SkillTypeSO> RegisteredSkills { get; }
 
         // 스킬 등록.
         bool RegisterSkill(SkillTypeSO skill, bool setActive = false);
@@ -70,6 +72,7 @@ namespace TH.Combat
     public sealed class SkillController : MonoBehaviour, ISkillController, ISkillExecutionServices
     {
         // AttackSource 식별자 충돌을 막기 위한 전역 시퀀스.
+        private static readonly SkillTypeSO[] EmptySkills = Array.Empty<SkillTypeSO>();
         private static int attackSequence;
 
         [Header("Initial Skills")]
@@ -96,6 +99,7 @@ namespace TH.Combat
         private SkillCaster skillCaster;
         // 베이스 스킬별 콤보 진행 상태 캐시.
         private readonly Dictionary<SkillTypeSO, ComboContext> comboContexts = new();
+        private Coroutine activeComboTimeoutRoutine;
 
         // 현재 해석 완료된 실제 적용 스킬.
         private SkillTypeSO resolvedSkill;
@@ -120,6 +124,7 @@ namespace TH.Combat
         public event Action<SkillTypeSO> OnSkillConsumed;
         // 쿨다운 해제(준비 완료) 시 발행.
         public event Action<SkillTypeSO> OnSkillReady;
+        public event Action OnSkillBookChanged;
         // 콤보 진행 상태 변경 시 발행.
         public event Action<SkillTypeSO, int, int> OnComboStepChanged;
 
@@ -159,6 +164,7 @@ namespace TH.Combat
         public int CurrentComboStepIndex => currentComboStepIndex;
         // 현재 콤보 스텝 수.
         public int CurrentComboStepCount => currentComboStepCount;
+        public IReadOnlyList<SkillTypeSO> RegisteredSkills => skillBook?.Skills ?? EmptySkills;
         public SkillTargetLayerMapSO SkillTargetLayerMap => skillTargetLayerMap;
 
         // 컴포넌트 참조 및 초기 스킬 상태를 구성한다.
@@ -214,6 +220,8 @@ namespace TH.Combat
             {
                 equipHolder.OnEquipWeapon -= HandleEquipWeapon;
             }
+
+            CancelActiveComboTimeoutRoutine();
         }
 
         // 매 프레임 스킬 준비 상태를 폴링하고 디버그 값을 동기화한다.
@@ -245,6 +253,11 @@ namespace TH.Combat
             bool added = skillBook.Register(skill);
             skillCaster.TrackSkill(skill);
 
+            if (added)
+            {
+                OnSkillBookChanged?.Invoke();
+            }
+
             if (setActive)
             {
                 SetActiveSkill(skill);
@@ -266,6 +279,7 @@ namespace TH.Combat
             bool changed = skillBook.SetActive(skill);
             if (changed)
             {
+                CancelActiveComboTimeoutRoutine();
                 ResetComboProgress(skill);
                 ClearPendingAttack();
                 OnActiveSkillChanged?.Invoke(skill);
@@ -291,14 +305,12 @@ namespace TH.Combat
             if (!HasActiveSkill || attacker.IsNull()) return false;
 
             var baseSkill = skillBook.ActiveSkill;
-            // 쿨다운 상태와 콤보 프리뷰 해석을 먼저 검증한다.
             if (!skillCaster.IsReady(baseSkill)) return false;
             if (!TryResolveSkillPreview(baseSkill, out var resolved, out var stepIndex, out var stepCount)) return false;
 
             int attackInstanceId = TakeNextAttackInstanceId();
             if (!TryBuildAttackSource(attacker, resolved, attackInstanceId, out attackSource)) return false;
 
-            // 공격 소스 생성 이후에 쿨다운 소비를 확정해 실패 시 롤백 비용을 줄인다.
             float cooldownTimingScale = ResolveSkillTimingScale(attacker);
             float scaledCooldown = baseSkill.Cooldown / Mathf.Max(0.01f, cooldownTimingScale);
             if (!skillCaster.Consume(baseSkill, scaledCooldown))
@@ -309,6 +321,7 @@ namespace TH.Combat
 
             CommitComboProgress(baseSkill, stepIndex, stepCount);
             SetResolvedSkill(resolved, baseSkill, stepIndex, stepCount, forceNotify: true);
+            ScheduleActiveComboTimeout(baseSkill, stepCount);
             SetPendingAttack(attacker, resolved, attackSource);
             if (attacker is Component attackerComponent)
             {
@@ -429,6 +442,57 @@ namespace TH.Combat
             int nextStep = consumedStepIndex + 1;
             context.NextStepIndex = nextStep < stepCount ? nextStep : 0;
         }
+
+        private void ScheduleActiveComboTimeout(SkillTypeSO baseSkill, int stepCount)
+        {
+            CancelActiveComboTimeoutRoutine();
+
+            if (!HasActiveSkill || baseSkill.IsNull() || skillBook.ActiveSkill != baseSkill)
+                return;
+
+            if (stepCount <= 1 || baseSkill.ComboSequence is not { HasSteps: true } comboSequence)
+                return;
+
+            float comboTimeout = Mathf.Max(0f, comboSequence.ComboTimeout);
+            var context = GetOrCreateComboContext(baseSkill);
+            if (context.NextStepIndex <= 0)
+                return;
+
+            activeComboTimeoutRoutine = StartCoroutine(
+                CoHandleActiveComboTimeout(baseSkill, context.NextStepIndex, comboTimeout));
+        }
+
+        private IEnumerator CoHandleActiveComboTimeout(SkillTypeSO baseSkill, int expectedNextStepIndex, float comboTimeout)
+        {
+            if (comboTimeout > 0f)
+                yield return new WaitForSeconds(comboTimeout);
+
+            activeComboTimeoutRoutine = null;
+
+            if (!HasActiveSkill || skillBook.ActiveSkill != baseSkill)
+                yield break;
+
+            var context = GetOrCreateComboContext(baseSkill);
+            if (context.NextStepIndex != expectedNextStepIndex)
+                yield break;
+
+            if (!ShouldResetCombo(comboTimeout, context))
+                yield break;
+
+            UpdateResolvedSkillFromPreview(forceNotify: true);
+        }
+
+        private void CancelActiveComboTimeoutRoutine()
+        {
+            if (activeComboTimeoutRoutine == null)
+                return;
+
+            StopCoroutine(activeComboTimeoutRoutine);
+            activeComboTimeoutRoutine = null;
+        }
+
+
+
 
         // 활성 스킬 전환 시 해당 베이스 스킬의 콤보 진행을 초기화한다.
         private void ResetComboProgress(SkillTypeSO baseSkill)

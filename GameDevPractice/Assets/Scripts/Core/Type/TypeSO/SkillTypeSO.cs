@@ -54,8 +54,11 @@ namespace TH.Resource
         [SerializeField] private GameObject onHitVFXPrefab; // 적중 시 재생할 이펙트 프리팹
 
         [Header("SFX")]
-        // 콤보 단계별 캐스트 SFX 개별 설정
+        // Cast sound for this skill
         [SerializeField] private AudioClip castSfx;
+
+        [Header("UI")]
+        [SerializeField] private Sprite skillSlotImage;
 
         // 유효한 스킬 ID(없으면 에셋 이름 대체)
         public string SkillId => string.IsNullOrWhiteSpace(skillId) ? name : skillId;
@@ -81,8 +84,9 @@ namespace TH.Resource
         public float AnimationSpeedMultiplier => Mathf.Max(0.01f, animationSpeedMultiplier);
         // Whether to apply attack-speed stat scaling
         public bool AffectedByAttackSpeed => affectedByAttackSpeed;
-        // 스킬 캐스트 SFX
+        // Cast sound clip
         public AudioClip CastSFX => castSfx;
+        public Sprite SkillSlotImage => skillSlotImage;
         // 공격 애니메이션 오버라이드
         public AnimatorOverrideController AnimatorOverride => animatorOverride;
         // 발사체 사용 여부
