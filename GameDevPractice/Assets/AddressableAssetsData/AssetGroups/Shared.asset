@@ -29,6 +29,11 @@ MonoBehaviour:
     - PreLoad_DataSO
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 20b27818abf007b4c91e694a1931a851
+    m_Address: Assets/Game/Combat/Skill/VFX/OnHit/SwordOnHitVFX.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 36f3e6bc2976551408b1cf79527feca9
     m_Address: Assets/Game/Control/Character/Action/WalkActionSO.asset
     m_ReadOnly: 0
@@ -66,6 +71,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 69d1b1037536b504884c93bb73d662db
+    m_Address: Assets/Game/Combat/Skill/VFX/OnHit/Fireball Impact.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 78be5954566d2d848918e51832341fa3
     m_Address: Assets/Asset Packs/Synty - Polygon Student Sample/Materials/Characters_Texture_Orange.mat
     m_ReadOnly: 0
@@ -84,6 +94,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 8bbf2395722bb634b8b12850b626049b
     m_Address: Assets/TextMesh Pro/Fonts/Maplestory Light.ttf
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8e2324eab89da3144ab9f07a2edf6cba
+    m_Address: Assets/Game/Combat/Skill/VFX/OnHit/Blue Arrow Impact.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

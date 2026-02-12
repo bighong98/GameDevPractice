@@ -309,6 +309,10 @@ namespace TH.Combat
             CommitComboProgress(baseSkill, stepIndex, stepCount);
             SetResolvedSkill(resolved, baseSkill, stepIndex, stepCount, forceNotify: true);
             SetPendingAttack(attacker, resolved, attackSource);
+            if (attacker is Component attackerComponent)
+            {
+                SkillEffectPlayer.TryPlaySkillEffect(resolved, attackerComponent.transform);
+            }
             OnSkillConsumed?.Invoke(resolved);
             SyncDebugValues();
             return true;
@@ -730,7 +734,7 @@ namespace TH.Combat
                 }
 
                 float firstDamage = scaledHitDamages.Count > 0 ? scaledHitDamages[0] : sourceBaseDamage * resolvedDamageScale;
-                return new AttackSource(source.Attacker, null, firstDamage, source.DamageType, source.AttackInstanceId, scaledHitDamages);
+                return new AttackSource(source.Attacker, null, firstDamage, source.DamageType, source.AttackInstanceId, scaledHitDamages, source.Skill);
             }
 
             if (resolvedHitCount > 1)
@@ -742,11 +746,11 @@ namespace TH.Combat
                     hitDamages.Add(perHitDamage);
                 }
 
-                return new AttackSource(source.Attacker, null, perHitDamage, source.DamageType, source.AttackInstanceId, hitDamages);
+                return new AttackSource(source.Attacker, null, perHitDamage, source.DamageType, source.AttackInstanceId, hitDamages, source.Skill);
             }
 
             float scaledBaseDamage = sourceBaseDamage * resolvedDamageScale;
-            return new AttackSource(source.Attacker, null, scaledBaseDamage, source.DamageType, source.AttackInstanceId, null);
+            return new AttackSource(source.Attacker, null, scaledBaseDamage, source.DamageType, source.AttackInstanceId, null, source.Skill);
         }
 
         private void SetPendingAttack(IAttacker attacker, SkillTypeSO skill, in AttackSource attackSource)
@@ -786,7 +790,9 @@ namespace TH.Combat
                         attackSourceStat,
                         0f,
                         skill.DamageType,
-                        attackInstanceId);
+                        attackInstanceId,
+                        null,
+                        skill);
                     return true;
                 }
 
@@ -795,13 +801,15 @@ namespace TH.Combat
                     null,
                     perHitDamage,
                     skill.DamageType,
-                    attackInstanceId);
+                    attackInstanceId,
+                    null,
+                    skill);
                 return true;
             }
 
             // 다단 히트는 히트별 데미지 배열을 함께 전달한다.
             var hitDamages = BuildHitDamages(perHitDamage, hitCount);
-            attackSource = new AttackSource(attacker, null, perHitDamage, skill.DamageType, attackInstanceId, hitDamages);
+            attackSource = new AttackSource(attacker, null, perHitDamage, skill.DamageType, attackInstanceId, hitDamages, skill);
             return true;
         }
 

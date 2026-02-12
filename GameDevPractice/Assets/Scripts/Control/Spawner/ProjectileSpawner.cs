@@ -17,7 +17,6 @@ public class ProjectileSpawner : Spawner<AttackProjectile>, ISkillProjectileExec
     private AttackSource projectileAttackSource;
 
     private IAttacker currentOwner;
-    [SerializeField] private GameObject onHitParticlePrefab;
 
     private const string AllyLayerName = "Ally";
     private const string EnemyLayerName = "Enemy";
@@ -34,6 +33,7 @@ public class ProjectileSpawner : Spawner<AttackProjectile>, ISkillProjectileExec
 
     public void InitializeProjectileSpawner(IAttacker owner, SkillTypeSO skillTypeSO, AttackSource attackSource)
     {
+        _ = skillTypeSO;
         combatSystem ??= ServiceLocator.Get<ICombatSystem>();
 
         if (owner is not { } shootingWeaponOwner)
@@ -45,7 +45,6 @@ public class ProjectileSpawner : Spawner<AttackProjectile>, ISkillProjectileExec
 
         projectileAttackSource = attackSource;
         BindOwner(shootingWeaponOwner);
-        ConfigureImpactEffect(skillTypeSO);
 
         onCreate = obj =>
         {
@@ -53,10 +52,6 @@ public class ProjectileSpawner : Spawner<AttackProjectile>, ISkillProjectileExec
 
             projectile.SetProjectile(combatSystem, projectileAttackSource);
             ApplyProjectileLayer(projectile);
-            projectile.OnHit -= PlayOnHitEffect;
-
-            if (onHitParticlePrefab != null)
-                projectile.OnHit += PlayOnHitEffect;
         };
 
         onGet = obj =>
@@ -65,33 +60,18 @@ public class ProjectileSpawner : Spawner<AttackProjectile>, ISkillProjectileExec
 
             projectile.SetProjectile(projectileAttackSource);
             ApplyProjectileLayer(projectile);
-            projectile.OnHit -= PlayOnHitEffect;
-
-            if (onHitParticlePrefab != null)
-                projectile.OnHit += PlayOnHitEffect;
         };
     }
 
     public bool TryExecuteProjectile(in AttackSource attackSource, Health target, SkillTypeSO skill)
     {
+        _ = skill;
         projectileAttackSource = attackSource;
-        ConfigureImpactEffect(skill);
 
         if (target != null)
             SetTarget(target);
 
         return Shoot();
-    }
-
-    private void ConfigureImpactEffect(SkillTypeSO skillTypeSO)
-    {
-        if (skillTypeSO is { HasImpactEffect: true, ImpactParticlePrefab: { } particlePrefab })
-        {
-            onHitParticlePrefab = particlePrefab;
-            return;
-        }
-
-        onHitParticlePrefab = null;
     }
 
     private void OnDisable()
@@ -176,17 +156,8 @@ public class ProjectileSpawner : Spawner<AttackProjectile>, ISkillProjectileExec
         if (projectile == null) return false;
 
         ApplyProjectileLayer(projectile);
-        projectile.OnHit -= PlayOnHitEffect;
-        if (onHitParticlePrefab != null)
-            projectile.OnHit += PlayOnHitEffect;
-
         projectile.SetProjectile(combatSystem, projectileAttackSource);
         projectile.SetTargetAndShoot(projectileTarget, isHoming);
         return true;
-    }
-
-    private void PlayOnHitEffect(Vector3 pos)
-    {
-        PoolManager.Instance.GetFromPool<SimplePooledParticlePlayer>(onHitParticlePrefab, null, pos);
     }
 }

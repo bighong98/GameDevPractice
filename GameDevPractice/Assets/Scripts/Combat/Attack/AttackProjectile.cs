@@ -128,7 +128,7 @@ public class AttackProjectile : MonoBehaviour, IPoolObject
 
         if (other.TryGetComponent(out IDamageable victim))
         {
-            combatSystem.ApplyHit(attackSource.ToRequest(victim));
+            combatSystem.ApplyHit(attackSource.ToRequest(victim, transform.position, hasHitPoint: true));
         }
         this.Log($"OnTriggerEnter(): collided with {other}", Logg.LoggingMode.Completed);
         OnHit?.Invoke(transform.position);

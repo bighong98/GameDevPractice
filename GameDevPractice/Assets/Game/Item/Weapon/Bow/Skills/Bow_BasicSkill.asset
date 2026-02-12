@@ -22,9 +22,14 @@ MonoBehaviour:
   cooldown: 1
   comboSequence: {fileID: 0}
   executionProfile: {fileID: 11400000, guid: 91415d6afb7673844bc9d9123a961bf7, type: 2}
+  targetPolicy:
+    allowedGroups: 2
+    allowSelf: 0
+    includeDeadTargets: 0
   animationSpeedMultiplier: 1
   affectedByAttackSpeed: 1
   animatorOverride: {fileID: 22100000, guid: d790194a637262f45a1ea9df7bf7fdad, type: 2}
-  castSfx: {fileID: 8300000, guid: 1f53a5fc6bd934e46a5d8cfa8fd27b64, type: 3}
   projectilePrefab: {fileID: 1765392690148027140, guid: 0ed9004fb430f6a4a9c87da6061553bc, type: 3}
-  impactParticlePrefab: {fileID: 2315604679874030509, guid: 8e2324eab89da3144ab9f07a2edf6cba, type: 3}
+  skillVFXPrefab: {fileID: 0}
+  onHitVFXPrefab: {fileID: 2315604679874030509, guid: 8e2324eab89da3144ab9f07a2edf6cba, type: 3}
+  castSfx: {fileID: 8300000, guid: 1f53a5fc6bd934e46a5d8cfa8fd27b64, type: 3}

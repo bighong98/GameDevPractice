@@ -159,7 +159,15 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 180128, guid: 6586ff0f14125534cae2f5d8f04b7871, type: 3}
       insertIndex: -1
       addedObject: {fileID: 9024294371687123967}
+    - targetCorrespondingSourceObject: {fileID: 180128, guid: 6586ff0f14125534cae2f5d8f04b7871, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1460394561956990779}
   m_SourcePrefab: {fileID: 100100000, guid: 6586ff0f14125534cae2f5d8f04b7871, type: 3}
+--- !u!198 &2302457091073469191 stripped
+ParticleSystem:
+  m_CorrespondingSourceObject: {fileID: 19860484, guid: 6586ff0f14125534cae2f5d8f04b7871, type: 3}
+  m_PrefabInstance: {fileID: 2302457091092932355}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &2302457091093092515 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 180128, guid: 6586ff0f14125534cae2f5d8f04b7871, type: 3}
@@ -177,3 +185,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d0d4971e237f3548add903637d1ab82, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SimplePooledParticlePlayer
+  particle: {fileID: 2302457091073469191}
+  relay: {fileID: 1460394561956990779}
+--- !u!114 &1460394561956990779
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2302457091093092515}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ab9d0e005db6a24490174b20a364339, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ParticleSystemStoppedRelay

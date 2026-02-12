@@ -28,7 +28,14 @@ namespace TH.Combat
                     totalDamage += resolvedDamage;
                 }
 
-                return new HitResult(hitRequest.Attacker, totalDamage, hitRequest.AttackInstanceId, resolvedHitDamages);
+                return new HitResult(
+                    hitRequest.Attacker,
+                    totalDamage,
+                    hitRequest.AttackInstanceId,
+                    resolvedHitDamages,
+                    hitRequest.Skill,
+                    hitRequest.HitPoint,
+                    hitRequest.HasHitPoint);
             }
 
             float singleDamage = hitRequest.BaseDamage;
@@ -36,7 +43,14 @@ namespace TH.Combat
                 singleDamage *= multiplier;
 
             singleDamage = Mathf.Max(0f, Mathf.Round(singleDamage));
-            return new HitResult(hitRequest.Attacker, singleDamage, hitRequest.AttackInstanceId, null);
+            return new HitResult(
+                hitRequest.Attacker,
+                singleDamage,
+                hitRequest.AttackInstanceId,
+                null,
+                hitRequest.Skill,
+                hitRequest.HitPoint,
+                hitRequest.HasHitPoint);
         }
 
         private bool ShouldApplyDefense(in HitRequest request, DamageRuleSO rule, out float defenseVal)

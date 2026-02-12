@@ -108,8 +108,41 @@ PrefabInstance:
       propertyPath: m_Name
       value: Blue Arrow Impact
       objectReference: {fileID: 0}
+    - target: {fileID: 9024294371687123967, guid: cf5722aaacced2940869f3e2ffeeca5f, type: 3}
+      propertyPath: relay
+      value: 
+      objectReference: {fileID: 1888504692521363510}
+    - target: {fileID: 9024294371687123967, guid: cf5722aaacced2940869f3e2ffeeca5f, type: 3}
+      propertyPath: particle
+      value: 
+      objectReference: {fileID: 2315604679892015113}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2302457091093092515, guid: cf5722aaacced2940869f3e2ffeeca5f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1888504692521363510}
   m_SourcePrefab: {fileID: 100100000, guid: cf5722aaacced2940869f3e2ffeeca5f, type: 3}
+--- !u!1 &2315604679874030509 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2302457091093092515, guid: cf5722aaacced2940869f3e2ffeeca5f, type: 3}
+  m_PrefabInstance: {fileID: 4598552036641960718}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1888504692521363510
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2315604679874030509}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ab9d0e005db6a24490174b20a364339, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ParticleSystemStoppedRelay
+--- !u!198 &2315604679892015113 stripped
+ParticleSystem:
+  m_CorrespondingSourceObject: {fileID: 2302457091073469191, guid: cf5722aaacced2940869f3e2ffeeca5f, type: 3}
+  m_PrefabInstance: {fileID: 4598552036641960718}
+  m_PrefabAsset: {fileID: 0}

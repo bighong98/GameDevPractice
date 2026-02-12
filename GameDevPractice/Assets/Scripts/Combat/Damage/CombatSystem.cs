@@ -10,6 +10,7 @@ namespace TH.Combat.Service
     public sealed class CombatSystem : ICombatSystem
     {
         private static int _attackSequence;
+        public event HitAppliedEvent OnHitApplied;
 
         private DamageRuleSO damageRule;
         private readonly IDamageCalculator damageCalc;
@@ -34,6 +35,7 @@ namespace TH.Combat.Service
             {
                 Logg.Log($"[{nameof(CombatSystem)}.{nameof(ApplyHit)}]", Logg.LoggingMode.Completed);
                 normalizedRequest.Target.TakeDamage(result);
+                OnHitApplied?.Invoke(result, normalizedRequest.Target);
             }
         }
 
@@ -48,7 +50,10 @@ namespace TH.Combat.Service
                 request.Target,
                 request.DamageType,
                 Interlocked.Increment(ref _attackSequence),
-                request.HitDamages);
+                request.HitDamages,
+                request.Skill,
+                request.HitPoint,
+                request.HasHitPoint);
         }
     }
 }

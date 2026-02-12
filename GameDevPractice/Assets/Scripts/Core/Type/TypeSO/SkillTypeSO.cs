@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using TH.Attribute.Stat;
 using TH.Combat;
 using UnityEngine;
+using UnityEngine.Serialization;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -37,12 +38,6 @@ namespace TH.Resource
         [Header("Targeting")]
         [SerializeField] private SkillTargetPolicy targetPolicy = SkillTargetPolicy.EnemyOnlyDefault;
 
-        [Header("VFX")]
-        // 발사체 기반 스킬일 때 사용할 프리팹
-        [SerializeField] private GameObject projectilePrefab;
-        // 적중 시 재생할 이펙트 프리팹
-        [SerializeField] private GameObject impactParticlePrefab;
-
         [Header("Animation Speed")]
         [SerializeField, Min(0.01f)] private float animationSpeedMultiplier = 1f;
         [SerializeField] private bool affectedByAttackSpeed = true;
@@ -50,6 +45,13 @@ namespace TH.Resource
         [Header("Animation")]
         // 콤보 단계별 애니메이션 오버라이드 개별 설정
         [SerializeField] private AnimatorOverrideController animatorOverride;
+
+        [Header("Projectile")]
+        [SerializeField] private GameObject projectilePrefab; // 원거리 스킬의 발사체 프리팹
+
+        [Header("VFX")]
+        [SerializeField] private GameObject skillVFXPrefab; // 스킬 사용 시 재생할 이펙트 프리팹
+        [SerializeField] private GameObject onHitVFXPrefab; // 적중 시 재생할 이펙트 프리팹
 
         [Header("SFX")]
         // 콤보 단계별 캐스트 SFX 개별 설정
@@ -88,9 +90,13 @@ namespace TH.Resource
         // 발사체 프리팹
         public GameObject ProjectilePrefab => projectilePrefab;
         // 적중 이펙트 사용 여부
-        public bool HasImpactEffect => impactParticlePrefab != null;
+        public bool HasSkillEffect => skillVFXPrefab != null;
+        public GameObject SkillEffectPrefab => skillVFXPrefab;
+        public bool HasOnHitEffect => onHitVFXPrefab != null;
+        public GameObject OnHitEffectPrefab => onHitVFXPrefab;
+        public bool HasImpactEffect => HasOnHitEffect;
         // 적중 이펙트 프리팹
-        public GameObject ImpactParticlePrefab => impactParticlePrefab;
+        public GameObject ImpactParticlePrefab => onHitVFXPrefab;
 
         #region Debug (Editor Only)
 #if UNITY_EDITOR
@@ -184,11 +190,26 @@ namespace TH.Resource
                 errors.Add("executionProfile is assigned but has no actions.");
             }
 
+            ValidateEffectPrefab(skillVFXPrefab, nameof(skillVFXPrefab), warnings);
+            ValidateEffectPrefab(onHitVFXPrefab, nameof(onHitVFXPrefab), warnings);
             ValidateAnimatorOverride(errors, warnings);
             return errors.Count == 0;
         }
 
         // 애니메이션 오버라이드와 Hit 이벤트 설정을 검증
+        private static void ValidateEffectPrefab(GameObject prefab, string fieldName, List<string> warnings)
+        {
+            if (prefab == null)
+            {
+                return;
+            }
+
+            if (prefab.GetComponent<SimplePooledParticlePlayer>() == null)
+            {
+                warnings.Add($"{fieldName} does not contain SimplePooledParticlePlayer. Pool playback can fail at runtime.");
+            }
+        }
+
         private void ValidateAnimatorOverride(List<string> errors, List<string> warnings)
         {
             if (animatorOverride == null)
