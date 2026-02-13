@@ -13,14 +13,12 @@ namespace TH.UI
     /// Brief: 간략 정보, Detailed: 상세 정보.
     /// </summary>
     
-public enum TooltipDetailLevel
+    public enum TooltipDetailLevel
     {
         /// <summary>간략 정보 (제한된 스탯/효과 표시)</summary>
-        
-Brief,
+        Brief,
         /// <summary>상세 정보 (모든 스탯/효과 표시)</summary>
-        
-Detailed,
+        Detailed,
     }
 
     /// <summary>
@@ -28,14 +26,10 @@ Detailed,
     /// 이름과 설명을 함께 전달.
     /// </summary>
     
-public readonly struct ItemTooltipContent
+    public readonly struct ItemTooltipContent
     {
-        /// <summary>아이템 이름</summary>
-        
-public readonly string Name;
-        /// <summary>아이템 설명 (스탯, 효과 포함)</summary>
-        
-public readonly string Description;
+        public readonly string Name; // 아이템 이름
+        public readonly string Description; // 아이템 설명 (스탯, 효과 포함)
 
         public ItemTooltipContent(string name, string description)
         {
@@ -49,23 +43,12 @@ public readonly string Description;
     /// ItemTypeSO에서 설명, 스탯, 효과 정보를 추출하여 포맷팅.
     /// </summary>
     
-public static class ItemTooltipContentBuilder
+    public static class ItemTooltipContentBuilder
     {
-        /// <summary>Brief 모드에서 표시할 최대 스탯 수</summary>
-        
-private const int BriefStatLimit = 2;
-        /// <summary>Brief 모드에서 표시할 최대 효과 수</summary>
-        
-private const int BriefEffectLimit = 2;
+        private const int BriefStatLimit = 2;
+        private const int BriefEffectLimit = 2;
 
-        /// <summary>
-        /// IGameItem에서 툴팁 콘텐츠 생성.
-        /// </summary>
-        /// <param name="item">대상 아이템</param>
-        /// <param name="detailLevel">상세 수준</param>
-        /// <returns>툴팁 콘텐츠 데이터</returns>
-        
-public static ItemTooltipContent Build(IGameItem item, TooltipDetailLevel detailLevel)
+        public static ItemTooltipContent Build(IGameItem item, TooltipDetailLevel detailLevel)
         {
             if (item?.GetItemInfo == null)
                 return default;
@@ -73,14 +56,7 @@ public static ItemTooltipContent Build(IGameItem item, TooltipDetailLevel detail
             return Build(item.GetItemInfo, detailLevel);
         }
 
-        /// <summary>
-        /// ItemTypeSO에서 툴팁 콘텐츠 생성.
-        /// </summary>
-        /// <param name="itemInfo">아이템 정보 SO</param>
-        /// <param name="detailLevel">상세 수준</param>
-        /// <returns>툴팁 콘텐츠 데이터</returns>
-        
-public static ItemTooltipContent Build(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel)
+        public static ItemTooltipContent Build(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel)
         {
             if (itemInfo == null)
                 return default;
@@ -89,30 +65,13 @@ public static ItemTooltipContent Build(ItemTypeSO itemInfo, TooltipDetailLevel d
             return new ItemTooltipContent(itemInfo.nameString, description);
         }
 
-        /// <summary>
-        /// 설명 문자열 생성.
-        /// 섹션들을 줄바꿈으로 결합.
-        /// </summary>
-        /// <param name="itemInfo">아이템 정보 SO</param>
-        /// <param name="detailLevel">상세 수준</param>
-        /// <returns>포맷팅된 설명 문자열</returns>
-        
-private static string BuildDescription(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel)
+        private static string BuildDescription(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel)
         {
             var sections = BuildDescriptionSections(itemInfo, detailLevel);
             return string.Join("\n\n", sections);
         }
 
-        /// <summary>
-        /// 텍스트를 섹션별로 분리.
-        /// description, stats, effects로 구분.
-        /// </summary>
-        /// <param name="text">원본 텍스트</param>
-        /// <param name="description">설명 출력</param>
-        /// <param name="stats">스탯 출력</param>
-        /// <param name="effects">효과 출력</param>
-        
-public static void SplitSections(string text, out string description, out string stats, out string effects)
+        public static void SplitSections(string text, out string description, out string stats, out string effects)
         {
             description = string.Empty;
             stats = string.Empty;
@@ -141,15 +100,7 @@ public static void SplitSections(string text, out string description, out string
             }
         }
 
-        /// <summary>
-        /// 섹션 헤더를 기준으로 본문 추출 시도.
-        /// </summary>
-        /// <param name="section">섹션 텍스트</param>
-        /// <param name="header">헤더 문자열 (Stats, Effects 등)</param>
-        /// <param name="body">추출된 본문 출력</param>
-        /// <returns>추출 성공 여부</returns>
-        
-private static bool TryExtractSection(string section, string header, out string body)
+        private static bool TryExtractSection(string section, string header, out string body)
         {
             body = string.Empty;
             if (!section.StartsWith(header, StringComparison.OrdinalIgnoreCase)) return false;
@@ -161,16 +112,7 @@ private static bool TryExtractSection(string section, string header, out string 
             return true;
         }
 
-
-
-        /// <summary>
-        /// 장비 스탯 라인 목록 생성.
-        /// EquipmentTypeSO의 equipmentStats에서 추출.
-        /// </summary>
-        /// <param name="itemInfo">아이템 정보 SO</param>
-        /// <returns>스탯 라인 목록</returns>
-        
-private static List<string> BuildEquipmentStatLines(ItemTypeSO itemInfo)
+        private static List<string> BuildEquipmentStatLines(ItemTypeSO itemInfo)
         {
             if (itemInfo is not EquipmentTypeSO equipment || equipment.equipmentStats == null)
                 return new List<string>();
@@ -186,15 +128,7 @@ private static List<string> BuildEquipmentStatLines(ItemTypeSO itemInfo)
             return lines;
         }
 
-        /// <summary>
-        /// 아이템 효과 라인 목록 생성.
-        /// itemUseEffects에서 추출.
-        /// </summary>
-        /// <param name="itemInfo">아이템 정보 SO</param>
-        /// <param name="detailLevel">상세 수준</param>
-        /// <returns>효과 라인 목록</returns>
-        
-private static List<string> BuildEffectLines(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel)
+        private static List<string> BuildEffectLines(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel)
         {
             if (itemInfo?.itemUseEffects == null || itemInfo.itemUseEffects.Count == 0)
                 return new List<string>();
@@ -212,15 +146,7 @@ private static List<string> BuildEffectLines(ItemTypeSO itemInfo, TooltipDetailL
             return lines;
         }
 
-        /// <summary>
-        /// 효과 텍스트 결정.
-        /// IItemEffectTooltipInfo 인터페이스 구현 시 해당 텍스트 사용.
-        /// </summary>
-        /// <param name="effect">효과 객체</param>
-        /// <param name="detailLevel">상세 수준</param>
-        /// <returns>효과 텍스트</returns>
-        
-private static string ResolveEffectText(ItemEffectBase effect, TooltipDetailLevel detailLevel)
+        private static string ResolveEffectText(ItemEffectBase effect, TooltipDetailLevel detailLevel)
         {
             if (effect is IItemEffectTooltipInfo info)
                 return detailLevel == TooltipDetailLevel.Detailed
@@ -230,14 +156,7 @@ private static string ResolveEffectText(ItemEffectBase effect, TooltipDetailLeve
             return effect.name;
         }
 
-        /// <summary>
-        /// 스탯 라인 포맷팅.
-        /// 스탯 이름과 값을 결합.
-        /// </summary>
-        /// <param name="data">스탯 수정자 데이터</param>
-        /// <returns>포맷팅된 스탯 라인</returns>
-        
-private static string FormatStatLine(StatModifierData data)
+        private static string FormatStatLine(StatModifierData data)
         {
             if (Math.Abs(data.value) < 0.0001f)
                 return string.Empty;
@@ -251,15 +170,7 @@ private static string FormatStatLine(StatModifierData data)
             return $"{statName} {valueText}";
         }
 
-        /// <summary>
-        /// 스탯 값 포맷팅.
-        /// 퍼센트/절대값 표시 및 부호 처리.
-        /// </summary>
-        /// <param name="value">스탯 값</param>
-        /// <param name="calculation">계산 타입 (Add/Multiply 등)</param>
-        /// <returns>포맷팅된 값 문자열</returns>
-        
-private static string FormatStatValue(float value, StatModCalcType calculation)
+        private static string FormatStatValue(float value, StatModCalcType calculation)
         {
             bool isPercent = calculation != StatModCalcType.Add;
             float displayValue = isPercent ? value * 100f : value;
@@ -268,14 +179,7 @@ private static string FormatStatValue(float value, StatModCalcType calculation)
             return isPercent ? $"{sign}{formatted}%" : $"{sign}{formatted}";
         }
 
-        /// <summary>
-        /// 라인 목록을 지정 개수로 제한.
-        /// </summary>
-        /// <param name="lines">원본 라인 목록</param>
-        /// <param name="limit">최대 개수</param>
-        /// <returns>제한된 라인 목록</returns>
-        
-private static List<string> LimitLines(List<string> lines, int limit)
+        private static List<string> LimitLines(List<string> lines, int limit)
         {
             if (limit <= 0 || lines.Count <= limit)
                 return lines;
@@ -283,15 +187,7 @@ private static List<string> LimitLines(List<string> lines, int limit)
             return lines.GetRange(0, limit);
         }
 
-        /// <summary>
-        /// 섹션 포맷팅.
-        /// 타이틀과 라인들을 결합.
-        /// </summary>
-        /// <param name="title">섹션 타이틀</param>
-        /// <param name="lines">라인 목록</param>
-        /// <returns>포맷팅된 섹션 문자열</returns>
-        
-private static string FormatSection(string title, List<string> lines)
+        private static string FormatSection(string title, List<string> lines)
         {
             var builder = new StringBuilder();
             builder.Append(title).Append('\n');
@@ -304,17 +200,15 @@ private static string FormatSection(string title, List<string> lines)
 
             return builder.ToString();
         }
-    
 
-        /// <summary>
-        /// 설명 섹션 목록 생성.
-        /// 기본 설명, 스탯, 효과 섹션을 각각 구성.
-        /// </summary>
-        /// <param name="itemInfo">아이템 정보 SO</param>
-        /// <param name="detailLevel">상세 수준</param>
-        /// <returns>섹션 문자열 목록 (desc, stats, effects)</returns>
-        
-public static IReadOnlyList<string> BuildDescriptionSections(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel)
+        private static string ResolveLabel(ItemTooltipLabelMapSO labelMap, string key, string fallback)
+        {
+            return labelMap != null
+                ? labelMap.GetLabel(key, fallback)
+                : fallback;
+        }
+
+        public static IReadOnlyList<string> BuildDescriptionSections(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel, ItemTooltipLabelMapSO labelMap = null)
         {
             if (itemInfo == null)
                 return Array.Empty<string>();
@@ -334,11 +228,11 @@ public static IReadOnlyList<string> BuildDescriptionSections(ItemTypeSO itemInfo
             }
 
             if (statLines.Count > 0)
-                sections.Add(FormatSection("Stats", statLines));
+                sections.Add(FormatSection(ResolveLabel(labelMap, TooltipLabelKeys.ItemSectionStats, "Stats"), statLines));
             if (effectLines.Count > 0)
-                sections.Add(FormatSection("Effects", effectLines));
+                sections.Add(FormatSection(ResolveLabel(labelMap, TooltipLabelKeys.ItemSectionEffects, "Effects"), effectLines));
 
             return sections;
         }
-}
+    }
 }

@@ -3,23 +3,17 @@ using System.Collections.Generic;
 using TH.Combat;
 using TH.Core;
 using TH.Core.Service;
-using TH.Item;
 using TH.Resource;
 using TH.UI;
 using UnityEngine;
-using TH.Attribute;
 
 [DisallowMultipleComponent]
 public sealed class ActiveSkillSlotController : MonoBehaviour
 {
-    private const string SkillTooltipPrefabKey = "UI_ItemTooltip.prefab";
+    private const string SkillTooltipPrefabKey = "UI_SkillTooltip.prefab";
     private const float ModifiedHighlightFadeDuration = 0.5f;
 
     [SerializeField] private ActiveSkillSlotPanel panel;
-
-    private readonly Dictionary<SkillTypeSO, GameItem> tooltipItems = new();
-    private readonly List<ItemTypeSO> tooltipItemInfos = new();
-
     private IPlayerHolder playerHolder;
     private ISkillController skillController;
     private IAttacker attacker;
@@ -80,11 +74,6 @@ public sealed class ActiveSkillSlotController : MonoBehaviour
         UnbindSkillController();
         HideSkillTooltip();
         hoveredSlotIndex = -1;
-    }
-
-    private void OnDestroy()
-    {
-        DestroyTooltipItems();
     }
 
     private void Update()
@@ -410,20 +399,13 @@ public sealed class ActiveSkillSlotController : MonoBehaviour
             return;
         }
 
-        var tooltipItem = GetOrCreateTooltipItem(displaySkill);
-        if (tooltipItem == null)
-        {
-            HideSkillTooltip();
-            return;
-        }
-
         Vector2 pointerPos = InputManager.Instance != null
             ? InputManager.Instance.PointerPos
             : (Vector2)Input.mousePosition;
 
         UIManager.Instance
-            .ShowUI<ItemTooltipUI>(SkillTooltipPrefabKey, UICanvas.FeedbackOverlay)
-            ?.ShowTooltipAt(pointerPos, tooltipItem);
+            .ShowUI<SkillTooltipUI>(SkillTooltipPrefabKey, UICanvas.FeedbackOverlay)
+            ?.ShowTooltipAt(pointerPos, displaySkill);
     }
 
     private bool TryGetDisplaySkillBySlot(int slotIndex, out SkillTypeSO displaySkill)
@@ -445,49 +427,9 @@ public sealed class ActiveSkillSlotController : MonoBehaviour
         return displaySkill != null;
     }
 
-    private GameItem GetOrCreateTooltipItem(SkillTypeSO skill)
-    {
-        if (skill == null)
-            return null;
-
-        if (tooltipItems.TryGetValue(skill, out var existingItem) && existingItem != null)
-            return existingItem;
-
-        var tooltipItemInfo = ScriptableObject.CreateInstance<ItemTypeSO>();
-        tooltipItemInfo.itemType = Enums.ItemType.Default;
-        tooltipItemInfo.maxAmount = 1;
-        tooltipItemInfo.itemUseEffects = new List<ItemEffectBase>();
-        tooltipItemInfo.nameString = skill.SkillId;
-        tooltipItemInfo.sprite = skill.SkillSlotImage;
-        tooltipItemInfo.desc = BuildSkillTooltipDescription(skill);
-
-        var tooltipItem = new GameItem(tooltipItemInfo);
-        tooltipItems[skill] = tooltipItem;
-        tooltipItemInfos.Add(tooltipItemInfo);
-        return tooltipItem;
-    }
-
-    private static string BuildSkillTooltipDescription(SkillTypeSO skill)
-    {
-        return $"Range: {skill.Range:0.##}\nCooldown: {skill.Cooldown:0.##}s\nHit Count: {skill.HitCount}\nAttack Coef: {skill.AttackCoefficient:0.##}";
-    }
-
     private void HideSkillTooltip()
     {
         UIManager.Instance.ReleaseUI(SkillTooltipPrefabKey);
-    }
-
-    private void DestroyTooltipItems()
-    {
-        tooltipItems.Clear();
-
-        for (int i = 0; i < tooltipItemInfos.Count; i++)
-        {
-            if (tooltipItemInfos[i] != null)
-                Destroy(tooltipItemInfos[i]);
-        }
-
-        tooltipItemInfos.Clear();
     }
 
     private void RefreshActiveSkillHighlight()

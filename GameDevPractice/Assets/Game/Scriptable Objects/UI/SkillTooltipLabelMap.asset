@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49b2a3b6f4048ba4493f9239d71d6359, type: 3}
+  m_Name: SkillTooltipLabelMap
+  m_EditorClassIdentifier: Assembly-CSharp::TH.UI.SkillTooltipLabelMapSO
+  entries:
+  - key: skill.type
+    label: "\uC2A4\uD0AC"
+  - key: skill.range
+    label: "\uC0AC\uAC70\uB9AC"
+  - key: skill.cooldown
+    label: "\uCFE8\uD0C0\uC784"
+  - key: skill.hit_count
+    label: "\uACF5\uACA9 \uD69F\uC218"
+  - key: skill.attack_coef
+    label: "\uACF5\uACA9 \uACC4\uC218"

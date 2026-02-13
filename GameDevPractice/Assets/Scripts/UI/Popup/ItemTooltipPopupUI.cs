@@ -46,6 +46,7 @@ namespace TH.UI
 /// </summary>
 public class ItemTooltipPopupUI : PopupUI
 {
+    private const string ItemTooltipLabelMapKey = "ItemTooltipLabelMap";
     #region Enums
 
     enum Buttons
@@ -75,40 +76,41 @@ public class ItemTooltipPopupUI : PopupUI
 
     /// <summary>설명 패널들의 부모 Transform</summary>
     
-[SerializeField] private Transform descParent;
+    [SerializeField] private Transform descParent;
     /// <summary>툴팁 본문 영역 RectTransform</summary>
     
-[SerializeField] private RectTransform bodyRect;
+    [SerializeField] private RectTransform bodyRect;
     /// <summary>설명 패널 프리팩 템플릿</summary>
     
-[SerializeField] private GameObject descPanelTemplate;
+    [SerializeField] private GameObject descPanelTemplate;
 
     /// <summary>아이템 이미지 패널 RectTransform</summary>
     
-private RectTransform itemImagePanelRect;
+    private RectTransform itemImagePanelRect;
     /// <summary>아이템 이미지 패널 최소 높이</summary>
     
-private float itemImagePanelMinHeight = -1f;
+    private float itemImagePanelMinHeight = -1f;
 
     /// <summary>설명 패널 오브젝트 풀</summary>
     
-private ObjectPool<IPoolObject> descPanelPool;
+    private ObjectPool<IPoolObject> descPanelPool;
     /// <summary>마지막으로 표시한 아이템 정보 (캐싱용)</summary>
     
-private ItemTypeSO lastItemInfo;
+    private ItemTypeSO lastItemInfo;
     /// <summary>현재 활성화된 설명 패널 목록</summary>
     
-private readonly List<ItemTooltipDescPanel> descPanels = new();
+    private readonly List<ItemTooltipDescPanel> descPanels = new();
+    private ItemTooltipLabelMapSO cachedLabelMap;
 
     /// <summary>나누기 개수 선택용 슬라이더 컨트롤러</summary>
     
-private ISliderUIControllerInteger sliderController;
+    private ISliderUIControllerInteger sliderController;
     /// <summary>나누기 버튼 클릭 시 실행할 액션 (슬라이더 표시)</summary>
     
-private Action divideButtonAction;
+    private Action divideButtonAction;
     /// <summary>나누기 확정 시 실행할 캐싱된 액션</summary>
     
-private Action<int> cachedDivideButtonAction;
+    private Action<int> cachedDivideButtonAction;
 
     protected override void Awake()
     {
@@ -122,7 +124,7 @@ private Action<int> cachedDivideButtonAction;
     /// </summary>
     /// <returns>초기화 성공 여부</returns>
     
-public override bool Init()
+    public override bool Init()
     {
         if (base.Init() == false)
             return false;
@@ -154,7 +156,7 @@ public override bool Init()
     /// bodyRect와 itemImagePanelRect 참조 확보.
     /// </summary>
     
-private void CacheLayoutTargets()
+    private void CacheLayoutTargets()
     {
         if (bodyRect == null && transform is RectTransform rootRect)
         {
@@ -185,7 +187,7 @@ private void CacheLayoutTargets()
     /// PoolManager를 통해 풀 생성.
     /// </summary>
     
-private void InitDescPanelPool()
+    private void InitDescPanelPool()
     {
         if (descPanelTemplate == null || descParent == null) return;
 
@@ -213,7 +215,7 @@ private void InitDescPanelPool()
     /// <param name="useButton">사용 버튼 정보</param>
     /// <param name="divideButton">나누기 버튼 정보 (개수 콜백 포함)</param>
     
-public void SetTooltip(IGameItem item, ButtonInfo removeButton, ButtonInfo useButton, ButtonInfo<int> divideButton)
+    public void SetTooltip(IGameItem item, ButtonInfo removeButton, ButtonInfo useButton, ButtonInfo<int> divideButton)
     {
         if (item is not { GetAmount: > 0, GetItemInfo: { } itemInfo }) return;
 
@@ -236,7 +238,7 @@ public void SetTooltip(IGameItem item, ButtonInfo removeButton, ButtonInfo useBu
     /// <param name="itemInfo">아이템 정보 SO</param>
     /// <param name="detailLevel">상세 수준</param>
     
-private void UpdateTooltipContent(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel)
+    private void UpdateTooltipContent(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel)
     {
         if (itemInfo == null)
         {
@@ -259,11 +261,11 @@ private void UpdateTooltipContent(ItemTypeSO itemInfo, TooltipDetailLevel detail
     /// <param name="itemInfo">아이템 정보 SO</param>
     /// <param name="detailLevel">상세 수준</param>
     
-private void PrepareTooltip(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel)
+    private void PrepareTooltip(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel)
     {
         GetTMPText((int)TMPTexts.ItemNameText)?.SetText(itemInfo.nameString ?? string.Empty);
-
-        BuildDescriptionPanels(itemInfo, detailLevel);
+        var labelMap = GetItemLabelMap();
+        BuildDescriptionPanels(itemInfo, detailLevel, labelMap);
 
         this.Log($"PrepareTooltip() - item: {itemInfo.nameString}", Logg.LoggingMode.Completed);
     }
@@ -273,7 +275,7 @@ private void PrepareTooltip(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel)
     /// 캔버스 강제 업데이트 후 패널/본문/루트 높이 동기화.
     /// </summary>
     
-private void RebuildTooltipLayout()
+    private void RebuildTooltipLayout()
     {
         this.Log("RebuildTooltipLayout() - start", Logg.LoggingMode.Completed);
 
@@ -296,7 +298,7 @@ private void RebuildTooltipLayout()
     /// 본문 영역 높이를 설명 패널과 이미지 패널 중 큰 값에 맞게 조정.
     /// </summary>
     
-private void SyncBodyHeight()
+    private void SyncBodyHeight()
     {
         if (bodyRect == null || descParent == null)
             return;
@@ -361,7 +363,7 @@ private void SyncBodyHeight()
     /// <param name="currentHeight">현재 합계 높이</param>
     /// <param name="targetHeight">목표 높이</param>
     
-private void AdjustDescPanelsHeight(float currentHeight, float targetHeight)
+    private void AdjustDescPanelsHeight(float currentHeight, float targetHeight)
     {
         if (descPanels.Count == 0)
             return;
@@ -399,7 +401,7 @@ private void AdjustDescPanelsHeight(float currentHeight, float targetHeight)
     /// 모든 설명 패널의 높이를 콘텐츠에 맞게 동기화.
     /// </summary>
     
-private void SyncDescPanelsHeight()
+    private void SyncDescPanelsHeight()
     {
         for (int i = 0; i < descPanels.Count; i++)
         {
@@ -425,7 +427,7 @@ private void SyncDescPanelsHeight()
     /// 루트 RectTransform 높이를 자식 요소들의 경계에 맞게 조정.
     /// </summary>
     
-private void UpdateRootHeight()
+    private void UpdateRootHeight()
     {
         if (transform is not RectTransform rootRect)
             return;
@@ -442,7 +444,7 @@ private void UpdateRootHeight()
     /// <param name="itemInfo">아이템 정보 SO</param>
     /// <param name="detailLevel">상세 수준</param>
     
-private void BuildDescriptionPanels(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel)
+    private void BuildDescriptionPanels(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel, ItemTooltipLabelMapSO labelMap)
     {
         if (descParent == null || descPanelTemplate == null)
         {
@@ -458,11 +460,26 @@ private void BuildDescriptionPanels(ItemTypeSO itemInfo, TooltipDetailLevel deta
             return;
         }
 
-        var sections = ItemTooltipContentBuilder.BuildDescriptionSections(itemInfo, detailLevel);
+        var sections = ItemTooltipContentBuilder.BuildDescriptionSections(itemInfo, detailLevel, labelMap);
         foreach (var section in sections)
         {
             AddDescPanel(section);
         }
+    }
+
+    private ItemTooltipLabelMapSO GetItemLabelMap()
+    {
+        if (cachedLabelMap != null)
+            return cachedLabelMap;
+
+        if (ResourceManager.Instance.TryLoad<ItemTooltipLabelMapSO>(ItemTooltipLabelMapKey, out var labelMap) && labelMap != null)
+        {
+            cachedLabelMap = labelMap;
+            return cachedLabelMap;
+        }
+
+        this.LogWarning($"failed to load addressable key: {ItemTooltipLabelMapKey}", context: this);
+        return null;
     }
 
     /// <summary>
@@ -470,7 +487,7 @@ private void BuildDescriptionPanels(ItemTypeSO itemInfo, TooltipDetailLevel deta
     /// </summary>
     /// <param name="content">패널에 표시할 텍스트</param>
     
-private void AddDescPanel(string content)
+    private void AddDescPanel(string content)
     {
         if (string.IsNullOrWhiteSpace(content) || descPanelPool == null)
             return;
@@ -486,7 +503,7 @@ private void AddDescPanel(string content)
     /// 모든 설명 패널을 풀에 반환하고 목록 초기화.
     /// </summary>
     
-private void ClearDescPanels()
+    private void ClearDescPanels()
     {
         for (int i = 0; i < descPanels.Count; i++)
         {

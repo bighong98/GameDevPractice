@@ -51,11 +51,25 @@ MonoBehaviour:
     - PreLoad_CatalogSO
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4d8024dbc08af23488e6fbbb69ce6342
+    m_Address: SkillTooltipLabelMap
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 62995c9fc2d3e694c88ffa854f08dcc4
     m_Address: ProgressionSO.asset
     m_ReadOnly: 0
     m_SerializedLabels:
     - PreLoad_CatalogSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 652b547a2fe48a146a3279ae06bf0a14
+    m_Address: ItemTooltipLabelMap
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 777527bcfd206474f9b1685d8c2df576

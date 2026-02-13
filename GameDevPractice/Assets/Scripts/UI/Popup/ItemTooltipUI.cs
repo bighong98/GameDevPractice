@@ -18,6 +18,8 @@ namespace TH.UI
     /// </summary>
     public sealed class ItemTooltipUI : BaseUI, IPoolObject
     {
+        private const string ItemTooltipLabelMapKey = "ItemTooltipLabelMap";
+
         #region Enums
 
         /// <summary>TMP 텍스트 바인딩용 enum</summary>
@@ -45,6 +47,7 @@ namespace TH.UI
 
         /// <summary>화면 경계 내 위치 조정 헬퍼</summary>
         private IScreenSpaceClamper screenClamper;
+        private ItemTooltipLabelMapSO cachedLabelMap;
 
         protected override void Awake()
         {
@@ -205,10 +208,26 @@ namespace TH.UI
         /// <param name="detailLevel">상세 수준</param>
         private void PrepareTooltip(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel)
         {
-            GetTMPText((int)TMPTexts.ItemNameText)?.SetText(itemInfo.nameString ?? string.Empty);
-            GetTMPText((int)TMPTexts.ItemTypeText)?.SetText(itemInfo.itemType.ToString() ?? string.Empty);
+            var labelMap = GetItemLabelMap();
 
-            BuildDescriptionPanels(itemInfo, detailLevel);
+            GetTMPText((int)TMPTexts.ItemNameText)?.SetText(itemInfo.nameString ?? string.Empty);
+
+            string fallbackItemTypeLabel = itemInfo.itemType == Enums.ItemType.Countable
+                ? (itemInfo.isUsable ? "소비" : "재료")
+                : itemInfo.itemType.ToString();
+
+            string itemTypeLabel = fallbackItemTypeLabel;
+            if (labelMap != null)
+            {
+                string itemTypeKey = TooltipLabelKeys.ItemType(itemInfo.itemType, itemInfo.isUsable);
+                string baseTypeKey = TooltipLabelKeys.ItemType(itemInfo.itemType);
+                itemTypeLabel = labelMap.GetLabel(
+                    itemTypeKey,
+                    labelMap.GetLabel(baseTypeKey, fallbackItemTypeLabel));
+            }
+            GetTMPText((int)TMPTexts.ItemTypeText)?.SetText(itemTypeLabel ?? string.Empty);
+
+            BuildDescriptionPanels(itemInfo, detailLevel, labelMap);
 
             this.Log($"PrepareTooltip() - item: {itemInfo.nameString}", Logg.LoggingMode.Completed);
         }
@@ -276,7 +295,7 @@ namespace TH.UI
         /// </summary>
         /// <param name="itemInfo">아이템 정보 SO</param>
         /// <param name="detailLevel">상세 수준</param>
-        private void BuildDescriptionPanels(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel)
+        private void BuildDescriptionPanels(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel, ItemTooltipLabelMapSO labelMap)
         {
             if (descParent == null || descPanelTemplate == null)
             {
@@ -292,11 +311,26 @@ namespace TH.UI
                 return;
             }
 
-            var sections = ItemTooltipContentBuilder.BuildDescriptionSections(itemInfo, detailLevel);
+            var sections = ItemTooltipContentBuilder.BuildDescriptionSections(itemInfo, detailLevel, labelMap);
             foreach (var section in sections)
             {
                 AddDescPanel(section);
             }
+        }
+
+        private ItemTooltipLabelMapSO GetItemLabelMap()
+        {
+            if (cachedLabelMap != null)
+                return cachedLabelMap;
+
+            if (ResourceManager.Instance.TryLoad<ItemTooltipLabelMapSO>(ItemTooltipLabelMapKey, out var labelMap) && labelMap != null)
+            {
+                cachedLabelMap = labelMap;
+                return cachedLabelMap;
+            }
+
+            this.LogWarning($"failed to load addressable key: {ItemTooltipLabelMapKey}", context: this);
+            return null;
         }
 
         /// <summary>
