@@ -62,6 +62,15 @@ public sealed class ActiveSkillSlotPanel : BaseUI, IHoverableStorageUI, IPointer
         slotUIs[index].SetCooldown(remainingCooldown, totalCooldown);
     }
 
+    public void DrawSequenceTimeout(int index, float remainingTimeout, float totalTimeout)
+    {
+        if (!IsValidSlotIndex(index))
+            return;
+
+        slotUIs[index].SetSequenceTimeout(remainingTimeout, totalTimeout);
+    }
+
+
     public void SetSlotKeyText(int index, string keyText)
     {
         if (!IsValidSlotIndex(index))
@@ -78,6 +87,15 @@ public sealed class ActiveSkillSlotPanel : BaseUI, IHoverableStorageUI, IPointer
         slotUIs[index].Highlight();
     }
 
+    public void HighlightSlot(int index, int highlightType)
+    {
+        if (!IsValidSlotIndex(index))
+            return;
+
+        slotUIs[index].Highlight(highlightType);
+    }
+
+
     public void UnHighlightSlot(int index)
     {
         if (!IsValidSlotIndex(index))
@@ -85,6 +103,15 @@ public sealed class ActiveSkillSlotPanel : BaseUI, IHoverableStorageUI, IPointer
 
         slotUIs[index].UnHighlight();
     }
+
+    public void UnHighlightSlotWithFade(int index, int highlightType, float duration = 0.5f)
+    {
+        if (!IsValidSlotIndex(index))
+            return;
+
+        slotUIs[index].UnHighlightWithFade(highlightType, duration);
+    }
+
 
     public void ClearSlot(int index)
     {

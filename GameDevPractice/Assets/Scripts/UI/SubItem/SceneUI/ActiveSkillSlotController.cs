@@ -13,6 +13,7 @@ using TH.Attribute;
 public sealed class ActiveSkillSlotController : MonoBehaviour
 {
     private const string SkillTooltipPrefabKey = "UI_ItemTooltip.prefab";
+    private const float ModifiedHighlightFadeDuration = 0.5f;
 
     [SerializeField] private ActiveSkillSlotPanel panel;
 
@@ -24,6 +25,8 @@ public sealed class ActiveSkillSlotController : MonoBehaviour
     private IAttacker attacker;
     private int highlightedSlotIndex = -1;
     private int hoveredSlotIndex = -1;
+    private readonly List<SkillTypeSO> displayedSkills = new();
+    private bool hasDisplaySkillSnapshot;
 
     private void Awake()
     {
@@ -172,19 +175,26 @@ public sealed class ActiveSkillSlotController : MonoBehaviour
 
         var skills = skillController.RegisteredSkills;
         int slotCount = panel.SlotCount;
+        bool allowModifiedHighlight = hasDisplaySkillSnapshot;
 
         for (int i = 0; i < slotCount; i++)
         {
             SkillTypeSO baseSkill = i < skills.Count ? skills[i] : null;
             if (baseSkill == null)
             {
+                UpdateDisplayedSkillSnapshot(i, null);
                 panel.ClearSlot(i);
                 continue;
             }
 
-            panel.DrawSkill(i, ResolveDisplaySkill(baseSkill));
+            SkillTypeSO displaySkill = ResolveDisplaySkill(baseSkill);
+            DrawSkillWithChangeHighlight(i, displaySkill, allowModifiedHighlight);
             DrawCooldown(i, baseSkill);
+            DrawSequenceTimeout(i, baseSkill);
         }
+
+        TrimDisplayedSkillSnapshot(slotCount);
+        hasDisplaySkillSnapshot = true;
 
         RefreshActiveSkillHighlight();
         RefreshHoveredTooltip();
@@ -216,11 +226,13 @@ public sealed class ActiveSkillSlotController : MonoBehaviour
             SkillTypeSO skill = skills[i];
             if (skill == null)
             {
+                UpdateDisplayedSkillSnapshot(i, null);
                 panel.ClearSlot(i);
                 continue;
             }
 
             DrawCooldown(i, skill);
+            DrawSequenceTimeout(i, skill);
         }
     }
 
@@ -233,6 +245,21 @@ public sealed class ActiveSkillSlotController : MonoBehaviour
         panel.DrawCooldown(slotIndex, remainingCooldown, skill.Cooldown);
     }
 
+    private void DrawSequenceTimeout(int slotIndex, SkillTypeSO skill)
+    {
+        if (panel == null || skillController == null || skill == null)
+            return;
+
+        if (skillController.TryGetActiveSequenceTimeout(skill, out var remainingTimeout, out var totalTimeout))
+        {
+            panel.DrawSequenceTimeout(slotIndex, remainingTimeout, totalTimeout);
+            return;
+        }
+
+        panel.DrawSequenceTimeout(slotIndex, 0f, 0f);
+    }
+
+
     private void DrawCooldownForSkill(SkillTypeSO skill)
     {
         int slotIndex = FindSkillSlotIndex(skill);
@@ -240,6 +267,7 @@ public sealed class ActiveSkillSlotController : MonoBehaviour
             return;
 
         DrawCooldown(slotIndex, skill);
+        DrawSequenceTimeout(slotIndex, skill);
     }
 
     private int FindSkillSlotIndex(SkillTypeSO skill)
@@ -290,6 +318,50 @@ public sealed class ActiveSkillSlotController : MonoBehaviour
         return previewSkill != null;
     }
 
+    private void DrawSkillWithChangeHighlight(int slotIndex, SkillTypeSO displaySkill, bool allowHighlight)
+    {
+        if (panel == null)
+            return;
+
+        panel.DrawSkill(slotIndex, displaySkill);
+
+        bool isChanged = UpdateDisplayedSkillSnapshot(slotIndex, displaySkill);
+        if (!allowHighlight || !isChanged)
+            return;
+
+        panel.HighlightSlot(slotIndex, (int)SlotHighlightType.Modified);
+        panel.UnHighlightSlotWithFade(slotIndex, (int)SlotHighlightType.Modified, ModifiedHighlightFadeDuration);
+    }
+
+    private bool UpdateDisplayedSkillSnapshot(int slotIndex, SkillTypeSO displaySkill)
+    {
+        if (slotIndex < 0)
+            return false;
+
+        EnsureDisplayedSkillSnapshotSize(slotIndex + 1);
+
+        bool isChanged = displayedSkills[slotIndex] != displaySkill;
+        displayedSkills[slotIndex] = displaySkill;
+        return isChanged;
+    }
+
+    private void EnsureDisplayedSkillSnapshotSize(int size)
+    {
+        while (displayedSkills.Count < size)
+        {
+            displayedSkills.Add(null);
+        }
+    }
+
+    private void TrimDisplayedSkillSnapshot(int size)
+    {
+        if (displayedSkills.Count <= size)
+            return;
+
+        displayedSkills.RemoveRange(size, displayedSkills.Count - size);
+    }
+
+
     private void RefreshResolvedSkillPresentation()
     {
         if (panel == null || skillController == null || !skillController.HasActiveSkill)
@@ -299,8 +371,10 @@ public sealed class ActiveSkillSlotController : MonoBehaviour
         if (activeSlotIndex < 0)
             return;
 
-        panel.DrawSkill(activeSlotIndex, ResolveDisplaySkill(skillController.ActiveSkill));
+        SkillTypeSO displaySkill = ResolveDisplaySkill(skillController.ActiveSkill);
+        DrawSkillWithChangeHighlight(activeSlotIndex, displaySkill, allowHighlight: hasDisplaySkillSnapshot);
         DrawCooldown(activeSlotIndex, skillController.ActiveSkill);
+        DrawSequenceTimeout(activeSlotIndex, skillController.ActiveSkill);
         RefreshActiveSkillHighlight();
         RefreshHoveredTooltip();
     }
@@ -437,5 +511,7 @@ public sealed class ActiveSkillSlotController : MonoBehaviour
 
         panel.ClearAllSlots();
         highlightedSlotIndex = -1;
+        displayedSkills.Clear();
+        hasDisplaySkillSnapshot = false;
     }
 }

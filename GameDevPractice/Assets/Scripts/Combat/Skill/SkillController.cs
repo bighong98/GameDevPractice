@@ -53,7 +53,9 @@ namespace TH.Combat
         // 활성 스킬 전환.
         bool SetActiveSkill(SkillTypeSO skill);
         // 특정 스킬의 남은 쿨다운 조회.
+        
         float GetRemainingCooldown(SkillTypeSO skill);
+        bool TryGetActiveSequenceTimeout(SkillTypeSO skill, out float remainingTimeout, out float totalTimeout);
         // 활성 스킬을 실제로 소비하고 공격 소스를 생성.
         bool TryConsumeActiveSkill(IAttacker attacker, out AttackSource attackSource);
         // 소비 없이 현재 기준 공격 소스 미리보기 생성.
@@ -326,6 +328,39 @@ namespace TH.Combat
             if (skill.IsNull() || skillCaster == null) return 0f;
             return skillCaster.GetRemainingCooldown(skill);
         }
+
+        public bool TryGetActiveSequenceTimeout(SkillTypeSO skill, out float remainingTimeout, out float totalTimeout)
+        {
+            remainingTimeout = 0f;
+            totalTimeout = 0f;
+
+            if (skill.IsNull() || !HasActiveSkill || skillBook == null || skillBook.ActiveSkill != skill)
+                return false;
+
+            if (skill.ComboSequence is not { HasSteps: true } comboSequence)
+                return false;
+
+            int stepCount = Mathf.Max(1, comboSequence.StepCount);
+            if (stepCount <= 1)
+                return false;
+
+            float comboTimeout = Mathf.Max(0f, comboSequence.ComboTimeout);
+            if (comboTimeout <= 0f)
+                return false;
+
+            var context = GetOrCreateComboContext(skill);
+            if (context.LastConsumeTime < 0f || context.NextStepIndex <= 0)
+                return false;
+
+            float elapsed = Time.time - context.LastConsumeTime;
+            if (elapsed >= comboTimeout)
+                return false;
+
+            remainingTimeout = comboTimeout - elapsed;
+            totalTimeout = comboTimeout;
+            return true;
+        }
+
 
         // 활성 스킬을 실제 소비해 공격 요청에 필요한 AttackSource를 만든다.
         public bool TryConsumeActiveSkill(IAttacker attacker, out AttackSource attackSource)

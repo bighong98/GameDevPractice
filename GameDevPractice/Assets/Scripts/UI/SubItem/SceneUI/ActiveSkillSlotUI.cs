@@ -8,6 +8,7 @@ using UnityEngine.UI;
 public class ActiveSkillSlotUI : BaseSlotUI, IHighlightableSlotUI
 {
     [SerializeField] private Image cooldownImage;
+    [SerializeField] private Image sequenceTimeOutImage;
     [SerializeField] private TextMeshProUGUI cooldownText;
     [SerializeField] private TextMeshProUGUI slotKeyText;
 
@@ -32,6 +33,7 @@ public class ActiveSkillSlotUI : BaseSlotUI, IHighlightableSlotUI
 
         ApplySkillIcon(boundSkill.SkillSlotImage);
         SetCooldown(0f, boundSkill.Cooldown);
+        SetSequenceTimeout(0f, 0f);
     }
 
     public void SetCooldown(float remainingCooldown, float totalCooldown)
@@ -69,6 +71,27 @@ public class ActiveSkillSlotUI : BaseSlotUI, IHighlightableSlotUI
         cooldownText.SetText(string.Empty);
     }
 
+    public void SetSequenceTimeout(float remainingTimeout, float totalTimeout)
+    {
+        if (sequenceTimeOutImage == null)
+            return;
+
+        float resolvedRemaining = Mathf.Max(0f, remainingTimeout);
+        float resolvedTotal = Mathf.Max(0f, totalTimeout);
+        bool shouldShow = boundSkill != null && resolvedTotal > 0f && resolvedRemaining > 0f;
+
+        if (!shouldShow)
+        {
+            sequenceTimeOutImage.fillAmount = 0f;
+            sequenceTimeOutImage.enabled = false;
+            return;
+        }
+
+        sequenceTimeOutImage.fillAmount = Mathf.Clamp01(resolvedRemaining / resolvedTotal);
+        sequenceTimeOutImage.enabled = true;
+    }
+
+
     public void SetSlotKeyText(string text)
     {
         if (slotKeyText == null)
@@ -104,7 +127,7 @@ public class ActiveSkillSlotUI : BaseSlotUI, IHighlightableSlotUI
         {
             Color highlightColor = type switch
             {
-                (int)SlotHighlightType.Modified => Color.yellow,
+                (int)SlotHighlightType.Modified => Color.white,
                 (int)SlotHighlightType.Warn => Color.red,
                 _ => Color.green,
             };
@@ -160,6 +183,12 @@ public class ActiveSkillSlotUI : BaseSlotUI, IHighlightableSlotUI
         {
             cooldownImage.fillAmount = 0f;
             cooldownImage.enabled = false;
+        }
+
+        if (sequenceTimeOutImage != null)
+        {
+            sequenceTimeOutImage.fillAmount = 0f;
+            sequenceTimeOutImage.enabled = false;
         }
 
         if (cooldownText != null)
