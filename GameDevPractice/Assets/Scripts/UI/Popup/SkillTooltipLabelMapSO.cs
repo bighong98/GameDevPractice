@@ -20,6 +20,7 @@ namespace TH.UI
             new LabelEntry { key = TooltipLabelKeys.SkillRange, label = "\uC0AC\uAC70\uB9AC" },
             new LabelEntry { key = TooltipLabelKeys.SkillCooldown, label = "\uCFE8\uD0C0\uC784" },
             new LabelEntry { key = TooltipLabelKeys.SkillHitCount, label = "\uD0C0\uACA9 \uD69F\uC218" },
+            new LabelEntry { key = TooltipLabelKeys.SkillDamagePerHit, label = "\uD0C0\uC218\uB2F9 \uB300\uBBF8\uC9C0" },
             new LabelEntry { key = TooltipLabelKeys.SkillAttackCoefficient, label = "\uACF5\uACA9 \uACC4\uC218" }
         };
 

@@ -12,6 +12,7 @@ namespace TH.UI
         public const string SkillCooldown = "skill.cooldown";
         public const string SkillHitCount = "skill.hit_count";
         public const string SkillAttackCoefficient = "skill.attack_coef";
+        public const string SkillDamagePerHit = "skill.damage_per_hit";
 
         public static string ItemType(Enums.ItemType itemType)
         {

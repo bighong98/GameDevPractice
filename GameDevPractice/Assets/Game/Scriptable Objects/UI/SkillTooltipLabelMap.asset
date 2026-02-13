@@ -21,5 +21,7 @@ MonoBehaviour:
     label: "\uCFE8\uD0C0\uC784"
   - key: skill.hit_count
     label: "\uACF5\uACA9 \uD69F\uC218"
+  - key: skill.damage_per_hit
+    label: "\uD0C0\uC218\uB2F9 \uB300\uBBF8\uC9C0"
   - key: skill.attack_coef
     label: "\uACF5\uACA9 \uACC4\uC218"

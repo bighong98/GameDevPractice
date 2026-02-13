@@ -1,10 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
+using TH.Attribute.Stat;
 using TH.Combat;
 using TH.Core;
 using TH.Core.Service;
 using TH.Resource;
 using TH.UI;
+using TH.Utils;
 using UnityEngine;
 
 [DisallowMultipleComponent]
@@ -17,6 +19,7 @@ public sealed class ActiveSkillSlotController : MonoBehaviour
     private IPlayerHolder playerHolder;
     private ISkillController skillController;
     private IAttacker attacker;
+    private IStatHolder statHolder;
     private int highlightedSlotIndex = -1;
     private int hoveredSlotIndex = -1;
     private readonly List<SkillTypeSO> displayedSkills = new();
@@ -92,10 +95,19 @@ public sealed class ActiveSkillSlotController : MonoBehaviour
 
         if (playerInstance is Component c)
         {
-            if (c.TryGetComponent(out ISkillController foundSkillController))
-                skillController = foundSkillController;
-            if (c.TryGetComponent(out IAttacker foundAttacker))
-                attacker = foundAttacker;
+            // if (c.TryGetComponent(out ISkillController foundSkillController))
+            //     skillController = foundSkillController;
+            // if (c.TryGetComponent(out IAttacker foundAttacker))
+            //     attacker = foundAttacker;
+            // if (c.TryGetComponent(out IStatHolder foundStatHolder))
+            //     statHolder = foundStatHolder;
+
+            if (!c.TryGetComponent(out skillController))
+                Logg.LogError($"failed to GetComponent for {nameof(skillController)}", context: this);
+            if (!c.TryGetComponent(out attacker))
+                Logg.LogError($"failed to GetComponent for {nameof(attacker)}", context: this);
+            if (!c.TryGetComponent(out statHolder))
+                Logg.LogError($"failed to GetComponent for {nameof(statHolder)}", context: this);
         }
 
         if (skillController != null)
@@ -123,6 +135,7 @@ public sealed class ActiveSkillSlotController : MonoBehaviour
 
         skillController = null;
         attacker = null;
+        statHolder = null;
         ClearPanel();
     }
 
@@ -405,7 +418,7 @@ public sealed class ActiveSkillSlotController : MonoBehaviour
 
         UIManager.Instance
             .ShowUI<SkillTooltipUI>(SkillTooltipPrefabKey, UICanvas.FeedbackOverlay)
-            ?.ShowTooltipAt(pointerPos, displaySkill);
+            ?.ShowTooltipAt(pointerPos, displaySkill, statHolder);
     }
 
     private bool TryGetDisplaySkillBySlot(int slotIndex, out SkillTypeSO displaySkill)

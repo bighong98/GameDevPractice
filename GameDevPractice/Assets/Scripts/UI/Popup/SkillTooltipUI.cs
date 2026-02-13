@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TH.Attribute.Stat;
 using TH.Core.Pool;
 using TH.Core.Service;
 using TH.Resource;
@@ -26,6 +27,7 @@ namespace TH.UI
 
         private ObjectPool<IPoolObject> descPanelPool;
         private SkillTypeSO lastSkillInfo;
+        private float lastSourceDamage = float.NaN;
         private readonly List<ItemTooltipDescPanel> descPanels = new();
         private IScreenSpaceClamper screenClamper;
         private SkillTooltipLabelMapSO cachedLabelMap;
@@ -62,9 +64,9 @@ namespace TH.UI
 
         public void HideTooltip() => gameObject.SetActive(false);
 
-        public void ShowTooltipAt(Vector2 screenPos, SkillTypeSO skill)
+        public void ShowTooltipAt(Vector2 screenPos, SkillTypeSO skill, IStatHolder statHolder = null)
         {
-            ShowTooltip(skill, out bool contentChanged);
+            ShowTooltip(skill, statHolder, out bool contentChanged);
 
             if (contentChanged && transform is RectTransform rectTransform)
                 LayoutRebuilder.ForceRebuildLayoutImmediate(rectTransform);
@@ -115,7 +117,7 @@ namespace TH.UI
                 registerPool: false);
         }
 
-        private void ShowTooltip(SkillTypeSO skill, out bool contentChanged)
+        private void ShowTooltip(SkillTypeSO skill, IStatHolder statHolder, out bool contentChanged)
         {
             contentChanged = false;
 
@@ -126,17 +128,20 @@ namespace TH.UI
             }
 
             ShowTooltip();
+            float sourceDamage = ResolveSourceDamage(skill, statHolder);
 
-            if (lastSkillInfo == null || !ReferenceEquals(lastSkillInfo, skill))
+            if (lastSkillInfo == null || !ReferenceEquals(lastSkillInfo, skill) || float.IsNaN(lastSourceDamage) ||
+                !Mathf.Approximately(lastSourceDamage, sourceDamage))
             {
                 contentChanged = true;
                 lastSkillInfo = skill;
-                PrepareTooltip(skill);
+                lastSourceDamage = sourceDamage;
+                PrepareTooltip(skill, sourceDamage);
                 RebuildTooltipLayout();
             }
         }
 
-        private void PrepareTooltip(SkillTypeSO skill)
+        private void PrepareTooltip(SkillTypeSO skill, float sourceDamage)
         {
             var labelMap = GetSkillLabelMap();
 
@@ -147,10 +152,10 @@ namespace TH.UI
                 : "Skill";
             GetTMPText((int)TMPTexts.ItemTypeText)?.SetText(skillTypeLabel);
 
-            BuildDescriptionPanels(skill, labelMap);
+            BuildDescriptionPanels(skill, sourceDamage, labelMap);
         }
 
-        private void BuildDescriptionPanels(SkillTypeSO skill, SkillTooltipLabelMapSO labelMap)
+        private void BuildDescriptionPanels(SkillTypeSO skill, float sourceDamage, SkillTooltipLabelMapSO labelMap)
         {
             if (descParent == null || descPanelTemplate == null)
             {
@@ -166,9 +171,25 @@ namespace TH.UI
                 return;
             }
 
-            var sections = SkillTooltipContentBuilder.BuildDescriptionSections(skill, labelMap);
+            var sections = SkillTooltipContentBuilder.BuildDescriptionSections(skill, sourceDamage, labelMap);
             foreach (var section in sections)
                 AddDescPanel(section);
+        }
+
+        private static float ResolveSourceDamage(SkillTypeSO skill, IStatHolder statHolder)
+        {
+            if (skill == null)
+                return 0f;
+
+            if (statHolder != null &&
+                skill.AttackSourceStatSO != null &&
+                statHolder.TryGetStat(skill.AttackSourceStatSO, out var attackSourceStat) &&
+                attackSourceStat != null)
+            {
+                return attackSourceStat.Value;
+            }
+
+            return skill.BaseDamage;
         }
 
         private SkillTooltipLabelMapSO GetSkillLabelMap()

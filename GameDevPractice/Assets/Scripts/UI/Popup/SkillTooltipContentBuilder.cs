@@ -2,27 +2,29 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using TH.Resource;
+using UnityEngine;
 
 namespace TH.UI
 {
     public static class SkillTooltipContentBuilder
     {
-        public static IReadOnlyList<string> BuildDescriptionSections(SkillTypeSO skill, SkillTooltipLabelMapSO labelMap = null)
+        public static IReadOnlyList<string> BuildDescriptionSections(SkillTypeSO skill, float sourceDamage, SkillTooltipLabelMapSO labelMap = null)
         {
             if (skill == null)
                 return Array.Empty<string>();
 
-            return new[] { BuildCoreSection(skill, labelMap) };
+            return new[] { BuildCoreSection(skill, sourceDamage, labelMap) };
         }
 
-        private static string BuildCoreSection(SkillTypeSO skill, SkillTooltipLabelMapSO labelMap)
+        private static string BuildCoreSection(SkillTypeSO skill, float sourceDamage, SkillTooltipLabelMapSO labelMap)
         {
+            float perHitDamage = Mathf.Max(0f, sourceDamage * skill.AttackCoefficient);
             return string.Join("\n", new[]
             {
                 $"{ResolveLabel(labelMap, TooltipLabelKeys.SkillRange, "Range")}: {FormatFloat(skill.Range)}",
                 $"{ResolveLabel(labelMap, TooltipLabelKeys.SkillCooldown, "Cooldown")}: {FormatFloat(skill.Cooldown)}s",
                 $"{ResolveLabel(labelMap, TooltipLabelKeys.SkillHitCount, "Hit Count")}: {skill.HitCount}",
-                $"{ResolveLabel(labelMap, TooltipLabelKeys.SkillAttackCoefficient, "Attack Coef")}: {FormatFloat(skill.AttackCoefficient)}"
+                $"{ResolveLabel(labelMap, TooltipLabelKeys.SkillDamagePerHit, "Damage/Hit")}: {FormatFloat(perHitDamage)}"
             });
         }
 

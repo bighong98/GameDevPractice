@@ -19,6 +19,8 @@ namespace TH.UI
     public sealed class ItemTooltipUI : BaseUI, IPoolObject
     {
         private const string ItemTooltipLabelMapKey = "ItemTooltipLabelMap";
+        private const string CountableUsableFallbackLabel = "\uC18C\uBE44"; // 소비
+        private const string CountableResourceFallbackLabel = "\uC7AC\uB8CC"; // 재료
 
         #region Enums
 
@@ -48,6 +50,8 @@ namespace TH.UI
         /// <summary>화면 경계 내 위치 조정 헬퍼</summary>
         private IScreenSpaceClamper screenClamper;
         private ItemTooltipLabelMapSO cachedLabelMap;
+        private bool isItemTypeLabelCacheInitialized;
+        private readonly Dictionary<string, string> itemTypeLabelCache = new(StringComparer.Ordinal);
 
         protected override void Awake()
         {
@@ -209,28 +213,56 @@ namespace TH.UI
         private void PrepareTooltip(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel)
         {
             var labelMap = GetItemLabelMap();
-
-            GetTMPText((int)TMPTexts.ItemNameText)?.SetText(itemInfo.nameString ?? string.Empty);
-
-            string fallbackItemTypeLabel = itemInfo.itemType == Enums.ItemType.Countable
-                ? (itemInfo.isUsable ? "소비" : "재료")
-                : itemInfo.itemType.ToString();
-
-            string itemTypeLabel = fallbackItemTypeLabel;
-            if (labelMap != null)
-            {
-                string itemTypeKey = TooltipLabelKeys.ItemType(itemInfo.itemType, itemInfo.isUsable);
-                string baseTypeKey = TooltipLabelKeys.ItemType(itemInfo.itemType);
-                itemTypeLabel = labelMap.GetLabel(
-                    itemTypeKey,
-                    labelMap.GetLabel(baseTypeKey, fallbackItemTypeLabel));
-            }
-            GetTMPText((int)TMPTexts.ItemTypeText)?.SetText(itemTypeLabel ?? string.Empty);
-
+            EnsureItemTypeLabelCache(labelMap);
+            UpdateHeaderTexts(itemInfo);
             BuildDescriptionPanels(itemInfo, detailLevel, labelMap);
 
             this.Log($"PrepareTooltip() - item: {itemInfo.nameString}", Logg.LoggingMode.Completed);
         }
+
+        private void UpdateHeaderTexts(ItemTypeSO itemInfo)
+        {
+            GetTMPText((int)TMPTexts.ItemNameText)?.SetText(itemInfo.nameString ?? string.Empty);
+            GetTMPText((int)TMPTexts.ItemTypeText)?.SetText(ResolveItemTypeLabel(itemInfo) ?? string.Empty);
+        }
+
+        private void EnsureItemTypeLabelCache(ItemTooltipLabelMapSO labelMap)
+        {
+            if (isItemTypeLabelCacheInitialized || labelMap == null)
+                return;
+
+            itemTypeLabelCache.Clear();
+            CacheItemTypeLabel(labelMap, Enums.ItemType.Default, false, Enums.ItemType.Default.ToString());
+            CacheItemTypeLabel(labelMap, Enums.ItemType.Equipment, false, Enums.ItemType.Equipment.ToString());
+            CacheItemTypeLabel(labelMap, Enums.ItemType.Countable, true, CountableUsableFallbackLabel);
+            CacheItemTypeLabel(labelMap, Enums.ItemType.Countable, false, CountableResourceFallbackLabel);
+            CacheItemTypeLabel(labelMap, Enums.ItemType.Single, false, Enums.ItemType.Single.ToString());
+            CacheItemTypeLabel(labelMap, Enums.ItemType.Special, false, Enums.ItemType.Special.ToString());
+            isItemTypeLabelCacheInitialized = true;
+        }
+
+        private void CacheItemTypeLabel(ItemTooltipLabelMapSO labelMap, Enums.ItemType itemType, bool isUsable, string fallback)
+        {
+            string itemTypeKey = TooltipLabelKeys.ItemType(itemType, isUsable);
+            string baseTypeKey = TooltipLabelKeys.ItemType(itemType);
+            string resolved = labelMap.GetLabel(itemTypeKey, labelMap.GetLabel(baseTypeKey, fallback));
+            itemTypeLabelCache[itemTypeKey] = resolved;
+        }
+
+        private string ResolveItemTypeLabel(ItemTypeSO itemInfo)
+        {
+            string itemTypeKey = TooltipLabelKeys.ItemType(itemInfo.itemType, itemInfo.isUsable);
+            if (itemTypeLabelCache.TryGetValue(itemTypeKey, out var cachedLabel) && !string.IsNullOrWhiteSpace(cachedLabel))
+                return cachedLabel;
+
+            return itemInfo.itemType == Enums.ItemType.Countable
+                ? (itemInfo.isUsable ? CountableUsableFallbackLabel : CountableResourceFallbackLabel)
+                : itemInfo.itemType.ToString();
+        }
+
+
+
+
 
         /// <summary>
         /// 툴팁 레이아웃 재구성.
