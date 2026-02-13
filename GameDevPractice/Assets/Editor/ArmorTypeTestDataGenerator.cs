@@ -12,9 +12,9 @@ using UnityEngine;
 
 public static class ArmorTypeTestDataGenerator
 {
-    private const string ArmorOutputDataAddressKey = "Armor Output Data";
-    private const string OutfitDataAddressKey = "Outfit Data";
-    private const string OutputIconsAddressKey = "Outfit Output Icons";
+    private const string ArmorOutputDataAddressKey = "armor.output_data.folder";
+    private const string OutfitDataAddressKey = "outfit.data.folder";
+    private const string OutputIconsAddressKey = "outfit.icons_output.folder";
     private const string ItemDataGroupName = "Item Data";
 
     [MenuItem("Tools/Outfit/Generate Test ArmorTypeSO Data")]
@@ -455,38 +455,9 @@ public static class ArmorTypeTestDataGenerator
 
     private static string ResolvePathByAddressKey(string addressKey)
     {
-        if (string.IsNullOrWhiteSpace(addressKey))
-            return null;
-
-        var settings = AddressableAssetSettingsDefaultObject.Settings;
-        if (settings == null)
-        {
-            Debug.LogError($"[ArmorTypeTestDataGenerator] Addressable settings not found. key={addressKey}");
-            return null;
-        }
-
-        for (int g = 0; g < settings.groups.Count; g++)
-        {
-            var group = settings.groups[g];
-            if (group == null)
-                continue;
-
-            foreach (var entry in group.entries)
-            {
-                if (entry == null)
-                    continue;
-
-                if (!string.Equals(entry.address, addressKey, StringComparison.Ordinal))
-                    continue;
-
-                var path = AssetDatabase.GUIDToAssetPath(entry.guid);
-                if (!string.IsNullOrEmpty(path))
-                    return path;
-            }
-        }
-
-        Debug.LogError($"[ArmorTypeTestDataGenerator] Addressable key not found: {addressKey}");
-        return null;
+        return EditorAddressablePathResolver.ResolvePathByMapIdOrAddressKey(
+            addressKey,
+            nameof(ArmorTypeTestDataGenerator));
     }
 
     private static string SanitizeFileName(string raw)

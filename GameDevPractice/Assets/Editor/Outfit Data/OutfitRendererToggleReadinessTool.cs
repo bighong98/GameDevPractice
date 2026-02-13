@@ -6,14 +6,12 @@ using System.Linq;
 using System.Reflection;
 using TH.Item;
 using UnityEditor;
-using UnityEditor.AddressableAssets;
-using UnityEditor.AddressableAssets.Settings;
 using UnityEngine;
 
 public static class OutfitRendererToggleReadinessTool
 {
-    private const string MaleTemplateAddressKey = "BasicHero_M Variant Template";
-    private const string FemaleTemplateAddressKey = "BasicHero_F Variant Template";
+    private const string MaleTemplateAddressKey = "outfit.template.male";
+    private const string FemaleTemplateAddressKey = "outfit.template.female";
 
     private static readonly string[] TemplatePrefabAddressKeys =
     {
@@ -256,38 +254,9 @@ public static class OutfitRendererToggleReadinessTool
 
     private static string ResolvePathByAddressKey(string addressKey)
     {
-        if (string.IsNullOrWhiteSpace(addressKey))
-            return null;
-
-        var settings = AddressableAssetSettingsDefaultObject.Settings;
-        if (settings == null)
-        {
-            Debug.LogError($"[{nameof(OutfitRendererToggleReadinessTool)}] Addressable settings not found. key={addressKey}");
-            return null;
-        }
-
-        for (int g = 0; g < settings.groups.Count; g++)
-        {
-            var group = settings.groups[g];
-            if (group == null)
-                continue;
-
-            foreach (var entry in group.entries)
-            {
-                if (entry == null)
-                    continue;
-
-                if (!string.Equals(entry.address, addressKey, StringComparison.Ordinal))
-                    continue;
-
-                var path = AssetDatabase.GUIDToAssetPath(entry.guid);
-                if (!string.IsNullOrEmpty(path))
-                    return path;
-            }
-        }
-
-        Debug.LogError($"[{nameof(OutfitRendererToggleReadinessTool)}] Addressable key not found: {addressKey}");
-        return null;
+        return EditorAddressablePathResolver.ResolvePathByMapIdOrAddressKey(
+            addressKey,
+            nameof(OutfitRendererToggleReadinessTool));
     }
 
     private static bool IsVariantOfAnyTemplate(string prefabPath, HashSet<string> templateSet)

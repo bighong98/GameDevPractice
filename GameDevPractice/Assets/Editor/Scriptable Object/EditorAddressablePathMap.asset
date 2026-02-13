@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c65396ab791945c4aa973f8d118057ff, type: 3}
+  m_Name: EditorAddressablePathMap
+  m_EditorClassIdentifier: Assembly-CSharp-Editor::EditorAddressablePathMapSO
+  entries:
+  - mapId: outfit.source_presets.folder
+    addressableKey: Outfit Source Presets
+  - mapId: outfit.source_presets_headwear.folder
+    addressableKey: Outfit Source Presets_wHeadwear
+  - mapId: outfit.output_presets.folder
+    addressableKey: Outfit Output Presets
+  - mapId: outfit.output_presets_headwear.folder
+    addressableKey: Outfit Output Presets_wHeadwear
+  - mapId: outfit.template.female
+    addressableKey: BasicHero_F Variant Template
+  - mapId: outfit.template.male
+    addressableKey: BasicHero_M Variant Template
+  - mapId: outfit.data.folder
+    addressableKey: Outfit Data
+  - mapId: outfit.icons_output.folder
+    addressableKey: Outfit Output Icons
+  - mapId: armor.output_data.folder
+    addressableKey: Armor Output Data
+  - mapId: outfit.part_type_data.folder
+    addressableKey: Outfit Part Type Data
+  - mapId: skill.data.folder
+    addressableKey: Item Data Folder/Weapon/SkillTypeSO
+  - mapId: item.weapon_data.folder
+    addressableKey: Item Data Folder/Weapon

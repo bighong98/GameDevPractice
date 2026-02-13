@@ -10,9 +10,9 @@ using UnityEngine;
 
 public static class OutfitTemplateSetupTool
 {
-    private const string MaleTemplatePrefabAddressKey = "BasicHero_M Variant Template";
-    private const string FemaleTemplatePrefabAddressKey = "BasicHero_F Variant Template";
-    private const string OutfitDataFolderAddressKey = "Outfit Data";
+    private const string MaleTemplatePrefabAddressKey = "outfit.template.male";
+    private const string FemaleTemplatePrefabAddressKey = "outfit.template.female";
+    private const string OutfitDataFolderAddressKey = "outfit.data.folder";
     private static readonly string[] TemplatePrefabAddressKeys =
     {
         MaleTemplatePrefabAddressKey,
@@ -549,38 +549,9 @@ public static class OutfitTemplateSetupTool
 
     private static string ResolvePathByAddressKey(string addressKey)
     {
-        if (string.IsNullOrWhiteSpace(addressKey))
-            return null;
-
-        var settings = AddressableAssetSettingsDefaultObject.Settings;
-        if (settings == null)
-        {
-            Debug.LogError($"[OutfitTemplateSetupTool] Addressable settings not found. key={addressKey}");
-            return null;
-        }
-
-        for (int g = 0; g < settings.groups.Count; g++)
-        {
-            var group = settings.groups[g];
-            if (group == null)
-                continue;
-
-            foreach (var entry in group.entries)
-            {
-                if (entry == null)
-                    continue;
-
-                if (!string.Equals(entry.address, addressKey, StringComparison.Ordinal))
-                    continue;
-
-                var path = AssetDatabase.GUIDToAssetPath(entry.guid);
-                if (!string.IsNullOrEmpty(path))
-                    return path;
-            }
-        }
-
-        Debug.LogError($"[OutfitTemplateSetupTool] Addressable key not found: {addressKey}");
-        return null;
+        return EditorAddressablePathResolver.ResolvePathByMapIdOrAddressKey(
+            addressKey,
+            nameof(OutfitTemplateSetupTool));
     }
 }
 #endif

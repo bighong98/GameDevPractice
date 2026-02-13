@@ -1,15 +1,13 @@
 #if UNITY_EDITOR
 using System;
 using UnityEditor;
-using UnityEditor.AddressableAssets;
-using UnityEditor.AddressableAssets.Settings;
 using UnityEditor.U2D;
 using UnityEngine;
 using UnityEngine.U2D;
 
 public static class OutfitIconAtlasBuilder
 {
-    private const string OutputIconsAddressKey = "Outfit Output Icons";
+    private const string OutputIconsAddressKey = "outfit.icons_output.folder";
     private const string AtlasAssetName = "OutfitOutputIcons";
 
     [MenuItem("Tools/Outfit/Build Outfit Icon Sprite Atlas")]
@@ -142,38 +140,9 @@ public static class OutfitIconAtlasBuilder
 
     private static string ResolvePathByAddressKey(string addressKey)
     {
-        if (string.IsNullOrWhiteSpace(addressKey))
-            return null;
-
-        var settings = AddressableAssetSettingsDefaultObject.Settings;
-        if (settings == null)
-        {
-            Debug.LogError($"[OutfitIconAtlasBuilder] Addressable settings not found. key={addressKey}");
-            return null;
-        }
-
-        for (int g = 0; g < settings.groups.Count; g++)
-        {
-            var group = settings.groups[g];
-            if (group == null)
-                continue;
-
-            foreach (var entry in group.entries)
-            {
-                if (entry == null)
-                    continue;
-
-                if (!string.Equals(entry.address, addressKey, StringComparison.Ordinal))
-                    continue;
-
-                var path = AssetDatabase.GUIDToAssetPath(entry.guid);
-                if (!string.IsNullOrEmpty(path))
-                    return path;
-            }
-        }
-
-        Debug.LogError($"[OutfitIconAtlasBuilder] Addressable key not found: {addressKey}");
-        return null;
+        return EditorAddressablePathResolver.ResolvePathByMapIdOrAddressKey(
+            addressKey,
+            nameof(OutfitIconAtlasBuilder));
     }
 }
 #endif

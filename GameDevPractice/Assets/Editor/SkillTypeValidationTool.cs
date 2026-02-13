@@ -2,15 +2,13 @@
 using System;
 using TH.Resource;
 using UnityEditor;
-using UnityEditor.AddressableAssets;
-using UnityEditor.AddressableAssets.Settings;
 using UnityEngine;
 
 public sealed class SkillTypeValidationWindow : EditorWindow
 {
     private const string WindowTitle = "Skill Validator";
     private const string MenuPath = "Tools/Skill/Validation/Addressable Folder Validator";
-    private const string DefaultAddressKey = "Legacy Weapon Data Folder"; //"Skill Data Folder";
+    private const string DefaultAddressKey = "item.weapon_data.folder"; //"skill.data.folder";
     private const string PrefAddressKey = "TH.SkillValidator.AddressKey";
     private const string PrefValidateStepSkills = "TH.SkillValidator.ValidateStepSkills";
 
@@ -42,7 +40,7 @@ public sealed class SkillTypeValidationWindow : EditorWindow
         EditorGUILayout.LabelField("Addressable Folder Validation", EditorStyles.boldLabel);
         EditorGUILayout.Space(4f);
 
-        addressKey = EditorGUILayout.TextField("Address Key", addressKey);
+        addressKey = EditorGUILayout.TextField("Address Key or Map ID", addressKey);
         validateStepSkillsFromSequence = EditorGUILayout.ToggleLeft(
             "Validate step SkillTypeSO from ComboSequenceSO",
             validateStepSkillsFromSequence);
@@ -61,7 +59,7 @@ public sealed class SkillTypeValidationWindow : EditorWindow
 
 public static class SkillTypeValidationBatchTool
 {
-    private const string DefaultAddressKey = "Skill Data Folder";
+    private const string DefaultAddressKey = "skill.data.folder";
 
     [MenuItem("Tools/Skill/Validation/Validate Addressable Folder (Default Key)")]
     private static void ValidateDefaultFolder()
@@ -193,47 +191,10 @@ public static class SkillTypeValidationBatchTool
 
     private static string ResolvePathByAddressKey(string addressKey)
     {
-        if (string.IsNullOrWhiteSpace(addressKey))
-        {
-            return null;
-        }
-
-        var settings = AddressableAssetSettingsDefaultObject.Settings;
-        if (settings == null)
-        {
-            Debug.LogError("[SkillTypeValidationBatchTool] Addressable settings not found.");
-            return null;
-        }
-
-        for (int g = 0; g < settings.groups.Count; g++)
-        {
-            var group = settings.groups[g];
-            if (group == null)
-            {
-                continue;
-            }
-
-            foreach (var entry in group.entries)
-            {
-                if (entry == null)
-                {
-                    continue;
-                }
-
-                if (!string.Equals(entry.address, addressKey, StringComparison.Ordinal))
-                {
-                    continue;
-                }
-
-                var path = AssetDatabase.GUIDToAssetPath(entry.guid);
-                if (!string.IsNullOrWhiteSpace(path))
-                {
-                    return path;
-                }
-            }
-        }
-
-        return null;
+        return EditorAddressablePathResolver.ResolvePathByMapIdOrAddressKey(
+            addressKey,
+            nameof(SkillTypeValidationBatchTool),
+            logOnError: false);
     }
 
     private struct ValidationSummary

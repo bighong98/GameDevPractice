@@ -30,105 +30,102 @@ MonoBehaviour:
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 20b27818abf007b4c91e694a1931a851
-    m_Address: Assets/Game/Combat/Skill/VFX/OnHit/SwordOnHitVFX.prefab
+    m_Address: SwordOnHitVFX.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 36f3e6bc2976551408b1cf79527feca9
-    m_Address: Assets/Game/Control/Character/Action/WalkActionSO.asset
+    m_Address: WalkActionSO.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 38703959b00cc0145ba1149ca77cac13
-    m_Address: Assets/Asset Packs/Synty - Polygon Student Sample/Models/SM_Wep_Sword_01.fbx
+    m_Address: SM_Wep_Sword_01.fbx
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 3dc7f98de12cfbd4fb6d2b6f89c6ca92
-    m_Address: Assets/Asset Packs/Skyden_Games/Free_Casual_GUI/Demo/Sprites/Others/Shapes/Shape_18
-      1.png
+    m_Address: Shape_18 1.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 4f18c80df16a4ae4194559bba2f3ab9b
-    m_Address: Assets/Asset Packs/GameDev.tv Assets/Simple Bow/Materials and Model/Simple
-      Bow.fbx
+    m_Address: Simple Bow.fbx
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 4ff036bbf49db2f49b1127ba662aa634
-    m_Address: Assets/Game/Control/Character/State/NPC/PatrolStateSO.asset
+    m_Address: PatrolStateSO.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5596485a8a28d434d9b0fe4a9b1f1b05
-    m_Address: Assets/Asset Packs/Skyden_Games/Free_Casual_GUI/Demo/Sprites/Others/Shapes/Shape_16.png
+    m_Address: Shape_16.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 68e6db2ebdc24f95958faec2be5558d6
-    m_Address: Assets/TextMesh Pro/Shaders/TMP_SDF.shader
+    m_Address: TMP_SDF.shader
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 69d1b1037536b504884c93bb73d662db
-    m_Address: Assets/Game/Combat/Skill/VFX/OnHit/Fireball Impact.prefab
+    m_Address: Fireball Impact.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 78be5954566d2d848918e51832341fa3
-    m_Address: Assets/Asset Packs/Synty - Polygon Student Sample/Materials/Characters_Texture_Orange.mat
+    m_Address: Characters_Texture_Orange.mat
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 829e6fcc12b43aa489f42177cc0bb52b
-    m_Address: Assets/Asset Packs/GameDev.tv Assets/Simple Bow/Materials and Model/Simple
-      Bow.png
+    m_Address: Simple Bow.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 881cde1dc105a5744b78cf3bf14f25cc
-    m_Address: Assets/Asset Packs/Synty - Polygon Student Sample/Textures/Characters_Texture_Red.png
+    m_Address: Characters_Texture_Red.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 8bbf2395722bb634b8b12850b626049b
-    m_Address: Assets/TextMesh Pro/Fonts/Maplestory Light.ttf
+    m_Address: Maplestory Light.ttf
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 8e2324eab89da3144ab9f07a2edf6cba
-    m_Address: Assets/Game/Combat/Skill/VFX/OnHit/Blue Arrow Impact.prefab
+    m_Address: Blue Arrow Impact.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 917b62a0c0e7bdc4a8669116f5c98233
-    m_Address: Assets/Asset Packs/Skyden_Games/Free_Casual_GUI/Demo/Sprites/Icons/Icons.png
+    m_Address: Icons.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a73ecc94afab3c446b6b4668596140e5
-    m_Address: Assets/Game/Input/UserInput.inputactions
+    m_Address: UserInput.inputactions
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b1323a3d53ef57e4baa47343488781f0
-    m_Address: Assets/Game/Combat/SkillTargetLayerMapSO.asset
+    m_Address: SkillTargetLayerMapSO.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b8f889a91be35174bbbb38d1057b6493
-    m_Address: Assets/Asset Packs/Synty - Polygon Student Sample/Textures/PolyAdventureTexture_01.png
+    m_Address: PolyAdventureTexture_01.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: bfbe2e8b331e2cc42be1591f949c0e41
-    m_Address: Assets/Asset Packs/Synty - Polygon Student Sample/Materials/Characters_Texture_Red.mat
+    m_Address: Characters_Texture_Red.mat
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: c343b627e5f2bf44185be8e9d60672f4
-    m_Address: Assets/Game/Scriptable Objects/UI/Not Canvas/DamageTextSO.asset
+    m_Address: DamageTextSO.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -140,33 +137,32 @@ MonoBehaviour:
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: ccae2dc6cf6f0c4479b782fedd0c8172
-    m_Address: Assets/Asset Packs/Synty - Polygon Student Sample/Materials/PolyKnights_Character_Mat_Black.mat
+    m_Address: PolyKnights_Character_Mat_Black.mat
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: ce6fbdc6baa4d3b468d9f9e66afc7869
-    m_Address: Assets/Asset Packs/Synty - Polygon Student Sample/Models/SM_Env_Flower_01.fbx
+    m_Address: SM_Env_Flower_01.fbx
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e6969e6a3fc702b4ca4e7564bb1bdde7
-    m_Address: Assets/Asset Packs/GameDev.tv Assets/Simple Bow/Materials and Model/Simple
-      Bow.mat
+    m_Address: Simple Bow.mat
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e842427a572cdcb439fe256d0de3e8d6
-    m_Address: Assets/Asset Packs/Synty - Polygon Student Sample/Textures/Characters_Texture_Black.png
+    m_Address: Characters_Texture_Black.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f6d6b904a4f1f3d43b31e22f66f65bbf
-    m_Address: Assets/TextMesh Pro/Fonts/Maplestory Light SDF.asset
+    m_Address: Maplestory Light SDF.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: fa8eda4ec55ee1a4e99ca991c5828dbf
-    m_Address: Assets/Asset Packs/Synty - Polygon Student Sample/Materials/PolyAdventureMaterial_01.mat
+    m_Address: PolyAdventureMaterial_01.mat
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -178,7 +174,7 @@ MonoBehaviour:
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: fe393ace9b354375a9cb14cdbbc28be4
-    m_Address: Assets/TextMesh Pro/Shaders/TMP_SDF-Mobile.shader
+    m_Address: TMP_SDF-Mobile.shader
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

@@ -5,8 +5,6 @@ using System.IO;
 using System.Linq;
 using TH.Resource;
 using UnityEditor;
-using UnityEditor.AddressableAssets;
-using UnityEditor.AddressableAssets.Settings;
 using UnityEngine;
 
 /// <summary>
@@ -15,8 +13,8 @@ using UnityEngine;
 /// </summary>
 public static class OutfitPartTypeBatchSetterTool
 {
-    private const string OutfitPartTypeDataAddressKey = "Outfit Part Type Data";
-    private const string OutfitDataAddressKey = "Outfit Data";
+    private const string OutfitPartTypeDataAddressKey = "outfit.part_type_data.folder";
+    private const string OutfitDataAddressKey = "outfit.data.folder";
 
     [MenuItem("Tools/Outfit/Temp/Assign OutfitKey PartType From Addressable Data")]
     private static void AssignOutfitKeyPartTypes()
@@ -204,34 +202,10 @@ public static class OutfitPartTypeBatchSetterTool
 
     private static string ResolvePathByAddressKey(string addressKey)
     {
-        if (string.IsNullOrWhiteSpace(addressKey))
-            return null;
-
-        var settings = AddressableAssetSettingsDefaultObject.Settings;
-        if (settings == null)
-            return null;
-
-        for (int g = 0; g < settings.groups.Count; g++)
-        {
-            var group = settings.groups[g];
-            if (group == null)
-                continue;
-
-            foreach (var entry in group.entries)
-            {
-                if (entry == null)
-                    continue;
-
-                if (!string.Equals(entry.address, addressKey, StringComparison.Ordinal))
-                    continue;
-
-                var path = AssetDatabase.GUIDToAssetPath(entry.guid);
-                if (!string.IsNullOrEmpty(path))
-                    return path;
-            }
-        }
-
-        return null;
+        return EditorAddressablePathResolver.ResolvePathByMapIdOrAddressKey(
+            addressKey,
+            nameof(OutfitPartTypeBatchSetterTool),
+            logOnError: false);
     }
 }
 #endif

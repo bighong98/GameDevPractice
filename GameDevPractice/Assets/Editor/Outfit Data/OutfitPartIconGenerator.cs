@@ -5,15 +5,13 @@ using System.IO;
 using TH.Item;
 using TH.Resource;
 using UnityEditor;
-using UnityEditor.AddressableAssets;
-using UnityEditor.AddressableAssets.Settings;
 using UnityEngine;
 
 public static class OutfitPartIconGenerator
 {
-    private const string OutputIconsAddressKey = "Outfit Output Icons";
-    private const string MaleTemplateAddressKey = "BasicHero_M Variant Template";
-    private const string FemaleTemplateAddressKey = "BasicHero_F Variant Template";
+    private const string OutputIconsAddressKey = "outfit.icons_output.folder";
+    private const string MaleTemplateAddressKey = "outfit.template.male";
+    private const string FemaleTemplateAddressKey = "outfit.template.female";
 
     private const int IconSize = 512;
     private const float CameraPadding = 1.2f;
@@ -390,38 +388,9 @@ public static class OutfitPartIconGenerator
 
     private static string ResolvePathByAddressKey(string addressKey)
     {
-        if (string.IsNullOrWhiteSpace(addressKey))
-            return null;
-
-        var settings = AddressableAssetSettingsDefaultObject.Settings;
-        if (settings == null)
-        {
-            Debug.LogError($"[OutfitPartIconGenerator] Addressable settings not found. key={addressKey}");
-            return null;
-        }
-
-        for (int g = 0; g < settings.groups.Count; g++)
-        {
-            var group = settings.groups[g];
-            if (group == null)
-                continue;
-
-            foreach (var entry in group.entries)
-            {
-                if (entry == null)
-                    continue;
-
-                if (!string.Equals(entry.address, addressKey, StringComparison.Ordinal))
-                    continue;
-
-                var path = AssetDatabase.GUIDToAssetPath(entry.guid);
-                if (!string.IsNullOrEmpty(path))
-                    return path;
-            }
-        }
-
-        Debug.LogError($"[OutfitPartIconGenerator] Addressable key not found: {addressKey}");
-        return null;
+        return EditorAddressablePathResolver.ResolvePathByMapIdOrAddressKey(
+            addressKey,
+            nameof(OutfitPartIconGenerator));
     }
 
     private static void EnsureFolder(string folderPath)

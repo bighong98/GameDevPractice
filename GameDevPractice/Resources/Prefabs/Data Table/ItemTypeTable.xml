@@ -1,0 +1,1003 @@
+<?xml version="1.0"?>
+<ItemTypeXmlTable xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <version>1.0</version>
+  <exportedAtUtc>2026-02-13T18:29:18.8756526Z</exportedAtUtc>
+  <addressKey>Item Data Folder</addressKey>
+  <sourceFolder>Assets/Game/Item</sourceFolder>
+  <items>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/AncientKey.asset</assetPath>
+      <assetName>AncientKey</assetName>
+      <typeName>TH.Resource.ItemTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Single</itemType>
+      <itemTypeValue>3</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Ancient Key</nameString>
+      <description>An ornate bronze key covered in mysterious runes. Might unlock something important.</description>
+      <prefabPath />
+      <spritePath />
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"AncientKey","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ItemTypeSO","prefab":{"instanceID":0},"nameString":"Ancient Key","sprite":{"instanceID":0},"itemType":3,"maxAmount":1,"desc":"An ornate bronze key covered in mysterious runes. Might unlock something important.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false}}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_F_Archer_Bottom.asset</assetPath>
+      <assetName>Armor_F_Archer_Bottom</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Archer's Swift Greaves</nameString>
+      <description>A test greaves tuned for the Archer outfit line (key: F_Archer_Bottom). Adds Armor and MagicResistance while improving MoveSpeed and Agility.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/F_Archer_Bottom.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_F_Archer_Bottom","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Archer's Swift Greaves","sprite":{"fileID":21300000,"guid":"221e983a09a33b64391f0cf2b40b7857","type":3},"itemType":1,"maxAmount":1,"desc":"A test greaves tuned for the Archer outfit line (key: F_Archer_Bottom). Adds Armor and MagicResistance while improving MoveSpeed and Agility.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":4,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":5.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":3.0},{"type":{"fileID":11400000,"guid":"f1e5c30f9cdf16849b1138083aad69d2","type":2},"calculation":0,"value":0.3499999940395355},{"type":{"fileID":11400000,"guid":"3a7cc61c3042aa04387e312907199547","type":2},"calculation":0,"value":2.0}],"outfitKeySO":{"fileID":11400000,"guid":"f7c08f13526e40544b7f5bb69569de4a","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_F_Archer_Top.asset</assetPath>
+      <assetName>Armor_F_Archer_Top</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Archer's Reinforced Cuirass</nameString>
+      <description>A test cuirass tuned for the Archer outfit line (key: F_Archer_Top). Focuses on Armor and MagicResistance with extra Health and Strength.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/F_Archer_Top.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_F_Archer_Top","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Archer's Reinforced Cuirass","sprite":{"fileID":21300000,"guid":"c0efead9e294efc43bea95a20641bf65","type":3},"itemType":1,"maxAmount":1,"desc":"A test cuirass tuned for the Archer outfit line (key: F_Archer_Top). Focuses on Armor and MagicResistance with extra Health and Strength.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":2,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":5.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":3.0},{"type":{"fileID":11400000,"guid":"9e86dca11c02ff94396bdadebb64b5cb","type":2},"calculation":0,"value":20.0},{"type":{"fileID":11400000,"guid":"e3eea70b5cde0694eb6d179932efe3c0","type":2},"calculation":0,"value":2.0}],"outfitKeySO":{"fileID":11400000,"guid":"c9d29d06f0f6c06428b742f910313f94","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_F_Fighter_Bottom.asset</assetPath>
+      <assetName>Armor_F_Fighter_Bottom</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Fighter's Traveler's Greaves</nameString>
+      <description>A test greaves tuned for the Fighter outfit line (key: F_Fighter_Bottom). Adds Armor and MagicResistance while improving MoveSpeed and Agility.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/F_Fighter_Bottom.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_F_Fighter_Bottom","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Fighter's Traveler's Greaves","sprite":{"fileID":21300000,"guid":"462d475d49c8aaa46b7bed10c7146907","type":3},"itemType":1,"maxAmount":1,"desc":"A test greaves tuned for the Fighter outfit line (key: F_Fighter_Bottom). Adds Armor and MagicResistance while improving MoveSpeed and Agility.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":4,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":7.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":3.0},{"type":{"fileID":11400000,"guid":"f1e5c30f9cdf16849b1138083aad69d2","type":2},"calculation":0,"value":0.550000011920929},{"type":{"fileID":11400000,"guid":"3a7cc61c3042aa04387e312907199547","type":2},"calculation":0,"value":4.0}],"outfitKeySO":{"fileID":11400000,"guid":"61026059bee12da44aaf2a523ba89c57","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_F_Fighter_Top.asset</assetPath>
+      <assetName>Armor_F_Fighter_Top</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Fighter's Steel Cuirass</nameString>
+      <description>A test cuirass tuned for the Fighter outfit line (key: F_Fighter_Top). Focuses on Armor and MagicResistance with extra Health and Strength.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/F_Fighter_Top.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_F_Fighter_Top","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Fighter's Steel Cuirass","sprite":{"fileID":21300000,"guid":"ff067b3d4b3a6034da5132ee245af2cc","type":3},"itemType":1,"maxAmount":1,"desc":"A test cuirass tuned for the Fighter outfit line (key: F_Fighter_Top). Focuses on Armor and MagicResistance with extra Health and Strength.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":2,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":6.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":3.0},{"type":{"fileID":11400000,"guid":"9e86dca11c02ff94396bdadebb64b5cb","type":2},"calculation":0,"value":18.0},{"type":{"fileID":11400000,"guid":"e3eea70b5cde0694eb6d179932efe3c0","type":2},"calculation":0,"value":3.0}],"outfitKeySO":{"fileID":11400000,"guid":"3e4079d036597404bb050694cb297c1e","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_F_Hunter_Bottom.asset</assetPath>
+      <assetName>Armor_F_Hunter_Bottom</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Hunter's Leather Greaves</nameString>
+      <description>A test greaves tuned for the Hunter outfit line (key: F_Hunter_Bottom). Adds Armor and MagicResistance while improving MoveSpeed and Agility.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/F_Hunter_Bottom.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_F_Hunter_Bottom","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Hunter's Leather Greaves","sprite":{"fileID":21300000,"guid":"7cd2549c61a3c384baff0fa0c459c2fc","type":3},"itemType":1,"maxAmount":1,"desc":"A test greaves tuned for the Hunter outfit line (key: F_Hunter_Bottom). Adds Armor and MagicResistance while improving MoveSpeed and Agility.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":4,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":6.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":2.0},{"type":{"fileID":11400000,"guid":"f1e5c30f9cdf16849b1138083aad69d2","type":2},"calculation":0,"value":0.44999998807907107},{"type":{"fileID":11400000,"guid":"3a7cc61c3042aa04387e312907199547","type":2},"calculation":0,"value":3.0}],"outfitKeySO":{"fileID":11400000,"guid":"610a68c71d40f85458d6d1814ed62375","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_F_Hunter_Top.asset</assetPath>
+      <assetName>Armor_F_Hunter_Top</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Hunter's Plated Cuirass</nameString>
+      <description>A test cuirass tuned for the Hunter outfit line (key: F_Hunter_Top). Focuses on Armor and MagicResistance with extra Health and Strength.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/F_Hunter_Top.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_F_Hunter_Top","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Hunter's Plated Cuirass","sprite":{"fileID":21300000,"guid":"94514f0554d4d974b87738e71740eff0","type":3},"itemType":1,"maxAmount":1,"desc":"A test cuirass tuned for the Hunter outfit line (key: F_Hunter_Top). Focuses on Armor and MagicResistance with extra Health and Strength.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":2,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":7.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":2.0},{"type":{"fileID":11400000,"guid":"9e86dca11c02ff94396bdadebb64b5cb","type":2},"calculation":0,"value":15.0},{"type":{"fileID":11400000,"guid":"e3eea70b5cde0694eb6d179932efe3c0","type":2},"calculation":0,"value":4.0}],"outfitKeySO":{"fileID":11400000,"guid":"33398278dec55e74aa34c1a467c5c696","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_F_Knight_Bottom.asset</assetPath>
+      <assetName>Armor_F_Knight_Bottom</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Knight's Traveler's Greaves</nameString>
+      <description>A test greaves tuned for the Knight outfit line (key: F_Knight_Bottom). Adds Armor and MagicResistance while improving MoveSpeed and Agility.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/F_Knight_Bottom.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_F_Knight_Bottom","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Knight's Traveler's Greaves","sprite":{"fileID":21300000,"guid":"e33002379110b9c45938cba18bf3f5a1","type":3},"itemType":1,"maxAmount":1,"desc":"A test greaves tuned for the Knight outfit line (key: F_Knight_Bottom). Adds Armor and MagicResistance while improving MoveSpeed and Agility.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":4,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":7.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":3.0},{"type":{"fileID":11400000,"guid":"f1e5c30f9cdf16849b1138083aad69d2","type":2},"calculation":0,"value":0.550000011920929},{"type":{"fileID":11400000,"guid":"3a7cc61c3042aa04387e312907199547","type":2},"calculation":0,"value":4.0}],"outfitKeySO":{"fileID":11400000,"guid":"becca8b3eac137d4b9493081498c2d9e","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_F_Knight_Top.asset</assetPath>
+      <assetName>Armor_F_Knight_Top</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Knight's Steel Cuirass</nameString>
+      <description>A test cuirass tuned for the Knight outfit line (key: F_Knight_Top). Focuses on Armor and MagicResistance with extra Health and Strength.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/F_Knight_Top.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_F_Knight_Top","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Knight's Steel Cuirass","sprite":{"fileID":21300000,"guid":"e2ed1a36cfb32ac4bbe4816f64aed20d","type":3},"itemType":1,"maxAmount":1,"desc":"A test cuirass tuned for the Knight outfit line (key: F_Knight_Top). Focuses on Armor and MagicResistance with extra Health and Strength.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":2,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":5.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":3.0},{"type":{"fileID":11400000,"guid":"9e86dca11c02ff94396bdadebb64b5cb","type":2},"calculation":0,"value":15.0},{"type":{"fileID":11400000,"guid":"e3eea70b5cde0694eb6d179932efe3c0","type":2},"calculation":0,"value":2.0}],"outfitKeySO":{"fileID":11400000,"guid":"2517ef53819f56f4291e5db7724d497d","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_F_Mage_Bottom.asset</assetPath>
+      <assetName>Armor_F_Mage_Bottom</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Mage's Reinforced Greaves</nameString>
+      <description>A test greaves tuned for the Mage outfit line (key: F_Mage_Bottom). Adds Armor and MagicResistance while improving MoveSpeed and Agility.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/F_Mage_Bottom.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_F_Mage_Bottom","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Mage's Reinforced Greaves","sprite":{"fileID":21300000,"guid":"e031e902966dac345b0f16aafcc1439f","type":3},"itemType":1,"maxAmount":1,"desc":"A test greaves tuned for the Mage outfit line (key: F_Mage_Bottom). Adds Armor and MagicResistance while improving MoveSpeed and Agility.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":4,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":6.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":2.0},{"type":{"fileID":11400000,"guid":"f1e5c30f9cdf16849b1138083aad69d2","type":2},"calculation":0,"value":0.44999998807907107},{"type":{"fileID":11400000,"guid":"3a7cc61c3042aa04387e312907199547","type":2},"calculation":0,"value":3.0}],"outfitKeySO":{"fileID":11400000,"guid":"30554590ecc707b46b0a48adeabe2076","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_F_Mage_Top.asset</assetPath>
+      <assetName>Armor_F_Mage_Top</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Mage's Runed Robe</nameString>
+      <description>A test robe tuned for the Mage outfit line (key: F_Mage_Top). Focuses on Armor and MagicResistance with extra Health and Strength.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/F_Mage_Top.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_F_Mage_Top","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Mage's Runed Robe","sprite":{"fileID":21300000,"guid":"e35012f72a9d01341bba40b6ce786a51","type":3},"itemType":1,"maxAmount":1,"desc":"A test robe tuned for the Mage outfit line (key: F_Mage_Top). Focuses on Armor and MagicResistance with extra Health and Strength.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":2,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":7.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":2.0},{"type":{"fileID":11400000,"guid":"9e86dca11c02ff94396bdadebb64b5cb","type":2},"calculation":0,"value":18.0},{"type":{"fileID":11400000,"guid":"e3eea70b5cde0694eb6d179932efe3c0","type":2},"calculation":0,"value":4.0}],"outfitKeySO":{"fileID":11400000,"guid":"eda67fc4f97e4354391f9ae12d4c671a","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_F_Rogue_Bottom.asset</assetPath>
+      <assetName>Armor_F_Rogue_Bottom</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Rogue's Reinforced Greaves</nameString>
+      <description>A test greaves tuned for the Rogue outfit line (key: F_Rogue_Bottom). Adds Armor and MagicResistance while improving MoveSpeed and Agility.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/F_Rogue_Bottom.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_F_Rogue_Bottom","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Rogue's Reinforced Greaves","sprite":{"fileID":21300000,"guid":"acf7c2f2013d2294ea0503048079cc17","type":3},"itemType":1,"maxAmount":1,"desc":"A test greaves tuned for the Rogue outfit line (key: F_Rogue_Bottom). Adds Armor and MagicResistance while improving MoveSpeed and Agility.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":4,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":5.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":2.0},{"type":{"fileID":11400000,"guid":"f1e5c30f9cdf16849b1138083aad69d2","type":2},"calculation":0,"value":0.3499999940395355},{"type":{"fileID":11400000,"guid":"3a7cc61c3042aa04387e312907199547","type":2},"calculation":0,"value":2.0}],"outfitKeySO":{"fileID":11400000,"guid":"5240d63ef4451474c90780bfdac0335b","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_F_Rogue_Top.asset</assetPath>
+      <assetName>Armor_F_Rogue_Top</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Rogue's Runed Cuirass</nameString>
+      <description>A test cuirass tuned for the Rogue outfit line (key: F_Rogue_Top). Focuses on Armor and MagicResistance with extra Health and Strength.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/F_Rogue_Top.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_F_Rogue_Top","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Rogue's Runed Cuirass","sprite":{"fileID":21300000,"guid":"f18acc3421d80db49a7ba4c72302f64d","type":3},"itemType":1,"maxAmount":1,"desc":"A test cuirass tuned for the Rogue outfit line (key: F_Rogue_Top). Focuses on Armor and MagicResistance with extra Health and Strength.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":2,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":7.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":2.0},{"type":{"fileID":11400000,"guid":"9e86dca11c02ff94396bdadebb64b5cb","type":2},"calculation":0,"value":17.0},{"type":{"fileID":11400000,"guid":"e3eea70b5cde0694eb6d179932efe3c0","type":2},"calculation":0,"value":4.0}],"outfitKeySO":{"fileID":11400000,"guid":"291c382624938f44ebf5ac73f6761bd2","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_F_Sorcerer_Bottom.asset</assetPath>
+      <assetName>Armor_F_Sorcerer_Bottom</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Sorcerer's Swift Greaves</nameString>
+      <description>A test greaves tuned for the Sorcerer outfit line (key: F_Sorcerer_Bottom). Adds Armor and MagicResistance while improving MoveSpeed and Agility.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/F_Sorcerer_Bottom.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_F_Sorcerer_Bottom","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Sorcerer's Swift Greaves","sprite":{"fileID":21300000,"guid":"b27a8f794ecb1e143b1893f3780b229b","type":3},"itemType":1,"maxAmount":1,"desc":"A test greaves tuned for the Sorcerer outfit line (key: F_Sorcerer_Bottom). Adds Armor and MagicResistance while improving MoveSpeed and Agility.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":4,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":5.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":3.0},{"type":{"fileID":11400000,"guid":"f1e5c30f9cdf16849b1138083aad69d2","type":2},"calculation":0,"value":0.3499999940395355},{"type":{"fileID":11400000,"guid":"3a7cc61c3042aa04387e312907199547","type":2},"calculation":0,"value":2.0}],"outfitKeySO":{"fileID":11400000,"guid":"e1bdd3d7eed175b4eb60ec9f51ad334b","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_F_Sorcerer_Top.asset</assetPath>
+      <assetName>Armor_F_Sorcerer_Top</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Sorcerer's Reinforced Robe</nameString>
+      <description>A test robe tuned for the Sorcerer outfit line (key: F_Sorcerer_Top). Focuses on Armor and MagicResistance with extra Health and Strength.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/F_Sorcerer_Top.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_F_Sorcerer_Top","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Sorcerer's Reinforced Robe","sprite":{"fileID":21300000,"guid":"40beaa04cd8fcc446be88567f4455a55","type":3},"itemType":1,"maxAmount":1,"desc":"A test robe tuned for the Sorcerer outfit line (key: F_Sorcerer_Top). Focuses on Armor and MagicResistance with extra Health and Strength.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":2,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":5.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":3.0},{"type":{"fileID":11400000,"guid":"9e86dca11c02ff94396bdadebb64b5cb","type":2},"calculation":0,"value":16.0},{"type":{"fileID":11400000,"guid":"e3eea70b5cde0694eb6d179932efe3c0","type":2},"calculation":0,"value":2.0}],"outfitKeySO":{"fileID":11400000,"guid":"2257215645530a84fbbf0ffd57141960","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_F_Swordsman_Bottom.asset</assetPath>
+      <assetName>Armor_F_Swordsman_Bottom</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Swordsman's Leather Greaves</nameString>
+      <description>A test greaves tuned for the Swordsman outfit line (key: F_Swordsman_Bottom). Adds Armor and MagicResistance while improving MoveSpeed and Agility.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/F_Swordsman_Bottom.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_F_Swordsman_Bottom","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Swordsman's Leather Greaves","sprite":{"fileID":21300000,"guid":"fe8ca5dc14569ec46a3b50aa5cb4c876","type":3},"itemType":1,"maxAmount":1,"desc":"A test greaves tuned for the Swordsman outfit line (key: F_Swordsman_Bottom). Adds Armor and MagicResistance while improving MoveSpeed and Agility.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":4,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":5.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":2.0},{"type":{"fileID":11400000,"guid":"f1e5c30f9cdf16849b1138083aad69d2","type":2},"calculation":0,"value":0.3499999940395355},{"type":{"fileID":11400000,"guid":"3a7cc61c3042aa04387e312907199547","type":2},"calculation":0,"value":2.0}],"outfitKeySO":{"fileID":11400000,"guid":"8205123e3d8202f4faeaa886140398d8","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_F_Swordsman_Top.asset</assetPath>
+      <assetName>Armor_F_Swordsman_Top</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Swordsman's Plated Cuirass</nameString>
+      <description>A test cuirass tuned for the Swordsman outfit line (key: F_Swordsman_Top). Focuses on Armor and MagicResistance with extra Health and Strength.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/F_Swordsman_Top.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_F_Swordsman_Top","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Swordsman's Plated Cuirass","sprite":{"fileID":21300000,"guid":"9b0cfc7a80abc4d429c57b5ddb32a65e","type":3},"itemType":1,"maxAmount":1,"desc":"A test cuirass tuned for the Swordsman outfit line (key: F_Swordsman_Top). Focuses on Armor and MagicResistance with extra Health and Strength.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":2,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":6.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":2.0},{"type":{"fileID":11400000,"guid":"9e86dca11c02ff94396bdadebb64b5cb","type":2},"calculation":0,"value":19.0},{"type":{"fileID":11400000,"guid":"e3eea70b5cde0694eb6d179932efe3c0","type":2},"calculation":0,"value":3.0}],"outfitKeySO":{"fileID":11400000,"guid":"b0df173f6b83f6645b5cdaffaf4fc368","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_F_Witch_Bottom.asset</assetPath>
+      <assetName>Armor_F_Witch_Bottom</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Witch's Swift Greaves</nameString>
+      <description>A test greaves tuned for the Witch outfit line (key: F_Witch_Bottom). Adds Armor and MagicResistance while improving MoveSpeed and Agility.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/F_Witch_Bottom.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_F_Witch_Bottom","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Witch's Swift Greaves","sprite":{"fileID":21300000,"guid":"b17850e7e7347a949a90b8c22d8cc8a4","type":3},"itemType":1,"maxAmount":1,"desc":"A test greaves tuned for the Witch outfit line (key: F_Witch_Bottom). Adds Armor and MagicResistance while improving MoveSpeed and Agility.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":4,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":7.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":3.0},{"type":{"fileID":11400000,"guid":"f1e5c30f9cdf16849b1138083aad69d2","type":2},"calculation":0,"value":0.550000011920929},{"type":{"fileID":11400000,"guid":"3a7cc61c3042aa04387e312907199547","type":2},"calculation":0,"value":4.0}],"outfitKeySO":{"fileID":11400000,"guid":"6d9e4c2bf8aaec441b9e296a26bc549b","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_F_Witch_Top.asset</assetPath>
+      <assetName>Armor_F_Witch_Top</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Witch's Reinforced Robe</nameString>
+      <description>A test robe tuned for the Witch outfit line (key: F_Witch_Top). Focuses on Armor and MagicResistance with extra Health and Strength.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/F_Witch_Top.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_F_Witch_Top","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Witch's Reinforced Robe","sprite":{"fileID":21300000,"guid":"7b13ae12be9a76a4a81aebb387dfe770","type":3},"itemType":1,"maxAmount":1,"desc":"A test robe tuned for the Witch outfit line (key: F_Witch_Top). Focuses on Armor and MagicResistance with extra Health and Strength.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":2,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":7.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":3.0},{"type":{"fileID":11400000,"guid":"9e86dca11c02ff94396bdadebb64b5cb","type":2},"calculation":0,"value":15.0},{"type":{"fileID":11400000,"guid":"e3eea70b5cde0694eb6d179932efe3c0","type":2},"calculation":0,"value":4.0}],"outfitKeySO":{"fileID":11400000,"guid":"60e135ebbecc6954dbc53f9986f462d1","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_M_Archer_Bottom.asset</assetPath>
+      <assetName>Armor_M_Archer_Bottom</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Archer's Leather Greaves</nameString>
+      <description>A test greaves tuned for the Archer outfit line (key: M_Archer_Bottom). Adds Armor and MagicResistance while improving MoveSpeed and Agility.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/M_Archer_Bottom.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_M_Archer_Bottom","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Archer's Leather Greaves","sprite":{"fileID":21300000,"guid":"76287316036346944b1568f532dbfe6b","type":3},"itemType":1,"maxAmount":1,"desc":"A test greaves tuned for the Archer outfit line (key: M_Archer_Bottom). Adds Armor and MagicResistance while improving MoveSpeed and Agility.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":4,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":6.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":2.0},{"type":{"fileID":11400000,"guid":"f1e5c30f9cdf16849b1138083aad69d2","type":2},"calculation":0,"value":0.44999998807907107},{"type":{"fileID":11400000,"guid":"3a7cc61c3042aa04387e312907199547","type":2},"calculation":0,"value":3.0}],"outfitKeySO":{"fileID":11400000,"guid":"d884e85af94194d45bb945147c07571a","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_M_Archer_Top.asset</assetPath>
+      <assetName>Armor_M_Archer_Top</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Archer's Plated Cuirass</nameString>
+      <description>A test cuirass tuned for the Archer outfit line (key: M_Archer_Top). Focuses on Armor and MagicResistance with extra Health and Strength.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/M_Archer_Top.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_M_Archer_Top","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Archer's Plated Cuirass","sprite":{"fileID":21300000,"guid":"34186fab1480ebb4c824eb27374d1bef","type":3},"itemType":1,"maxAmount":1,"desc":"A test cuirass tuned for the Archer outfit line (key: M_Archer_Top). Focuses on Armor and MagicResistance with extra Health and Strength.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":2,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":5.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":2.0},{"type":{"fileID":11400000,"guid":"9e86dca11c02ff94396bdadebb64b5cb","type":2},"calculation":0,"value":20.0},{"type":{"fileID":11400000,"guid":"e3eea70b5cde0694eb6d179932efe3c0","type":2},"calculation":0,"value":2.0}],"outfitKeySO":{"fileID":11400000,"guid":"a81f32efc6d0d3b4491655e3eb23474b","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_M_Archer_TyroleanHat.asset</assetPath>
+      <assetName>Armor_M_Archer_TyroleanHat</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Archer's Leather Hat</nameString>
+      <description>A test hat tuned for the Archer outfit line (key: M_Archer_TyroleanHat). Improves Armor and MagicResistance with mana-oriented support stats.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/M_Archer_TyroleanHat.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_M_Archer_TyroleanHat","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Archer's Leather Hat","sprite":{"fileID":21300000,"guid":"04d354a54c5c5854bb4e37d918c89936","type":3},"itemType":1,"maxAmount":1,"desc":"A test hat tuned for the Archer outfit line (key: M_Archer_TyroleanHat). Improves Armor and MagicResistance with mana-oriented support stats.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":1,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":6.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":2.0},{"type":{"fileID":11400000,"guid":"951140a1eab4079458785564169d0fbf","type":2},"calculation":0,"value":2.0},{"type":{"fileID":11400000,"guid":"084013cbdb346d4428cb29a47d22b70e","type":2},"calculation":0,"value":6.0}],"outfitKeySO":{"fileID":11400000,"guid":"16a8fdbe7ec48994eb4c91e3c19cb9df","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_M_Fighter_Bottom.asset</assetPath>
+      <assetName>Armor_M_Fighter_Bottom</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Fighter's Leather Greaves</nameString>
+      <description>A test greaves tuned for the Fighter outfit line (key: M_Fighter_Bottom). Adds Armor and MagicResistance while improving MoveSpeed and Agility.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/M_Fighter_Bottom.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_M_Fighter_Bottom","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Fighter's Leather Greaves","sprite":{"fileID":21300000,"guid":"0b671898cbc3a49419ca7a6b7bc9a0f2","type":3},"itemType":1,"maxAmount":1,"desc":"A test greaves tuned for the Fighter outfit line (key: M_Fighter_Bottom). Adds Armor and MagicResistance while improving MoveSpeed and Agility.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":4,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":5.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":2.0},{"type":{"fileID":11400000,"guid":"f1e5c30f9cdf16849b1138083aad69d2","type":2},"calculation":0,"value":0.3499999940395355},{"type":{"fileID":11400000,"guid":"3a7cc61c3042aa04387e312907199547","type":2},"calculation":0,"value":2.0}],"outfitKeySO":{"fileID":11400000,"guid":"8a13201fb48b0f149949bb3b55ff1585","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_M_Fighter_Headband.asset</assetPath>
+      <assetName>Armor_M_Fighter_Headband</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Fighter's Leather Headband</nameString>
+      <description>A test headband tuned for the Fighter outfit line (key: M_Fighter_Headband). Improves Armor and MagicResistance with mana-oriented support stats.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/M_Fighter_Headband.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_M_Fighter_Headband","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Fighter's Leather Headband","sprite":{"fileID":21300000,"guid":"ff1beafda6a9fcd43a911d32b51ac36e","type":3},"itemType":1,"maxAmount":1,"desc":"A test headband tuned for the Fighter outfit line (key: M_Fighter_Headband). Improves Armor and MagicResistance with mana-oriented support stats.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":1,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":7.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":2.0},{"type":{"fileID":11400000,"guid":"951140a1eab4079458785564169d0fbf","type":2},"calculation":0,"value":2.0},{"type":{"fileID":11400000,"guid":"084013cbdb346d4428cb29a47d22b70e","type":2},"calculation":0,"value":6.0}],"outfitKeySO":{"fileID":11400000,"guid":"175e5f1eca060af41a426d7dc34439f5","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_M_Fighter_Top.asset</assetPath>
+      <assetName>Armor_M_Fighter_Top</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Fighter's Plated Cuirass</nameString>
+      <description>A test cuirass tuned for the Fighter outfit line (key: M_Fighter_Top). Focuses on Armor and MagicResistance with extra Health and Strength.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/M_Fighter_Top.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_M_Fighter_Top","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Fighter's Plated Cuirass","sprite":{"fileID":21300000,"guid":"983d499dd078b8444879f51a7fd8a312","type":3},"itemType":1,"maxAmount":1,"desc":"A test cuirass tuned for the Fighter outfit line (key: M_Fighter_Top). Focuses on Armor and MagicResistance with extra Health and Strength.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":2,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":7.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":2.0},{"type":{"fileID":11400000,"guid":"9e86dca11c02ff94396bdadebb64b5cb","type":2},"calculation":0,"value":20.0},{"type":{"fileID":11400000,"guid":"e3eea70b5cde0694eb6d179932efe3c0","type":2},"calculation":0,"value":4.0}],"outfitKeySO":{"fileID":11400000,"guid":"a9b35b4a0b9fe0441b6dd969c09d21fd","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_M_Hunter_Bottom.asset</assetPath>
+      <assetName>Armor_M_Hunter_Bottom</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Hunter's Traveler's Greaves</nameString>
+      <description>A test greaves tuned for the Hunter outfit line (key: M_Hunter_Bottom). Adds Armor and MagicResistance while improving MoveSpeed and Agility.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/M_Hunter_Bottom.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_M_Hunter_Bottom","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Hunter's Traveler's Greaves","sprite":{"fileID":21300000,"guid":"95bb921568dca684da943d0e2ec85053","type":3},"itemType":1,"maxAmount":1,"desc":"A test greaves tuned for the Hunter outfit line (key: M_Hunter_Bottom). Adds Armor and MagicResistance while improving MoveSpeed and Agility.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":4,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":7.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":3.0},{"type":{"fileID":11400000,"guid":"f1e5c30f9cdf16849b1138083aad69d2","type":2},"calculation":0,"value":0.550000011920929},{"type":{"fileID":11400000,"guid":"3a7cc61c3042aa04387e312907199547","type":2},"calculation":0,"value":4.0}],"outfitKeySO":{"fileID":11400000,"guid":"4578ebe5bcd16db47a38803225557030","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_M_Hunter_FeltedHat.asset</assetPath>
+      <assetName>Armor_M_Hunter_FeltedHat</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Hunter's Steel Hat</nameString>
+      <description>A test hat tuned for the Hunter outfit line (key: M_Hunter_FeltedHat). Improves Armor and MagicResistance with mana-oriented support stats.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/M_Hunter_FeltedHat.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_M_Hunter_FeltedHat","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Hunter's Steel Hat","sprite":{"fileID":21300000,"guid":"15e20e86d3dd7964cad7ef99dcf8256f","type":3},"itemType":1,"maxAmount":1,"desc":"A test hat tuned for the Hunter outfit line (key: M_Hunter_FeltedHat). Improves Armor and MagicResistance with mana-oriented support stats.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":1,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":6.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":3.0},{"type":{"fileID":11400000,"guid":"951140a1eab4079458785564169d0fbf","type":2},"calculation":0,"value":3.0},{"type":{"fileID":11400000,"guid":"084013cbdb346d4428cb29a47d22b70e","type":2},"calculation":0,"value":5.0}],"outfitKeySO":{"fileID":11400000,"guid":"2e7f0792fb3339c41a06e3abc5dd9a20","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_M_Hunter_Top.asset</assetPath>
+      <assetName>Armor_M_Hunter_Top</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Hunter's Steel Cuirass</nameString>
+      <description>A test cuirass tuned for the Hunter outfit line (key: M_Hunter_Top). Focuses on Armor and MagicResistance with extra Health and Strength.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/M_Hunter_Top.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_M_Hunter_Top","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Hunter's Steel Cuirass","sprite":{"fileID":21300000,"guid":"b57b88d0a672d59468f69984bcfd093e","type":3},"itemType":1,"maxAmount":1,"desc":"A test cuirass tuned for the Hunter outfit line (key: M_Hunter_Top). Focuses on Armor and MagicResistance with extra Health and Strength.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":2,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":7.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":3.0},{"type":{"fileID":11400000,"guid":"9e86dca11c02ff94396bdadebb64b5cb","type":2},"calculation":0,"value":15.0},{"type":{"fileID":11400000,"guid":"e3eea70b5cde0694eb6d179932efe3c0","type":2},"calculation":0,"value":4.0}],"outfitKeySO":{"fileID":11400000,"guid":"4297273c4d185a64b8fdff535f121938","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_M_Knight_Bottom.asset</assetPath>
+      <assetName>Armor_M_Knight_Bottom</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Knight's Reinforced Greaves</nameString>
+      <description>A test greaves tuned for the Knight outfit line (key: M_Knight_Bottom). Adds Armor and MagicResistance while improving MoveSpeed and Agility.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/M_Knight_Bottom.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_M_Knight_Bottom","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Knight's Reinforced Greaves","sprite":{"fileID":21300000,"guid":"99b5705d28a2ae541bb9f8e9175b47c6","type":3},"itemType":1,"maxAmount":1,"desc":"A test greaves tuned for the Knight outfit line (key: M_Knight_Bottom). Adds Armor and MagicResistance while improving MoveSpeed and Agility.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":4,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":5.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":2.0},{"type":{"fileID":11400000,"guid":"f1e5c30f9cdf16849b1138083aad69d2","type":2},"calculation":0,"value":0.3499999940395355},{"type":{"fileID":11400000,"guid":"3a7cc61c3042aa04387e312907199547","type":2},"calculation":0,"value":2.0}],"outfitKeySO":{"fileID":11400000,"guid":"03860a6d698580540b7e1bcfc434c744","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_M_Knight_GreatHelm.asset</assetPath>
+      <assetName>Armor_M_Knight_GreatHelm</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Knight's Iron Helm</nameString>
+      <description>A test helm tuned for the Knight outfit line (key: M_Knight_GreatHelm). Improves Armor and MagicResistance with mana-oriented support stats.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/M_Knight_GreatHelm.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_M_Knight_GreatHelm","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Knight's Iron Helm","sprite":{"fileID":21300000,"guid":"a2d394081d456074fab4de79623f219e","type":3},"itemType":1,"maxAmount":1,"desc":"A test helm tuned for the Knight outfit line (key: M_Knight_GreatHelm). Improves Armor and MagicResistance with mana-oriented support stats.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":1,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":5.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":2.0},{"type":{"fileID":11400000,"guid":"951140a1eab4079458785564169d0fbf","type":2},"calculation":0,"value":2.0},{"type":{"fileID":11400000,"guid":"084013cbdb346d4428cb29a47d22b70e","type":2},"calculation":0,"value":4.0}],"outfitKeySO":{"fileID":11400000,"guid":"61ba714a39a275a4ab9be5f6217373d1","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_M_Knight_Top.asset</assetPath>
+      <assetName>Armor_M_Knight_Top</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Knight's Runed Cuirass</nameString>
+      <description>A test cuirass tuned for the Knight outfit line (key: M_Knight_Top). Focuses on Armor and MagicResistance with extra Health and Strength.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/M_Knight_Top.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_M_Knight_Top","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Knight's Runed Cuirass","sprite":{"fileID":21300000,"guid":"d51f5bb5b757db44cad74ac476bb31ad","type":3},"itemType":1,"maxAmount":1,"desc":"A test cuirass tuned for the Knight outfit line (key: M_Knight_Top). Focuses on Armor and MagicResistance with extra Health and Strength.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":2,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":5.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":2.0},{"type":{"fileID":11400000,"guid":"9e86dca11c02ff94396bdadebb64b5cb","type":2},"calculation":0,"value":15.0},{"type":{"fileID":11400000,"guid":"e3eea70b5cde0694eb6d179932efe3c0","type":2},"calculation":0,"value":2.0}],"outfitKeySO":{"fileID":11400000,"guid":"2deb19c6c53f68747b63f338d0b5917d","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_M_Mage_Bottom.asset</assetPath>
+      <assetName>Armor_M_Mage_Bottom</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Mage's Swift Greaves</nameString>
+      <description>A test greaves tuned for the Mage outfit line (key: M_Mage_Bottom). Adds Armor and MagicResistance while improving MoveSpeed and Agility.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/M_Mage_Bottom.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_M_Mage_Bottom","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Mage's Swift Greaves","sprite":{"fileID":21300000,"guid":"699997e35f117f643a7baebfc165c830","type":3},"itemType":1,"maxAmount":1,"desc":"A test greaves tuned for the Mage outfit line (key: M_Mage_Bottom). Adds Armor and MagicResistance while improving MoveSpeed and Agility.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":4,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":7.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":3.0},{"type":{"fileID":11400000,"guid":"f1e5c30f9cdf16849b1138083aad69d2","type":2},"calculation":0,"value":0.550000011920929},{"type":{"fileID":11400000,"guid":"3a7cc61c3042aa04387e312907199547","type":2},"calculation":0,"value":4.0}],"outfitKeySO":{"fileID":11400000,"guid":"170b0ec109924ad4e8e212ad70122a16","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_M_Mage_Headwear.asset</assetPath>
+      <assetName>Armor_M_Mage_Headwear</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Mage's Steel Headgear</nameString>
+      <description>A test headgear tuned for the Mage outfit line (key: M_Mage_Headwear). Improves Armor and MagicResistance with mana-oriented support stats.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/M_Mage_Headwear.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_M_Mage_Headwear","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Mage's Steel Headgear","sprite":{"fileID":21300000,"guid":"026093bc509450d458d56b557a43a7f6","type":3},"itemType":1,"maxAmount":1,"desc":"A test headgear tuned for the Mage outfit line (key: M_Mage_Headwear). Improves Armor and MagicResistance with mana-oriented support stats.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":1,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":7.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":3.0},{"type":{"fileID":11400000,"guid":"951140a1eab4079458785564169d0fbf","type":2},"calculation":0,"value":3.0},{"type":{"fileID":11400000,"guid":"084013cbdb346d4428cb29a47d22b70e","type":2},"calculation":0,"value":5.0}],"outfitKeySO":{"fileID":11400000,"guid":"cd16dcefc279d5b4e96ef74f5238ae3a","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_M_Mage_Top.asset</assetPath>
+      <assetName>Armor_M_Mage_Top</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Mage's Reinforced Robe</nameString>
+      <description>A test robe tuned for the Mage outfit line (key: M_Mage_Top). Focuses on Armor and MagicResistance with extra Health and Strength.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/M_Mage_Top.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_M_Mage_Top","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Mage's Reinforced Robe","sprite":{"fileID":21300000,"guid":"9cded432c69a21341b24ee185a10ad79","type":3},"itemType":1,"maxAmount":1,"desc":"A test robe tuned for the Mage outfit line (key: M_Mage_Top). Focuses on Armor and MagicResistance with extra Health and Strength.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":2,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":5.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":3.0},{"type":{"fileID":11400000,"guid":"9e86dca11c02ff94396bdadebb64b5cb","type":2},"calculation":0,"value":18.0},{"type":{"fileID":11400000,"guid":"e3eea70b5cde0694eb6d179932efe3c0","type":2},"calculation":0,"value":2.0}],"outfitKeySO":{"fileID":11400000,"guid":"ff4262b3b4e942e40a127506e69a15eb","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_M_Rogue_Bottom.asset</assetPath>
+      <assetName>Armor_M_Rogue_Bottom</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Rogue's Traveler's Greaves</nameString>
+      <description>A test greaves tuned for the Rogue outfit line (key: M_Rogue_Bottom). Adds Armor and MagicResistance while improving MoveSpeed and Agility.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/M_Rogue_Bottom.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_M_Rogue_Bottom","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Rogue's Traveler's Greaves","sprite":{"fileID":21300000,"guid":"fa8731a719b30394c83d045123947ee8","type":3},"itemType":1,"maxAmount":1,"desc":"A test greaves tuned for the Rogue outfit line (key: M_Rogue_Bottom). Adds Armor and MagicResistance while improving MoveSpeed and Agility.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":4,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":7.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":3.0},{"type":{"fileID":11400000,"guid":"f1e5c30f9cdf16849b1138083aad69d2","type":2},"calculation":0,"value":0.550000011920929},{"type":{"fileID":11400000,"guid":"3a7cc61c3042aa04387e312907199547","type":2},"calculation":0,"value":4.0}],"outfitKeySO":{"fileID":11400000,"guid":"5f7255fcba6b06546858d372c1bd4082","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_M_Rogue_Eyepatch.asset</assetPath>
+      <assetName>Armor_M_Rogue_Eyepatch</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Rogue's Runed Eyepatch</nameString>
+      <description>A test eyepatch tuned for the Rogue outfit line (key: M_Rogue_Eyepatch). Improves Armor and MagicResistance with mana-oriented support stats.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/M_Rogue_Eyepatch.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_M_Rogue_Eyepatch","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Rogue's Runed Eyepatch","sprite":{"fileID":21300000,"guid":"f7d074cf705002f4da8e216d98cb2693","type":3},"itemType":1,"maxAmount":1,"desc":"A test eyepatch tuned for the Rogue outfit line (key: M_Rogue_Eyepatch). Improves Armor and MagicResistance with mana-oriented support stats.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":1,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":7.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":3.0},{"type":{"fileID":11400000,"guid":"951140a1eab4079458785564169d0fbf","type":2},"calculation":0,"value":3.0},{"type":{"fileID":11400000,"guid":"084013cbdb346d4428cb29a47d22b70e","type":2},"calculation":0,"value":7.0}],"outfitKeySO":{"fileID":11400000,"guid":"fc7dd3b08f9dbbf4192335605ee2cbb2","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_M_Rogue_Top.asset</assetPath>
+      <assetName>Armor_M_Rogue_Top</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Rogue's Steel Cuirass</nameString>
+      <description>A test cuirass tuned for the Rogue outfit line (key: M_Rogue_Top). Focuses on Armor and MagicResistance with extra Health and Strength.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/M_Rogue_Top.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_M_Rogue_Top","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Rogue's Steel Cuirass","sprite":{"fileID":21300000,"guid":"ce23b7253d99ec54f9ee304d16ec9a05","type":3},"itemType":1,"maxAmount":1,"desc":"A test cuirass tuned for the Rogue outfit line (key: M_Rogue_Top). Focuses on Armor and MagicResistance with extra Health and Strength.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":2,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":6.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":3.0},{"type":{"fileID":11400000,"guid":"9e86dca11c02ff94396bdadebb64b5cb","type":2},"calculation":0,"value":15.0},{"type":{"fileID":11400000,"guid":"e3eea70b5cde0694eb6d179932efe3c0","type":2},"calculation":0,"value":3.0}],"outfitKeySO":{"fileID":11400000,"guid":"61f138e0581c57645b96d944d646b782","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_M_Sorcerer_BishopHat.asset</assetPath>
+      <assetName>Armor_M_Sorcerer_BishopHat</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Sorcerer's Steel Hat</nameString>
+      <description>A test hat tuned for the Sorcerer outfit line (key: M_Sorcerer_BishopHat). Improves Armor and MagicResistance with mana-oriented support stats.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/M_Sorcerer_BishopHat.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_M_Sorcerer_BishopHat","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Sorcerer's Steel Hat","sprite":{"fileID":21300000,"guid":"68a2b59f294673948aac901ec51a9eb5","type":3},"itemType":1,"maxAmount":1,"desc":"A test hat tuned for the Sorcerer outfit line (key: M_Sorcerer_BishopHat). Improves Armor and MagicResistance with mana-oriented support stats.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":1,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":5.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":3.0},{"type":{"fileID":11400000,"guid":"951140a1eab4079458785564169d0fbf","type":2},"calculation":0,"value":3.0},{"type":{"fileID":11400000,"guid":"084013cbdb346d4428cb29a47d22b70e","type":2},"calculation":0,"value":5.0}],"outfitKeySO":{"fileID":11400000,"guid":"03bf59181fcd8fb4893ea05569a51790","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_M_Sorcerer_Bottom.asset</assetPath>
+      <assetName>Armor_M_Sorcerer_Bottom</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Sorcerer's Leather Greaves</nameString>
+      <description>A test greaves tuned for the Sorcerer outfit line (key: M_Sorcerer_Bottom). Adds Armor and MagicResistance while improving MoveSpeed and Agility.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/M_Sorcerer_Bottom.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_M_Sorcerer_Bottom","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Sorcerer's Leather Greaves","sprite":{"fileID":21300000,"guid":"90153b1cdc8211d4d9ce0c85573202b6","type":3},"itemType":1,"maxAmount":1,"desc":"A test greaves tuned for the Sorcerer outfit line (key: M_Sorcerer_Bottom). Adds Armor and MagicResistance while improving MoveSpeed and Agility.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":4,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":7.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":2.0},{"type":{"fileID":11400000,"guid":"f1e5c30f9cdf16849b1138083aad69d2","type":2},"calculation":0,"value":0.550000011920929},{"type":{"fileID":11400000,"guid":"3a7cc61c3042aa04387e312907199547","type":2},"calculation":0,"value":4.0}],"outfitKeySO":{"fileID":11400000,"guid":"072d4f32db86d9945b665e708095f4c5","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_M_Sorcerer_Top.asset</assetPath>
+      <assetName>Armor_M_Sorcerer_Top</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Sorcerer's Plated Robe</nameString>
+      <description>A test robe tuned for the Sorcerer outfit line (key: M_Sorcerer_Top). Focuses on Armor and MagicResistance with extra Health and Strength.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/M_Sorcerer_Top.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_M_Sorcerer_Top","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Sorcerer's Plated Robe","sprite":{"fileID":21300000,"guid":"809a9311c2ad44e41b1d38c0ed1de5c9","type":3},"itemType":1,"maxAmount":1,"desc":"A test robe tuned for the Sorcerer outfit line (key: M_Sorcerer_Top). Focuses on Armor and MagicResistance with extra Health and Strength.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":2,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":7.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":2.0},{"type":{"fileID":11400000,"guid":"9e86dca11c02ff94396bdadebb64b5cb","type":2},"calculation":0,"value":20.0},{"type":{"fileID":11400000,"guid":"e3eea70b5cde0694eb6d179932efe3c0","type":2},"calculation":0,"value":4.0}],"outfitKeySO":{"fileID":11400000,"guid":"9f7f48d4b950cdb46b1f7a31f014b997","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_M_Swordsman_Bottom.asset</assetPath>
+      <assetName>Armor_M_Swordsman_Bottom</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Swordsman's Swift Greaves</nameString>
+      <description>A test greaves tuned for the Swordsman outfit line (key: M_Swordsman_Bottom). Adds Armor and MagicResistance while improving MoveSpeed and Agility.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/M_Swordsman_Bottom.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_M_Swordsman_Bottom","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Swordsman's Swift Greaves","sprite":{"fileID":21300000,"guid":"e0f95177ef2415244bb62385883a6c3a","type":3},"itemType":1,"maxAmount":1,"desc":"A test greaves tuned for the Swordsman outfit line (key: M_Swordsman_Bottom). Adds Armor and MagicResistance while improving MoveSpeed and Agility.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":4,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":5.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":3.0},{"type":{"fileID":11400000,"guid":"f1e5c30f9cdf16849b1138083aad69d2","type":2},"calculation":0,"value":0.3499999940395355},{"type":{"fileID":11400000,"guid":"3a7cc61c3042aa04387e312907199547","type":2},"calculation":0,"value":2.0}],"outfitKeySO":{"fileID":11400000,"guid":"0681c9f46257ce8489d1db507f74bc90","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_M_Swordsman_SkullCap.asset</assetPath>
+      <assetName>Armor_M_Swordsman_SkullCap</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Swordsman's Runed Headgear</nameString>
+      <description>A test headgear tuned for the Swordsman outfit line (key: M_Swordsman_SkullCap). Improves Armor and MagicResistance with mana-oriented support stats.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/M_Swordsman_SkullCap.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_M_Swordsman_SkullCap","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Swordsman's Runed Headgear","sprite":{"fileID":21300000,"guid":"a07020233b320254ca9bacbc0c78ea05","type":3},"itemType":1,"maxAmount":1,"desc":"A test headgear tuned for the Swordsman outfit line (key: M_Swordsman_SkullCap). Improves Armor and MagicResistance with mana-oriented support stats.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":1,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":6.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":3.0},{"type":{"fileID":11400000,"guid":"951140a1eab4079458785564169d0fbf","type":2},"calculation":0,"value":3.0},{"type":{"fileID":11400000,"guid":"084013cbdb346d4428cb29a47d22b70e","type":2},"calculation":0,"value":7.0}],"outfitKeySO":{"fileID":11400000,"guid":"da355cf879eb6984d9a0486d54db98b8","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_M_Swordsman_Top.asset</assetPath>
+      <assetName>Armor_M_Swordsman_Top</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Swordsman's Reinforced Cuirass</nameString>
+      <description>A test cuirass tuned for the Swordsman outfit line (key: M_Swordsman_Top). Focuses on Armor and MagicResistance with extra Health and Strength.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/M_Swordsman_Top.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_M_Swordsman_Top","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Swordsman's Reinforced Cuirass","sprite":{"fileID":21300000,"guid":"8c253e5ad9d4d4c498923ed325743b6e","type":3},"itemType":1,"maxAmount":1,"desc":"A test cuirass tuned for the Swordsman outfit line (key: M_Swordsman_Top). Focuses on Armor and MagicResistance with extra Health and Strength.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":2,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":7.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":3.0},{"type":{"fileID":11400000,"guid":"9e86dca11c02ff94396bdadebb64b5cb","type":2},"calculation":0,"value":16.0},{"type":{"fileID":11400000,"guid":"e3eea70b5cde0694eb6d179932efe3c0","type":2},"calculation":0,"value":4.0}],"outfitKeySO":{"fileID":11400000,"guid":"23a0aee38a957f74c94bea0cad476096","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_M_Warlock_Bottom.asset</assetPath>
+      <assetName>Armor_M_Warlock_Bottom</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Warlock's Reinforced Greaves</nameString>
+      <description>A test greaves tuned for the Warlock outfit line (key: M_Warlock_Bottom). Adds Armor and MagicResistance while improving MoveSpeed and Agility.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/M_Warlock_Bottom.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_M_Warlock_Bottom","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Warlock's Reinforced Greaves","sprite":{"fileID":21300000,"guid":"a84a3b3472827744eaf7e1301efd02ce","type":3},"itemType":1,"maxAmount":1,"desc":"A test greaves tuned for the Warlock outfit line (key: M_Warlock_Bottom). Adds Armor and MagicResistance while improving MoveSpeed and Agility.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":4,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":5.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":2.0},{"type":{"fileID":11400000,"guid":"f1e5c30f9cdf16849b1138083aad69d2","type":2},"calculation":0,"value":0.3499999940395355},{"type":{"fileID":11400000,"guid":"3a7cc61c3042aa04387e312907199547","type":2},"calculation":0,"value":2.0}],"outfitKeySO":{"fileID":11400000,"guid":"f0b876bb76c934240b1caba5a62ce719","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_M_Warlock_Hood.asset</assetPath>
+      <assetName>Armor_M_Warlock_Hood</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Warlock's Runed Hood</nameString>
+      <description>A test hood tuned for the Warlock outfit line (key: M_Warlock_Hood). Improves Armor and MagicResistance with mana-oriented support stats.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/M_Warlock_Hood.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_M_Warlock_Hood","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Warlock's Runed Hood","sprite":{"fileID":21300000,"guid":"a5ff4e3ef58700b4e98393651df60533","type":3},"itemType":1,"maxAmount":1,"desc":"A test hood tuned for the Warlock outfit line (key: M_Warlock_Hood). Improves Armor and MagicResistance with mana-oriented support stats.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":1,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":5.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":3.0},{"type":{"fileID":11400000,"guid":"951140a1eab4079458785564169d0fbf","type":2},"calculation":0,"value":3.0},{"type":{"fileID":11400000,"guid":"084013cbdb346d4428cb29a47d22b70e","type":2},"calculation":0,"value":7.0}],"outfitKeySO":{"fileID":11400000,"guid":"771a048787f3d394db8a9efe2757c0f1","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Armor/Armor_M_Warlock_Top.asset</assetPath>
+      <assetName>Armor_M_Warlock_Top</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Warlock's Runed Robe</nameString>
+      <description>A test robe tuned for the Warlock outfit line (key: M_Warlock_Top). Focuses on Armor and MagicResistance with extra Health and Strength.</description>
+      <prefabPath />
+      <spritePath>Assets/Renderings/Sprites/CharacterOutfitIcon/M_Warlock_Top.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Armor_M_Warlock_Top","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Warlock's Runed Robe","sprite":{"fileID":21300000,"guid":"35f6e121e39d61a40902d16545f4b041","type":3},"itemType":1,"maxAmount":1,"desc":"A test robe tuned for the Warlock outfit line (key: M_Warlock_Top). Focuses on Armor and MagicResistance with extra Health and Strength.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":2,"equipmentStats":[{"type":{"fileID":11400000,"guid":"b797748de61cfca49a43e772b4ceaaa4","type":2},"calculation":0,"value":7.0},{"type":{"fileID":11400000,"guid":"d1f737d637ad61c4b83c036babd96fc0","type":2},"calculation":0,"value":2.0},{"type":{"fileID":11400000,"guid":"9e86dca11c02ff94396bdadebb64b5cb","type":2},"calculation":0,"value":15.0},{"type":{"fileID":11400000,"guid":"e3eea70b5cde0694eb6d179932efe3c0","type":2},"calculation":0,"value":4.0}],"outfitKeySO":{"fileID":11400000,"guid":"44b737ec53c88c14098a9304eed34a4a","type":2},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/CopperOre.asset</assetPath>
+      <assetName>CopperOre</assetName>
+      <typeName>TH.Resource.ItemTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Countable</itemType>
+      <itemTypeValue>2</itemTypeValue>
+      <maxAmount>99</maxAmount>
+      <nameString>Copper Ore</nameString>
+      <description>Reddish-brown ore containing copper. Essential for creating bronze alloys and electrical components.</description>
+      <prefabPath />
+      <spritePath />
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"CopperOre","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ItemTypeSO","prefab":{"instanceID":0},"nameString":"Copper Ore","sprite":{"instanceID":0},"itemType":2,"maxAmount":99,"desc":"Reddish-brown ore containing copper. Essential for creating bronze alloys and electrical components.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false}}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Cotton.asset</assetPath>
+      <assetName>Cotton</assetName>
+      <typeName>TH.Resource.ItemTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Countable</itemType>
+      <itemTypeValue>2</itemTypeValue>
+      <maxAmount>99</maxAmount>
+      <nameString>Cotton</nameString>
+      <description>Soft white fibers harvested from cotton plants. Used for making cloth and bandages.</description>
+      <prefabPath />
+      <spritePath />
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Cotton","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ItemTypeSO","prefab":{"instanceID":0},"nameString":"Cotton","sprite":{"instanceID":0},"itemType":2,"maxAmount":99,"desc":"Soft white fibers harvested from cotton plants. Used for making cloth and bandages.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false}}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Feather.asset</assetPath>
+      <assetName>Feather</assetName>
+      <typeName>TH.Resource.ItemTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Countable</itemType>
+      <itemTypeValue>2</itemTypeValue>
+      <maxAmount>99</maxAmount>
+      <nameString>Feather</nameString>
+      <description>A lightweight bird feather. Used for crafting arrows and quills.</description>
+      <prefabPath />
+      <spritePath />
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Feather","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ItemTypeSO","prefab":{"instanceID":0},"nameString":"Feather","sprite":{"instanceID":0},"itemType":2,"maxAmount":99,"desc":"A lightweight bird feather. Used for crafting arrows and quills.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false}}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/FishMeat.asset</assetPath>
+      <assetName>FishMeat</assetName>
+      <typeName>TH.Resource.ItemTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Countable</itemType>
+      <itemTypeValue>2</itemTypeValue>
+      <maxAmount>30</maxAmount>
+      <nameString>Fish Meat</nameString>
+      <description>Fresh fish caught from nearby waters. Can be cooked for a nourishing meal.</description>
+      <prefabPath />
+      <spritePath />
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"FishMeat","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ItemTypeSO","prefab":{"instanceID":0},"nameString":"Fish Meat","sprite":{"instanceID":0},"itemType":2,"maxAmount":30,"desc":"Fresh fish caught from nearby waters. Can be cooked for a nourishing meal.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false}}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Gemstone.asset</assetPath>
+      <assetName>Gemstone</assetName>
+      <typeName>TH.Resource.ItemTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Countable</itemType>
+      <itemTypeValue>2</itemTypeValue>
+      <maxAmount>99</maxAmount>
+      <nameString>Gemstone</nameString>
+      <description>A flawless precious stone that gleams with inner light. Highly valued by merchants and enchanters.</description>
+      <prefabPath />
+      <spritePath />
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Gemstone","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ItemTypeSO","prefab":{"instanceID":0},"nameString":"Gemstone","sprite":{"instanceID":0},"itemType":2,"maxAmount":99,"desc":"A flawless precious stone that gleams with inner light. Highly valued by merchants and enchanters.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false}}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/GoldCoin.asset</assetPath>
+      <assetName>GoldCoin</assetName>
+      <typeName>TH.Resource.ItemTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Special</itemType>
+      <itemTypeValue>4</itemTypeValue>
+      <maxAmount>9999</maxAmount>
+      <nameString>Gold Coin</nameString>
+      <description>Standard currency throughout the realm. Shiny and valuable.</description>
+      <prefabPath />
+      <spritePath />
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"GoldCoin","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ItemTypeSO","prefab":{"instanceID":0},"nameString":"Gold Coin","sprite":{"instanceID":0},"itemType":4,"maxAmount":9999,"desc":"Standard currency throughout the realm. Shiny and valuable.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false}}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/HerbBundle.asset</assetPath>
+      <assetName>HerbBundle</assetName>
+      <typeName>TH.Resource.ItemTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Countable</itemType>
+      <itemTypeValue>2</itemTypeValue>
+      <maxAmount>50</maxAmount>
+      <nameString>Herb Bundle</nameString>
+      <description>A collection of medicinal herbs tied together. Used in alchemy and cooking.</description>
+      <prefabPath />
+      <spritePath />
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"HerbBundle","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ItemTypeSO","prefab":{"instanceID":0},"nameString":"Herb Bundle","sprite":{"instanceID":0},"itemType":2,"maxAmount":50,"desc":"A collection of medicinal herbs tied together. Used in alchemy and cooking.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false}}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/IronOre.asset</assetPath>
+      <assetName>IronOre</assetName>
+      <typeName>TH.Resource.ItemTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Countable</itemType>
+      <itemTypeValue>2</itemTypeValue>
+      <maxAmount>99</maxAmount>
+      <nameString>Iron Ore</nameString>
+      <description>Raw iron ore extracted from deep mines. Can be smelted into iron ingots for crafting.</description>
+      <prefabPath />
+      <spritePath />
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"IronOre","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ItemTypeSO","prefab":{"instanceID":0},"nameString":"Iron Ore","sprite":{"instanceID":0},"itemType":2,"maxAmount":99,"desc":"Raw iron ore extracted from deep mines. Can be smelted into iron ingots for crafting.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false}}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Leather.asset</assetPath>
+      <assetName>Leather</assetName>
+      <typeName>TH.Resource.ItemTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Countable</itemType>
+      <itemTypeValue>2</itemTypeValue>
+      <maxAmount>50</maxAmount>
+      <nameString>Leather</nameString>
+      <description>Tanned animal hide suitable for crafting armor and bags. Durable and flexible.</description>
+      <prefabPath />
+      <spritePath />
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Leather","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ItemTypeSO","prefab":{"instanceID":0},"nameString":"Leather","sprite":{"instanceID":0},"itemType":2,"maxAmount":50,"desc":"Tanned animal hide suitable for crafting armor and bags. Durable and flexible.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false}}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/MagicScroll.asset</assetPath>
+      <assetName>MagicScroll</assetName>
+      <typeName>TH.Resource.ItemTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Single</itemType>
+      <itemTypeValue>3</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Magic Scroll</nameString>
+      <description>A parchment inscribed with arcane symbols. Contains a single-use spell of unknown power.</description>
+      <prefabPath />
+      <spritePath />
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"MagicScroll","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ItemTypeSO","prefab":{"instanceID":0},"nameString":"Magic Scroll","sprite":{"instanceID":0},"itemType":3,"maxAmount":1,"desc":"A parchment inscribed with arcane symbols. Contains a single-use spell of unknown power.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false}}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/New Folder/HeadArmor.asset</assetPath>
+      <assetName>HeadArmor</assetName>
+      <typeName>TH.Resource.ArmorTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Test Head Armor 1</nameString>
+      <description>Test Head Armor Desc</description>
+      <prefabPath />
+      <spritePath>Assets/Asset Packs/Cainos/Pixel Art Icon Pack - RPG/Texture/Equipment/Leather Helmet.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"HeadArmor","m_EditorClassIdentifier":"Assembly-CSharp::ArmorTypeSO","prefab":{"instanceID":0},"nameString":"Test Head Armor 1","sprite":{"fileID":21300000,"guid":"5ff9b869a12e70b4db7a137f84ed920b","type":3},"itemType":1,"maxAmount":1,"desc":"Test Head Armor Desc","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":0,"slotType":1,"equipmentStats":[{"type":{"fileID":11400000,"guid":"9e86dca11c02ff94396bdadebb64b5cb","type":2},"calculation":0,"value":7.0}],"outfitKeySO":{"instanceID":0},"armorType":0}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/New Folder/HealthPotion.asset</assetPath>
+      <assetName>HealthPotion</assetName>
+      <typeName>TH.Resource.ItemTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Countable</itemType>
+      <itemTypeValue>2</itemTypeValue>
+      <maxAmount>10</maxAmount>
+      <nameString>Health Potion</nameString>
+      <description>A crimson elixir that restores vitality. Recovers 50 HP when consumed.</description>
+      <prefabPath />
+      <spritePath>Assets/Asset Packs/Cainos/Pixel Art Icon Pack - RPG/Texture/Potion/Red Potion 2.png</spritePath>
+      <itemUseEffectPaths>Assets/Game/Scriptable Objects/ItemEffect/Combat/TestHealPotionEffect.asset</itemUseEffectPaths>
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"HealthPotion","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ItemTypeSO","prefab":{"instanceID":0},"nameString":"Health Potion","sprite":{"fileID":21300000,"guid":"44dc65116207f4b46aa85443dae5ad96","type":3},"itemType":2,"maxAmount":10,"desc":"A crimson elixir that restores vitality. Recovers 50 HP when consumed.","itemUseEffects":[{"fileID":11400000,"guid":"389108454022f9a45b3516705342d06c","type":2}],"itemUseSFXReference":{"m_AssetGUID":"333946845ce249d458dc4662051fba24","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false}}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/New Folder/ManaPotion.asset</assetPath>
+      <assetName>ManaPotion</assetName>
+      <typeName>TH.Resource.ItemTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Countable</itemType>
+      <itemTypeValue>2</itemTypeValue>
+      <maxAmount>20</maxAmount>
+      <nameString>Mana Potion</nameString>
+      <description>A shimmering blue liquid infused with magical energy. Restores 30 MP when consumed.</description>
+      <prefabPath />
+      <spritePath>Assets/Asset Packs/Cainos/Pixel Art Icon Pack - RPG/Texture/Potion/Blue Potion 3.png</spritePath>
+      <itemUseEffectPaths>Assets/Game/Scriptable Objects/ItemEffect/Combat/ItemManaRecoverEffect.asset</itemUseEffectPaths>
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"ManaPotion","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ItemTypeSO","prefab":{"instanceID":0},"nameString":"Mana Potion","sprite":{"fileID":21300000,"guid":"ace8a02646afeda4880fc3cb14cad705","type":3},"itemType":2,"maxAmount":20,"desc":"A shimmering blue liquid infused with magical energy. Restores 30 MP when consumed.","itemUseEffects":[{"fileID":11400000,"guid":"ecd03d5317e58c24eb6459ddc9ace0a7","type":2}],"itemUseSFXReference":{"m_AssetGUID":"333946845ce249d458dc4662051fba24","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false}}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/New Folder/Skull.asset</assetPath>
+      <assetName>Skull</assetName>
+      <typeName>TH.Resource.ItemTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Countable</itemType>
+      <itemTypeValue>2</itemTypeValue>
+      <maxAmount>10</maxAmount>
+      <nameString>Test Item Skull</nameString>
+      <description>Test Item Skull Desc</description>
+      <prefabPath />
+      <spritePath>Assets/Asset Packs/Cainos/Pixel Art Icon Pack - RPG/Texture/Monster Part/Skull.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Skull","m_EditorClassIdentifier":"Assembly-CSharp::ItemTypeSO","prefab":{"instanceID":0},"nameString":"Test Item Skull","sprite":{"fileID":21300000,"guid":"587503b6015abc741ad5147fff8f4a06","type":3},"itemType":2,"maxAmount":10,"desc":"Test Item Skull Desc","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false}}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/New Folder/SlimeGel.asset</assetPath>
+      <assetName>SlimeGel</assetName>
+      <typeName>TH.Resource.ItemTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Countable</itemType>
+      <itemTypeValue>2</itemTypeValue>
+      <maxAmount>20</maxAmount>
+      <nameString>Test Item Gel</nameString>
+      <description>Test Item Slime Gel Desc</description>
+      <prefabPath />
+      <spritePath>Assets/Asset Packs/Cainos/Pixel Art Icon Pack - RPG/Texture/Monster Part/Slime Gel.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"SlimeGel","m_EditorClassIdentifier":"Assembly-CSharp::ItemTypeSO","prefab":{"instanceID":0},"nameString":"Test Item Gel","sprite":{"fileID":21300000,"guid":"d1f94eb541d98c94c9e0a776707e9c7c","type":3},"itemType":2,"maxAmount":20,"desc":"Test Item Slime Gel Desc","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false}}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/New Folder/WaterBottle.asset</assetPath>
+      <assetName>WaterBottle</assetName>
+      <typeName>TH.Resource.ItemTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Countable</itemType>
+      <itemTypeValue>2</itemTypeValue>
+      <maxAmount>10</maxAmount>
+      <nameString>Test Item Water Bottle</nameString>
+      <description>Test Item Water Bottle Desc</description>
+      <prefabPath />
+      <spritePath>Assets/Asset Packs/Cainos/Pixel Art Icon Pack - RPG/Texture/Potion/Water Bottle.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"WaterBottle","m_EditorClassIdentifier":"Assembly-CSharp::ItemTypeSO","prefab":{"instanceID":0},"nameString":"Test Item Water Bottle","sprite":{"fileID":21300000,"guid":"3a481bc5b3972b54ab4918d5226622af","type":3},"itemType":2,"maxAmount":10,"desc":"Test Item Water Bottle Desc","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false}}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/New Folder/Wood Log.asset</assetPath>
+      <assetName>Wood Log</assetName>
+      <typeName>TH.Resource.ItemTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Countable</itemType>
+      <itemTypeValue>2</itemTypeValue>
+      <maxAmount>20</maxAmount>
+      <nameString>Test Item Wood</nameString>
+      <description>Test Item Wood Log Desc</description>
+      <prefabPath />
+      <spritePath>Assets/Asset Packs/Cainos/Pixel Art Icon Pack - RPG/Texture/Material/Wood Log.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Wood Log","m_EditorClassIdentifier":"Assembly-CSharp::ItemTypeSO","prefab":{"instanceID":0},"nameString":"Test Item Wood","sprite":{"fileID":21300000,"guid":"0e1ccb64303778e4081913a6d9cca677","type":3},"itemType":2,"maxAmount":20,"desc":"Test Item Wood Log Desc","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false}}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/New Folder/Wool.asset</assetPath>
+      <assetName>Wool</assetName>
+      <typeName>TH.Resource.ItemTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Countable</itemType>
+      <itemTypeValue>2</itemTypeValue>
+      <maxAmount>20</maxAmount>
+      <nameString>Test Item Wool</nameString>
+      <description>Test Item Wool Desc</description>
+      <prefabPath />
+      <spritePath>Assets/Asset Packs/Cainos/Pixel Art Icon Pack - RPG/Texture/Material/Wool.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Wool","m_EditorClassIdentifier":"Assembly-CSharp::ItemTypeSO","prefab":{"instanceID":0},"nameString":"Test Item Wool","sprite":{"fileID":21300000,"guid":"046f821c76a004e4c91b9f27ee906194","type":3},"itemType":2,"maxAmount":20,"desc":"Test Item Wool Desc","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false}}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Rope.asset</assetPath>
+      <assetName>Rope</assetName>
+      <typeName>TH.Resource.ItemTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Countable</itemType>
+      <itemTypeValue>2</itemTypeValue>
+      <maxAmount>30</maxAmount>
+      <nameString>Rope</nameString>
+      <description>Sturdy braided cord made from natural fibers. Useful for climbing and securing objects.</description>
+      <prefabPath />
+      <spritePath />
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Rope","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ItemTypeSO","prefab":{"instanceID":0},"nameString":"Rope","sprite":{"instanceID":0},"itemType":2,"maxAmount":30,"desc":"Sturdy braided cord made from natural fibers. Useful for climbing and securing objects.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false}}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Torch.asset</assetPath>
+      <assetName>Torch</assetName>
+      <typeName>TH.Resource.ItemTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Countable</itemType>
+      <itemTypeValue>2</itemTypeValue>
+      <maxAmount>10</maxAmount>
+      <nameString>Torch</nameString>
+      <description>A wooden stick wrapped in oil-soaked cloth. Provides light in dark areas for limited time.</description>
+      <prefabPath />
+      <spritePath />
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Torch","m_EditorClassIdentifier":"Assembly-CSharp::TH.Resource.ItemTypeSO","prefab":{"instanceID":0},"nameString":"Torch","sprite":{"instanceID":0},"itemType":2,"maxAmount":10,"desc":"A wooden stick wrapped in oil-soaked cloth. Provides light in dark areas for limited time.","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false}}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Weapon/WeaponTypeSO/Bow.asset</assetPath>
+      <assetName>Bow</assetName>
+      <typeName>TH.Resource.WeaponTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Bow Test1</nameString>
+      <description>Bow Test1 Description</description>
+      <prefabPath>Assets/Game/Item/Weapon/DroppedWeapon/Dropped Bow.prefab</prefabPath>
+      <spritePath>Assets/Asset Packs/Cainos/Pixel Art Icon Pack - RPG/Texture/Weapon &amp; Tool/Bow.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Bow","m_EditorClassIdentifier":"Assembly-CSharp::WeaponTypeSO","prefab":{"fileID":485934382282723969,"guid":"d65c897b8507b1d499688c554148fe1e","type":3},"nameString":"Bow Test1","sprite":{"fileID":21300000,"guid":"bbf8638a8a75d9c42b93639213c92c9b","type":3},"itemType":1,"maxAmount":1,"desc":"Bow Test1 Description","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":1,"slotType":0,"equipmentStats":[{"type":{"fileID":11400000,"guid":"cf7022ca8cb84ae4395e9b8e2edbcdf2","type":2},"calculation":0,"value":15.0}],"weaponType":0,"EquippedPrefab":{"fileID":8076619319902921802,"guid":"6dd5bc81c7e17b74c8c5782a5824dd91","type":3},"equippedPrefabLeft":{"instanceID":0},"hand":1,"defaultSkill":{"fileID":11400000,"guid":"5cd53c555bc830b41b96b4405ec81bb6","type":2}}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Weapon/WeaponTypeSO/Fireball.asset</assetPath>
+      <assetName>Fireball</assetName>
+      <typeName>TH.Resource.WeaponTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Fireball Test1</nameString>
+      <description>Fireball Test Description</description>
+      <prefabPath>Assets/Game/Item/Weapon/DroppedWeapon/Dropped Fireball.prefab</prefabPath>
+      <spritePath>Assets/Asset Packs/Cainos/Pixel Art Icon Pack - RPG/Texture/Weapon &amp; Tool/Wooden Staff.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Fireball","m_EditorClassIdentifier":"Assembly-CSharp::WeaponTypeSO","prefab":{"fileID":1181656062549879669,"guid":"272caf2c346b5e04ea0b11b49067dc0a","type":3},"nameString":"Fireball Test1","sprite":{"fileID":21300000,"guid":"02ff976d39577774bb44b83610e61dec","type":3},"itemType":1,"maxAmount":1,"desc":"Fireball Test Description","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":1,"slotType":0,"equipmentStats":[{"type":{"fileID":11400000,"guid":"f33892e137b94bf4e9d027c090bd8c4f","type":2},"calculation":0,"value":20.0}],"weaponType":0,"EquippedPrefab":{"fileID":3327907661040384045,"guid":"8d0abf9e8c434e44bbfa79ef7ce6693f","type":3},"equippedPrefabLeft":{"instanceID":0},"hand":1,"defaultSkill":{"fileID":11400000,"guid":"8f79b74127da75d42b7b7db7ca5534fb","type":2}}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Weapon/WeaponTypeSO/Long Sword.asset</assetPath>
+      <assetName>Long Sword</assetName>
+      <typeName>TH.Resource.WeaponTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Long Sword</nameString>
+      <description>Long Sword Test1 Description</description>
+      <prefabPath>Assets/Game/Item/Weapon/DroppedWeapon/Dropped Long Sword.prefab</prefabPath>
+      <spritePath>Assets/Asset Packs/Cainos/Pixel Art Icon Pack - RPG/Texture/Weapon &amp; Tool/Silver Sword.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Long Sword","m_EditorClassIdentifier":"Assembly-CSharp::WeaponTypeSO","prefab":{"fileID":7059132959080541948,"guid":"e5d2ab5e01f3aa045bd855ee0c6c1dca","type":3},"nameString":"Long Sword","sprite":{"fileID":21300000,"guid":"95052c6b62fb3de4695beaa99f842ac2","type":3},"itemType":1,"maxAmount":1,"desc":"Long Sword Test1 Description","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":1,"slotType":0,"equipmentStats":[{"type":{"fileID":11400000,"guid":"cf7022ca8cb84ae4395e9b8e2edbcdf2","type":2},"calculation":0,"value":20.0}],"weaponType":0,"EquippedPrefab":{"fileID":8466340430826345119,"guid":"e1c637a337d952d4eb438a72be1b848d","type":3},"equippedPrefabLeft":{"instanceID":0},"hand":0,"defaultSkill":{"fileID":11400000,"guid":"9b314ff0f32b1e440b4626b01bbbb750","type":2}}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Weapon/WeaponTypeSO/Sword.asset</assetPath>
+      <assetName>Sword</assetName>
+      <typeName>TH.Resource.WeaponTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Sword Test1</nameString>
+      <description>Sword Test1 Description</description>
+      <prefabPath>Assets/Game/Item/Weapon/DroppedWeapon/Dropped Sword.prefab</prefabPath>
+      <spritePath>Assets/Asset Packs/Cainos/Pixel Art Icon Pack - RPG/Texture/Weapon &amp; Tool/Wooden Sword.png</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Sword","m_EditorClassIdentifier":"Assembly-CSharp::WeaponTypeSO","prefab":{"fileID":7059132959080541948,"guid":"d4c092d9dca59304fba951cae1d05868","type":3},"nameString":"Sword Test1","sprite":{"fileID":21300000,"guid":"2ddf0348701148a4d8a7c6a0f7f146b3","type":3},"itemType":1,"maxAmount":1,"desc":"Sword Test1 Description","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":1,"slotType":0,"equipmentStats":[{"type":{"fileID":11400000,"guid":"cf7022ca8cb84ae4395e9b8e2edbcdf2","type":2},"calculation":0,"value":10.0}],"weaponType":0,"EquippedPrefab":{"fileID":8466340430826345119,"guid":"f88d5b41db4f06b4e8240c80f2f734db","type":3},"equippedPrefabLeft":{"fileID":8466340430826345119,"guid":"11cda9c8e3d9d034f8df6480f16d820b","type":3},"hand":2,"defaultSkill":{"fileID":11400000,"guid":"265746d0fd0a1cc468b00352e243cf4d","type":2}}}</serializedJson>
+    </ItemTypeXmlRow>
+    <ItemTypeXmlRow>
+      <assetPath>Assets/Game/Item/Weapon/WeaponTypeSO/Unarmed.asset</assetPath>
+      <assetName>Unarmed</assetName>
+      <typeName>TH.Resource.WeaponTypeSO, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null</typeName>
+      <itemType>Equipment</itemType>
+      <itemTypeValue>1</itemTypeValue>
+      <maxAmount>1</maxAmount>
+      <nameString>Unarmed Test1</nameString>
+      <description>Unarmed Test1 Description</description>
+      <prefabPath>Assets/Game/Item/Weapon/EquippedWeapon/Equipped Unarmed.prefab</prefabPath>
+      <spritePath>Resources/unity_builtin_extra</spritePath>
+      <itemUseEffectPaths />
+      <serializedJson>{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"Unarmed","m_EditorClassIdentifier":"Assembly-CSharp::WeaponTypeSO","prefab":{"fileID":6979306519834674752,"guid":"85f54ae1cb4911b49b5770895d6d70a9","type":3},"nameString":"Unarmed Test1","sprite":{"fileID":10917,"guid":"0000000000000000f000000000000000","type":0},"itemType":1,"maxAmount":1,"desc":"Unarmed Test1 Description","itemUseEffects":[],"itemUseSFXReference":{"m_AssetGUID":"","m_SubObjectName":"","m_SubObjectType":"","m_SubObjectGUID":"","m_EditorAssetChanged":false},"equipmentType":1,"slotType":0,"equipmentStats":[{"type":{"fileID":11400000,"guid":"cf7022ca8cb84ae4395e9b8e2edbcdf2","type":2},"calculation":0,"value":5.0}],"weaponType":0,"EquippedPrefab":{"fileID":6979306519834674752,"guid":"85f54ae1cb4911b49b5770895d6d70a9","type":3},"equippedPrefabLeft":{"instanceID":0},"hand":0,"defaultSkill":{"fileID":11400000,"guid":"caa9c92c06bbef340a4bca8c6a52f62a","type":2}}}</serializedJson>
+    </ItemTypeXmlRow>
+  </items>
+</ItemTypeXmlTable>

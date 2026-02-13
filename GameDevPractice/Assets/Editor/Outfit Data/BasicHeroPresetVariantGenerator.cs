@@ -3,19 +3,17 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
-using UnityEditor.AddressableAssets;
-using UnityEditor.AddressableAssets.Settings;
 using UnityEngine;
 
 public static class BasicHeroPresetVariantGenerator
 {
-    private const string SourceFolderAddressKey = "Outfit Source Presets";
-    private const string SourceFolderWithHeadwearAddressKey = "Outfit Source Presets_wHeadwear";
-    private const string OutputFolderAddressKey = "Outfit Output Presets";
-    private const string OutputFolderWithHeadwearAddressKey = "Outfit Output Presets_wHeadwear";
+    private const string SourceFolderAddressKey = "outfit.source_presets.folder";
+    private const string SourceFolderWithHeadwearAddressKey = "outfit.source_presets_headwear.folder";
+    private const string OutputFolderAddressKey = "outfit.output_presets.folder";
+    private const string OutputFolderWithHeadwearAddressKey = "outfit.output_presets_headwear.folder";
 
-    private const string FemaleTemplateAddressKey = "BasicHero_F Variant Template";
-    private const string MaleTemplateAddressKey = "BasicHero_M Variant Template";
+    private const string FemaleTemplateAddressKey = "outfit.template.female";
+    private const string MaleTemplateAddressKey = "outfit.template.male";
 
     [MenuItem("Tools/Outfit/Generate Preset Variants (BasicHero)")]
     private static void GeneratePresetVariants()
@@ -268,38 +266,9 @@ public static class BasicHeroPresetVariantGenerator
 
     private static string ResolvePathByAddressKey(string addressKey)
     {
-        if (string.IsNullOrWhiteSpace(addressKey))
-            return null;
-
-        var settings = AddressableAssetSettingsDefaultObject.Settings;
-        if (settings == null)
-        {
-            Debug.LogError($"[BasicHeroPresetVariantGenerator] Addressable settings not found. key={addressKey}");
-            return null;
-        }
-
-        for (int g = 0; g < settings.groups.Count; g++)
-        {
-            var group = settings.groups[g];
-            if (group == null)
-                continue;
-
-            foreach (var entry in group.entries)
-            {
-                if (entry == null)
-                    continue;
-
-                if (!string.Equals(entry.address, addressKey, StringComparison.Ordinal))
-                    continue;
-
-                var path = AssetDatabase.GUIDToAssetPath(entry.guid);
-                if (!string.IsNullOrEmpty(path))
-                    return path;
-            }
-        }
-
-        Debug.LogError($"[BasicHeroPresetVariantGenerator] Addressable key not found: {addressKey}");
-        return null;
+        return EditorAddressablePathResolver.ResolvePathByMapIdOrAddressKey(
+            addressKey,
+            nameof(BasicHeroPresetVariantGenerator));
     }
 }
 #endif

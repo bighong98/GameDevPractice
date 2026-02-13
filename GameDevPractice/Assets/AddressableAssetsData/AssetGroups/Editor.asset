@@ -16,7 +16,7 @@ MonoBehaviour:
   m_GUID: 3fbaffe2dadc6714d9cba333aa0975e7
   m_SerializeEntries:
   - m_GUID: 15731073cb28eff42af7913afc11c2a0
-    m_Address: Legacy Weapon Data Folder
+    m_Address: Item Data Folder/Weapon
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -27,6 +27,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 25465a8a9b1c5ce44959feebab97b71a
     m_Address: BasicHero_F Variant Template
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 32652eb118b154a469eb7762c1471282
+    m_Address: Item Data Folder/Countable
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -45,6 +50,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 79c4c408cb493b647a4336f39946418c
+    m_Address: Item Data Folder/Consumable
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 7ec2b7f572332f04abdae53a27320a5c
     m_Address: Outfit Output Presets
     m_ReadOnly: 0
@@ -52,6 +62,31 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 90638091770f207439619f2c3a481bb7
     m_Address: Outfit Part Type Data
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b5b8ab15358640943a2c0ea5002e309f
+    m_Address: Item Data Folder/Special
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b89db707a3bb1174aa81dd69a62e0745
+    m_Address: Item Data Folder
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c2f4c091f93e31f41b75f9008aba99cd
+    m_Address: Item Data Folder/Weapon/SkillTypeSO
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c40de711076eaf24c99cf50eb4be95f2
+    m_Address: Item Data Folder/Single
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c53e5856ec642124abe05aee7edee69c
+    m_Address: Item Data Folder/Resource
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
