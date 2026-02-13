@@ -98,8 +98,15 @@ namespace TH.Combat
         // 쿨다운 및 사용 가능 상태 관리기.
         private SkillCaster skillCaster;
         // 베이스 스킬별 콤보 진행 상태 캐시.
+        
         private readonly Dictionary<SkillTypeSO, ComboContext> comboContexts = new();
-        private Coroutine activeComboTimeoutRoutine;
+        private readonly List<float> reusableModifiedHitDamages = new(8);
+        private readonly List<float> primaryPendingHitDamages = new(8);
+        private readonly List<float> secondaryPendingHitDamages = new(8);
+        private bool isActiveComboTimeoutPending;
+        private SkillTypeSO activeComboTimeoutBaseSkill;
+        private int activeComboTimeoutExpectedNextStepIndex;
+        private float activeComboTimeoutAt;
 
         // 현재 해석 완료된 실제 적용 스킬.
         private SkillTypeSO resolvedSkill;
@@ -112,6 +119,10 @@ namespace TH.Combat
         private bool hasPendingAttack;
         private AttackSource pendingAttackSource;
         private SkillTypeSO pendingAttackSkill;
+        
+        private SkillTypeSO pendingBaseSkill;
+        private int pendingComboStepIndex;
+        private int pendingComboStepCount = 1;
         private IAttacker pendingAttacker;
         private readonly List<Health> areaTargetsBuffer = new();
         private Collider[] overlapBuffer = new Collider[32];
@@ -229,6 +240,25 @@ namespace TH.Combat
         {
             if (skillBook == null || skillCaster == null) return;
 
+            if (hasPendingAttack && !IsPendingAttackReusableState())
+            {
+                CancelPendingAttack(PendingCancelReason.InvalidatedByStateChange, refreshResolvedFromPreview: true);
+            }
+
+            if (isActiveComboTimeoutPending && Time.time >= activeComboTimeoutAt)
+            {
+                isActiveComboTimeoutPending = false;
+
+                if (HasActiveSkill && skillBook.ActiveSkill == activeComboTimeoutBaseSkill)
+                {
+                    var context = GetOrCreateComboContext(activeComboTimeoutBaseSkill);
+                    if (context.NextStepIndex == activeComboTimeoutExpectedNextStepIndex)
+                    {
+                        UpdateResolvedSkillFromPreview(forceNotify: true);
+                    }
+                }
+            }
+
             skillCaster.PollReady(skillBook.Skills, skill =>
             {
                 OnSkillReady?.Invoke(skill);
@@ -304,6 +334,17 @@ namespace TH.Combat
 
             if (!HasActiveSkill || attacker.IsNull()) return false;
 
+            if (hasPendingAttack)
+            {
+                if (TryReusePendingAttack(attacker, out attackSource))
+                {
+                    SyncDebugValues();
+                    return true;
+                }
+
+                CancelPendingAttack(PendingCancelReason.InvalidatedOnConsume, refreshResolvedFromPreview: true);
+            }
+
             var baseSkill = skillBook.ActiveSkill;
             if (!skillCaster.IsReady(baseSkill)) return false;
             if (!TryResolveSkillPreview(baseSkill, out var resolved, out var stepIndex, out var stepCount)) return false;
@@ -320,13 +361,15 @@ namespace TH.Combat
             }
 
             CommitComboProgress(baseSkill, stepIndex, stepCount);
-            SetResolvedSkill(resolved, baseSkill, stepIndex, stepCount, forceNotify: true);
             ScheduleActiveComboTimeout(baseSkill, stepCount);
-            SetPendingAttack(attacker, resolved, attackSource);
+            SetPendingAttack(attacker, resolved, attackSource, baseSkill, stepIndex, stepCount);
+            UpdateResolvedSkillFromPreview(forceNotify: true);
+
             if (attacker is Component attackerComponent)
             {
                 SkillEffectPlayer.TryPlaySkillEffect(resolved, attackerComponent.transform);
             }
+
             OnSkillConsumed?.Invoke(resolved);
             SyncDebugValues();
             return true;
@@ -347,16 +390,29 @@ namespace TH.Combat
         public bool TryExecutePendingAttack(IAttacker attacker, Health target)
         {
             if (!hasPendingAttack) return false;
-            if (attacker.IsNull() || target.IsNull()) return false;
-            if (!ReferenceEquals(pendingAttacker, attacker)) return false;
+
+            if (attacker.IsNull() || target.IsNull())
+            {
+                CancelPendingAttack(PendingCancelReason.InvalidatedOnExecute, refreshResolvedFromPreview: true);
+                return false;
+            }
+
+            if (!ReferenceEquals(pendingAttacker, attacker) || !IsPendingAttackReusableState())
+            {
+                CancelPendingAttack(PendingCancelReason.InvalidatedOnExecute, refreshResolvedFromPreview: true);
+                return false;
+            }
 
             bool executed = ExecutePendingAttack(target);
             if (executed)
             {
                 ClearPendingAttack();
+                UpdateResolvedSkillFromPreview(forceNotify: true);
+                return true;
             }
 
-            return executed;
+            CancelPendingAttack(PendingCancelReason.ExecutionRejected, refreshResolvedFromPreview: true);
+            return false;
         }
 
         public void SetProjectileExecutor(ISkillProjectileExecutor executor)
@@ -375,6 +431,11 @@ namespace TH.Combat
         // 활성 스킬 기준으로 현재 프리뷰 스킬(콤보 반영)을 반환한다.
         private SkillTypeSO GetPreviewSkill()
         {
+            if (TryGetValidPendingState(out _, out _, out _))
+            {
+                return pendingAttackSkill;
+            }
+
             if (!HasActiveSkill) return null;
 
             if (TryResolveSkillPreview(skillBook.ActiveSkill, out var previewSkill, out _, out _))
@@ -453,42 +514,25 @@ namespace TH.Combat
             if (stepCount <= 1 || baseSkill.ComboSequence is not { HasSteps: true } comboSequence)
                 return;
 
-            float comboTimeout = Mathf.Max(0f, comboSequence.ComboTimeout);
             var context = GetOrCreateComboContext(baseSkill);
             if (context.NextStepIndex <= 0)
                 return;
 
-            activeComboTimeoutRoutine = StartCoroutine(
-                CoHandleActiveComboTimeout(baseSkill, context.NextStepIndex, comboTimeout));
+            float comboTimeout = Mathf.Max(0f, comboSequence.ComboTimeout);
+            isActiveComboTimeoutPending = true;
+            activeComboTimeoutBaseSkill = baseSkill;
+            activeComboTimeoutExpectedNextStepIndex = context.NextStepIndex;
+            activeComboTimeoutAt = Time.time + comboTimeout;
         }
 
-        private IEnumerator CoHandleActiveComboTimeout(SkillTypeSO baseSkill, int expectedNextStepIndex, float comboTimeout)
-        {
-            if (comboTimeout > 0f)
-                yield return new WaitForSeconds(comboTimeout);
 
-            activeComboTimeoutRoutine = null;
-
-            if (!HasActiveSkill || skillBook.ActiveSkill != baseSkill)
-                yield break;
-
-            var context = GetOrCreateComboContext(baseSkill);
-            if (context.NextStepIndex != expectedNextStepIndex)
-                yield break;
-
-            if (!ShouldResetCombo(comboTimeout, context))
-                yield break;
-
-            UpdateResolvedSkillFromPreview(forceNotify: true);
-        }
 
         private void CancelActiveComboTimeoutRoutine()
         {
-            if (activeComboTimeoutRoutine == null)
-                return;
-
-            StopCoroutine(activeComboTimeoutRoutine);
-            activeComboTimeoutRoutine = null;
+            isActiveComboTimeoutPending = false;
+            activeComboTimeoutBaseSkill = null;
+            activeComboTimeoutExpectedNextStepIndex = 0;
+            activeComboTimeoutAt = 0f;
         }
 
 
@@ -519,6 +563,12 @@ namespace TH.Combat
         // 현재 프리뷰 결과를 resolved 상태에 반영한다.
         private void UpdateResolvedSkillFromPreview(bool forceNotify)
         {
+            if (TryGetValidPendingState(out var pendingBase, out var pendingStepIndex, out var pendingStepCount))
+            {
+                SetResolvedSkill(pendingAttackSkill, pendingBase, pendingStepIndex, pendingStepCount, forceNotify);
+                return;
+            }
+
             if (!HasActiveSkill)
             {
                 SetResolvedSkill(null, null, 0, 1, forceNotify);
@@ -571,7 +621,7 @@ namespace TH.Combat
 
             if (skill.IsNotNull() && skill.ExecutionProfile is { HasActions: true } executionProfile)
             {
-                StartCoroutine(ExecuteWithProfileRoutine(executionProfile, context));
+                StartCoroutine(executionProfile.Execute(context, this));
                 return true;
             }
 
@@ -607,10 +657,7 @@ namespace TH.Combat
             return 1f;
         }
 
-        private IEnumerator ExecuteWithProfileRoutine(SkillExecutionProfileSO executionProfile, SkillExecutionContext context)
-        {
-            yield return executionProfile.Execute(context, this);
-        }
+
 
         #region ISkillExecutionServices
 
@@ -621,7 +668,7 @@ namespace TH.Combat
                 return false;
             }
 
-            var attackSource = BuildModifiedAttackSource(context.AttackSource, damageScale, hitCountOverride);
+            var attackSource = BuildModifiedAttackSource(context.AttackSource, damageScale, hitCountOverride, allowReusableList: true);
             return TryApplyHitWithSource(attackSource, target);
         }
 
@@ -632,9 +679,11 @@ namespace TH.Combat
                 return false;
             }
 
-            var attackSource = BuildModifiedAttackSource(context.AttackSource, damageScale, hitCountOverride);
-            if (projectileExecutor.IsNotNull() &&
-                projectileExecutor.TryExecuteProjectile(attackSource, target, context.Skill))
+            bool canExecuteProjectile = projectileExecutor.IsNotNull();
+            var attackSource = BuildModifiedAttackSource(context.AttackSource, damageScale, hitCountOverride,
+                allowReusableList: !canExecuteProjectile);
+
+            if (canExecuteProjectile && projectileExecutor.TryExecuteProjectile(attackSource, target, context.Skill))
             {
                 return true;
             }
@@ -774,7 +823,11 @@ namespace TH.Combat
             overlapBuffer = new Collider[Mathf.Max(32, resized)];
         }
 
-        private static AttackSource BuildModifiedAttackSource(in AttackSource source, float damageScale, int hitCountOverride)
+        private AttackSource BuildModifiedAttackSource(
+            in AttackSource source,
+            float damageScale,
+            int hitCountOverride,
+            bool allowReusableList)
         {
             float resolvedDamageScale = Mathf.Max(0f, damageScale);
             int resolvedHitCount = Mathf.Max(0, hitCountOverride);
@@ -782,7 +835,20 @@ namespace TH.Combat
 
             if (source.HitDamages != null && source.HitDamages.Count > 0)
             {
-                var scaledHitDamages = new List<float>(source.HitDamages.Count);
+                bool keepSourceHitDamages = Mathf.Approximately(resolvedDamageScale, 1f) &&
+                                            (resolvedHitCount <= 0 || resolvedHitCount == source.HitDamages.Count);
+                if (keepSourceHitDamages)
+                    return source;
+
+                int targetCount = resolvedHitCount > 0 ? resolvedHitCount : source.HitDamages.Count;
+                var scaledHitDamages = allowReusableList ? reusableModifiedHitDamages : new List<float>(targetCount);
+                if (allowReusableList)
+                {
+                    scaledHitDamages.Clear();
+                    if (scaledHitDamages.Capacity < targetCount)
+                        scaledHitDamages.Capacity = targetCount;
+                }
+
                 for (int i = 0; i < source.HitDamages.Count; i++)
                 {
                     scaledHitDamages.Add(source.HitDamages[i] * resolvedDamageScale);
@@ -790,7 +856,9 @@ namespace TH.Combat
 
                 if (resolvedHitCount > 0 && resolvedHitCount != scaledHitDamages.Count)
                 {
-                    float perHitDamage = scaledHitDamages.Count > 0 ? scaledHitDamages[0] : sourceBaseDamage * resolvedDamageScale;
+                    float perHitDamage = scaledHitDamages.Count > 0
+                        ? scaledHitDamages[0]
+                        : sourceBaseDamage * resolvedDamageScale;
                     scaledHitDamages.Clear();
                     for (int i = 0; i < resolvedHitCount; i++)
                     {
@@ -798,31 +866,46 @@ namespace TH.Combat
                     }
                 }
 
-                float firstDamage = scaledHitDamages.Count > 0 ? scaledHitDamages[0] : sourceBaseDamage * resolvedDamageScale;
-                return new AttackSource(source.Attacker, null, firstDamage, source.DamageType, source.AttackInstanceId, scaledHitDamages, source.Skill);
+                float firstDamage = scaledHitDamages.Count > 0
+                    ? scaledHitDamages[0]
+                    : sourceBaseDamage * resolvedDamageScale;
+                return new AttackSource(source.Attacker, null, firstDamage, source.DamageType, source.AttackInstanceId,
+                    scaledHitDamages, source.Skill);
             }
 
             if (resolvedHitCount > 1)
             {
                 float perHitDamage = sourceBaseDamage * resolvedDamageScale;
-                var hitDamages = new List<float>(resolvedHitCount);
+                var hitDamages = allowReusableList ? reusableModifiedHitDamages : new List<float>(resolvedHitCount);
+                if (allowReusableList)
+                {
+                    hitDamages.Clear();
+                    if (hitDamages.Capacity < resolvedHitCount)
+                        hitDamages.Capacity = resolvedHitCount;
+                }
+
                 for (int i = 0; i < resolvedHitCount; i++)
                 {
                     hitDamages.Add(perHitDamage);
                 }
 
-                return new AttackSource(source.Attacker, null, perHitDamage, source.DamageType, source.AttackInstanceId, hitDamages, source.Skill);
+                return new AttackSource(source.Attacker, null, perHitDamage, source.DamageType, source.AttackInstanceId,
+                    hitDamages, source.Skill);
             }
 
             float scaledBaseDamage = sourceBaseDamage * resolvedDamageScale;
-            return new AttackSource(source.Attacker, null, scaledBaseDamage, source.DamageType, source.AttackInstanceId, null, source.Skill);
+            return new AttackSource(source.Attacker, null, scaledBaseDamage, source.DamageType, source.AttackInstanceId,
+                null, source.Skill);
         }
 
-        private void SetPendingAttack(IAttacker attacker, SkillTypeSO skill, in AttackSource attackSource)
+        private void SetPendingAttack(IAttacker attacker, SkillTypeSO skill, in AttackSource attackSource, SkillTypeSO baseSkill, int stepIndex, int stepCount)
         {
             pendingAttacker = attacker;
             pendingAttackSkill = skill;
             pendingAttackSource = attackSource;
+            pendingBaseSkill = baseSkill;
+            pendingComboStepIndex = Mathf.Max(0, stepIndex);
+            pendingComboStepCount = Mathf.Max(1, stepCount);
             hasPendingAttack = true;
         }
 
@@ -832,7 +915,114 @@ namespace TH.Combat
             pendingAttackSource = default;
             pendingAttackSkill = null;
             pendingAttacker = null;
+            pendingBaseSkill = null;
+            pendingComboStepIndex = 0;
+            pendingComboStepCount = 1;
         }
+
+        private bool TryReusePendingAttack(IAttacker attacker, out AttackSource attackSource)
+        {
+            attackSource = default;
+
+            if (!TryGetValidPendingState(out var baseSkill, out var stepIndex, out var stepCount))
+            {
+                return false;
+            }
+
+            if (attacker.IsNull() || !ReferenceEquals(pendingAttacker, attacker))
+            {
+                return false;
+            }
+
+            attackSource = pendingAttackSource;
+            SetResolvedSkill(pendingAttackSkill, baseSkill, stepIndex, stepCount, forceNotify: true);
+            return true;
+        }
+
+        private bool TryGetValidPendingState(out SkillTypeSO baseSkill, out int stepIndex, out int stepCount)
+        {
+            baseSkill = null;
+            stepIndex = 0;
+            stepCount = 1;
+
+            if (!hasPendingAttack || pendingAttackSkill.IsNull())
+            {
+                return false;
+            }
+
+            baseSkill = pendingBaseSkill;
+            stepIndex = Mathf.Max(0, pendingComboStepIndex);
+            stepCount = Mathf.Max(1, pendingComboStepCount);
+
+            return IsPendingAttackReusableStateFor(baseSkill, stepIndex, stepCount);
+        }
+
+        private bool IsPendingAttackReusableState()
+        {
+            return IsPendingAttackReusableStateFor(pendingBaseSkill, pendingComboStepIndex, pendingComboStepCount);
+        }
+
+        private bool IsPendingAttackReusableStateFor(SkillTypeSO baseSkill, int stepIndex, int stepCount)
+        {
+            if (!hasPendingAttack || pendingAttackSkill.IsNull() || pendingAttackSource.Skill.IsNull())
+            {
+                return false;
+            }
+
+            if (pendingAttackSource.Skill != pendingAttackSkill)
+            {
+                return false;
+            }
+
+            if (baseSkill.IsNull() || !HasActiveSkill || skillBook.ActiveSkill != baseSkill)
+            {
+                return false;
+            }
+
+            if (baseSkill.ComboSequence is not { HasSteps: true } comboSequence)
+            {
+                return stepIndex == 0 && stepCount <= 1 && pendingAttackSkill == baseSkill;
+            }
+
+            int resolvedStepCount = Mathf.Max(1, comboSequence.StepCount);
+            int resolvedStepIndex = Mathf.Clamp(stepIndex, 0, resolvedStepCount - 1);
+            if (resolvedStepCount != Mathf.Max(1, stepCount))
+            {
+                return false;
+            }
+
+            var context = GetOrCreateComboContext(baseSkill);
+            float comboTimeout = Mathf.Max(0f, comboSequence.ComboTimeout);
+            if (comboTimeout > 0f &&
+                context.LastConsumeTime >= 0f &&
+                Time.time > context.LastConsumeTime + comboTimeout)
+            {
+                return false;
+            }
+
+            return comboSequence.GetStepSkill(resolvedStepIndex, baseSkill) == pendingAttackSkill;
+        }
+
+        private void CancelPendingAttack(PendingCancelReason reason, bool refreshResolvedFromPreview)
+        {
+            _ = reason;
+
+            if (!hasPendingAttack)
+            {
+                return;
+            }
+
+            ClearPendingAttack();
+
+            if (refreshResolvedFromPreview)
+            {
+                UpdateResolvedSkillFromPreview(forceNotify: true);
+            }
+        }
+
+
+
+
 
         private bool TryBuildAttackSource(IAttacker attacker, SkillTypeSO skill, int attackInstanceId, out AttackSource attackSource)
         {
@@ -907,10 +1097,17 @@ namespace TH.Combat
         }
 
         // 다단 히트용 데미지 리스트를 생성한다.
-        private static List<float> BuildHitDamages(float perHitDamage, int hitCount)
+        private List<float> BuildHitDamages(float perHitDamage, int hitCount)
         {
             int resolvedHitCount = Mathf.Max(1, hitCount);
-            var hitDamages = new List<float>(resolvedHitCount);
+            var hitDamages = hasPendingAttack && ReferenceEquals(pendingAttackSource.HitDamages, primaryPendingHitDamages)
+                ? secondaryPendingHitDamages
+                : primaryPendingHitDamages;
+
+            hitDamages.Clear();
+            if (hitDamages.Capacity < resolvedHitCount)
+                hitDamages.Capacity = resolvedHitCount;
+
             for (int i = 0; i < resolvedHitCount; i++)
             {
                 hitDamages.Add(perHitDamage);
@@ -920,7 +1117,14 @@ namespace TH.Combat
         }
 
         // 등록 스킬 목록과 활성 스킬만 보관하는 간단한 컬렉션 래퍼.
-        [Serializable]
+        private enum PendingCancelReason
+        {
+            InvalidatedOnConsume,
+            InvalidatedByStateChange,
+            InvalidatedOnExecute,
+            ExecutionRejected
+        }
+
         private sealed class SkillBook
         {
             // 등록된 전체 스킬 목록.
