@@ -29,8 +29,18 @@ MonoBehaviour:
     - PreLoad_DataSO
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1ccb1a8a5e190bd41a17d5b1656b118e
+    m_Address: Sword_ComboFinisherSkill
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 20b27818abf007b4c91e694a1931a851
     m_Address: SwordOnHitVFX.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 265746d0fd0a1cc468b00352e243cf4d
+    m_Address: Sword_ComboSkillTest
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

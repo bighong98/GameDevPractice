@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -223,7 +223,7 @@ public static class ItemTypeXmlSyncTool
     private const string DefaultXmlRelativeFolder = "Resources/Data Table";
     private const string DefaultXlsxFileName = "ItemTypeTable.xlsx";
     private const string DefaultSheetName = "ItemType";
-    private const string DefaultImportPathMapAssetPath = "Assets/Editor/DataSync/ItemTypeImportPathMap.asset";
+    private const string DefaultImportPathMapAssetPath = "Assets/Editor/Scriptable Object/ItemTypeImportPathMap.asset";
     private static readonly string[] ColumnHeaders =
     {
         "nameString",
@@ -394,7 +394,7 @@ public static class ItemTypeXmlSyncTool
                 row.CreateCell(10, CellType.String).SetCellValue(source.useEffectName ?? string.Empty);
 
                 var serializedJson = source.serializedJson ?? string.Empty;
-                if (serializedJson.Length > 32767)
+                if (serializedJson.Length > XlsxSyncShared.ExcelCellMaxTextLength)
                 {
                     Debug.LogError($"[ItemTypeXmlSyncTool] serializedJson exceeds Excel cell limit. Asset={source.assetPath}");
                     return false;
@@ -532,47 +532,14 @@ public static class ItemTypeXmlSyncTool
         return true;
     }
 
-    private static void WriteHeaderRow(ISheet sheet)
+private static void WriteHeaderRow(ISheet sheet)
     {
-        var header = sheet.CreateRow(0);
-        for (int i = 0; i < ColumnHeaders.Length; i++)
-        {
-            header.CreateCell(i, CellType.String).SetCellValue(ColumnHeaders[i]);
-        }
+        XlsxSyncShared.WriteHeaderRow(sheet, ColumnHeaders);
     }
 
-    private static bool TryBuildHeaderMap(ISheet sheet, out Dictionary<string, int> headerMap)
+private static bool TryBuildHeaderMap(ISheet sheet, out Dictionary<string, int> headerMap)
     {
-        headerMap = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        var headerRow = sheet.GetRow(0);
-        if (headerRow == null)
-        {
-            return false;
-        }
-
-        for (int i = 0; i < headerRow.LastCellNum; i++)
-        {
-            var value = headerRow.GetCell(i)?.ToString()?.Trim();
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                continue;
-            }
-
-            if (!headerMap.ContainsKey(value))
-            {
-                headerMap.Add(value, i);
-            }
-        }
-
-        for (int i = 0; i < ColumnHeaders.Length; i++)
-        {
-            if (!headerMap.ContainsKey(ColumnHeaders[i]))
-            {
-                return false;
-            }
-        }
-
-        return true;
+        return XlsxSyncShared.TryBuildHeaderMap(sheet, ColumnHeaders, out headerMap);
     }
 
     private static List<ItemTypeXmlRow> ReadRows(ISheet sheet, Dictionary<string, int> headerMap)
@@ -615,41 +582,14 @@ public static class ItemTypeXmlSyncTool
         return rows;
     }
 
-    private static string ReadCellString(IRow row, Dictionary<string, int> headerMap, string key, DataFormatter formatter)
+private static string ReadCellString(IRow row, Dictionary<string, int> headerMap, string key, DataFormatter formatter)
     {
-        if (!headerMap.TryGetValue(key, out var index))
-        {
-            return string.Empty;
-        }
-
-        var cell = row.GetCell(index);
-        if (cell == null)
-        {
-            return string.Empty;
-        }
-
-        return formatter.FormatCellValue(cell) ?? string.Empty;
+        return XlsxSyncShared.ReadCellString(row, headerMap, key, formatter);
     }
 
-    private static int ReadCellInt(IRow row, Dictionary<string, int> headerMap, string key, DataFormatter formatter)
+private static int ReadCellInt(IRow row, Dictionary<string, int> headerMap, string key, DataFormatter formatter)
     {
-        var raw = ReadCellString(row, headerMap, key, formatter);
-        if (string.IsNullOrWhiteSpace(raw))
-        {
-            return 0;
-        }
-
-        if (int.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
-        {
-            return value;
-        }
-
-        if (double.TryParse(raw, NumberStyles.Float, CultureInfo.InvariantCulture, out var number))
-        {
-            return Convert.ToInt32(number);
-        }
-
-        return 0;
+        return XlsxSyncShared.ReadCellInt(row, headerMap, key, formatter);
     }
 
     private static bool IsRowEmpty(ItemTypeXmlRow row)
@@ -665,69 +605,9 @@ public static class ItemTypeXmlSyncTool
                && string.IsNullOrWhiteSpace(row.serializedJson);
     }
 
-    public static string ResolveFolderByAddressKey(string addressKey, bool logOnError = true)
+public static string ResolveFolderByAddressKey(string addressKey, bool logOnError = true)
     {
-        if (string.IsNullOrWhiteSpace(addressKey))
-        {
-            if (logOnError)
-            {
-                Debug.LogError("[ItemTypeXmlSyncTool] Address key is empty.");
-            }
-
-            return null;
-        }
-
-        var settings = AddressableAssetSettingsDefaultObject.Settings;
-        if (settings == null)
-        {
-            if (logOnError)
-            {
-                Debug.LogError("[ItemTypeXmlSyncTool] Addressable settings not found.");
-            }
-
-            return null;
-        }
-
-        for (int i = 0; i < settings.groups.Count; i++)
-        {
-            var group = settings.groups[i];
-            if (group == null)
-            {
-                continue;
-            }
-
-            foreach (var entry in group.entries)
-            {
-                if (entry == null || !string.Equals(entry.address, addressKey, StringComparison.Ordinal))
-                {
-                    continue;
-                }
-
-                var path = AssetDatabase.GUIDToAssetPath(entry.guid);
-                if (string.IsNullOrWhiteSpace(path))
-                {
-                    continue;
-                }
-
-                if (AssetDatabase.IsValidFolder(path))
-                {
-                    return path;
-                }
-
-                var parent = Path.GetDirectoryName(path)?.Replace("\\", "/");
-                if (!string.IsNullOrWhiteSpace(parent) && AssetDatabase.IsValidFolder(parent))
-                {
-                    return parent;
-                }
-            }
-        }
-
-        if (logOnError)
-        {
-            Debug.LogError($"[ItemTypeXmlSyncTool] Address key not resolved: {addressKey}");
-        }
-
-        return null;
+        return AddressableSyncShared.ResolveFolderByAddressKey(addressKey, nameof(ItemTypeXmlSyncTool), logOnError);
     }
 
 private static ItemTypeXmlRow BuildRow(ItemTypeSO item, string assetPath, bool includeSerializedJson)
@@ -836,64 +716,12 @@ private static ItemTypeXmlRow BuildRow(ItemTypeSO item, string assetPath, bool i
 
 private static string ResolveAddressableKeyByAssetPath(string assetPath)
     {
-        if (string.IsNullOrWhiteSpace(assetPath))
-        {
-            return string.Empty;
-        }
-
-        var settings = AddressableAssetSettingsDefaultObject.Settings;
-        if (settings == null)
-        {
-            return string.Empty;
-        }
-
-        var guid = AssetDatabase.AssetPathToGUID(assetPath);
-        if (string.IsNullOrWhiteSpace(guid))
-        {
-            return string.Empty;
-        }
-
-        var entry = settings.FindAssetEntry(guid);
-        return entry?.address ?? string.Empty;
+        return AddressableSyncShared.ResolveAddressableKeyByAssetPath(assetPath);
     }
 
 private static string ResolveAssetPathByAddressableKey(string addressableKey)
     {
-        if (string.IsNullOrWhiteSpace(addressableKey))
-        {
-            return null;
-        }
-
-        var settings = AddressableAssetSettingsDefaultObject.Settings;
-        if (settings == null)
-        {
-            return null;
-        }
-
-        for (int i = 0; i < settings.groups.Count; i++)
-        {
-            var group = settings.groups[i];
-            if (group == null)
-            {
-                continue;
-            }
-
-            foreach (var entry in group.entries)
-            {
-                if (entry == null || !string.Equals(entry.address, addressableKey, StringComparison.Ordinal))
-                {
-                    continue;
-                }
-
-                var path = AssetDatabase.GUIDToAssetPath(entry.guid);
-                if (!string.IsNullOrWhiteSpace(path))
-                {
-                    return path;
-                }
-            }
-        }
-
-        return null;
+        return AddressableSyncShared.ResolveAssetPathByAddressableKey(addressableKey);
     }
 
 
@@ -1018,21 +846,9 @@ private static string ResolveTargetAssetPath(ItemTypeXmlRow row, string rootFold
             StringComparison.OrdinalIgnoreCase);
     }
 
-    private static string NormalizeDataTypeName(string dataTypeName)
+private static string NormalizeDataTypeName(string dataTypeName)
     {
-        if (string.IsNullOrWhiteSpace(dataTypeName))
-        {
-            return string.Empty;
-        }
-
-        var trimmed = dataTypeName.Trim();
-        var commaIndex = trimmed.IndexOf(',');
-        if (commaIndex >= 0)
-        {
-            trimmed = trimmed.Substring(0, commaIndex).Trim();
-        }
-
-        return trimmed;
+        return AddressableSyncShared.NormalizeDataTypeName(dataTypeName);
     }
 
     private static Type ResolveItemType(string typeName)
@@ -1066,59 +882,19 @@ private static string ResolveTargetAssetPath(ItemTypeXmlRow row, string rootFold
         return type != null && typeof(ItemTypeSO).IsAssignableFrom(type) && !type.IsAbstract;
     }
 
-    private static string NormalizeFilePath(string path)
+private static string NormalizeFilePath(string path)
     {
-        return string.IsNullOrWhiteSpace(path) ? string.Empty : path.Replace("\\", "/");
+        return AddressableSyncShared.NormalizeFilePath(path);
     }
 
-    private static string SanitizeFileName(string raw)
+private static string SanitizeFileName(string raw)
     {
-        if (string.IsNullOrWhiteSpace(raw))
-        {
-            return string.Empty;
-        }
-
-        var chars = raw.ToCharArray();
-        var invalid = Path.GetInvalidFileNameChars();
-
-        for (int i = 0; i < chars.Length; i++)
-        {
-            if (Array.IndexOf(invalid, chars[i]) >= 0)
-            {
-                chars[i] = '_';
-            }
-        }
-
-        return new string(chars).Trim();
+        return AddressableSyncShared.SanitizeFileName(raw);
     }
 
-    private static void EnsureFolder(string folderPath)
+private static void EnsureFolder(string folderPath)
     {
-        if (string.IsNullOrWhiteSpace(folderPath) || AssetDatabase.IsValidFolder(folderPath))
-        {
-            return;
-        }
-
-        var normalized = folderPath.Replace("\\", "/");
-        if (AssetDatabase.IsValidFolder(normalized))
-        {
-            return;
-        }
-
-        var parent = Path.GetDirectoryName(normalized)?.Replace("\\", "/");
-        var folderName = Path.GetFileName(normalized);
-
-        if (string.IsNullOrWhiteSpace(parent) || string.IsNullOrWhiteSpace(folderName))
-        {
-            return;
-        }
-
-        EnsureFolder(parent);
-
-        if (!AssetDatabase.IsValidFolder(normalized))
-        {
-            AssetDatabase.CreateFolder(parent, folderName);
-        }
+        AddressableSyncShared.EnsureFolder(folderPath);
     }
 }
 
