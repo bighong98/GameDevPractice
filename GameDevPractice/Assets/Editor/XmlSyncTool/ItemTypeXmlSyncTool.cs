@@ -1,8 +1,10 @@
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
-using System.Xml.Serialization;
+using NPOI.SS.UserModel;
+using NPOI.XSSF.UserModel;
 using TH.Item;
 using TH.Resource;
 using UnityEditor;
@@ -11,19 +13,19 @@ using UnityEngine;
 
 public sealed class ItemTypeXmlSyncWindow : EditorWindow
 {
-    private const string WindowTitle = "ItemType XML Sync";
-    private const string MenuPath = "Tools/Item/Data Sync/ItemTypeSO XML Sync";
+    private const string WindowTitle = "ItemType XLSX Sync";
+    private const string MenuPath = "Tools/Item/Data Sync/ItemTypeSO XLSX Sync";
 
     
     private const string PrefAddressableKeyMapAssetPath = "TH.ItemTypeXmlSync.AddressableKeyMapAssetPath";
-    private const string PrefXmlPath = "TH.ItemTypeXmlSync.XmlPath";
+    private const string PrefXlsxPath = "TH.ItemTypeXmlSync.XlsxPath";
     private const string PrefCreateMissing = "TH.ItemTypeXmlSync.CreateMissing";
     private const string PrefApplySerializedJson = "TH.ItemTypeXmlSync.ApplySerializedJson";
     private const string PrefIncludeSerializedJsonOnExport = "TH.ItemTypeXmlSync.IncludeSerializedJsonOnExport";
     private const string PrefImportPathMapAssetPath = "TH.ItemTypeXmlSync.ImportPathMapAssetPath";
 
     [SerializeField] private string addressableKeyMapAssetPath = "";
-    [SerializeField] private string xmlPath = "";
+    [SerializeField] private string xlsxPath = "";
     [SerializeField] private string importPathMapAssetPath = "";
     [SerializeField] private bool createMissingAssets = true;
     [SerializeField] private bool applySerializedJsonOnImport = true;
@@ -46,10 +48,10 @@ public sealed class ItemTypeXmlSyncWindow : EditorWindow
         {
             addressableKeyMapAssetPath = ItemTypeXmlSyncTool.GetDefaultAddressableKeyMapAssetPath();
         }
-        xmlPath = EditorPrefs.GetString(PrefXmlPath, ItemTypeXmlSyncTool.GetDefaultXmlFilePath());
-        if (string.IsNullOrWhiteSpace(xmlPath))
+        xlsxPath = EditorPrefs.GetString(PrefXlsxPath, ItemTypeXmlSyncTool.GetDefaultXlsxFilePath());
+        if (string.IsNullOrWhiteSpace(xlsxPath))
         {
-            xmlPath = ItemTypeXmlSyncTool.GetDefaultXmlFilePath();
+            xlsxPath = ItemTypeXmlSyncTool.GetDefaultXlsxFilePath();
         }
         importPathMapAssetPath = EditorPrefs.GetString(PrefImportPathMapAssetPath, ItemTypeXmlSyncTool.GetDefaultImportPathMapAssetPath());
         if (string.IsNullOrWhiteSpace(importPathMapAssetPath))
@@ -65,7 +67,7 @@ public sealed class ItemTypeXmlSyncWindow : EditorWindow
     private void OnDisable()
     {
         EditorPrefs.SetString(PrefAddressableKeyMapAssetPath, addressableKeyMapAssetPath ?? string.Empty);
-        EditorPrefs.SetString(PrefXmlPath, xmlPath ?? string.Empty);
+        EditorPrefs.SetString(PrefXlsxPath, xlsxPath ?? string.Empty);
         EditorPrefs.SetString(PrefImportPathMapAssetPath, importPathMapAssetPath ?? string.Empty);
         EditorPrefs.SetBool(PrefCreateMissing, createMissingAssets);
         EditorPrefs.SetBool(PrefApplySerializedJson, applySerializedJsonOnImport);
@@ -74,7 +76,7 @@ public sealed class ItemTypeXmlSyncWindow : EditorWindow
 
     private void OnGUI()
     {
-        EditorGUILayout.LabelField("ItemTypeSO XML Sync", EditorStyles.boldLabel);
+        EditorGUILayout.LabelField("ItemTypeSO XLSX Sync", EditorStyles.boldLabel);
         EditorGUILayout.Space(4f);
 
         var currentAddressableKeyMap = ItemTypeXmlSyncTool.LoadAddressableKeyMapAsset(addressableKeyMapAssetPath);
@@ -94,14 +96,14 @@ public sealed class ItemTypeXmlSyncWindow : EditorWindow
         var resolvedAddressKey = ItemTypeXmlSyncTool.ResolveItemDataFolderAddressableKey(mapForResolve);
 
         EditorGUILayout.BeginHorizontal();
-        xmlPath = EditorGUILayout.TextField("XML Path", xmlPath);
+        xlsxPath = EditorGUILayout.TextField("XLSX Path", xlsxPath);
 
         if (GUILayout.Button("Browse", GUILayout.Width(76f)))
         {
-            var selected = EditorUtility.OpenFilePanel("Select ItemType XML", ResolveDefaultDirectory(), "xml");
+            var selected = EditorUtility.OpenFilePanel("Select ItemType XLSX", ResolveDefaultDirectory(), "xlsx");
             if (!string.IsNullOrWhiteSpace(selected))
             {
-                xmlPath = NormalizePath(selected);
+                xlsxPath = NormalizePath(selected);
                 GUI.FocusControl(null);
             }
         }
@@ -109,18 +111,18 @@ public sealed class ItemTypeXmlSyncWindow : EditorWindow
         if (GUILayout.Button("Save As", GUILayout.Width(76f)))
         {
             var defaultDir = ResolveDefaultDirectory();
-            var defaultName = Path.GetFileNameWithoutExtension(ItemTypeXmlSyncTool.GetDefaultXmlFilePath());
-            var selected = EditorUtility.SaveFilePanel("Save ItemType XML", defaultDir, defaultName, "xml");
+            var defaultName = Path.GetFileNameWithoutExtension(ItemTypeXmlSyncTool.GetDefaultXlsxFilePath());
+            var selected = EditorUtility.SaveFilePanel("Save ItemType XLSX", defaultDir, defaultName, "xlsx");
             if (!string.IsNullOrWhiteSpace(selected))
             {
-                xmlPath = NormalizePath(selected);
+                xlsxPath = NormalizePath(selected);
                 GUI.FocusControl(null);
             }
         }
 
         if (GUILayout.Button("Use Default", GUILayout.Width(96f)))
         {
-            xmlPath = ItemTypeXmlSyncTool.GetDefaultXmlFilePath();
+            xlsxPath = ItemTypeXmlSyncTool.GetDefaultXlsxFilePath();
             GUI.FocusControl(null);
         }
 
@@ -158,7 +160,7 @@ public sealed class ItemTypeXmlSyncWindow : EditorWindow
 
         using (new EditorGUI.DisabledScope(true))
         {
-            EditorGUILayout.TextField("Default XML Path", ItemTypeXmlSyncTool.GetDefaultXmlFilePath());
+            EditorGUILayout.TextField("Default XLSX Path", ItemTypeXmlSyncTool.GetDefaultXlsxFilePath());
         }
         using (new EditorGUI.DisabledScope(true))
         {
@@ -173,27 +175,27 @@ public sealed class ItemTypeXmlSyncWindow : EditorWindow
 
         using (new EditorGUILayout.HorizontalScope())
         {
-            using (new EditorGUI.DisabledScope(string.IsNullOrWhiteSpace(resolvedAddressKey) || string.IsNullOrWhiteSpace(xmlPath)))
+            using (new EditorGUI.DisabledScope(string.IsNullOrWhiteSpace(resolvedAddressKey) || string.IsNullOrWhiteSpace(xlsxPath)))
             {
-                if (GUILayout.Button("Export SO -> XML", GUILayout.Height(28f)))
+                if (GUILayout.Button("Export SO -> XLSX", GUILayout.Height(28f)))
                 {
-                    ItemTypeXmlSyncTool.ExportToXml(resolvedAddressKey, xmlPath, includeSerializedJsonOnExport);
+                    ItemTypeXmlSyncTool.ExportToXlsx(resolvedAddressKey, xlsxPath, includeSerializedJsonOnExport);
                 }
             }
 
-            using (new EditorGUI.DisabledScope(string.IsNullOrWhiteSpace(resolvedAddressKey) || string.IsNullOrWhiteSpace(xmlPath)))
+            using (new EditorGUI.DisabledScope(string.IsNullOrWhiteSpace(resolvedAddressKey) || string.IsNullOrWhiteSpace(xlsxPath)))
             {
-                if (GUILayout.Button("Import XML -> SO", GUILayout.Height(28f)))
+                if (GUILayout.Button("Import XLSX -> SO", GUILayout.Height(28f)))
                 {
                     if (EditorUtility.DisplayDialog(
-                        "Import XML -> ItemTypeSO",
-                        "XML 데이터를 ItemTypeSO 에셋으로 반영합니다. 계속하시겠습니까?",
+                        "Import XLSX -> ItemTypeSO",
+                        "XML to ItemTypeSO",
                         "Import",
                         "Cancel"))
                     {
-                        ItemTypeXmlSyncTool.ImportFromXml(
+                        ItemTypeXmlSyncTool.ImportFromXlsx(
                             resolvedAddressKey,
-                            xmlPath,
+                            xlsxPath,
                             createMissingAssets,
                             applySerializedJsonOnImport,
                             importPathMapAssetPath);
@@ -219,31 +221,47 @@ public static class ItemTypeXmlSyncTool
     private const string DefaultAddressKey = "Item Data Folder";
     private const string DefaultAddressableKeyMapAssetPath = "Assets/Editor/Scriptable Object/ItemTypeAddressableKeyMap.asset";
     private const string DefaultXmlRelativeFolder = "Resources/Data Table";
-    private const string DefaultXmlFileName = "ItemTypeTable.xml";
+    private const string DefaultXlsxFileName = "ItemTypeTable.xlsx";
+    private const string DefaultSheetName = "ItemType";
     private const string DefaultImportPathMapAssetPath = "Assets/Editor/DataSync/ItemTypeImportPathMap.asset";
+    private static readonly string[] ColumnHeaders =
+    {
+        "nameString",
+        "itemType",
+        "itemTypeValue",
+        "maxAmount",
+        "description",
+        "assetAddressableKey",
+        "assetPath",
+        "dataTypeName",
+        "prefabName",
+        "spriteName",
+        "useEffectName",
+        "serializedJson"
+    };
 
-    [MenuItem("Tools/Item/Data Sync/Export ItemTypeSO XML (Default Key)")]
+    [MenuItem("Tools/Item/Data Sync/Export ItemTypeSO XLSX (Default Key)")]
     private static void ExportDefault()
     {
-        var outputPath = GetDefaultXmlFilePath();
+        var outputPath = GetDefaultXlsxFilePath();
         var keyMap = LoadAddressableKeyMapAsset(GetDefaultAddressableKeyMapAssetPath());
         var addressKey = ResolveItemDataFolderAddressableKey(keyMap);
-        ExportToXml(string.IsNullOrWhiteSpace(addressKey) ? DefaultAddressKey : addressKey, outputPath, includeSerializedJson: true);
+        ExportToXlsx(string.IsNullOrWhiteSpace(addressKey) ? DefaultAddressKey : addressKey, outputPath, includeSerializedJson: true);
     }
 
-    [MenuItem("Tools/Item/Data Sync/Import ItemTypeSO XML (Default Key)")]
+    [MenuItem("Tools/Item/Data Sync/Import ItemTypeSO XLSX (Default Key)")]
     private static void ImportDefault()
     {
-        var inputPath = GetDefaultXmlFilePath();
+        var inputPath = GetDefaultXlsxFilePath();
         if (!File.Exists(inputPath))
         {
-            Debug.LogError($"[ItemTypeXmlSyncTool] XML file not found: {inputPath}");
+            Debug.LogError($"[ItemTypeXmlSyncTool] XLSX file not found: {inputPath}");
             return;
         }
 
         if (!EditorUtility.DisplayDialog(
-                "Import XML -> ItemTypeSO",
-                "XML 데이터를 ItemTypeSO 에셋으로 반영합니다. 계속하시겠습니까?",
+                "Import XLSX -> ItemTypeSO",
+                "XML to ItemTypeSO", // todo: 한글 인코딩 깨져서 임시로 변경함 재작성 필요
                 "Import",
                 "Cancel"))
         {
@@ -253,7 +271,7 @@ public static class ItemTypeXmlSyncTool
         var keyMap = LoadAddressableKeyMapAsset(GetDefaultAddressableKeyMapAssetPath());
         var addressKey = ResolveItemDataFolderAddressableKey(keyMap);
 
-        ImportFromXml(
+        ImportFromXlsx(
             string.IsNullOrWhiteSpace(addressKey) ? DefaultAddressKey : addressKey,
             inputPath,
             createMissingAssets: true,
@@ -293,10 +311,10 @@ public static class ItemTypeXmlSyncTool
         return folderPath;
     }
 
-    public static string GetDefaultXmlFilePath()
+    public static string GetDefaultXlsxFilePath()
     {
         var folderPath = GetDefaultXmlFolderPath();
-        return Path.Combine(folderPath, DefaultXmlFileName).Replace("\\", "/");
+        return Path.Combine(folderPath, DefaultXlsxFileName).Replace("\\", "/");
     }
 
     public static string GetDefaultImportPathMapAssetPath()
@@ -315,7 +333,7 @@ public static class ItemTypeXmlSyncTool
 
 
 
-    public static bool ExportToXml(string addressKey, string xmlPath, bool includeSerializedJson)
+    public static bool ExportToXlsx(string addressKey, string xlsxPath, bool includeSerializedJson)
     {
         var folderPath = ResolveFolderByAddressKey(addressKey);
         if (string.IsNullOrWhiteSpace(folderPath))
@@ -345,47 +363,71 @@ public static class ItemTypeXmlSyncTool
 
         rows.Sort((a, b) => string.CompareOrdinal(a.assetPath, b.assetPath));
 
-        var table = new ItemTypeXmlTable
-        {
-            items = rows
-        };
-
         try
         {
-            var targetPath = string.IsNullOrWhiteSpace(xmlPath) ? GetDefaultXmlFilePath() : xmlPath;
-            var normalizedXmlPath = NormalizeFilePath(targetPath);
-            var outputDir = Path.GetDirectoryName(normalizedXmlPath);
+            var targetPath = string.IsNullOrWhiteSpace(xlsxPath) ? GetDefaultXlsxFilePath() : xlsxPath;
+            var normalizedXlsxPath = NormalizeFilePath(targetPath);
+            var outputDir = Path.GetDirectoryName(normalizedXlsxPath);
             if (!string.IsNullOrWhiteSpace(outputDir))
             {
                 Directory.CreateDirectory(outputDir);
             }
 
-            var serializer = new XmlSerializer(typeof(ItemTypeXmlTable));
-            using var stream = new FileStream(normalizedXmlPath, FileMode.Create, FileAccess.Write, FileShare.None);
-            serializer.Serialize(stream, table);
+            using var workbook = new XSSFWorkbook();
+            var sheet = workbook.CreateSheet(DefaultSheetName);
+            WriteHeaderRow(sheet);
 
-            Debug.Log($"[ItemTypeXmlSyncTool] Export completed. Count={rows.Count}, Folder={folderPath}, Xml={normalizedXmlPath}");
+            for (int i = 0; i < rows.Count; i++)
+            {
+                var source = rows[i];
+                var row = sheet.CreateRow(i + 1);
+                row.CreateCell(0, CellType.String).SetCellValue(source.nameString ?? string.Empty);
+                row.CreateCell(1, CellType.String).SetCellValue(source.itemType ?? string.Empty);
+                row.CreateCell(2, CellType.Numeric).SetCellValue(source.itemTypeValue);
+                row.CreateCell(3, CellType.Numeric).SetCellValue(source.maxAmount);
+                row.CreateCell(4, CellType.String).SetCellValue(source.description ?? string.Empty);
+                row.CreateCell(5, CellType.String).SetCellValue(source.assetAddressableKey ?? string.Empty);
+                row.CreateCell(6, CellType.String).SetCellValue(source.assetPath ?? string.Empty);
+                row.CreateCell(7, CellType.String).SetCellValue(source.dataTypeName ?? string.Empty);
+                row.CreateCell(8, CellType.String).SetCellValue(source.prefabName ?? string.Empty);
+                row.CreateCell(9, CellType.String).SetCellValue(source.spriteName ?? string.Empty);
+                row.CreateCell(10, CellType.String).SetCellValue(source.useEffectName ?? string.Empty);
+
+                var serializedJson = source.serializedJson ?? string.Empty;
+                if (serializedJson.Length > 32767)
+                {
+                    Debug.LogError($"[ItemTypeXmlSyncTool] serializedJson exceeds Excel cell limit. Asset={source.assetPath}");
+                    return false;
+                }
+
+                row.CreateCell(11, CellType.String).SetCellValue(serializedJson);
+            }
+
+            using var stream = new FileStream(normalizedXlsxPath, FileMode.Create, FileAccess.Write, FileShare.None);
+            workbook.Write(stream);
+
+            Debug.Log($"[ItemTypeXmlSyncTool] Export completed. Count={rows.Count}, Folder={folderPath}, Xlsx={normalizedXlsxPath}");
             return true;
         }
         catch (Exception e)
         {
-            Debug.LogError($"[ItemTypeXmlSyncTool] Export failed. Xml={xmlPath}, Error={e}");
+            Debug.LogError($"[ItemTypeXmlSyncTool] Export failed. Xlsx={xlsxPath}, Error={e}");
             return false;
         }
     }
 
-    public static bool ImportFromXml(
+    public static bool ImportFromXlsx(
         string addressKey,
-        string xmlPath,
+        string xlsxPath,
         bool createMissingAssets,
         bool applySerializedJson,
         string importPathMapAssetPath = null)
     {
-        var targetPath = string.IsNullOrWhiteSpace(xmlPath) ? GetDefaultXmlFilePath() : xmlPath;
-        var normalizedXmlPath = NormalizeFilePath(targetPath);
-        if (!File.Exists(normalizedXmlPath))
+        var targetPath = string.IsNullOrWhiteSpace(xlsxPath) ? GetDefaultXlsxFilePath() : xlsxPath;
+        var normalizedXlsxPath = NormalizeFilePath(targetPath);
+        if (!File.Exists(normalizedXlsxPath))
         {
-            Debug.LogError($"[ItemTypeXmlSyncTool] XML file not found: {normalizedXmlPath}");
+            Debug.LogError($"[ItemTypeXmlSyncTool] XLSX file not found: {normalizedXlsxPath}");
             return false;
         }
 
@@ -395,22 +437,35 @@ public static class ItemTypeXmlSyncTool
             return false;
         }
 
-        ItemTypeXmlTable table;
+        List<ItemTypeXmlRow> rows;
         try
         {
-            var serializer = new XmlSerializer(typeof(ItemTypeXmlTable));
-            using var stream = new FileStream(normalizedXmlPath, FileMode.Open, FileAccess.Read, FileShare.Read);
-            table = serializer.Deserialize(stream) as ItemTypeXmlTable;
+            using var stream = new FileStream(normalizedXlsxPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            using var workbook = new XSSFWorkbook(stream);
+            var sheet = workbook.GetSheet(DefaultSheetName) ?? workbook.GetSheetAt(0);
+            if (sheet == null)
+            {
+                Debug.LogError($"[ItemTypeXmlSyncTool] XLSX has no sheet. Xlsx={normalizedXlsxPath}");
+                return false;
+            }
+
+            if (!TryBuildHeaderMap(sheet, out var headerMap))
+            {
+                Debug.LogError($"[ItemTypeXmlSyncTool] Invalid XLSX header. Xlsx={normalizedXlsxPath}");
+                return false;
+            }
+
+            rows = ReadRows(sheet, headerMap);
         }
         catch (Exception e)
         {
-            Debug.LogError($"[ItemTypeXmlSyncTool] Failed to deserialize XML. Xml={normalizedXmlPath}, Error={e}");
+            Debug.LogError($"[ItemTypeXmlSyncTool] Failed to deserialize XLSX. Xlsx={normalizedXlsxPath}, Error={e}");
             return false;
         }
 
-        if (table == null || table.items == null)
+        if (rows == null || rows.Count == 0)
         {
-            Debug.LogError($"[ItemTypeXmlSyncTool] XML has no item rows. Xml={normalizedXmlPath}");
+            Debug.LogError($"[ItemTypeXmlSyncTool] XLSX has no item rows. Xlsx={normalizedXlsxPath}");
             return false;
         }
 
@@ -420,9 +475,9 @@ public static class ItemTypeXmlSyncTool
         int updated = 0;
         int skipped = 0;
 
-        for (int i = 0; i < table.items.Count; i++)
+        for (int i = 0; i < rows.Count; i++)
         {
-            var row = table.items[i];
+            var row = rows[i];
             if (row == null)
             {
                 skipped++;
@@ -472,9 +527,142 @@ public static class ItemTypeXmlSyncTool
         AssetDatabase.Refresh();
 
         Debug.Log(
-            $"[ItemTypeXmlSyncTool] Import completed. Folder={folderPath}, Xml={normalizedXmlPath}, " +
-            $"Created={created}, Updated={updated}, Skipped={skipped}, Rows={table.items.Count}");
+            $"[ItemTypeXmlSyncTool] Import completed. Folder={folderPath}, Xlsx={normalizedXlsxPath}, " +
+            $"Created={created}, Updated={updated}, Skipped={skipped}, Rows={rows.Count}");
         return true;
+    }
+
+    private static void WriteHeaderRow(ISheet sheet)
+    {
+        var header = sheet.CreateRow(0);
+        for (int i = 0; i < ColumnHeaders.Length; i++)
+        {
+            header.CreateCell(i, CellType.String).SetCellValue(ColumnHeaders[i]);
+        }
+    }
+
+    private static bool TryBuildHeaderMap(ISheet sheet, out Dictionary<string, int> headerMap)
+    {
+        headerMap = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        var headerRow = sheet.GetRow(0);
+        if (headerRow == null)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < headerRow.LastCellNum; i++)
+        {
+            var value = headerRow.GetCell(i)?.ToString()?.Trim();
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                continue;
+            }
+
+            if (!headerMap.ContainsKey(value))
+            {
+                headerMap.Add(value, i);
+            }
+        }
+
+        for (int i = 0; i < ColumnHeaders.Length; i++)
+        {
+            if (!headerMap.ContainsKey(ColumnHeaders[i]))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static List<ItemTypeXmlRow> ReadRows(ISheet sheet, Dictionary<string, int> headerMap)
+    {
+        var rows = new List<ItemTypeXmlRow>();
+        var formatter = new DataFormatter(CultureInfo.InvariantCulture);
+
+        for (int r = 1; r <= sheet.LastRowNum; r++)
+        {
+            var row = sheet.GetRow(r);
+            if (row == null)
+            {
+                continue;
+            }
+
+            var item = new ItemTypeXmlRow
+            {
+                nameString = ReadCellString(row, headerMap, "nameString", formatter),
+                itemType = ReadCellString(row, headerMap, "itemType", formatter),
+                itemTypeValue = ReadCellInt(row, headerMap, "itemTypeValue", formatter),
+                maxAmount = ReadCellInt(row, headerMap, "maxAmount", formatter),
+                description = ReadCellString(row, headerMap, "description", formatter),
+                assetAddressableKey = ReadCellString(row, headerMap, "assetAddressableKey", formatter),
+                assetPath = ReadCellString(row, headerMap, "assetPath", formatter),
+                dataTypeName = ReadCellString(row, headerMap, "dataTypeName", formatter),
+                prefabName = ReadCellString(row, headerMap, "prefabName", formatter),
+                spriteName = ReadCellString(row, headerMap, "spriteName", formatter),
+                useEffectName = ReadCellString(row, headerMap, "useEffectName", formatter),
+                serializedJson = ReadCellString(row, headerMap, "serializedJson", formatter)
+            };
+
+            if (IsRowEmpty(item))
+            {
+                continue;
+            }
+
+            rows.Add(item);
+        }
+
+        return rows;
+    }
+
+    private static string ReadCellString(IRow row, Dictionary<string, int> headerMap, string key, DataFormatter formatter)
+    {
+        if (!headerMap.TryGetValue(key, out var index))
+        {
+            return string.Empty;
+        }
+
+        var cell = row.GetCell(index);
+        if (cell == null)
+        {
+            return string.Empty;
+        }
+
+        return formatter.FormatCellValue(cell) ?? string.Empty;
+    }
+
+    private static int ReadCellInt(IRow row, Dictionary<string, int> headerMap, string key, DataFormatter formatter)
+    {
+        var raw = ReadCellString(row, headerMap, key, formatter);
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            return 0;
+        }
+
+        if (int.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
+        {
+            return value;
+        }
+
+        if (double.TryParse(raw, NumberStyles.Float, CultureInfo.InvariantCulture, out var number))
+        {
+            return Convert.ToInt32(number);
+        }
+
+        return 0;
+    }
+
+    private static bool IsRowEmpty(ItemTypeXmlRow row)
+    {
+        return string.IsNullOrWhiteSpace(row.nameString)
+               && string.IsNullOrWhiteSpace(row.itemType)
+               && row.itemTypeValue == 0
+               && row.maxAmount == 0
+               && string.IsNullOrWhiteSpace(row.description)
+               && string.IsNullOrWhiteSpace(row.assetAddressableKey)
+               && string.IsNullOrWhiteSpace(row.assetPath)
+               && string.IsNullOrWhiteSpace(row.dataTypeName)
+               && string.IsNullOrWhiteSpace(row.serializedJson);
     }
 
     public static string ResolveFolderByAddressKey(string addressKey, bool logOnError = true)
@@ -935,12 +1123,6 @@ private static string ResolveTargetAssetPath(ItemTypeXmlRow row, string rootFold
 }
 
 [Serializable]
-public sealed class ItemTypeXmlTable
-{
-    public List<ItemTypeXmlRow> items = new();
-}
-
-[Serializable]
 public sealed class ItemTypeXmlRow
 {
     public string nameString;
@@ -960,3 +1142,4 @@ public sealed class ItemTypeXmlRow
     public string serializedJson;
 }
 #endif
+

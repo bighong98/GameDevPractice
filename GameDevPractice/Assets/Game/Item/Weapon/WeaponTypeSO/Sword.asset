@@ -13,11 +13,12 @@ MonoBehaviour:
   m_Name: Sword
   m_EditorClassIdentifier: Assembly-CSharp::WeaponTypeSO
   prefab: {fileID: 7059132959080541948, guid: d4c092d9dca59304fba951cae1d05868, type: 3}
-  nameString: Sword Test1
+  nameString: "\uAE30\uBCF8 \uD55C\uC190\uAC80"
   sprite: {fileID: 21300000, guid: 2ddf0348701148a4d8a7c6a0f7f146b3, type: 3}
   itemType: 1
   maxAmount: 1
-  desc: Sword Test1 Description
+  desc: "\uADE0\uD615 \uC7A1\uD78C \uADFC\uC811 \uC804\uD22C\uC6A9 \uAC80\uC774\uB2E4.
+    \uAE30\uBCF8\uC5D0 \uCDA9\uC2E4\uD55C \uBCA0\uAE30 \uB3D9\uC791\uC5D0 \uCD5C\uC801\uD654\uB418\uC5C8\uB2E4."
   itemUseEffects: []
   itemUseSFXReference:
     m_AssetGUID: 

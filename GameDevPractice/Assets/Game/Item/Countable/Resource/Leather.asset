@@ -13,9 +13,17 @@ MonoBehaviour:
   m_Name: Leather
   m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.ItemTypeSO
   prefab: {fileID: 0}
-  nameString: Leather
+  nameString: "\uAC00\uC8FD"
   sprite: {fileID: 0}
   itemType: 2
   maxAmount: 50
-  desc: Tanned animal hide suitable for crafting armor and bags. Durable and flexible.
-  isUsable: 0
+  desc: "\uBC29\uC5B4\uAD6C\uC640 \uAC00\uBC29 \uC81C\uC791\uC5D0 \uC801\uD569\uD55C
+    \uAC00\uC8FD\uC774\uB2E4. \uC9C8\uAE30\uACE0 \uC720\uC5F0\uD574 \uAC00\uACF5
+    \uD65C\uC6A9\uB3C4\uAC00 \uB192\uB2E4."
+  itemUseEffects: []
+  itemUseSFXReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0

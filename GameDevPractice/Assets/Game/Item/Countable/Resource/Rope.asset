@@ -13,10 +13,17 @@ MonoBehaviour:
   m_Name: Rope
   m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.ItemTypeSO
   prefab: {fileID: 0}
-  nameString: Rope
+  nameString: "\uB85C\uD504"
   sprite: {fileID: 0}
   itemType: 2
   maxAmount: 30
-  desc: Sturdy braided cord made from natural fibers. Useful for climbing and securing
-    objects.
-  isUsable: 0
+  desc: "\uB4F1\uBC18\uACFC \uACE0\uC815 \uC791\uC5C5\uC5D0 \uC4F0\uC774\uB294 \uD2BC\uD2BC\uD55C
+    \uB85C\uD504\uC774\uB2E4. \uD544\uB4DC \uD0D0\uD5D8\uC5D0\uC11C \uC2E4\uC6A9\uC131\uC774
+    \uB192\uB2E4."
+  itemUseEffects: []
+  itemUseSFXReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0

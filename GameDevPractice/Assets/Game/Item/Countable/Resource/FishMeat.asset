@@ -13,9 +13,17 @@ MonoBehaviour:
   m_Name: FishMeat
   m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.ItemTypeSO
   prefab: {fileID: 0}
-  nameString: Fish Meat
+  nameString: "\uC0DD\uC120 \uACE0\uAE30"
   sprite: {fileID: 0}
   itemType: 2
   maxAmount: 30
-  desc: Fresh fish caught from nearby waters. Can be cooked for a nourishing meal.
-  isUsable: 1
+  desc: "\uC2E0\uC120\uD55C \uC0DD\uC120 \uC0B4\uCF54\uAE30\uC774\uB2E4. \uC870\uB9AC\uD558\uBA74
+    \uCCB4\uB825 \uD68C\uBCF5\uC5D0 \uB3C4\uC6C0\uC774 \uB418\uB294 \uC74C\uC2DD\uC774
+    \uB41C\uB2E4."
+  itemUseEffects: []
+  itemUseSFXReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0

@@ -13,10 +13,17 @@ MonoBehaviour:
   m_Name: Cotton
   m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.ItemTypeSO
   prefab: {fileID: 0}
-  nameString: Cotton
+  nameString: "\uBA74"
   sprite: {fileID: 0}
   itemType: 2
   maxAmount: 99
-  desc: Soft white fibers harvested from cotton plants. Used for making cloth and
-    bandages.
-  isUsable: 0
+  desc: "\uCC9C\uACFC \uBD95\uB300 \uC81C\uC791\uC5D0 \uC0AC\uC6A9\uB418\uB294 \uBA74
+    \uC12C\uC720\uC774\uB2E4. \uAC00\uBCBD\uACE0 \uD761\uC218\uC131\uC774 \uC88B\uC544
+    \uAE30\uBCF8 \uC7AC\uB8CC\uB85C \uB9CE\uC774 \uC4F0\uC778\uB2E4."
+  itemUseEffects: []
+  itemUseSFXReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0

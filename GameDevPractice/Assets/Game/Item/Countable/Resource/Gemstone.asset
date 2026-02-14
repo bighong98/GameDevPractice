@@ -13,10 +13,16 @@ MonoBehaviour:
   m_Name: Gemstone
   m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.ItemTypeSO
   prefab: {fileID: 0}
-  nameString: Gemstone
+  nameString: "\uBCF4\uC11D"
   sprite: {fileID: 0}
   itemType: 2
   maxAmount: 99
-  desc: A flawless precious stone that gleams with inner light. Highly valued by
-    merchants and enchanters.
-  isUsable: 0
+  desc: "\uAC00\uCE58\uAC00 \uB192\uC740 \uBCF4\uC11D\uC774\uB2E4. \uAC70\uB798\uC640
+    \uAC15\uD654 \uC7AC\uB8CC\uB85C \uD65C\uC6A9\uB418\uB294 \uADC0\uC911\uD55C \uC790\uC6D0\uC774\uB2E4."
+  itemUseEffects: []
+  itemUseSFXReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0

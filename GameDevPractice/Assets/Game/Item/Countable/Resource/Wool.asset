@@ -13,9 +13,17 @@ MonoBehaviour:
   m_Name: Wool
   m_EditorClassIdentifier: Assembly-CSharp::ItemTypeSO
   prefab: {fileID: 0}
-  nameString: Test Item Wool
+  nameString: "\uC2DC\uD5D8\uD56D\uBAA9 \uC591\uBAA8"
   sprite: {fileID: 21300000, guid: 046f821c76a004e4c91b9f27ee906194, type: 3}
   itemType: 2
   maxAmount: 20
-  desc: Test Item Wool Desc
+  desc: "\uBCF4\uC628\uC131\uC774 \uC88B\uC740 \uC591\uBAA8 \uC18C\uC7AC\uC774\uB2E4.
+    \uC637\uAC10\uACFC \uBC29\uD55C \uC7A5\uBE44 \uC81C\uC791\uC5D0 \uC790\uC8FC
+    \uC0AC\uC6A9\uB41C\uB2E4."
   itemUseEffects: []
+  itemUseSFXReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0

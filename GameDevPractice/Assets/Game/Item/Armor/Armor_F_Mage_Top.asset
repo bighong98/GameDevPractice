@@ -13,12 +13,13 @@ MonoBehaviour:
   m_Name: Armor_F_Mage_Top
   m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.ArmorTypeSO
   prefab: {fileID: 0}
-  nameString: Mage's Runed Robe
+  nameString: "\uB9C8\uBC95\uC0AC\uC758 \uB8EC\uBB38\uC790 \uB85C\uBE0C"
   sprite: {fileID: 21300000, guid: e35012f72a9d01341bba40b6ce786a51, type: 3}
   itemType: 1
   maxAmount: 1
-  desc: 'A test robe tuned for the Mage outfit line (key: F_Mage_Top). Focuses on
-    Armor and MagicResistance with extra Health and Strength.'
+  desc: "\uB9C8\uBC95\uC0AC\uB97C \uC704\uD55C \uB8EC\uBB38\uC790 \uB85C\uBE0C\uC774\uB2E4.
+    \uC0C1\uCCB4\uB97C \uB2E8\uB2E8\uD788 \uBCF4\uD638\uD558\uACE0 \uC804\uD22C \uC9C0\uC18D\uB825\uC744
+    \uB192\uC774\uB3C4\uB85D \uC81C\uC791\uB418\uC5C8\uB2E4."
   itemUseEffects: []
   itemUseSFXReference:
     m_AssetGUID: 

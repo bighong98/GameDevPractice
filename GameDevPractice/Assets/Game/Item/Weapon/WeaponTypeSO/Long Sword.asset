@@ -13,11 +13,13 @@ MonoBehaviour:
   m_Name: Long Sword
   m_EditorClassIdentifier: Assembly-CSharp::WeaponTypeSO
   prefab: {fileID: 7059132959080541948, guid: e5d2ab5e01f3aa045bd855ee0c6c1dca, type: 3}
-  nameString: Long Sword
+  nameString: "\uAE30\uBCF8 \uB871\uC18C\uB4DC"
   sprite: {fileID: 21300000, guid: 95052c6b62fb3de4695beaa99f842ac2, type: 3}
   itemType: 1
   maxAmount: 1
-  desc: Long Sword Test1 Description
+  desc: "\uAE30\uBCF8\uC801\uC778 \uADDC\uACA9\uC758 \uB871\uC18C\uB4DC\uC774\uB2E4.
+    \uB2E8\uB2E8\uD55C \uCC38\uC744 \uBC14\uD0D5\uC73C\uB85C \uC548\uC815\uC801\uC778
+    \uC77C\uACA9\uC744 \uAC00\uD558\uB3C4\uB85D \uC81C\uC791\uB418\uC5C8\uB2E4."
   itemUseEffects: []
   itemUseSFXReference:
     m_AssetGUID: 
@@ -32,19 +34,7 @@ MonoBehaviour:
     calculation: 0
     value: 20
   weaponType: 0
-  weaponAnimatorOverride: {fileID: 22100000, guid: bb775ed55d1346646a899626d7d4b3bf, type: 2}
   EquippedPrefab: {fileID: 8466340430826345119, guid: e1c637a337d952d4eb438a72be1b848d, type: 3}
   equippedPrefabLeft: {fileID: 0}
-  attackSourceStatSO: {fileID: 11400000, guid: cf7022ca8cb84ae4395e9b8e2edbcdf2, type: 2}
-  damageType: 1
-  range: 4
   hand: 0
   defaultSkill: {fileID: 11400000, guid: 9b314ff0f32b1e440b4626b01bbbb750, type: 2}
-  projectilePrefab: {fileID: 0}
-  impactParticlePrefab: {fileID: 0}
-  attackSFXReference:
-    m_AssetGUID: 4e7a9f408abdba8459fdccbeaea95215
-    m_SubObjectName: 
-    m_SubObjectType: 
-    m_SubObjectGUID: 
-    m_EditorAssetChanged: 0

@@ -13,9 +13,17 @@ MonoBehaviour:
   m_Name: GoldCoin
   m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.ItemTypeSO
   prefab: {fileID: 0}
-  nameString: Gold Coin
+  nameString: "\uAE08\uD654"
   sprite: {fileID: 0}
   itemType: 4
   maxAmount: 9999
-  desc: Standard currency throughout the realm. Shiny and valuable.
-  isUsable: 0
+  desc: "\uC655\uAD6D \uC804\uC5ED\uC5D0\uC11C \uD1B5\uC6A9\uB418\uB294 \uAE30\uBCF8
+    \uD654\uD3D0\uC774\uB2E4. \uC0C1\uC810 \uAC70\uB798\uC640 \uC11C\uBE44\uC2A4
+    \uC774\uC6A9\uC5D0 \uD544\uC218\uB85C \uC0AC\uC6A9\uB41C\uB2E4."
+  itemUseEffects: []
+  itemUseSFXReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0

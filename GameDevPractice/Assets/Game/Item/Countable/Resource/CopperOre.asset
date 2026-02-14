@@ -13,10 +13,17 @@ MonoBehaviour:
   m_Name: CopperOre
   m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.ItemTypeSO
   prefab: {fileID: 0}
-  nameString: Copper Ore
+  nameString: "\uAD6C\uB9AC \uAD11\uC11D"
   sprite: {fileID: 0}
   itemType: 2
   maxAmount: 99
-  desc: Reddish-brown ore containing copper. Essential for creating bronze alloys
-    and electrical components.
-  isUsable: 0
+  desc: "\uC81C\uB828\uACFC \uD569\uAE08 \uAC00\uACF5\uC5D0 \uC4F0\uC774\uB294 \uAD6C\uB9AC
+    \uAD11\uC11D\uC774\uB2E4. \uCCAD\uB3D9 \uC81C\uC791\uC758 \uAE30\uBCF8 \uC7AC\uB8CC\uB85C
+    \uD65C\uC6A9\uB41C\uB2E4."
+  itemUseEffects: []
+  itemUseSFXReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0

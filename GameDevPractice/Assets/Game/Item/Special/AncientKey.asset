@@ -13,10 +13,17 @@ MonoBehaviour:
   m_Name: AncientKey
   m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.ItemTypeSO
   prefab: {fileID: 0}
-  nameString: Ancient Key
+  nameString: "\uACE0\uB300 \uC5F4\uC1E0"
   sprite: {fileID: 0}
   itemType: 3
   maxAmount: 1
-  desc: An ornate bronze key covered in mysterious runes. Might unlock something
-    important.
-  isUsable: 1
+  desc: "\uACE0\uB300 \uB8EC\uC774 \uC0C8\uACA8\uC9C4 \uCCAD\uB3D9 \uC5F4\uC1E0\uC774\uB2E4.
+    \uD2B9\uC815 \uC7A5\uCE58\uB098 \uBB38\uC744 \uC5F4 \uB54C \uC0AC\uC6A9\uB418\uB294
+    \uD2B9\uC218 \uC544\uC774\uD15C\uC774\uB2E4."
+  itemUseEffects: []
+  itemUseSFXReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0

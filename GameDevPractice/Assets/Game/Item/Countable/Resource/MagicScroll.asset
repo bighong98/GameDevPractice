@@ -13,10 +13,16 @@ MonoBehaviour:
   m_Name: MagicScroll
   m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.ItemTypeSO
   prefab: {fileID: 0}
-  nameString: Magic Scroll
+  nameString: "\uB9C8\uBC95 \uB450\uB8E8\uB9C8\uB9AC"
   sprite: {fileID: 0}
   itemType: 3
   maxAmount: 1
-  desc: A parchment inscribed with arcane symbols. Contains a single-use spell of
-    unknown power.
-  isUsable: 1
+  desc: "\uB9C8\uBC95 \uBB38\uC591\uC774 \uC0C8\uACA8\uC9C4 \uB450\uB8E8\uB9C8\uB9AC\uC774\uB2E4.
+    \uC0AC\uC6A9 \uC2DC \uC77C\uD68C\uC131 \uC8FC\uBB38\uC744 \uBC1C\uB3D9\uD55C\uB2E4."
+  itemUseEffects: []
+  itemUseSFXReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0

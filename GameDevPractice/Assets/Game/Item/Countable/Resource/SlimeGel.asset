@@ -13,9 +13,16 @@ MonoBehaviour:
   m_Name: SlimeGel
   m_EditorClassIdentifier: Assembly-CSharp::ItemTypeSO
   prefab: {fileID: 0}
-  nameString: Test Item Gel
+  nameString: "\uD14C\uC2A4\uD2B8 \uD56D\uBAA9 \uC824"
   sprite: {fileID: 21300000, guid: d1f94eb541d98c94c9e0a776707e9c7c, type: 3}
   itemType: 2
   maxAmount: 20
-  desc: Test Item Slime Gel Desc
+  desc: "\uB04A\uC801\uD55C \uC131\uC9C8\uC744 \uAC00\uC9C4 \uC2AC\uB77C\uC784 \uC820\uC774\uB2E4.
+    \uC774\uD399\uD2B8 \uC81C\uC791\uACFC \uC18C\uBAA8\uD488 \uAC00\uACF5\uC5D0 \uC0AC\uC6A9\uB41C\uB2E4."
   itemUseEffects: []
+  itemUseSFXReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0

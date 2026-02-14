@@ -13,9 +13,17 @@ MonoBehaviour:
   m_Name: Feather
   m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.ItemTypeSO
   prefab: {fileID: 0}
-  nameString: Feather
+  nameString: "\uAE43\uD138"
   sprite: {fileID: 0}
   itemType: 2
   maxAmount: 99
-  desc: A lightweight bird feather. Used for crafting arrows and quills.
-  isUsable: 0
+  desc: "\uD654\uC0B4\uACFC \uD544\uAE30\uAD6C \uC81C\uC791\uC5D0 \uC0AC\uC6A9\uB418\uB294
+    \uAE43\uD138\uC774\uB2E4. \uAC00\uBCBC\uC6B0\uBA70 \uAC00\uACF5\uD558\uAE30 \uC26C\uC6B4
+    \uC18C\uC7AC\uC774\uB2E4."
+  itemUseEffects: []
+  itemUseSFXReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0

@@ -13,10 +13,17 @@ MonoBehaviour:
   m_Name: IronOre
   m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.ItemTypeSO
   prefab: {fileID: 0}
-  nameString: Iron Ore
+  nameString: "\uCCA0\uAD11\uC11D"
   sprite: {fileID: 0}
   itemType: 2
   maxAmount: 99
-  desc: Raw iron ore extracted from deep mines. Can be smelted into iron ingots for
-    crafting.
-  isUsable: 0
+  desc: "\uC81C\uB828 \uC804 \uC0C1\uD0DC\uC758 \uCCA0\uAD11\uC11D\uC774\uB2E4. \uCCA0
+    \uC8FC\uAD34\uB85C \uAC00\uACF5\uD558\uC5EC \uB2E4\uC591\uD55C \uC7A5\uBE44 \uC81C\uC791\uC5D0
+    \uC0AC\uC6A9\uB41C\uB2E4."
+  itemUseEffects: []
+  itemUseSFXReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0

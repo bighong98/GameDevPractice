@@ -13,10 +13,17 @@ MonoBehaviour:
   m_Name: Torch
   m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.ItemTypeSO
   prefab: {fileID: 0}
-  nameString: Torch
+  nameString: "\uD1A0\uCE58"
   sprite: {fileID: 0}
   itemType: 2
   maxAmount: 10
-  desc: A wooden stick wrapped in oil-soaked cloth. Provides light in dark areas
-    for limited time.
-  isUsable: 1
+  desc: "\uC5B4\uB450\uC6B4 \uAD6C\uC5ED\uC744 \uBE44\uCD94\uB294 \uC870\uBA85\uC6A9
+    \uD1A0\uCE58\uC774\uB2E4. \uC810\uD654 \uD6C4 \uC77C\uC815 \uC2DC\uAC04 \uB3D9\uC548
+    \uC8FC\uBCC0\uC744 \uBC1D\uD600 \uC900\uB2E4."
+  itemUseEffects: []
+  itemUseSFXReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0

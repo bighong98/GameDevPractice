@@ -13,12 +13,13 @@ MonoBehaviour:
   m_Name: Armor_M_Warlock_Hood
   m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.ArmorTypeSO
   prefab: {fileID: 0}
-  nameString: Warlock's Runed Hood
+  nameString: "\uD751\uB9C8\uBC95\uC0AC\uC758 \uB8EC\uC0C8\uAE40 \uB450\uAC74"
   sprite: {fileID: 21300000, guid: a5ff4e3ef58700b4e98393651df60533, type: 3}
   itemType: 1
   maxAmount: 1
-  desc: 'A test hood tuned for the Warlock outfit line (key: M_Warlock_Hood). Improves
-    Armor and MagicResistance with mana-oriented support stats.'
+  desc: "\uD751\uB9C8\uBC95\uC0AC\uB97C \uC704\uD55C \uB8EC\uC0C8\uAE40 \uB450\uAC74\uC774\uB2E4.
+    \uBA38\uB9AC\uB97C \uBCF4\uD638\uD558\uACE0 \uB9C8\uB825 \uD750\uB984\uC744 \uC548\uC815\uC801\uC73C\uB85C
+    \uC720\uC9C0\uD558\uB3C4\uB85D \uC81C\uC791\uB418\uC5C8\uB2E4."
   itemUseEffects: []
   itemUseSFXReference:
     m_AssetGUID: 

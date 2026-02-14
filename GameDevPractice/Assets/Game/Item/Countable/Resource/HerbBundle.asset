@@ -13,9 +13,17 @@ MonoBehaviour:
   m_Name: HerbBundle
   m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.ItemTypeSO
   prefab: {fileID: 0}
-  nameString: Herb Bundle
+  nameString: "\uD5C8\uBE0C \uAFB8\uB7EC\uBBF8"
   sprite: {fileID: 0}
   itemType: 2
   maxAmount: 50
-  desc: A collection of medicinal herbs tied together. Used in alchemy and cooking.
-  isUsable: 0
+  desc: "\uC57D\uC81C\uC640 \uC694\uB9AC\uC5D0 \uD65C\uC6A9\uB418\uB294 \uC57D\uCD08
+    \uBB36\uC74C\uC774\uB2E4. \uAC01\uC885 \uC18C\uBE44\uD488 \uC81C\uC791\uC758
+    \uAE30\uBCF8 \uC7AC\uB8CC\uB85C \uC4F0\uC778\uB2E4."
+  itemUseEffects: []
+  itemUseSFXReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
