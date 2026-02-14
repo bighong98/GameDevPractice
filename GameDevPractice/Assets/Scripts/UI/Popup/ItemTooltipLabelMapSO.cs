@@ -18,6 +18,10 @@ namespace TH.UI
         {
             new LabelEntry { key = TooltipLabelKeys.ItemSectionStats, label = "\uB2A5\uB825\uCE58" },
             new LabelEntry { key = TooltipLabelKeys.ItemSectionEffects, label = "\uD6A8\uACFC" },
+            new LabelEntry { key = "item.effect.ItemHealEffect.summary", label = "\uCCB4\uB825 \uD68C\uBCF5{effect.heal.amount_suffix}{effect.heal.percent_suffix}" },
+            new LabelEntry { key = "item.effect.ItemHealEffect.detail", label = "\uCCB4\uB825 \uD68C\uBCF5{effect.heal.amount_suffix}{effect.heal.percent_suffix}" },
+            new LabelEntry { key = "item.effect.ItemManaRecoverEffect.summary", label = "\uB9C8\uB098 \uD68C\uBCF5{effect.mana.amount_suffix}{effect.mana.percent_suffix}" },
+            new LabelEntry { key = "item.effect.ItemManaRecoverEffect.detail", label = "\uB9C8\uB098 \uD68C\uBCF5{effect.mana.amount_suffix}{effect.mana.percent_suffix}" },
             new LabelEntry { key = "item.type.Default", label = "\uAE30\uBCF8" },
             new LabelEntry { key = "item.type.Equipment", label = "\uC7A5\uBE44" },
             new LabelEntry { key = TooltipLabelKeys.ItemTypeCountableUsable, label = "\uC18C\uBE44" },

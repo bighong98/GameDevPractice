@@ -12,3 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8a331b9e6f9204c469823f6a033d1106, type: 3}
   m_Name: ItemManaRecoverEffect
   m_EditorClassIdentifier: Assembly-CSharp::TH.Item.Data.ItemManaRecoverEffect
+  manaAmount: 30
+  manaRatio: 0

@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: accd60af5593cb649b2fb3f7c49f2f96, type: 3}
   m_Name: TestHealPotionEffect
   m_EditorClassIdentifier: Assembly-CSharp::ItemHealEffect
-  healAmount: 20
+  healAmount: 30
   healRatio: 0
   healByForce: 1

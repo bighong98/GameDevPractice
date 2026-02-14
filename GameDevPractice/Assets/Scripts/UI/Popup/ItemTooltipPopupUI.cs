@@ -97,6 +97,7 @@ public class ItemTooltipPopupUI : PopupUI
     /// <summary>마지막으로 표시한 아이템 정보 (캐싱용)</summary>
     
     private ItemTypeSO lastItemInfo;
+    private IGameItem lastRuntimeItem;
     /// <summary>현재 활성화된 설명 패널 목록</summary>
     
     private readonly List<ItemTooltipDescPanel> descPanels = new();
@@ -222,7 +223,7 @@ public class ItemTooltipPopupUI : PopupUI
         if (GetImage((int)Images.ItemIconImage) is { } iconImage)
             iconImage.sprite = itemInfo.sprite;
 
-        UpdateTooltipContent(itemInfo, TooltipDetailLevel.Detailed);
+        UpdateTooltipContent(itemInfo, TooltipDetailLevel.Detailed, item);
 
         SetTooltipButton(Buttons.TooltipRemoveButton, removeButton);
         SetTooltipButton(Buttons.TooltipUseButton, useButton);
@@ -238,7 +239,7 @@ public class ItemTooltipPopupUI : PopupUI
     /// <param name="itemInfo">아이템 정보 SO</param>
     /// <param name="detailLevel">상세 수준</param>
     
-    private void UpdateTooltipContent(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel)
+    private void UpdateTooltipContent(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel, IGameItem runtimeItem)
     {
         if (itemInfo == null)
         {
@@ -246,11 +247,12 @@ public class ItemTooltipPopupUI : PopupUI
             return;
         }
 
-        if (lastItemInfo != null && ReferenceEquals(lastItemInfo, itemInfo))
+        if (lastItemInfo != null && ReferenceEquals(lastItemInfo, itemInfo) && ReferenceEquals(lastRuntimeItem, runtimeItem))
             return;
 
         lastItemInfo = itemInfo;
-        PrepareTooltip(itemInfo, detailLevel);
+        lastRuntimeItem = runtimeItem;
+        PrepareTooltip(itemInfo, detailLevel, runtimeItem);
         RebuildTooltipLayout();
     }
 
@@ -261,11 +263,11 @@ public class ItemTooltipPopupUI : PopupUI
     /// <param name="itemInfo">아이템 정보 SO</param>
     /// <param name="detailLevel">상세 수준</param>
     
-    private void PrepareTooltip(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel)
+    private void PrepareTooltip(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel, IGameItem runtimeItem)
     {
         GetTMPText((int)TMPTexts.ItemNameText)?.SetText(itemInfo.nameString ?? string.Empty);
         var labelMap = GetItemLabelMap();
-        BuildDescriptionPanels(itemInfo, detailLevel, labelMap);
+        BuildDescriptionPanels(itemInfo, detailLevel, labelMap, runtimeItem);
 
         this.Log($"PrepareTooltip() - item: {itemInfo.nameString}", Logg.LoggingMode.Completed);
     }
@@ -444,7 +446,7 @@ public class ItemTooltipPopupUI : PopupUI
     /// <param name="itemInfo">아이템 정보 SO</param>
     /// <param name="detailLevel">상세 수준</param>
     
-    private void BuildDescriptionPanels(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel, ItemTooltipLabelMapSO labelMap)
+    private void BuildDescriptionPanels(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel, ItemTooltipLabelMapSO labelMap, IGameItem runtimeItem)
     {
         if (descParent == null || descPanelTemplate == null)
         {
@@ -460,7 +462,7 @@ public class ItemTooltipPopupUI : PopupUI
             return;
         }
 
-        var sections = ItemTooltipContentBuilder.BuildDescriptionSections(itemInfo, detailLevel, labelMap);
+        var sections = ItemTooltipContentBuilder.BuildDescriptionSections(itemInfo, detailLevel, labelMap, runtimeItem);
         foreach (var section in sections)
         {
             AddDescPanel(section);
@@ -606,6 +608,8 @@ public override void OnPopupClosed()
     {
         ClearButtonListeners();
         CloseAllSubItems();
+        lastItemInfo = null;
+        lastRuntimeItem = null;
         base.OnPopupClosed();
     }
 

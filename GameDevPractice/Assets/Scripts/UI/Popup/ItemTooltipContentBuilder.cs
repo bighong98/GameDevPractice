@@ -8,28 +8,16 @@ using TH.Resource;
 
 namespace TH.UI
 {
-    /// <summary>
-    /// 툴팁 상세 수준 정의.
-    /// Brief: 간략 정보, Detailed: 상세 정보.
-    /// </summary>
-    
     public enum TooltipDetailLevel
     {
-        /// <summary>간략 정보 (제한된 스탯/효과 표시)</summary>
         Brief,
-        /// <summary>상세 정보 (모든 스탯/효과 표시)</summary>
         Detailed,
     }
 
-    /// <summary>
-    /// 툴팁 콘텐츠 데이터 구조체.
-    /// 이름과 설명을 함께 전달.
-    /// </summary>
-    
     public readonly struct ItemTooltipContent
     {
-        public readonly string Name; // 아이템 이름
-        public readonly string Description; // 아이템 설명 (스탯, 효과 포함)
+        public readonly string Name;
+        public readonly string Description;
 
         public ItemTooltipContent(string name, string description)
         {
@@ -38,11 +26,6 @@ namespace TH.UI
         }
     }
 
-    /// <summary>
-    /// 아이템 툴팁 콘텐츠 빌더 유틸리티 클래스.
-    /// ItemTypeSO에서 설명, 스탯, 효과 정보를 추출하여 포맷팅.
-    /// </summary>
-    
     public static class ItemTooltipContentBuilder
     {
         private const int BriefStatLimit = 2;
@@ -53,7 +36,9 @@ namespace TH.UI
             if (item?.GetItemInfo == null)
                 return default;
 
-            return Build(item.GetItemInfo, detailLevel);
+            var itemInfo = item.GetItemInfo;
+            var description = BuildDescription(itemInfo, detailLevel, item);
+            return new ItemTooltipContent(itemInfo.nameString, description);
         }
 
         public static ItemTooltipContent Build(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel)
@@ -65,9 +50,9 @@ namespace TH.UI
             return new ItemTooltipContent(itemInfo.nameString, description);
         }
 
-        private static string BuildDescription(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel)
+        private static string BuildDescription(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel, IGameItem runtimeItem = null)
         {
-            var sections = BuildDescriptionSections(itemInfo, detailLevel);
+            var sections = BuildDescriptionSections(itemInfo, detailLevel, runtimeItem: runtimeItem);
             return string.Join("\n\n", sections);
         }
 
@@ -77,7 +62,8 @@ namespace TH.UI
             stats = string.Empty;
             effects = string.Empty;
 
-            if (string.IsNullOrWhiteSpace(text)) return;
+            if (string.IsNullOrWhiteSpace(text))
+                return;
 
             var sections = text.Split(new[] { "\n\n" }, StringSplitOptions.RemoveEmptyEntries);
             foreach (var rawSection in sections)
@@ -88,6 +74,7 @@ namespace TH.UI
                     stats = statBody;
                     continue;
                 }
+
                 if (TryExtractSection(section, "Effects", out var effectBody))
                 {
                     effects = effectBody;
@@ -96,6 +83,7 @@ namespace TH.UI
 
                 if (description.Length > 0)
                     description += "\n\n";
+
                 description += section;
             }
         }
@@ -103,7 +91,8 @@ namespace TH.UI
         private static bool TryExtractSection(string section, string header, out string body)
         {
             body = string.Empty;
-            if (!section.StartsWith(header, StringComparison.OrdinalIgnoreCase)) return false;
+            if (!section.StartsWith(header, StringComparison.OrdinalIgnoreCase))
+                return false;
 
             body = section.Length == header.Length
                 ? string.Empty
@@ -128,7 +117,11 @@ namespace TH.UI
             return lines;
         }
 
-        private static List<string> BuildEffectLines(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel)
+        private static List<string> BuildEffectLines(
+            ItemTypeSO itemInfo,
+            TooltipDetailLevel detailLevel,
+            ItemTooltipLabelMapSO labelMap = null,
+            IGameItem runtimeItem = null)
         {
             if (itemInfo?.itemUseEffects == null || itemInfo.itemUseEffects.Count == 0)
                 return new List<string>();
@@ -136,9 +129,11 @@ namespace TH.UI
             var lines = new List<string>();
             foreach (var effect in itemInfo.itemUseEffects)
             {
-                if (effect == null) continue;
+                if (effect == null)
+                    continue;
 
                 var text = ResolveEffectText(effect, detailLevel);
+                text = ResolveMappedEffectText(effect, text, itemInfo, detailLevel, labelMap, runtimeItem);
                 if (!string.IsNullOrWhiteSpace(text))
                     lines.Add(text);
             }
@@ -149,11 +144,39 @@ namespace TH.UI
         private static string ResolveEffectText(ItemEffectBase effect, TooltipDetailLevel detailLevel)
         {
             if (effect is IItemEffectTooltipInfo info)
+            {
                 return detailLevel == TooltipDetailLevel.Detailed
                     ? info.GetTooltipDetail()
                     : info.GetTooltipSummary();
+            }
 
             return effect.name;
+        }
+
+        private static string ResolveMappedEffectText(
+            ItemEffectBase effect,
+            string fallbackText,
+            ItemTypeSO itemInfo,
+            TooltipDetailLevel detailLevel,
+            ItemTooltipLabelMapSO labelMap,
+            IGameItem runtimeItem)
+        {
+            if (effect == null || itemInfo == null || labelMap == null)
+                return fallbackText;
+
+            string effectTypeName = effect.GetType().Name;
+            string detailKey = TooltipLabelKeys.ItemEffect(effectTypeName, detailLevel);
+            string baseKey = TooltipLabelKeys.ItemEffect(effectTypeName);
+
+            string mappedTemplate = labelMap.GetLabel(detailKey, string.Empty);
+            if (string.IsNullOrWhiteSpace(mappedTemplate))
+                mappedTemplate = labelMap.GetLabel(baseKey, string.Empty);
+
+            if (string.IsNullOrWhiteSpace(mappedTemplate))
+                return fallbackText;
+
+            string resolved = TooltipTokenResolver.ResolveDescription(mappedTemplate, itemInfo, detailLevel, runtimeItem);
+            return string.IsNullOrWhiteSpace(resolved) ? fallbackText : resolved;
         }
 
         private static string FormatStatLine(StatModifierData data)
@@ -208,18 +231,23 @@ namespace TH.UI
                 : fallback;
         }
 
-        public static IReadOnlyList<string> BuildDescriptionSections(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel, ItemTooltipLabelMapSO labelMap = null)
+        public static IReadOnlyList<string> BuildDescriptionSections(
+            ItemTypeSO itemInfo,
+            TooltipDetailLevel detailLevel,
+            ItemTooltipLabelMapSO labelMap = null,
+            IGameItem runtimeItem = null)
         {
             if (itemInfo == null)
                 return Array.Empty<string>();
 
             var sections = new List<string>();
 
-            if (!string.IsNullOrWhiteSpace(itemInfo.desc))
-                sections.Add(itemInfo.desc.Trim());
+            var resolvedDescription = TooltipTokenResolver.ResolveDescription(itemInfo.desc, itemInfo, detailLevel, runtimeItem);
+            if (!string.IsNullOrWhiteSpace(resolvedDescription))
+                sections.Add(resolvedDescription.Trim());
 
             var statLines = BuildEquipmentStatLines(itemInfo);
-            var effectLines = BuildEffectLines(itemInfo, detailLevel);
+            var effectLines = BuildEffectLines(itemInfo, detailLevel, labelMap, runtimeItem);
 
             if (detailLevel == TooltipDetailLevel.Brief)
             {
@@ -236,3 +264,4 @@ namespace TH.UI
         }
     }
 }
+

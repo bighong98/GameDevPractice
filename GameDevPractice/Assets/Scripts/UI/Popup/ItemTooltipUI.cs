@@ -44,6 +44,7 @@ namespace TH.UI
         private ObjectPool<IPoolObject> descPanelPool;
         /// <summary>마지막으로 표시한 아이템 정보 (캐싱용)</summary>
         private ItemTypeSO lastItemInfo;
+        private IGameItem lastRuntimeItem;
         /// <summary>현재 활성화된 설명 패널 목록</summary>
         private readonly List<ItemTooltipDescPanel> descPanels = new();
 
@@ -195,11 +196,12 @@ namespace TH.UI
 
             ShowTooltip();
 
-            if (lastItemInfo == null || !ReferenceEquals(lastItemInfo, itemInfo))
+            if (lastItemInfo == null || !ReferenceEquals(lastItemInfo, itemInfo) || !ReferenceEquals(lastRuntimeItem, item))
             {
                 contentChanged = true;
                 lastItemInfo = itemInfo;
-                PrepareTooltip(itemInfo, detailLevel);
+                lastRuntimeItem = item;
+                PrepareTooltip(itemInfo, detailLevel, item);
                 RebuildTooltipLayout();
             }
         }
@@ -210,12 +212,12 @@ namespace TH.UI
         /// </summary>
         /// <param name="itemInfo">아이템 정보 SO</param>
         /// <param name="detailLevel">상세 수준</param>
-        private void PrepareTooltip(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel)
+        private void PrepareTooltip(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel, IGameItem runtimeItem)
         {
             var labelMap = GetItemLabelMap();
             EnsureItemTypeLabelCache(labelMap);
             UpdateHeaderTexts(itemInfo);
-            BuildDescriptionPanels(itemInfo, detailLevel, labelMap);
+            BuildDescriptionPanels(itemInfo, detailLevel, labelMap, runtimeItem);
 
             this.Log($"PrepareTooltip() - item: {itemInfo.nameString}", Logg.LoggingMode.Completed);
         }
@@ -327,7 +329,7 @@ namespace TH.UI
         /// </summary>
         /// <param name="itemInfo">아이템 정보 SO</param>
         /// <param name="detailLevel">상세 수준</param>
-        private void BuildDescriptionPanels(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel, ItemTooltipLabelMapSO labelMap)
+        private void BuildDescriptionPanels(ItemTypeSO itemInfo, TooltipDetailLevel detailLevel, ItemTooltipLabelMapSO labelMap, IGameItem runtimeItem)
         {
             if (descParent == null || descPanelTemplate == null)
             {
@@ -343,7 +345,7 @@ namespace TH.UI
                 return;
             }
 
-            var sections = ItemTooltipContentBuilder.BuildDescriptionSections(itemInfo, detailLevel, labelMap);
+            var sections = ItemTooltipContentBuilder.BuildDescriptionSections(itemInfo, detailLevel, labelMap, runtimeItem);
             foreach (var section in sections)
             {
                 AddDescPanel(section);
@@ -424,6 +426,8 @@ namespace TH.UI
 
         public void OnReleaseFromPool()
         {
+            lastItemInfo = null;
+            lastRuntimeItem = null;
             HideTooltip();
         }
 
@@ -433,6 +437,8 @@ namespace TH.UI
 
         public void ReleaseSelf()
         {
+            lastItemInfo = null;
+            lastRuntimeItem = null;
             HideTooltip();
         }
 

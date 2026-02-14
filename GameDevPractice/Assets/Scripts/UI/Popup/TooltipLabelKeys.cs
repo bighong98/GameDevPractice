@@ -26,5 +26,22 @@ namespace TH.UI
 
             return ItemType(itemType);
         }
+
+        public static string ItemEffect(string effectTypeName)
+        {
+            if (string.IsNullOrWhiteSpace(effectTypeName))
+                return "item.effect.unknown";
+
+            return $"item.effect.{effectTypeName}";
+        }
+
+        public static string ItemEffect(string effectTypeName, TooltipDetailLevel detailLevel)
+        {
+            string suffix = detailLevel == TooltipDetailLevel.Detailed
+                ? "detail"
+                : "summary";
+
+            return $"{ItemEffect(effectTypeName)}.{suffix}";
+        }
     }
 }
