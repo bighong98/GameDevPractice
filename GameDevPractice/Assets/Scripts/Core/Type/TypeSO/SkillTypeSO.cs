@@ -34,6 +34,7 @@ namespace TH.Resource
         // 콤보 사용 시 ComboSequenceSO 에셋 연결. null이면 단일 스킬 동작
         [SerializeField] private ComboSequenceSO comboSequence;
         [SerializeField] private SkillExecutionProfileSO executionProfile;
+        [SerializeField] private List<SkillTypeSO> subSkills = new();
 
         [Header("Targeting")]
         [SerializeField] private SkillTargetPolicy targetPolicy = SkillTargetPolicy.EnemyOnlyDefault;
@@ -80,6 +81,8 @@ namespace TH.Resource
         // 콤보 시퀀스 참조
         public ComboSequenceSO ComboSequence => comboSequence;
         public SkillExecutionProfileSO ExecutionProfile => executionProfile;
+        public bool HasSubSkills => subSkills != null && subSkills.Exists(skill => skill != null);
+        public IReadOnlyList<SkillTypeSO> SubSkills => subSkills;
         public SkillTargetPolicy TargetPolicy => targetPolicy;
         // Skill animation speed multiplier
         public float AnimationSpeedMultiplier => Mathf.Max(0.01f, animationSpeedMultiplier);
@@ -196,11 +199,79 @@ namespace TH.Resource
                 errors.Add("executionProfile is assigned but has no actions.");
             }
 
+            ValidateSubSkills(errors);
             ValidateEffectPrefab(skillVFXPrefab, nameof(skillVFXPrefab), warnings);
             ValidateEffectPrefab(onHitVFXPrefab, nameof(onHitVFXPrefab), warnings);
             ValidateAnimatorOverride(errors, warnings);
             return errors.Count == 0;
         }
+
+        private void ValidateSubSkills(List<string> errors)
+        {
+            if (subSkills == null || subSkills.Count == 0)
+            {
+                return;
+            }
+
+            bool hasSelfReference = false;
+            for (int i = 0; i < subSkills.Count; i++)
+            {
+                if (subSkills[i] == this)
+                {
+                    errors.Add("subSkills contains self reference.");
+                    hasSelfReference = true;
+                    break;
+                }
+            }
+
+            if (hasSelfReference)
+            {
+                return;
+            }
+
+            if (HasSubSkillCycle(this, new HashSet<SkillTypeSO>(), new HashSet<SkillTypeSO>()))
+            {
+                errors.Add("subSkills contains a cyclic reference.");
+            }
+        }
+
+        private static bool HasSubSkillCycle(
+            SkillTypeSO node,
+            HashSet<SkillTypeSO> visiting,
+            HashSet<SkillTypeSO> visited)
+        {
+            if (node == null)
+            {
+                return false;
+            }
+
+            if (visiting.Contains(node))
+            {
+                return true;
+            }
+
+            if (!visited.Add(node))
+            {
+                return false;
+            }
+
+            visiting.Add(node);
+            if (node.subSkills != null)
+            {
+                for (int i = 0; i < node.subSkills.Count; i++)
+                {
+                    if (HasSubSkillCycle(node.subSkills[i], visiting, visited))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            visiting.Remove(node);
+            return false;
+        }
+
+
 
         // 애니메이션 오버라이드와 Hit 이벤트 설정을 검증
         private static void ValidateEffectPrefab(GameObject prefab, string fieldName, List<string> warnings)

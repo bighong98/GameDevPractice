@@ -122,27 +122,71 @@ namespace TH.Combat
         private bool ExecutePendingAttack(Health target)
         {
             var skill = pendingAttackSkill;
-            float timingScale = ResolveSkillTimingScale(pendingAttacker);
-            var context = new SkillExecutionContext(pendingAttacker, target, skill, pendingAttackSource, timingScale);
+            if (skill.IsNull())
+            {
+                return false;
+            }
 
-            // 타게팅 정책 위반 가드
+            float timingScale = ResolveSkillTimingScale(pendingAttacker);
+            int attackInstanceId = pendingAttackSource.AttackInstanceId;
+
+            if (!skill.HasSubSkills)
+            {
+                return TryExecuteSingleSkill(skill, target, timingScale, attackInstanceId, usePendingAttackSource: true);
+            }
+
+            bool anyExecuted = false;
+            var subSkills = skill.SubSkills;
+            for (int i = 0; i < subSkills.Count; i++)
+            {
+                var subSkill = subSkills[i];
+                if (subSkill.IsNull())
+                {
+                    continue;
+                }
+
+                if (TryExecuteSingleSkill(subSkill, target, timingScale, attackInstanceId, usePendingAttackSource: false))
+                {
+                    anyExecuted = true;
+                }
+            }
+
+            return anyExecuted;
+        }
+
+        private bool TryExecuteSingleSkill(SkillTypeSO skill, Health target, float timingScale, int attackInstanceId, bool usePendingAttackSource)
+        {
+            if (skill.IsNull())
+            {
+                return false;
+            }
+
+            AttackSource attackSource = default;
+            if (usePendingAttackSource)
+            {
+                attackSource = pendingAttackSource;
+            }
+            else if (!TryBuildAttackSource(pendingAttacker, skill, attackInstanceId, out attackSource))
+            {
+                return false;
+            }
+
+            var context = new SkillExecutionContext(pendingAttacker, target, skill, attackSource, timingScale);
             if (!CanTargetWithPolicy(context, target))
             {
                 return false;
             }
 
-            // 실행 프로파일 액션 우선 경로
-            if (skill.IsNotNull() && skill.ExecutionProfile is { HasActions: true } executionProfile)
+            if (skill.ExecutionProfile is { HasActions: true } executionProfile)
             {
                 StartCoroutine(executionProfile.Execute(context, this));
                 return true;
             }
 
-            // 투사체 스킬 처리 경로
-            if (skill.IsNotNull() && skill.HasProjectile)
+            if (skill.HasProjectile)
             {
                 if (projectileExecutor.IsNotNull() &&
-                    projectileExecutor.TryExecuteProjectile(pendingAttackSource, target, skill))
+                    projectileExecutor.TryExecuteProjectile(attackSource, target, skill))
                 {
                     return true;
                 }
@@ -150,14 +194,13 @@ namespace TH.Combat
                 Logg.LogWarning($"[{gameObject.name}.{nameof(SkillController)}] Projectile executor missing. Falling back to direct hit.");
             }
 
-            // 직접 타격 폴백 경로
             combatSystem ??= ServiceLocator.Get<ICombatSystem>();
             if (combatSystem == null)
             {
                 return false;
             }
 
-            combatSystem.ApplyHit(pendingAttackSource.ToRequest(target));
+            combatSystem.ApplyHit(attackSource.ToRequest(target));
             return true;
         }
 

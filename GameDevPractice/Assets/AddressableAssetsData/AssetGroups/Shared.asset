@@ -29,6 +29,16 @@ MonoBehaviour:
     - PreLoad_DataSO
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0d3c487e8b931674196325ae2cb7c2d0
+    m_Address: Sword_ComplexSkill.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 191c39a59b71a9d4a86e0366198e604f
+    m_Address: Profile_Melee_Default.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 1ccb1a8a5e190bd41a17d5b1656b118e
     m_Address: Sword_ComboFinisherSkill
     m_ReadOnly: 0
@@ -74,6 +84,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5870227852be9114281496d886b8e465
+    m_Address: Profile_Melee_Area.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 68e6db2ebdc24f95958faec2be5558d6
     m_Address: TMP_SDF.shader
     m_ReadOnly: 0
@@ -109,8 +124,18 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 91415d6afb7673844bc9d9123a961bf7
+    m_Address: Profile_Projectile_Default.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 917b62a0c0e7bdc4a8669116f5c98233
     m_Address: Icons.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9d5a2f2f814813946b4d0b26aa737201
+    m_Address: Profile_Melee_AreaSplash.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

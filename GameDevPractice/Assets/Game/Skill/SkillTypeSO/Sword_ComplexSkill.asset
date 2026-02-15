@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7ae70b95bc711424ab96997d90ea21eb, type: 3}
-  m_Name: Sword_BasicSkill
+  m_Name: Sword_ComplexSkill
   m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.SkillTypeSO
   skillId: "\uBCA0\uAE30"
   attackSourceStatSO: {fileID: 11400000, guid: cf7022ca8cb84ae4395e9b8e2edbcdf2, type: 2}
@@ -22,7 +22,9 @@ MonoBehaviour:
   cooldown: 1
   comboSequence: {fileID: 0}
   executionProfile: {fileID: 11400000, guid: 191c39a59b71a9d4a86e0366198e604f, type: 2}
-  subSkills: []
+  subSkills:
+  - {fileID: 11400000, guid: 3db396ca27d0cc641a0c26cc9c598355, type: 2}
+  - {fileID: 11400000, guid: 8f79b74127da75d42b7b7db7ca5534fb, type: 2}
   targetPolicy:
     allowedGroups: 2
     allowSelf: 0
