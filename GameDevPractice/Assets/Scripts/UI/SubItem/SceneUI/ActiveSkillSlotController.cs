@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using TH.Attribute.Stat;
 using TH.Combat;
 using TH.Core;
@@ -13,9 +15,13 @@ using UnityEngine;
 public sealed class ActiveSkillSlotController : MonoBehaviour
 {
     private const string SkillTooltipPrefabKey = "UI_SkillTooltip.prefab";
+    private const string DefaultCategorySortProfileAddressKey = "SkillCategorySortProfileSO";
     private const float ModifiedHighlightFadeDuration = 0.5f;
+    private const float WarnHighlightFadeDuration = 0.5f;
 
     [SerializeField] private ActiveSkillSlotPanel panel;
+    [SerializeField] private string categorySortProfileAddressKey = DefaultCategorySortProfileAddressKey;
+
     private IPlayerHolder playerHolder;
     private ISkillController skillController;
     private IAttacker attacker;
@@ -23,12 +29,25 @@ public sealed class ActiveSkillSlotController : MonoBehaviour
     private int highlightedSlotIndex = -1;
     private int hoveredSlotIndex = -1;
     private readonly List<SkillTypeSO> displayedSkills = new();
+    private readonly List<SkillTypeSO> orderedAvailableSkills = new();
+    private readonly Dictionary<SkillTypeSO, int> registeredSkillOrder = new();
+    private readonly HashSet<SkillTypeSO> uniqueSkillBuffer = new();
+    private readonly Dictionary<SkillCategory, int> categoryPriorityMap = new();
     private bool hasDisplaySkillSnapshot;
+    private IResourceLoader resourceLoader;
+    private SkillCategorySortProfileSO categorySortProfile;
+    private bool isCategorySortProfileLoading;
 
-    private void Awake()
+private void Awake()
     {
         if (panel == null)
             TryGetComponent(out panel);
+
+        if (string.IsNullOrWhiteSpace(categorySortProfileAddressKey))
+            categorySortProfileAddressKey = DefaultCategorySortProfileAddressKey;
+
+        resourceLoader = ServiceLocator.Get<IResourceLoader>();
+        RebuildCategoryPriorityMap();
     }
 
     private void OnEnable()
@@ -60,7 +79,53 @@ public sealed class ActiveSkillSlotController : MonoBehaviour
         yield return null;
 
         TryBindSkillControllerFromPlayerHolder();
+        LoadCategorySortProfileAsync().Forget();
         RedrawAllSlots();
+    }
+
+    private async UniTaskVoid LoadCategorySortProfileAsync()
+    {
+        if (isCategorySortProfileLoading || categorySortProfile != null)
+            return;
+
+        if (string.IsNullOrWhiteSpace(categorySortProfileAddressKey))
+            return;
+
+        isCategorySortProfileLoading = true;
+        try
+        {
+            resourceLoader ??= ServiceLocator.Get<IResourceLoader>();
+            if (resourceLoader == null)
+                return;
+
+            if (!resourceLoader.TryLoad(categorySortProfileAddressKey, out categorySortProfile))
+            {
+                categorySortProfile = await resourceLoader.LoadAsync<SkillCategorySortProfileSO>(
+                    categorySortProfileAddressKey,
+                    destroyCancellationToken);
+            }
+
+            if (categorySortProfile == null)
+            {
+                Logg.LogWarning($"[{nameof(ActiveSkillSlotController)}] failed to load sort profile. key: {categorySortProfileAddressKey}");
+                return;
+            }
+
+            RebuildCategoryPriorityMap();
+            RedrawAllSlots();
+        }
+        catch (OperationCanceledException)
+        {
+            // ignore cancellation during destroy
+        }
+        catch (Exception e)
+        {
+            Logg.LogWarning($"[{nameof(ActiveSkillSlotController)}] sort profile load failed: {e.Message}");
+        }
+        finally
+        {
+            isCategorySortProfileLoading = false;
+        }
     }
 
     private void OnDisable()
@@ -95,13 +160,6 @@ public sealed class ActiveSkillSlotController : MonoBehaviour
 
         if (playerInstance is Component c)
         {
-            // if (c.TryGetComponent(out ISkillController foundSkillController))
-            //     skillController = foundSkillController;
-            // if (c.TryGetComponent(out IAttacker foundAttacker))
-            //     attacker = foundAttacker;
-            // if (c.TryGetComponent(out IStatHolder foundStatHolder))
-            //     statHolder = foundStatHolder;
-
             if (!c.TryGetComponent(out skillController))
                 Logg.LogError($"failed to GetComponent for {nameof(skillController)}", context: this);
             if (!c.TryGetComponent(out attacker))
@@ -113,10 +171,12 @@ public sealed class ActiveSkillSlotController : MonoBehaviour
         if (skillController != null)
         {
             skillController.OnSkillBookChanged += HandleSkillBookChanged;
+            skillController.OnAvailableSkillsChanged += HandleAvailableSkillsChanged;
             skillController.OnActiveSkillChanged += HandleActiveSkillChanged;
             skillController.OnResolvedSkillChanged += HandleResolvedSkillChanged;
             skillController.OnComboStepChanged += HandleComboStepChanged;
             skillController.OnSkillReady += HandleSkillReady;
+            skillController.OnSkillSlotHighlightRequested += HandleSkillSlotHighlightRequested;
         }
 
         RedrawAllSlots();
@@ -127,10 +187,12 @@ public sealed class ActiveSkillSlotController : MonoBehaviour
         if (skillController != null)
         {
             skillController.OnSkillBookChanged -= HandleSkillBookChanged;
+            skillController.OnAvailableSkillsChanged -= HandleAvailableSkillsChanged;
             skillController.OnActiveSkillChanged -= HandleActiveSkillChanged;
             skillController.OnResolvedSkillChanged -= HandleResolvedSkillChanged;
             skillController.OnComboStepChanged -= HandleComboStepChanged;
             skillController.OnSkillReady -= HandleSkillReady;
+            skillController.OnSkillSlotHighlightRequested -= HandleSkillSlotHighlightRequested;
         }
 
         skillController = null;
@@ -140,6 +202,11 @@ public sealed class ActiveSkillSlotController : MonoBehaviour
     }
 
     private void HandleSkillBookChanged()
+    {
+        RedrawAllSlots();
+    }
+
+    private void HandleAvailableSkillsChanged()
     {
         RedrawAllSlots();
     }
@@ -164,6 +231,19 @@ public sealed class ActiveSkillSlotController : MonoBehaviour
         DrawCooldownForSkill(skill);
     }
 
+    private void HandleSkillSlotHighlightRequested(SkillTypeSO skill)
+    {
+        if (panel == null || skill == null)
+            return;
+
+        int slotIndex = FindSkillSlotIndex(skill);
+        if (slotIndex < 0)
+            return;
+
+        panel.HighlightSlot(slotIndex, (int)SlotHighlightType.Warn);
+        panel.UnHighlightSlotWithFade(slotIndex, (int)SlotHighlightType.Warn, WarnHighlightFadeDuration);
+    }
+
     private void RedrawAllSlots()
     {
         if (panel == null)
@@ -175,13 +255,14 @@ public sealed class ActiveSkillSlotController : MonoBehaviour
             return;
         }
 
-        var skills = skillController.RegisteredSkills;
+        RebuildOrderedAvailableSkills();
+
         int slotCount = panel.SlotCount;
         bool allowModifiedHighlight = hasDisplaySkillSnapshot;
 
         for (int i = 0; i < slotCount; i++)
         {
-            SkillTypeSO baseSkill = i < skills.Count ? skills[i] : null;
+            SkillTypeSO baseSkill = i < orderedAvailableSkills.Count ? orderedAvailableSkills[i] : null;
             if (baseSkill == null)
             {
                 UpdateDisplayedSkillSnapshot(i, null);
@@ -220,12 +301,10 @@ public sealed class ActiveSkillSlotController : MonoBehaviour
         if (panel == null || skillController == null)
             return;
 
-        var skills = skillController.RegisteredSkills;
-        int count = Mathf.Min(panel.SlotCount, skills.Count);
-
+        int count = Mathf.Min(panel.SlotCount, orderedAvailableSkills.Count);
         for (int i = 0; i < count; i++)
         {
-            SkillTypeSO skill = skills[i];
+            SkillTypeSO skill = orderedAvailableSkills[i];
             if (skill == null)
             {
                 UpdateDisplayedSkillSnapshot(i, null);
@@ -277,12 +356,10 @@ public sealed class ActiveSkillSlotController : MonoBehaviour
         if (skill == null || panel == null || skillController == null)
             return -1;
 
-        var skills = skillController.RegisteredSkills;
-        int count = Mathf.Min(panel.SlotCount, skills.Count);
-
+        int count = Mathf.Min(panel.SlotCount, orderedAvailableSkills.Count);
         for (int i = 0; i < count; i++)
         {
-            if (skills[i] == skill)
+            if (orderedAvailableSkills[i] == skill)
                 return i;
         }
 
@@ -428,16 +505,115 @@ public sealed class ActiveSkillSlotController : MonoBehaviour
         if (skillController == null || panel == null)
             return false;
 
-        var skills = skillController.RegisteredSkills;
-        if (slotIndex < 0 || slotIndex >= skills.Count || slotIndex >= panel.SlotCount)
+        if (slotIndex < 0 || slotIndex >= orderedAvailableSkills.Count || slotIndex >= panel.SlotCount)
             return false;
 
-        SkillTypeSO baseSkill = skills[slotIndex];
+        SkillTypeSO baseSkill = orderedAvailableSkills[slotIndex];
         if (baseSkill == null)
             return false;
 
         displaySkill = ResolveDisplaySkill(baseSkill);
         return displaySkill != null;
+    }
+
+    private void RebuildOrderedAvailableSkills()
+    {
+        orderedAvailableSkills.Clear();
+        registeredSkillOrder.Clear();
+        uniqueSkillBuffer.Clear();
+
+        if (skillController == null)
+            return;
+
+        var registeredSkills = skillController.RegisteredSkills;
+        for (int i = 0; i < registeredSkills.Count; i++)
+        {
+            SkillTypeSO skill = registeredSkills[i];
+            if (skill == null || registeredSkillOrder.ContainsKey(skill))
+                continue;
+
+            registeredSkillOrder.Add(skill, i);
+        }
+
+        var availableSkills = skillController.AvailableSkills;
+        for (int i = 0; i < availableSkills.Count; i++)
+        {
+            SkillTypeSO skill = availableSkills[i];
+            if (skill == null || !uniqueSkillBuffer.Add(skill))
+                continue;
+
+            orderedAvailableSkills.Add(skill);
+        }
+
+        orderedAvailableSkills.Sort(CompareSkillsForSlotOrder);
+    }
+
+    private int CompareSkillsForSlotOrder(SkillTypeSO left, SkillTypeSO right)
+    {
+        int leftCategoryPriority = GetCategoryPriority(left);
+        int rightCategoryPriority = GetCategoryPriority(right);
+        if (leftCategoryPriority != rightCategoryPriority)
+            return rightCategoryPriority.CompareTo(leftCategoryPriority);
+
+        int leftRegisteredOrder = ResolveRegisteredOrder(left);
+        int rightRegisteredOrder = ResolveRegisteredOrder(right);
+        if (leftRegisteredOrder != rightRegisteredOrder)
+            return leftRegisteredOrder.CompareTo(rightRegisteredOrder);
+
+        return string.CompareOrdinal(left != null ? left.name : string.Empty, right != null ? right.name : string.Empty);
+    }
+
+    private int GetCategoryPriority(SkillTypeSO skill)
+    {
+        SkillCategory category = skill != null ? skill.SkillCategory : SkillCategory.AdditiveSkill;
+        if (categoryPriorityMap.TryGetValue(category, out int priority))
+            return priority;
+
+        return ResolveDefaultCategoryPriority(category);
+    }
+
+    private int ResolveRegisteredOrder(SkillTypeSO skill)
+    {
+        if (skill == null)
+            return int.MaxValue;
+
+        return registeredSkillOrder.TryGetValue(skill, out int index) ? index : int.MaxValue;
+    }
+
+    private void RebuildCategoryPriorityMap()
+    {
+        categoryPriorityMap.Clear();
+        if (categorySortProfile != null && categorySortProfile.Rules != null)
+        {
+            for (int i = 0; i < categorySortProfile.Rules.Count; i++)
+            {
+                SkillCategorySortProfileSO.Rule rule = categorySortProfile.Rules[i];
+                categoryPriorityMap[rule.category] = rule.priority;
+            }
+        }
+
+        EnsureCategoryPriority(SkillCategory.WeaponDefaultSkill);
+        EnsureCategoryPriority(SkillCategory.AdditiveSkill);
+        EnsureCategoryPriority(SkillCategory.UltimateSkill);
+    }
+
+    private void EnsureCategoryPriority(SkillCategory category)
+    {
+        if (!categoryPriorityMap.ContainsKey(category))
+        {
+            categoryPriorityMap[category] = ResolveDefaultCategoryPriority(category);
+        }
+    }
+
+    private static int ResolveDefaultCategoryPriority(SkillCategory category)
+    {
+        return category switch
+        {
+            SkillCategory.WeaponDefaultSkill => 300,
+            SkillCategory.AdditiveSkill => 200,
+            SkillCategory.UltimateSkill => 100,
+            _ => 0
+        };
     }
 
     private void HideSkillTooltip()
@@ -455,7 +631,7 @@ public sealed class ActiveSkillSlotController : MonoBehaviour
 
         if (highlightedSlotIndex >= 0)
             panel.UnHighlightSlot(highlightedSlotIndex);
-        
+
         highlightedSlotIndex = -1;
     }
 
@@ -467,6 +643,9 @@ public sealed class ActiveSkillSlotController : MonoBehaviour
         panel.ClearAllSlots();
         highlightedSlotIndex = -1;
         displayedSkills.Clear();
+        orderedAvailableSkills.Clear();
+        registeredSkillOrder.Clear();
+        uniqueSkillBuffer.Clear();
         hasDisplaySkillSnapshot = false;
     }
 }

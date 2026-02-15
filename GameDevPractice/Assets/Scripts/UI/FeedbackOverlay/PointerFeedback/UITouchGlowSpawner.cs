@@ -96,7 +96,7 @@ namespace TH.UI
             }
             
             // UIManager로부터 캔버스를 받아오지 못한 경우 fallback으로 현재 오브젝트의 캔버스를 받아옴
-            this.LogWarning("EnsureTargetRect() - failed to get canvas from UIManager. fallback with temporary canvas", context: this);
+            this.Log("EnsureTargetRect() - failed to get canvas from UIManager. fallback with temporary canvas", Logg.LoggingMode.Default);
             var canvas = GetComponentInParent<Canvas>();
             targetRect = canvas != null ? canvas.transform as RectTransform : null;
             isInitialized = targetRect != null;

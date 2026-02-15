@@ -30,9 +30,13 @@ namespace TH.Combat
         {
             // 등록 스킬 내부 목록
             private readonly List<SkillTypeSO> skills = new();
+            // 사용 가능 스킬 내부 목록
+            private readonly List<SkillTypeSO> availableSkills = new();
 
             // 등록 스킬 읽기 전용 목록
             public IReadOnlyList<SkillTypeSO> Skills => skills;
+            // 사용 가능 스킬 읽기 전용 목록
+            public IReadOnlyList<SkillTypeSO> AvailableSkills => availableSkills;
             // 현재 활성 스킬 참조
             public SkillTypeSO ActiveSkill { get; private set; }
 
@@ -42,6 +46,7 @@ namespace TH.Combat
                 if (skill.IsNull() || Contains(skill)) return false;
 
                 skills.Add(skill);
+                availableSkills.Add(skill);
                 // 최초 등록 스킬 자동 활성화
                 if (ActiveSkill.IsNull())
                 {
@@ -68,12 +73,88 @@ namespace TH.Combat
                 return true;
             }
 
+            // 사용 가능 스킬 포함 여부 조회
+            public bool ContainsAvailable(SkillTypeSO skill)
+            {
+                if (skill.IsNull()) return false;
+                return availableSkills.Contains(skill);
+            }
+
+            // 사용 가능 스킬 노출 여부 갱신
+            public bool SetAvailable(SkillTypeSO skill, bool isAvailable)
+            {
+                if (skill.IsNull() || !Contains(skill)) return false;
+
+                bool contains = availableSkills.Contains(skill);
+                if (isAvailable && !contains)
+                {
+                    availableSkills.Add(skill);
+                    return true;
+                }
+
+                if (!isAvailable && contains)
+                {
+                    availableSkills.Remove(skill);
+                    return true;
+                }
+
+                return false;
+            }
+
+            // 사용 가능 스킬 치환 처리
+            public bool ReplaceAvailableSkill(SkillTypeSO targetSkill, SkillTypeSO replacementSkill)
+            {
+                if (targetSkill.IsNull() || replacementSkill.IsNull()) return false;
+                if (!Contains(targetSkill) || !Contains(replacementSkill)) return false;
+                if (targetSkill == replacementSkill) return false;
+
+                int targetIndex = availableSkills.IndexOf(targetSkill);
+                if (targetIndex < 0) return false;
+
+                availableSkills[targetIndex] = replacementSkill;
+
+                // 치환 이후 중복 항목 정리
+                for (int i = availableSkills.Count - 1; i >= 0; i--)
+                {
+                    if (i != targetIndex && availableSkills[i] == replacementSkill)
+                    {
+                        availableSkills.RemoveAt(i);
+                        if (i < targetIndex)
+                        {
+                            targetIndex--;
+                        }
+                    }
+                }
+
+                return true;
+            }
+
+            // 조건 기반 사용 가능 스킬 제거 처리
+            public bool RemoveAvailableWhere(Predicate<SkillTypeSO> predicate)
+            {
+                if (predicate == null || availableSkills.Count == 0) return false;
+                return availableSkills.RemoveAll(predicate) > 0;
+            }
+
             // 첫 번째 등록 스킬 조회
             public bool TryGetFirst(out SkillTypeSO firstSkill)
             {
                 if (skills.Count > 0 && skills[0].IsNotNull())
                 {
                     firstSkill = skills[0];
+                    return true;
+                }
+
+                firstSkill = null;
+                return false;
+            }
+
+            // 첫 번째 사용 가능 스킬 조회
+            public bool TryGetFirstAvailable(out SkillTypeSO firstSkill)
+            {
+                if (availableSkills.Count > 0 && availableSkills[0].IsNotNull())
+                {
+                    firstSkill = availableSkills[0];
                     return true;
                 }
 

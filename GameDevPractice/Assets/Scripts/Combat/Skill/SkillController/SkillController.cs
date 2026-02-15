@@ -24,8 +24,12 @@ namespace TH.Combat
         event Action<SkillTypeSO> OnSkillReady;
         // 등록 스킬 목록 변경 알림 이벤트
         event Action OnSkillBookChanged;
+        // 사용 가능 스킬 목록 변경 알림 이벤트
+        event Action OnAvailableSkillsChanged;
         // 콤보 단계 변경 알림 이벤트
         event Action<SkillTypeSO, int, int> OnComboStepChanged;
+        // 슬롯 하이라이트 요청 알림 이벤트
+        event Action<SkillTypeSO> OnSkillSlotHighlightRequested;
 
         // 활성 스킬 보유 상태
         bool HasActiveSkill { get; }
@@ -49,11 +53,15 @@ namespace TH.Combat
         int CurrentComboStepCount { get; }
         // 등록 스킬 읽기 전용 목록
         IReadOnlyList<SkillTypeSO> RegisteredSkills { get; }
+        // 사용 가능 스킬 읽기 전용 목록
+        IReadOnlyList<SkillTypeSO> AvailableSkills { get; }
 
         // 스킬 등록 처리
         bool RegisterSkill(SkillTypeSO skill, bool setActive = false);
         // 활성 스킬 교체 처리
         bool SetActiveSkill(SkillTypeSO skill);
+        // 사용 가능 스킬 변경 적용(교체 미지정 시 하이라이트 요청 처리)
+        bool ApplySkillAvailabilityChange(SkillTypeSO targetSkill, SkillTypeSO replacementSkill = null);
         // 스킬 잔여 쿨다운 조회
         float GetRemainingCooldown(SkillTypeSO skill);
         // 활성 시퀀스 타임아웃 조회
@@ -110,6 +118,8 @@ namespace TH.Combat
 
         // 등록/활성 스킬 저장소
         private SkillBook skillBook;
+        // 현재 장착 무기 기본 스킬 캐시
+        private SkillTypeSO equippedWeaponDefaultSkill;
         // 쿨다운 준비 상태 추적기
         private SkillCaster skillCaster;
 
@@ -171,8 +181,12 @@ namespace TH.Combat
         public event Action<SkillTypeSO> OnSkillReady;
         // 스킬북 변경 알림 이벤트
         public event Action OnSkillBookChanged;
+        // 사용 가능 스킬 목록 변경 알림 이벤트
+        public event Action OnAvailableSkillsChanged;
         // 콤보 단계 변경 알림 이벤트
         public event Action<SkillTypeSO, int, int> OnComboStepChanged;
+        // 슬롯 하이라이트 요청 알림 이벤트
+        public event Action<SkillTypeSO> OnSkillSlotHighlightRequested;
 
         // 활성 스킬 보유 상태
         public bool HasActiveSkill => skillBook != null && skillBook.ActiveSkill.IsNotNull();
@@ -213,6 +227,8 @@ namespace TH.Combat
         public int CurrentComboStepCount => currentComboStepCount;
         // 등록 스킬 읽기 전용 목록
         public IReadOnlyList<SkillTypeSO> RegisteredSkills => skillBook?.Skills ?? EmptySkills;
+        // 사용 가능 스킬 읽기 전용 목록
+        public IReadOnlyList<SkillTypeSO> AvailableSkills => skillBook?.AvailableSkills ?? EmptySkills;
         // 타게팅 레이어 맵 외부 노출 참조
         public SkillTargetLayerMapSO SkillTargetLayerMap => skillTargetLayerMap;
 
@@ -322,7 +338,12 @@ namespace TH.Combat
         {
             if (weapon.IsNull() || weapon.DefaultSkill.IsNull()) return;
 
-            RegisterSkill(weapon.DefaultSkill, setActive: true);
+            equippedWeaponDefaultSkill = weapon.DefaultSkill;
+            bool added = RegisterSkill(weapon.DefaultSkill, setActive: true);
+            if (!added)
+            {
+                SyncAvailableSkillSet(forceNotify: true);
+            }
         }
     }
 }

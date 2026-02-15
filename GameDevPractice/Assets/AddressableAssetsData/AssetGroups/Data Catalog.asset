@@ -51,6 +51,13 @@ MonoBehaviour:
     - PreLoad_CatalogSO
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 488ce1c0f813f4d4fa5d425d8683e98c
+    m_Address: SkillCategorySortProfileSO
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 4d8024dbc08af23488e6fbbb69ce6342
     m_Address: SkillTooltipLabelMap
     m_ReadOnly: 0

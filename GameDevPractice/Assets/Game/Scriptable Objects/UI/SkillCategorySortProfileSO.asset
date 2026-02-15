@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8413498c5258331488bc2891b95b7fb7, type: 3}
+  m_Name: SkillCategorySortProfileSO
+  m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.SkillCategorySortProfileSO
+  rules:
+  - category: 0
+    priority: 300
+  - category: 1
+    priority: 200
+  - category: 2
+    priority: 100

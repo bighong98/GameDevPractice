@@ -26,7 +26,7 @@ MonoBehaviour:
     objectLayers:
       serializedVersion: 2
       m_Bits: 0
-    projectileLayer: 11
+    projectileLayer: 13
   - casterLayer: 12
     allyLayers:
       serializedVersion: 2

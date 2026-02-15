@@ -58,6 +58,7 @@ namespace TH.Resource
         [SerializeField] private AudioClip castSfx;
 
         [Header("UI")]
+        [SerializeField] private SkillCategory skillCategory = SkillCategory.AdditiveSkill;
         [SerializeField] private Sprite skillSlotImage;
 
         // 유효한 스킬 ID(없으면 에셋 이름 대체)
@@ -86,6 +87,7 @@ namespace TH.Resource
         public bool AffectedByAttackSpeed => affectedByAttackSpeed;
         // Cast sound clip
         public AudioClip CastSFX => castSfx;
+        public SkillCategory SkillCategory => skillCategory;
         public Sprite SkillSlotImage => skillSlotImage;
         // 공격 애니메이션 오버라이드
         public AnimatorOverrideController AnimatorOverride => animatorOverride;

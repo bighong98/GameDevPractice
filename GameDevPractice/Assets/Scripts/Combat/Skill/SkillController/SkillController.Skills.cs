@@ -30,6 +30,7 @@ namespace TH.Combat
             if (added)
             {
                 OnSkillBookChanged?.Invoke();
+                SyncAvailableSkillSet(forceNotify: true);
             }
 
             // 요청 시 즉시 활성 스킬 전환
@@ -69,6 +70,39 @@ namespace TH.Combat
             return changed;
         }
 
+        // 사용 가능 스킬 변경 적용 처리
+        public bool ApplySkillAvailabilityChange(SkillTypeSO targetSkill, SkillTypeSO replacementSkill = null)
+        {
+            if (targetSkill.IsNull() || skillBook == null) return false;
+
+            // 교체 대상 미지정 시 슬롯 하이라이트만 요청
+            if (replacementSkill.IsNull() || replacementSkill == targetSkill)
+            {
+                OnSkillSlotHighlightRequested?.Invoke(targetSkill);
+                return true;
+            }
+
+            if (!skillBook.Contains(replacementSkill))
+            {
+                RegisterSkill(replacementSkill);
+            }
+
+            bool replaced = skillBook.ReplaceAvailableSkill(targetSkill, replacementSkill);
+            if (!replaced)
+            {
+                OnSkillSlotHighlightRequested?.Invoke(targetSkill);
+                return false;
+            }
+
+            if (HasActiveSkill && ActiveSkill == targetSkill)
+            {
+                SetActiveSkill(replacementSkill);
+            }
+
+            SyncAvailableSkillSet(forceNotify: true);
+            return true;
+        }
+
         // 스킬 잔여 쿨다운 조회
         public float GetRemainingCooldown(SkillTypeSO skill)
         {
@@ -88,6 +122,42 @@ namespace TH.Combat
             if (projectileExecutor == executor)
             {
                 projectileExecutor = null;
+            }
+        }
+
+        // 무기 기본 스킬 정책 반영 + 사용 가능 스킬 목록 동기화
+        private void SyncAvailableSkillSet(bool forceNotify)
+        {
+            if (skillBook == null) return;
+
+            bool changed = false;
+            if (syncWithEquippedWeapon && equippedWeaponDefaultSkill.IsNotNull())
+            {
+                changed |= skillBook.RemoveAvailableWhere(skill =>
+                    skill.IsNotNull() &&
+                    skill.SkillCategory == SkillCategory.WeaponDefaultSkill &&
+                    skill != equippedWeaponDefaultSkill);
+
+                changed |= skillBook.SetAvailable(equippedWeaponDefaultSkill, true);
+            }
+
+            EnsureActiveSkillIsAvailable();
+
+            if (forceNotify || changed)
+            {
+                OnAvailableSkillsChanged?.Invoke();
+            }
+        }
+
+        // 활성 스킬이 사용 가능 목록에서 빠진 경우 첫 사용 가능 스킬로 보정
+        private void EnsureActiveSkillIsAvailable()
+        {
+            if (skillBook == null || !HasActiveSkill) return;
+            if (skillBook.ContainsAvailable(skillBook.ActiveSkill)) return;
+
+            if (skillBook.TryGetFirstAvailable(out var firstAvailableSkill))
+            {
+                SetActiveSkill(firstAvailableSkill);
             }
         }
     }
