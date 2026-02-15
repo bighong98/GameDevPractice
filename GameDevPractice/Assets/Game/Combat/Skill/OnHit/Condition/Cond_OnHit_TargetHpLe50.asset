@@ -1,0 +1,16 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 411363e0a67bd1f4dbf4cb3606c02d9f, type: 3}
+  m_Name: Cond_OnHit_TargetHpLe50
+  m_EditorClassIdentifier: Assembly-CSharp::TH.Combat.SkillHitProcTargetHealthRatioConditionSO
+  comparison: 0
+  threshold: 0.5

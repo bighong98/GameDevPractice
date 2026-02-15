@@ -34,6 +34,7 @@ namespace TH.Resource
         // 콤보 사용 시 ComboSequenceSO 에셋 연결. null이면 단일 스킬 동작
         [SerializeField] private ComboSequenceSO comboSequence;
         [SerializeField] private SkillExecutionProfileSO executionProfile;
+        [SerializeField] private SkillOnHitProcProfileSO onHitProcProfile;
         [SerializeField] private List<SkillTypeSO> subSkills = new();
 
         [Header("Targeting")]
@@ -81,6 +82,8 @@ namespace TH.Resource
         // 콤보 시퀀스 참조
         public ComboSequenceSO ComboSequence => comboSequence;
         public SkillExecutionProfileSO ExecutionProfile => executionProfile;
+        public SkillOnHitProcProfileSO OnHitProcProfile => onHitProcProfile;
+        public bool HasOnHitProcProfile => onHitProcProfile != null && onHitProcProfile.HasEntries;
         public bool HasSubSkills => subSkills != null && subSkills.Exists(skill => skill != null);
         public IReadOnlyList<SkillTypeSO> SubSkills => subSkills;
         public SkillTargetPolicy TargetPolicy => targetPolicy;
@@ -197,6 +200,10 @@ namespace TH.Resource
             if (executionProfile != null && !executionProfile.HasActions)
             {
                 errors.Add("executionProfile is assigned but has no actions.");
+            }
+            if (onHitProcProfile != null && !onHitProcProfile.HasEntries)
+            {
+                warnings.Add("onHitProcProfile is assigned but has no valid proc entries.");
             }
 
             ValidateSubSkills(errors);
@@ -345,7 +352,8 @@ namespace TH.Resource
                 for (int i = 0; i < events.Length; i++)
                 {
                     var evt = events[i];
-                    if (string.Equals(evt.functionName, "Hit", StringComparison.Ordinal))
+                    if (string.Equals(evt.functionName, "Hit", StringComparison.Ordinal)|| 
+                        string.Equals(evt.functionName, "shoot", StringComparison.OrdinalIgnoreCase))
                     {
                         hitCount++;
                         hasAnyHit = true;
@@ -355,7 +363,8 @@ namespace TH.Resource
                             warnings.Add($"Hit event timing is near clip boundary. clip={clip.name}, time={evt.time:0.###}, length={clip.length:0.###}");
                         }
                     }
-                    else if (string.Equals(evt.functionName, "hit", StringComparison.OrdinalIgnoreCase))
+                    else if (string.Equals(evt.functionName, "hit", StringComparison.OrdinalIgnoreCase) || 
+                            string.Equals(evt.functionName, "shoot", StringComparison.OrdinalIgnoreCase))
                     {
                         warnings.Add($"Animation event function name uses wrong case. Expected 'Hit'. clip={clip.name}, function={evt.functionName}");
                     }

@@ -62,6 +62,8 @@ namespace TH.Core.Service
                 ));
             ServiceLocator.Register<ISkillHitEffectService>(sp =>
                 new SkillHitEffectService(sp.Get<ICombatSystem>()));
+            ServiceLocator.Register<ISkillOnHitProcService>(sp =>
+                new SkillOnHitProcService(sp.Get<ICombatSystem>()));
             ServiceLocator.Register<IPlayerStorage>(sp => 
                 new PlayerStorage(
                     sp.Get<IResourceLoader>(),
@@ -105,6 +107,7 @@ namespace TH.Core.Service
             var resourceLoader = ServiceLocator.Get<IResourceLoader>();
             _ = ServiceLocator.Get<ISaveSystem>();
             _ = ServiceLocator.Get<ISkillHitEffectService>();
+            _ = ServiceLocator.Get<ISkillOnHitProcService>();
             // 리소스 일괄 로드 시작
             await resourceLoader.PreLoadAsync();
         }
