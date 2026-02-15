@@ -16,7 +16,8 @@ namespace TH.UI
         Select,
         Warn,
         Modified,
-        Equipping,
+        Equipping, // 장비 슬롯 UI (EquipmentSlotUI) 전용
+        Casting, // 스킬 슬롯 UI (ActiveSkillSlotUI) 전용
     }
 }
 

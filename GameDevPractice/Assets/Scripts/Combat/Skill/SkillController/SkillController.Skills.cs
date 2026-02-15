@@ -142,8 +142,9 @@ namespace TH.Combat
             }
 
             EnsureActiveSkillIsAvailable();
+            bool slotOrderChanged = RebuildOrderedAvailableSkills(notifySlotChanges: true);
 
-            if (forceNotify || changed)
+            if (forceNotify || changed || slotOrderChanged)
             {
                 OnAvailableSkillsChanged?.Invoke();
             }

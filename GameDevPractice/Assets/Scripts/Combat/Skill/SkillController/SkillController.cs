@@ -26,6 +26,8 @@ namespace TH.Combat
         event Action OnSkillBookChanged;
         // 사용 가능 스킬 목록 변경 알림 이벤트
         event Action OnAvailableSkillsChanged;
+        // 슬롯별 스킬 변경 알림 이벤트
+        event Action<int, SkillTypeSO> OnSkillSlotChanged;
         // 콤보 단계 변경 알림 이벤트
         event Action<SkillTypeSO, int, int> OnComboStepChanged;
         // 슬롯 하이라이트 요청 알림 이벤트
@@ -55,6 +57,8 @@ namespace TH.Combat
         IReadOnlyList<SkillTypeSO> RegisteredSkills { get; }
         // 사용 가능 스킬 읽기 전용 목록
         IReadOnlyList<SkillTypeSO> AvailableSkills { get; }
+        // 슬롯 정렬 반영 사용 가능 스킬 읽기 전용 목록
+        IReadOnlyList<SkillTypeSO> OrderedAvailableSkills { get; }
 
         // 스킬 등록 처리
         bool RegisterSkill(SkillTypeSO skill, bool setActive = false);
@@ -62,6 +66,10 @@ namespace TH.Combat
         bool SetActiveSkill(SkillTypeSO skill);
         // 사용 가능 스킬 변경 적용(교체 미지정 시 하이라이트 요청 처리)
         bool ApplySkillAvailabilityChange(SkillTypeSO targetSkill, SkillTypeSO replacementSkill = null);
+        // 슬롯 인덱스 기반 스킬 조회
+        bool TryGetOrderedSkillAt(int slotIndex, out SkillTypeSO skill);
+        // 스킬 기준 슬롯 인덱스 조회
+        int FindOrderedSkillSlotIndex(SkillTypeSO skill);
         // 스킬 잔여 쿨다운 조회
         float GetRemainingCooldown(SkillTypeSO skill);
         // 활성 시퀀스 타임아웃 조회
@@ -105,16 +113,22 @@ namespace TH.Combat
         // 스킬 대상 레이어 매핑 자원
         [SerializeField] private SkillTargetLayerMapSO skillTargetLayerMap;
 
+        // [Header("UI Slots")]
+
         // 공격 원천 스탯 조회 홀더
         private IStatHolder statHolder;
         // 장비 상태 이벤트 소스
         private EquipmentHolder equipHolder;
+        // 어드레서블 로더 서비스 캐시
+        private IResourceLoader resourceLoader;
         // 직접 타격 전투 서비스 캐시
         private ICombatSystem combatSystem;
         // 투사체 실행기 주입 참조
         private ISkillProjectileExecutor projectileExecutor;
         // 타게팅 정책 평가기 캐시
         private SkillTargetingEvaluator targetingEvaluator;
+        // 슬롯 정렬 카테고리 프로필 캐시
+        private SkillCategorySortProfileSO categorySortProfile;
 
         // 등록/활성 스킬 저장소
         private SkillBook skillBook;
@@ -125,6 +139,16 @@ namespace TH.Combat
 
         // 스킬별 콤보 진행 컨텍스트 맵
         private readonly Dictionary<SkillTypeSO, ComboContext> comboContexts = new();
+        // 슬롯 정렬 결과 캐시
+        private readonly List<SkillTypeSO> orderedAvailableSkills = new();
+        // 슬롯 정렬 이전 스냅샷 캐시
+        private readonly List<SkillTypeSO> orderedAvailableSkillsSnapshot = new();
+        // 등록 순서 캐시
+        private readonly Dictionary<SkillTypeSO, int> registeredSkillOrder = new();
+        // 중복 제거 버퍼
+        private readonly HashSet<SkillTypeSO> uniqueSkillBuffer = new();
+        // 카테고리 우선순위 맵 캐시
+        private readonly Dictionary<SkillCategory, int> categoryPriorityMap = new();
 
         // 공격 소스 변형 재사용 버퍼
         private readonly List<float> reusableModifiedHitDamages = new(8);
@@ -183,6 +207,8 @@ namespace TH.Combat
         public event Action OnSkillBookChanged;
         // 사용 가능 스킬 목록 변경 알림 이벤트
         public event Action OnAvailableSkillsChanged;
+        // 슬롯별 스킬 변경 알림 이벤트
+        public event Action<int, SkillTypeSO> OnSkillSlotChanged;
         // 콤보 단계 변경 알림 이벤트
         public event Action<SkillTypeSO, int, int> OnComboStepChanged;
         // 슬롯 하이라이트 요청 알림 이벤트
@@ -229,6 +255,8 @@ namespace TH.Combat
         public IReadOnlyList<SkillTypeSO> RegisteredSkills => skillBook?.Skills ?? EmptySkills;
         // 사용 가능 스킬 읽기 전용 목록
         public IReadOnlyList<SkillTypeSO> AvailableSkills => skillBook?.AvailableSkills ?? EmptySkills;
+        // 슬롯 정렬 반영 사용 가능 스킬 읽기 전용 목록
+        public IReadOnlyList<SkillTypeSO> OrderedAvailableSkills => orderedAvailableSkills;
         // 타게팅 레이어 맵 외부 노출 참조
         public SkillTargetLayerMapSO SkillTargetLayerMap => skillTargetLayerMap;
 
@@ -282,6 +310,11 @@ namespace TH.Combat
             {
                 equipHolder.OnEquipWeapon += HandleEquipWeapon;
             }
+
+            if (resourceLoader != null)
+            {
+                resourceLoader.OnLabelResourcesLoadedAll += HandleResourceLabelLoaded;
+            }
         }
 
         // 장착 무기 변경 이벤트 해제 + 타임아웃 예약 정리 구간
@@ -290,6 +323,11 @@ namespace TH.Combat
             if (syncWithEquippedWeapon && equipHolder.IsNotNull())
             {
                 equipHolder.OnEquipWeapon -= HandleEquipWeapon;
+            }
+
+            if (resourceLoader != null)
+            {
+                resourceLoader.OnLabelResourcesLoadedAll -= HandleResourceLabelLoaded;
             }
 
             CancelActiveComboTimeoutRoutine();
