@@ -33,6 +33,8 @@ namespace TH.Attribute
         private IFloatingTextSpawner textSpawner;
         private IKillEventHandler killEventHandler;
 
+        private Collider collider;
+
         public event Action OnDead;
         public event Action OnRevived;
         public event HitEvent OnDamaged; // 피해를 입은 경우
@@ -52,6 +54,7 @@ namespace TH.Attribute
         private void Awake()
         {
             TryGetComponent(out statHolder);
+            TryGetComponent(out collider);
 
             textSpawner = ServiceLocator.Get<IFloatingTextSpawner>();
             killEventHandler = ServiceLocator.Get<IKillEventHandler>();
@@ -170,11 +173,19 @@ namespace TH.Attribute
                 Revive();
         }
 
+        private void SetColliderEnabled(bool enabled)
+        {
+            if (collider == null || collider.enabled == enabled) return;
+            collider.enabled = enabled;
+        }
+
+
         private void Die()
         {
             if (IsDead) return;
-            
+
             IsDead = true;
+            SetColliderEnabled(false);
             OnDead?.Invoke();
 
             if (lastAttacker.IsNotNull())
@@ -185,7 +196,9 @@ namespace TH.Attribute
         private void Revive()
         {
             if (!IsDead) return;
+
             IsDead = false;
+            SetColliderEnabled(true);
             OnRevived?.Invoke();
         }
 
