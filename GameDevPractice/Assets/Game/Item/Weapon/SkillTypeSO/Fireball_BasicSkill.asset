@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7ae70b95bc711424ab96997d90ea21eb, type: 3}
   m_Name: Fireball_BasicSkill
   m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.SkillTypeSO
-  skillId: Fireball
+  skillId: "\uD654\uC5FC \uBC1C\uC0AC"
   attackSourceStatSO: {fileID: 11400000, guid: f33892e137b94bf4e9d027c090bd8c4f, type: 2}
   baseDamage: 1
   hitCount: 1

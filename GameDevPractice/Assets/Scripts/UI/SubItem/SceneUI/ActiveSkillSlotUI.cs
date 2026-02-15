@@ -124,9 +124,24 @@ public class ActiveSkillSlotUI : BaseSlotUI, IHighlightableSlotUI
             return;
 
         // 공백 문자열 입력 시 텍스트 비표시 처리
+        Transform keyTextParent = slotKeyText.transform.parent;
         bool hasText = !string.IsNullOrWhiteSpace(text);
-        slotKeyText.enabled = hasText;
-        slotKeyText.SetText(hasText ? text : string.Empty);
+        if (!hasText)
+        {
+            slotKeyText.enabled = false;
+            slotKeyText.SetText(string.Empty);
+
+            if (keyTextParent != null && keyTextParent.gameObject.activeSelf)
+                keyTextParent.gameObject.SetActive(false);
+
+            return;
+        }
+
+        if (keyTextParent != null && !keyTextParent.gameObject.activeInHierarchy)
+            keyTextParent.gameObject.SetActive(true);
+
+        slotKeyText.enabled = true;
+        slotKeyText.SetText(text);
     }
 
     // 슬롯 전체 상태 초기화 오버라이드
@@ -204,8 +219,7 @@ public class ActiveSkillSlotUI : BaseSlotUI, IHighlightableSlotUI
         base.UnHighlight();
 
         // 키 텍스트 기본 비활성
-        if (slotKeyText != null)
-            slotKeyText.enabled = false;
+        SetSlotKeyText(string.Empty);
     }
 
     // 슬롯 아이템 아이콘 반영 유틸리티

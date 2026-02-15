@@ -8,13 +8,33 @@ using TH.Resource;
 using TH.UI;
 using TH.Utils;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 [DisallowMultipleComponent]
 public sealed class ActiveSkillSlotController : MonoBehaviour
 {
+    #region const, static fields
+    
     private const string SkillTooltipPrefabKey = "UI_SkillTooltip.prefab";
+    private const string SkillSlotActionMapName = "QuickSlot";
     private const float ModifiedHighlightFadeDuration = 0.5f;
     private const float WarnHighlightFadeDuration = 0.5f;
+    private static readonly string[] SkillSlotActionNames =
+    {
+        "SkillSlot1",
+        "SkillSlot2",
+        "SkillSlot3",
+        "SkillSlot4"
+    };
+    private static readonly int[] SkillSlotTargetSlotIndices =
+    {
+        1,
+        2,
+        3,
+        4
+    };
+
+    #endregion
 
     [SerializeField] private ActiveSkillSlotPanel panel;
 
@@ -26,6 +46,7 @@ public sealed class ActiveSkillSlotController : MonoBehaviour
     private int highlightedSlotIndex = -1;
     private int hoveredSlotIndex = -1;
     private readonly List<SkillTypeSO> displayedSkills = new();
+    private string[] skillSlotBindingIds;
     private bool hasDisplaySkillSnapshot;
 
     private void Awake()
@@ -45,6 +66,8 @@ public sealed class ActiveSkillSlotController : MonoBehaviour
             panel.OffSlotHovered -= HandleSlotHoverExited;
             panel.OffSlotHovered += HandleSlotHoverExited;
         }
+
+        SubscribeInputEvents();
 
         if (playerHolder != null)
         {
@@ -76,6 +99,7 @@ public sealed class ActiveSkillSlotController : MonoBehaviour
             panel.OffSlotHovered -= HandleSlotHoverExited;
         }
 
+        UnsubscribeInputEvents();
         UnbindSkillController();
         HideSkillTooltip();
         hoveredSlotIndex = -1;
@@ -210,6 +234,7 @@ public sealed class ActiveSkillSlotController : MonoBehaviour
 
         TrimDisplayedSkillSnapshot(slotCount);
         hasDisplaySkillSnapshot = true;
+        RefreshSkillSlotKeyLabels();
         RefreshActiveSkillHighlight();
         RefreshHoveredTooltip();
     }
@@ -245,6 +270,135 @@ public sealed class ActiveSkillSlotController : MonoBehaviour
         var playerInstance = playerHolder?.GetPlayerInstance;
         if (playerInstance != null)
             BindSkillController(playerInstance);
+    }
+
+    private void SubscribeInputEvents()
+    {
+        if (Util.IsQuitting || InputManager.Instance == null)
+            return;
+
+        UnsubscribeInputEvents();
+
+        InputManager.Instance.OnSkillSlot1Pressed += OnSkillSlot1Input;
+        InputManager.Instance.OnSkillSlot2Pressed += OnSkillSlot2Input;
+        InputManager.Instance.OnRebindCompleted += HandleRebindCompleted;
+        InputManager.Instance.OnRebindCanceled += HandleRebindCanceled;
+    }
+
+    private void UnsubscribeInputEvents()
+    {
+        if (Util.IsQuitting || InputManager.Instance == null)
+            return;
+
+        InputManager.Instance.OnSkillSlot1Pressed -= OnSkillSlot1Input;
+        InputManager.Instance.OnSkillSlot2Pressed -= OnSkillSlot2Input;
+        InputManager.Instance.OnRebindCompleted -= HandleRebindCompleted;
+        InputManager.Instance.OnRebindCanceled -= HandleRebindCanceled;
+    }
+
+    private void OnSkillSlot1Input() => TryUseSkillSlotByIndex(1);
+
+    private void OnSkillSlot2Input() => TryUseSkillSlotByIndex(2);
+
+    private void TryUseSkillSlotByIndex(int slotIndex)
+    {
+        if (skillController == null || slotIndex < 0)
+            return;
+
+        if (panel != null && slotIndex >= panel.SlotCount)
+            return;
+
+        if (!skillController.TryGetOrderedSkillAt(slotIndex, out var skill) || skill == null)
+            return;
+
+        skillController.SetActiveSkill(skill);
+    }
+
+    private void HandleRebindCompleted(RebindResult _)
+    {
+        RefreshSkillSlotKeyLabels();
+    }
+
+    private void HandleRebindCanceled()
+    {
+        RefreshSkillSlotKeyLabels();
+    }
+
+    private void RefreshSkillSlotKeyLabels()
+    {
+        if (panel == null || InputManager.Instance == null)
+            return;
+
+        if (skillSlotBindingIds == null || skillSlotBindingIds.Length != SkillSlotActionNames.Length)
+            CacheSkillSlotBindingIds();
+
+        for (int slotIndex = 0; slotIndex < panel.SlotCount; slotIndex++)
+        {
+            panel.SetSlotKeyText(slotIndex, string.Empty);
+        }
+
+        for (int i = 0; i < SkillSlotActionNames.Length && i < SkillSlotTargetSlotIndices.Length; i++)
+        {
+            int targetSlotIndex = SkillSlotTargetSlotIndices[i];
+            if (targetSlotIndex < 0 || targetSlotIndex >= panel.SlotCount)
+                continue;
+
+            string bindingId = skillSlotBindingIds != null && i < skillSlotBindingIds.Length
+                ? skillSlotBindingIds[i]
+                : null;
+            if (string.IsNullOrEmpty(bindingId))
+                continue;
+
+            if (InputManager.Instance.TryGetBindingDisplayString(
+                    SkillSlotActionMapName,
+                    SkillSlotActionNames[i],
+                    bindingId,
+                    out var displayString,
+                    out _,
+                    out _))
+            {
+                panel.SetSlotKeyText(targetSlotIndex, string.IsNullOrEmpty(displayString) ? string.Empty : displayString);
+            }
+        }
+    }
+
+    private void CacheSkillSlotBindingIds()
+    {
+        if (InputManager.Instance == null)
+            return;
+
+        var map = InputManager.Instance.UserInput.asset.FindActionMap(SkillSlotActionMapName, false);
+        if (map == null)
+            return;
+
+        skillSlotBindingIds = new string[SkillSlotActionNames.Length];
+        for (int i = 0; i < SkillSlotActionNames.Length; i++)
+        {
+            var action = map.FindAction(SkillSlotActionNames[i], false);
+            skillSlotBindingIds[i] = FindFirstRebindableBindingId(action);
+        }
+    }
+
+    private static string FindFirstRebindableBindingId(InputAction action)
+    {
+        if (action == null)
+            return null;
+
+        for (int i = 0; i < action.bindings.Count; i++)
+        {
+            var binding = action.bindings[i];
+            if (binding.isComposite || binding.isPartOfComposite)
+                continue;
+
+            var expectedControlType = action.expectedControlType;
+            if (!string.IsNullOrEmpty(expectedControlType) &&
+                !string.Equals(expectedControlType, "Button", System.StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            return binding.id.ToString();
+        }
+
+        return null;
     }
 
     private void RefreshCooldowns()

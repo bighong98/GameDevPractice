@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7ae70b95bc711424ab96997d90ea21eb, type: 3}
   m_Name: Bow_BasicSkill
   m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.SkillTypeSO
-  skillId: Bow
+  skillId: "\uD65C\uC3D8\uAE30"
   attackSourceStatSO: {fileID: 11400000, guid: cf7022ca8cb84ae4395e9b8e2edbcdf2, type: 2}
   baseDamage: 1
   hitCount: 1

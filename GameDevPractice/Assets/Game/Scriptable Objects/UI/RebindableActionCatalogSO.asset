@@ -49,7 +49,27 @@ MonoBehaviour:
     actionName: Save
     bindingId: 629e86b7-6c8b-4c26-be11-14c73eac60e3
   - actionReference: {fileID: -7459082511956890374, guid: a73ecc94afab3c446b6b4668596140e5, type: 3}
-    label: "\uC778\uBCA4\uD1A0"
+    label: "\uC778\uBCA4\uD1A0\uB9AC"
     actionMap: Global
     actionName: Inventory
     bindingId: 01b973d3-24ab-4485-aeb3-988a6f682a61
+  - actionReference: {fileID: -6623673593613952832, guid: a73ecc94afab3c446b6b4668596140e5, type: 3}
+    label: "\uC2A4\uD0AC \uC2AC\uB86F 1\uBC88"
+    actionMap: QuickSlot
+    actionName: SkillSlot1
+    bindingId: dc82c855-1b52-4440-ba19-fab5ed29f226
+  - actionReference: {fileID: 5207498656881328059, guid: a73ecc94afab3c446b6b4668596140e5, type: 3}
+    label: "\uC2A4\uD0AC \uC2AC\uB86F 2\uBC88"
+    actionMap: QuickSlot
+    actionName: SkillSlot2
+    bindingId: e3030b28-c68e-489e-b197-6f79c0f878f6
+  - actionReference: {fileID: 845498489362060101, guid: a73ecc94afab3c446b6b4668596140e5, type: 3}
+    label: "\uC2A4\uD0AC \uC2AC\uB86F 3\uBC88"
+    actionMap: QuickSlot
+    actionName: SkillSlot3
+    bindingId: e9938253-6927-4a72-86a8-61b105a20a20
+  - actionReference: {fileID: 5681523814566972605, guid: a73ecc94afab3c446b6b4668596140e5, type: 3}
+    label: "\uC2A4\uD0AC \uC2AC\uB86F 4\uBC88"
+    actionMap: QuickSlot
+    actionName: SkillSlot4
+    bindingId: 6fa0ca4b-8ca2-4e68-abae-f73cc5e7a9b7

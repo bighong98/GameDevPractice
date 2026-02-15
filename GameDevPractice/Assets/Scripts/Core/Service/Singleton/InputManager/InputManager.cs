@@ -70,6 +70,10 @@ namespace TH.Core
         public event Action OnQuickSlot3Pressed;
         public event Action OnQuickSlot4Pressed;
         public event Action OnQuickSlot5Pressed;
+        public event Action OnSkillSlot1Pressed;
+        public event Action OnSkillSlot2Pressed;
+        public event Action OnSkillSlot3Pressed;
+        public event Action OnSkillSlot4Pressed;
         
         #endregion
         
@@ -342,6 +346,38 @@ UserInput.Cam.SetCallbacks(this);
             Logg.Log("[InputManager] QuickSlot5 Pressed", Logg.LoggingMode.Completed);
         }
 
+        public void OnSkillSlot1(InputAction.CallbackContext context)
+        {
+            if (context.phase != InputActionPhase.Performed) return;
+
+            OnSkillSlot1Pressed?.Invoke();
+            Logg.Log("[InputManager] OnSkillSlot1 Pressed", Logg.LoggingMode.Completed);
+        }
+
+        public void OnSkillSlot2(InputAction.CallbackContext context)
+        {
+            if (context.phase != InputActionPhase.Performed) return;
+
+            OnSkillSlot2Pressed?.Invoke();
+            Logg.Log("[InputManager] OnSkillSlot2 Pressed", Logg.LoggingMode.Completed);
+        }
+
+        public void OnSkillSlot3(InputAction.CallbackContext context)
+        {
+            if (context.phase != InputActionPhase.Performed) return;
+
+            OnSkillSlot3Pressed?.Invoke();
+            Logg.Log("[InputManager] OnSkillSlot3 Pressed", Logg.LoggingMode.Completed);
+        }
+
+        public void OnSkillSlot4(InputAction.CallbackContext context)
+        {
+            if (context.phase != InputActionPhase.Performed) return;
+
+            OnSkillSlot4Pressed?.Invoke();
+            Logg.Log("[InputManager] OnSkillSlot4 Pressed", Logg.LoggingMode.Completed);
+        }
+
         #endregion
         
         #region Action Map Handle
@@ -597,8 +633,8 @@ UserInput.Cam.SetCallbacks(this);
         }
 
         #endregion
-    
-        
+
+
     }
 }
 
