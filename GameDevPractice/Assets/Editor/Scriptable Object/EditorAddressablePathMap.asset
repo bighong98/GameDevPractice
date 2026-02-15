@@ -34,6 +34,6 @@ MonoBehaviour:
   - mapId: outfit.part_type_data.folder
     addressableKey: Outfit Part Type Data
   - mapId: skill.data.folder
-    addressableKey: Item Data Folder/Weapon/SkillTypeSO
+    addressableKey: Skill Data Folder
   - mapId: item.weapon_data.folder
     addressableKey: Item Data Folder/Weapon

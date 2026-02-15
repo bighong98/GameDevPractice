@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4db610c8689f68d4b948979287d87500, type: 3}
   m_Name: SkillTypeImportPathMap
   m_EditorClassIdentifier: Assembly-CSharp-Editor::SkillTypeImportPathMapSO
-  skillDataFolderAddressableKey: Item Data Folder/Weapon/SkillTypeSO
+  skillDataFolderAddressableKey: Skill Data Folder
   entries: []

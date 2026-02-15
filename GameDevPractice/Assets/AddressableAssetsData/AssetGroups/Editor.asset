@@ -76,7 +76,7 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: c2f4c091f93e31f41b75f9008aba99cd
-    m_Address: Item Data Folder/Weapon/SkillTypeSO
+    m_Address: Skill Data Folder
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
