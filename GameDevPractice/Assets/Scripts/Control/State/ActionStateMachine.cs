@@ -82,6 +82,11 @@ namespace TH.Control.State
         {
             if (nextState == remainState || nextState == null) return;
 
+            if (currentState == nextState && currentState != null && !currentState.AllowSelfTransition)
+            {
+                return;
+            }
+
             if (nextState is InitialStateSO)
             {
                 if (initialState == null)
