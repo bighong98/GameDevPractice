@@ -34,7 +34,7 @@ MonoBehaviour:
     calculation: 0
     value: 20
   weaponType: 0
-  EquippedPrefab: {fileID: 3327907661040384045, guid: 8d0abf9e8c434e44bbfa79ef7ce6693f, type: 3}
+  EquippedPrefab: {fileID: 3327907661040384045, guid: 74417920b738e4e489a177630b5f0dd3, type: 3}
   equippedPrefabLeft: {fileID: 0}
   hand: 1
   defaultSkill: {fileID: 11400000, guid: 7976ecc76c6201b499c941859953fd9a, type: 2}

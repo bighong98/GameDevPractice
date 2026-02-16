@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using TH.Attribute.Stat;
 using TH.Combat;
@@ -25,7 +25,8 @@ namespace TH.Resource
         [SerializeField, Min(0f)] private float cooldown = 1f;
         
         [SerializeField] private SkillExecutionProfileSO executionProfile;
-        [SerializeField] private SkillOnHitProcProfileSO onHitProcProfile;
+        [Header("OnHit Proc")]
+        [SerializeField] private List<SkillTriggerRuleEntry> onHitTriggeredSkills = new();
 
         [Header("Sub Skill")]
         [SerializeField] private List<SkillTypeSO> subSkills = new();
@@ -33,6 +34,10 @@ namespace TH.Resource
 #if UNITY_EDITOR
         [Header("Sequence Preset (Editor Only)")]
         [SerializeField] private ComboSequenceSO comboSequence;
+
+        [Header("OnHit Proc Preset (Editor Only)")]
+        [SerializeField] private SkillOnHitProcProfileSO onHitProcProfile;
+        [SerializeField, HideInInspector] private SkillOnHitProcProfileSO lastImportedOnHitProcProfile;
         [SerializeField, HideInInspector] private ComboSequenceSO lastImportedComboSequence;
 #endif
 
@@ -77,8 +82,8 @@ namespace TH.Resource
         public bool HasComboSteps => comboSteps != null && comboSteps.Exists(skill => skill != null);
         public IReadOnlyList<SkillTypeSO> ComboSteps => comboSteps;
         public SkillExecutionProfileSO ExecutionProfile => executionProfile;
-        public SkillOnHitProcProfileSO OnHitProcProfile => onHitProcProfile;
-        public bool HasOnHitProcProfile => onHitProcProfile != null && onHitProcProfile.HasEntries;
+        public IReadOnlyList<SkillTriggerRuleEntry> OnHitProcEntries => onHitTriggeredSkills;
+        public bool HasOnHitProcEntries => onHitTriggeredSkills != null && onHitTriggeredSkills.Exists(entry => entry != null && entry.HasTriggeredSkills);
         public bool HasSubSkills => subSkills != null && subSkills.Exists(skill => skill != null);
         public IReadOnlyList<SkillTypeSO> SubSkills => subSkills;
         public SkillTargetPolicy TargetPolicy => targetPolicy;
@@ -118,6 +123,8 @@ namespace TH.Resource
         private void OnValidate()
         {
             TryAutoImportComboSequence();
+            TryAutoImportOnHitProcProfile();
+            TryAutoImportInlineLegacyOnHitEffects();
         }
 
         private void TryAutoImportComboSequence()
@@ -208,6 +215,180 @@ namespace TH.Resource
             EditorUtility.SetDirty(this);
         }
 
+        private void TryAutoImportOnHitProcProfile()
+        {
+            bool changed = false;
+
+            if (onHitProcProfile == null)
+            {
+                if (lastImportedOnHitProcProfile != null)
+                {
+                    lastImportedOnHitProcProfile = null;
+                    changed = true;
+                }
+
+                if (changed)
+                {
+                    EditorUtility.SetDirty(this);
+                }
+
+                return;
+            }
+
+            if (onHitProcProfile == lastImportedOnHitProcProfile)
+            {
+                return;
+            }
+
+            if (IsInlineOnHitProcAtDefault())
+            {
+                ImportOnHitProcProfile(onHitProcProfile, overwrite: true);
+                changed = true;
+            }
+
+            lastImportedOnHitProcProfile = onHitProcProfile;
+            changed = true;
+
+            if (changed)
+            {
+                EditorUtility.SetDirty(this);
+            }
+        }
+
+        private bool IsInlineOnHitProcAtDefault()
+        {
+            return onHitTriggeredSkills == null || onHitTriggeredSkills.Count == 0;
+        }
+
+        private void ImportOnHitProcProfile(SkillOnHitProcProfileSO source, bool overwrite)
+        {
+            if (source == null)
+            {
+                return;
+            }
+
+            if (!overwrite && !IsInlineOnHitProcAtDefault())
+            {
+                return;
+            }
+
+            onHitTriggeredSkills ??= new List<SkillTriggerRuleEntry>();
+            onHitTriggeredSkills.Clear();
+
+            var sourceEntries = source.Entries;
+            if (sourceEntries == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < sourceEntries.Count; i++)
+            {
+                var entry = sourceEntries[i];
+                if (entry == null)
+                {
+                    continue;
+                }
+
+                var cloned = entry.Clone();
+                if (cloned.ImportLegacyEffectsToTriggeredSkills(overwrite: false, out _, out int skippedCount) && skippedCount > 0)
+                {
+                    Debug.LogWarning($"[SkillTypeSO:{name}] onHitProcProfile[{i}] skipped {skippedCount} unsupported legacy effect(s) during import.", this);
+                }
+
+                _ = cloned.ClearLegacyEffects();
+
+                onHitTriggeredSkills.Add(cloned);
+            }
+        }
+
+        [ContextMenu("Reimport OnHit Proc Preset (Force)")]
+        private void ReimportOnHitProcPresetInEditor()
+        {
+            if (onHitProcProfile == null)
+            {
+                Debug.LogWarning($"[SkillTypeSO:{name}] onHitProcProfile preset is null.", this);
+                return;
+            }
+
+            ImportOnHitProcProfile(onHitProcProfile, overwrite: true);
+            lastImportedOnHitProcProfile = onHitProcProfile;
+            EditorUtility.SetDirty(this);
+        }
+
+        private void TryAutoImportInlineLegacyOnHitEffects()
+        {
+            if (onHitTriggeredSkills == null || onHitTriggeredSkills.Count == 0)
+            {
+                return;
+            }
+
+            bool changed = false;
+            for (int i = 0; i < onHitTriggeredSkills.Count; i++)
+            {
+                var entry = onHitTriggeredSkills[i];
+                if (entry == null)
+                {
+                    continue;
+                }
+
+                bool imported = entry.ImportLegacyEffectsToTriggeredSkills(overwrite: false, out _, out int skippedCount);
+                if (imported && skippedCount > 0)
+                {
+                    Debug.LogWarning($"[SkillTypeSO:{name}] onHitProcEntries[{i}] skipped {skippedCount} unsupported legacy effect(s) during auto import.", this);
+                }
+
+                bool cleared = entry.ClearLegacyEffects();
+                if (imported || cleared)
+                {
+                    changed = true;
+                }
+            }
+
+            if (changed)
+            {
+                EditorUtility.SetDirty(this);
+            }
+        }
+
+        [ContextMenu("Reimport Inline Legacy OnHit Effects (Force)")]
+        private void ReimportInlineLegacyOnHitEffectsInEditor()
+        {
+            if (onHitTriggeredSkills == null || onHitTriggeredSkills.Count == 0)
+            {
+                Debug.LogWarning($"[SkillTypeSO:{name}] no onHitProcEntries to reimport.", this);
+                return;
+            }
+
+            bool changed = false;
+            for (int i = 0; i < onHitTriggeredSkills.Count; i++)
+            {
+                var entry = onHitTriggeredSkills[i];
+                if (entry == null)
+                {
+                    continue;
+                }
+
+                bool imported = entry.ImportLegacyEffectsToTriggeredSkills(overwrite: true, out _, out int skippedCount);
+                if (imported && skippedCount > 0)
+                {
+                    Debug.LogWarning($"[SkillTypeSO:{name}] onHitProcEntries[{i}] skipped {skippedCount} unsupported legacy effect(s) during force reimport.", this);
+                }
+
+                bool cleared = entry.ClearLegacyEffects();
+                if (imported || cleared)
+                {
+                    changed = true;
+                }
+            }
+
+            if (changed)
+            {
+                EditorUtility.SetDirty(this);
+            }
+        }
+
+
+
         [ContextMenu("Validate Skill (Editor)")]
         private void ValidateSkillInEditor()
         {
@@ -294,18 +475,133 @@ namespace TH.Resource
             {
                 errors.Add("executionProfile is assigned but has no actions.");
             }
-
             if (onHitProcProfile != null && !onHitProcProfile.HasEntries)
             {
                 warnings.Add("onHitProcProfile is assigned but has no valid proc entries.");
             }
 
+            ValidateInlineOnHitProc(errors, warnings);
             ValidateInlineCombo(errors, warnings);
             ValidateSubSkills(errors);
             ValidateEffectPrefab(skillVFXPrefab, nameof(skillVFXPrefab), warnings);
             ValidateEffectPrefab(onHitVFXPrefab, nameof(onHitVFXPrefab), warnings);
             ValidateAnimatorOverride(errors, warnings);
             return errors.Count == 0;
+        }
+
+        private void ValidateInlineOnHitProc(List<string> errors, List<string> warnings)
+        {
+            if (onHitTriggeredSkills == null || onHitTriggeredSkills.Count == 0)
+            {
+                return;
+            }
+
+            bool hasValidEntry = false;
+            for (int i = 0; i < onHitTriggeredSkills.Count; i++)
+            {
+                var entry = onHitTriggeredSkills[i];
+                if (entry == null)
+                {
+                    errors.Add($"onHitProcEntries[{i}] is null.");
+                    continue;
+                }
+
+                var triggered = entry.TriggeredSkills;
+                if (triggered == null || triggered.Count == 0)
+                {
+                    warnings.Add($"onHitProcEntries[{i}] has no triggered skills.");
+                    continue;
+                }
+
+                bool hasValidTriggeredSkill = false;
+                for (int triggerIndex = 0; triggerIndex < triggered.Count; triggerIndex++)
+                {
+                    var triggerSkill = triggered[triggerIndex];
+                    if (triggerSkill == null)
+                    {
+                        warnings.Add($"onHitProcEntries[{i}].triggeredSkills[{triggerIndex}] is null.");
+                        continue;
+                    }
+
+                    hasValidTriggeredSkill = true;
+                    if (triggerSkill == this)
+                    {
+                        errors.Add($"onHitProcEntries[{i}].triggeredSkills[{triggerIndex}] references self skill.");
+                    }
+                }
+
+                if (!hasValidTriggeredSkill)
+                {
+                    warnings.Add($"onHitProcEntries[{i}] contains no valid triggered skills.");
+                    continue;
+                }
+
+                hasValidEntry = true;
+            }
+
+            if (!hasValidEntry)
+            {
+                errors.Add("onHitProcEntries contains no valid entries with triggered skills.");
+                return;
+            }
+
+            if (HasOnHitProcCycle(this, new HashSet<SkillTypeSO>(), new HashSet<SkillTypeSO>()))
+            {
+                errors.Add("onHitProcEntries contains a cyclic triggered-skill reference.");
+            }
+        }
+
+        private static bool HasOnHitProcCycle(
+            SkillTypeSO node,
+            HashSet<SkillTypeSO> visiting,
+            HashSet<SkillTypeSO> visited)
+        {
+            if (node == null)
+            {
+                return false;
+            }
+
+            if (visiting.Contains(node))
+            {
+                return true;
+            }
+
+            if (!visited.Add(node))
+            {
+                return false;
+            }
+
+            visiting.Add(node);
+
+            if (node.onHitTriggeredSkills != null)
+            {
+                for (int entryIndex = 0; entryIndex < node.onHitTriggeredSkills.Count; entryIndex++)
+                {
+                    var entry = node.onHitTriggeredSkills[entryIndex];
+                    if (entry == null || !entry.HasTriggeredSkills)
+                    {
+                        continue;
+                    }
+
+                    var triggered = entry.TriggeredSkills;
+                    for (int triggerIndex = 0; triggerIndex < triggered.Count; triggerIndex++)
+                    {
+                        var triggerSkill = triggered[triggerIndex];
+                        if (triggerSkill == null)
+                        {
+                            continue;
+                        }
+
+                        if (HasOnHitProcCycle(triggerSkill, visiting, visited))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            visiting.Remove(node);
+            return false;
         }
 
         private void ValidateInlineCombo(List<string> errors, List<string> warnings)

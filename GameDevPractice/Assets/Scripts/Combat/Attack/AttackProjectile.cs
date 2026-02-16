@@ -126,13 +126,42 @@ public class AttackProjectile : MonoBehaviour, IPoolObject
         //todo: 대상이 사망 상태일 때 처리
         //todo: 논타겟팅/타겟팅 스킬의 투사체일 때 처리
 
-        if (other.TryGetComponent(out IDamageable victim))
+        if (TryResolveDamageable(other, out var victim) && combatSystem != null)
         {
+            this.Log($"OnTriggerEnter(): apply hit to '{(victim as Component)?.name ?? "unknown"}'", Logg.LoggingMode.InProgress);
             combatSystem.ApplyHit(attackSource.ToRequest(victim, transform.position, hasHitPoint: true));
+        }
+        else
+        {
+            this.Log($"OnTriggerEnter(): no damageable resolved from '{other.name}'", Logg.LoggingMode.InProgress);
         }
         this.Log($"OnTriggerEnter(): collided with {other}", Logg.LoggingMode.Completed);
         OnHit?.Invoke(transform.position);
         KillSelf();
+    }
+
+    private static bool TryResolveDamageable(Collider other, out IDamageable victim)
+    {
+        if (other == null)
+        {
+            victim = null;
+            return false;
+        }
+
+        if (other.TryGetComponent(out victim))
+        {
+            return true;
+        }
+
+        var parentHealth = other.GetComponentInParent<Health>();
+        if (parentHealth != null)
+        {
+            victim = parentHealth;
+            return true;
+        }
+
+        victim = null;
+        return false;
     }
 
     public GameObject Origin { get; set; }

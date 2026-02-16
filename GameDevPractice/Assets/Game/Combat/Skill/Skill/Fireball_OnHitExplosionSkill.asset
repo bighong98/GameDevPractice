@@ -20,10 +20,22 @@ MonoBehaviour:
   damageType: 2
   range: 20
   cooldown: 1
-  comboSequence: {fileID: 0}
   executionProfile: {fileID: 11400000, guid: 91415d6afb7673844bc9d9123a961bf7, type: 2}
-  onHitProcProfile: {fileID: 11400000, guid: 4b64e243ddb5dd941961795ebdbfbb11, type: 2}
+  onHitTriggeredSkills:
+  - oncePerAttackInstance: 1
+    conditions:
+    - {fileID: 11400000, guid: a3bdec409badf0c4db04d28ac30e4e69, type: 2}
+    triggeredSkills:
+    - {fileID: 11400000, guid: 0552002d4306ea14e9ea8cbeb1199fc2, type: 2}
+    legacyEffects: []
+    lastLegacyImportSignature: 0
   subSkills: []
+  comboSequence: {fileID: 0}
+  onHitProcProfile: {fileID: 11400000, guid: 4b64e243ddb5dd941961795ebdbfbb11, type: 2}
+  lastImportedOnHitProcProfile: {fileID: 11400000, guid: 4b64e243ddb5dd941961795ebdbfbb11, type: 2}
+  lastImportedComboSequence: {fileID: 0}
+  comboTimeout: 0.75
+  comboSteps: []
   targetPolicy:
     allowedGroups: 2
     allowSelf: 0

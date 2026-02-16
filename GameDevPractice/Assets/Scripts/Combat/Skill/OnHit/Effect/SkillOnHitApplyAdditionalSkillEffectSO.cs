@@ -17,6 +17,14 @@ namespace TH.Combat
         [SerializeField] private bool includeHitPoint = true;
         [SerializeField] private bool propagateAdditionalSkillReference;
 
+        public SkillTypeSO AdditionalSkill => additionalSkill;
+        public float DamageScale => Mathf.Max(0f, damageScale);
+        public int HitCountOverride => Mathf.Max(0, hitCountOverride);
+        public bool ReuseAttackInstance => reuseAttackInstance;
+        public bool IncludeHitPoint => includeHitPoint;
+        public bool PropagateAdditionalSkillReference => propagateAdditionalSkillReference;
+
+
         public override void Execute(in SkillOnHitProcContext context, ICombatSystem combatSystem)
         {
             if (combatSystem == null || context.Attacker.IsNull() || context.PrimaryTarget.IsNull() || additionalSkill.IsNull())

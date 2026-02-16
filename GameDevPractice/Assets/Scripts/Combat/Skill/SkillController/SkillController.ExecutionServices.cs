@@ -74,9 +74,17 @@ namespace TH.Combat
 
             // 타게팅 정책 기반 레이어 마스크 조회
             int layerMask = ResolveTargetLayerMask(context);
+            bool fallbackPrimaryLayerFilter = false;
             if (layerMask == 0)
             {
-                return areaTargetsBuffer;
+                if (primaryTarget.IsNull())
+                {
+                    return areaTargetsBuffer;
+                }
+
+                // 타겟 정책 레이어 해석 실패 시 주대상 레이어 기반 폴백
+                layerMask = 1 << primaryTarget.gameObject.layer;
+                fallbackPrimaryLayerFilter = true;
             }
 
             // 물리 오버랩 버퍼 확보 + 검색 수행
@@ -91,7 +99,7 @@ namespace TH.Combat
             // 주대상 포함 옵션 처리
             if (includePrimary && primaryTarget.IsNotNull() &&
                 Vector3.Distance(center, primaryTarget.transform.position) <= radius &&
-                CanTargetWithPolicy(context, primaryTarget))
+                (fallbackPrimaryLayerFilter || CanTargetWithPolicy(context, primaryTarget)))
             {
                 areaTargetsBuffer.Add(primaryTarget);
             }
@@ -121,7 +129,7 @@ namespace TH.Combat
                     continue;
                 }
 
-                if (!CanTargetWithPolicy(context, health))
+                if (!fallbackPrimaryLayerFilter && !CanTargetWithPolicy(context, health))
                 {
                     continue;
                 }
