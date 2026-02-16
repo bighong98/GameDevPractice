@@ -34,6 +34,10 @@ namespace TH.Combat
         bool HasResolvedSkill { get; }
         // 현재 해석 완료 스킬 참조
         SkillTypeSO ResolvedSkill { get; }
+        // 현재 실행 고정 스킬 보유 상태
+        bool HasExecutingSkill { get; }
+        // 현재 실행 고정 스킬 참조
+        SkillTypeSO ExecutingSkill { get; }
         // 활성 스킬 즉시 사용 가능 상태
         bool IsActiveSkillReady { get; }
         // 현재 프리뷰 기준 유효 사거리

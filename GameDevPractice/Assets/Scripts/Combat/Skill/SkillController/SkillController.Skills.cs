@@ -61,6 +61,7 @@ namespace TH.Combat
                 CancelActiveComboTimeoutRoutine();
                 ResetComboProgress(skill);
                 ClearPendingAttack();
+                executingSkill = null;
                 OnActiveSkillChanged?.Invoke(skill);
             }
 

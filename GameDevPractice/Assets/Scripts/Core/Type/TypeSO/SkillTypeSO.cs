@@ -1,41 +1,44 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using TH.Attribute.Stat;
 using TH.Combat;
 using UnityEngine;
-using UnityEngine.Serialization;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 
 namespace TH.Resource
 {
-    // 스킬 1개의 전투 데이터/연출 데이터/에디터 검증 규칙을 보관하는 SO
     [CreateAssetMenu(fileName = "SkillTypeSO", menuName = "Scriptable Objects/Type/Skill/SkillTypeSO")]
     public class SkillTypeSO : ScriptableObject
     {
+        private const float DefaultComboTimeout = 0.75f;
+
         [Header("Skill Data")]
-        // 런타임 식별자 -> 비어 있으면 에셋 이름으로 대체
         [SerializeField] private string skillId;
-        // 데미지 계산 시 기준이 되는 스탯 SO (-> 없으면 baseDamage 사용)
         [SerializeField] private GameStatSO attackSourceStatSO;
-        // 콤보 단계 스킬은 각 SkillTypeSO에서 데미지/사거리 값을 개별 설정
         [SerializeField] private float baseDamage = 1f;
-        // 타격 횟수(최소 1).
         [SerializeField, Min(1)] private int hitCount = 1;
-        // 공격 계수(최소 0). 최종 데미지 = sourceDamage * attackCoefficient
         [SerializeField, Min(0f)] private float attackCoefficient = 1f;
-        // 데미지 속성 타입
         [SerializeField] private DamageType damageType = DamageType.Physical;
-        // 스킬 유효 사거리
         [SerializeField, Min(0f)] private float range = 2f;
-        // 베이스 스킬 공용 쿨다운. comboTimeout 초과 시 콤보 연계 단절 가능
         [SerializeField, Min(0f)] private float cooldown = 1f;
-        // 콤보 사용 시 ComboSequenceSO 에셋 연결. null이면 단일 스킬 동작
-        [SerializeField] private ComboSequenceSO comboSequence;
+        
         [SerializeField] private SkillExecutionProfileSO executionProfile;
         [SerializeField] private SkillOnHitProcProfileSO onHitProcProfile;
+
+        [Header("Sub Skill")]
         [SerializeField] private List<SkillTypeSO> subSkills = new();
+
+#if UNITY_EDITOR
+        [Header("Sequence Preset (Editor Only)")]
+        [SerializeField] private ComboSequenceSO comboSequence;
+        [SerializeField, HideInInspector] private ComboSequenceSO lastImportedComboSequence;
+#endif
+
+        [Header("Sequence")]
+        [SerializeField, Min(0f)] private float comboTimeout = DefaultComboTimeout;
+        [SerializeField] private List<SkillTypeSO> comboSteps = new();
 
         [Header("Targeting")]
         [SerializeField] private SkillTargetPolicy targetPolicy = SkillTargetPolicy.EnemyOnlyDefault;
@@ -45,81 +48,172 @@ namespace TH.Resource
         [SerializeField] private bool affectedByAttackSpeed = true;
 
         [Header("Animation")]
-        // 콤보 단계별 애니메이션 오버라이드 개별 설정
         [SerializeField] private AnimatorOverrideController animatorOverride;
 
         [Header("Projectile")]
-        [SerializeField] private GameObject projectilePrefab; // 원거리 스킬의 발사체 프리팹
+        [SerializeField] private GameObject projectilePrefab;
 
         [Header("VFX")]
-        [SerializeField] private GameObject skillVFXPrefab; // 스킬 사용 시 재생할 이펙트 프리팹
-        [SerializeField] private GameObject onHitVFXPrefab; // 적중 시 재생할 이펙트 프리팹
+        [SerializeField] private GameObject skillVFXPrefab;
+        [SerializeField] private GameObject onHitVFXPrefab;
 
         [Header("SFX")]
-        // Cast sound for this skill
         [SerializeField] private AudioClip castSfx;
 
         [Header("UI")]
         [SerializeField] private SkillCategory skillCategory = SkillCategory.AdditiveSkill;
         [SerializeField] private Sprite skillSlotImage;
 
-        // 유효한 스킬 ID(없으면 에셋 이름 대체)
         public string SkillId => string.IsNullOrWhiteSpace(skillId) ? name : skillId;
-        // 공격 소스 스탯 SO
         public GameStatSO AttackSourceStatSO => attackSourceStatSO;
-        // 기본 데미지
         public float BaseDamage => baseDamage;
-        // 보정된 히트 수(최소 1)
         public int HitCount => Mathf.Max(1, hitCount);
-        // 보정된 공격 계수(최소 0)
         public float AttackCoefficient => Mathf.Max(0f, attackCoefficient);
-        // 데미지 타입
         public DamageType DamageType => damageType;
-        // 스킬 사거리
         public float Range => range;
-        // 스킬 쿨다운
         public float Cooldown => cooldown;
-        // 콤보 시퀀스 참조
-        public ComboSequenceSO ComboSequence => comboSequence;
+        public float ComboTimeout => Mathf.Max(0f, comboTimeout);
+        public int ComboStepCount => comboSteps?.Count ?? 0;
+        public bool HasComboSteps => comboSteps != null && comboSteps.Exists(skill => skill != null);
+        public IReadOnlyList<SkillTypeSO> ComboSteps => comboSteps;
         public SkillExecutionProfileSO ExecutionProfile => executionProfile;
         public SkillOnHitProcProfileSO OnHitProcProfile => onHitProcProfile;
         public bool HasOnHitProcProfile => onHitProcProfile != null && onHitProcProfile.HasEntries;
         public bool HasSubSkills => subSkills != null && subSkills.Exists(skill => skill != null);
         public IReadOnlyList<SkillTypeSO> SubSkills => subSkills;
         public SkillTargetPolicy TargetPolicy => targetPolicy;
-        // Skill animation speed multiplier
         public float AnimationSpeedMultiplier => Mathf.Max(0.01f, animationSpeedMultiplier);
-        // Whether to apply attack-speed stat scaling
         public bool AffectedByAttackSpeed => affectedByAttackSpeed;
-        // Cast sound clip
         public AudioClip CastSFX => castSfx;
         public SkillCategory SkillCategory => skillCategory;
         public Sprite SkillSlotImage => skillSlotImage;
-        // 공격 애니메이션 오버라이드
         public AnimatorOverrideController AnimatorOverride => animatorOverride;
-        // 발사체 사용 여부
         public bool HasProjectile => projectilePrefab != null;
-        // 발사체 프리팹
         public GameObject ProjectilePrefab => projectilePrefab;
-        // 적중 이펙트 사용 여부
         public bool HasSkillEffect => skillVFXPrefab != null;
         public GameObject SkillEffectPrefab => skillVFXPrefab;
         public bool HasOnHitEffect => onHitVFXPrefab != null;
         public GameObject OnHitEffectPrefab => onHitVFXPrefab;
         public bool HasImpactEffect => HasOnHitEffect;
-        // 적중 이펙트 프리팹
         public GameObject ImpactParticlePrefab => onHitVFXPrefab;
 
-        #region Debug (Editor Only)
+        public SkillTypeSO GetComboStepSkill(int index, SkillTypeSO fallback)
+        {
+            if (!HasComboSteps)
+            {
+                return fallback;
+            }
+
+            if (index < 0 || index >= comboSteps.Count)
+            {
+                return fallback;
+            }
+
+            return comboSteps[index] != null ? comboSteps[index] : fallback;
+        }
+
 #if UNITY_EDITOR
-        // 인스펙터 컨텍스트 메뉴에서 수동 검증을 실행
+        public ComboSequenceSO ComboSequence => comboSequence;
+
+        private void OnValidate()
+        {
+            TryAutoImportComboSequence();
+        }
+
+        private void TryAutoImportComboSequence()
+        {
+            bool changed = false;
+
+            if (comboSequence == null)
+            {
+                if (lastImportedComboSequence != null)
+                {
+                    lastImportedComboSequence = null;
+                    changed = true;
+                }
+
+                if (changed)
+                {
+                    EditorUtility.SetDirty(this);
+                }
+
+                return;
+            }
+
+            if (comboSequence == lastImportedComboSequence)
+            {
+                return;
+            }
+
+            if (IsInlineComboAtDefault())
+            {
+                ImportComboSequence(comboSequence, overwrite: true);
+                changed = true;
+            }
+
+            lastImportedComboSequence = comboSequence;
+            changed = true;
+
+            if (changed)
+            {
+                EditorUtility.SetDirty(this);
+            }
+        }
+
+        private bool IsInlineComboAtDefault()
+        {
+            bool hasConfiguredSteps = comboSteps != null && comboSteps.Count > 0;
+            return !hasConfiguredSteps && Mathf.Approximately(comboTimeout, DefaultComboTimeout);
+        }
+
+        private void ImportComboSequence(ComboSequenceSO source, bool overwrite)
+        {
+            if (source == null)
+            {
+                return;
+            }
+
+            if (!overwrite && !IsInlineComboAtDefault())
+            {
+                return;
+            }
+
+            comboTimeout = source.ComboTimeout;
+            comboSteps ??= new List<SkillTypeSO>();
+            comboSteps.Clear();
+
+            var sourceSteps = source.ComboSteps;
+            if (sourceSteps == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < sourceSteps.Count; i++)
+            {
+                comboSteps.Add(sourceSteps[i]);
+            }
+        }
+
+        [ContextMenu("Reimport Combo Sequence Preset (Force)")]
+        private void ReimportComboSequencePresetInEditor()
+        {
+            if (comboSequence == null)
+            {
+                Debug.LogWarning($"[SkillTypeSO:{name}] comboSequence preset is null.", this);
+                return;
+            }
+
+            ImportComboSequence(comboSequence, overwrite: true);
+            lastImportedComboSequence = comboSequence;
+            EditorUtility.SetDirty(this);
+        }
+
         [ContextMenu("Validate Skill (Editor)")]
         private void ValidateSkillInEditor()
         {
             ValidateAndLogInEditor();
         }
 
-        // 에디터 검증 수행 후 로그를 출력
         public bool ValidateAndLogInEditor(string logPrefix = null)
         {
             var isValid = ValidateInEditor(out var errors, out var warnings);
@@ -146,7 +240,6 @@ namespace TH.Resource
             return isValid;
         }
 
-        // 스킬 데이터의 정합성을 점검하고 에러/경고 목록을 반환
         public bool ValidateInEditor(out List<string> errors, out List<string> warnings)
         {
             errors = new List<string>();
@@ -182,6 +275,11 @@ namespace TH.Resource
                 errors.Add("cooldown must be a finite value >= 0.");
             }
 
+            if (float.IsNaN(comboTimeout) || float.IsInfinity(comboTimeout) || comboTimeout < 0f)
+            {
+                errors.Add("comboTimeout must be a finite value >= 0.");
+            }
+
             if (attackSourceStatSO == null && baseDamage <= 0f)
             {
                 warnings.Add("attackSourceStatSO is null and baseDamage <= 0. Actual damage may become 0.");
@@ -192,25 +290,113 @@ namespace TH.Resource
                 warnings.Add("attackCoefficient is 0. Actual damage may become 0.");
             }
 
-            if (comboSequence != null && !comboSequence.HasSteps)
-            {
-                errors.Add("comboSequence is assigned but has no combo steps.");
-            }
-
             if (executionProfile != null && !executionProfile.HasActions)
             {
                 errors.Add("executionProfile is assigned but has no actions.");
             }
+
             if (onHitProcProfile != null && !onHitProcProfile.HasEntries)
             {
                 warnings.Add("onHitProcProfile is assigned but has no valid proc entries.");
             }
 
+            ValidateInlineCombo(errors, warnings);
             ValidateSubSkills(errors);
             ValidateEffectPrefab(skillVFXPrefab, nameof(skillVFXPrefab), warnings);
             ValidateEffectPrefab(onHitVFXPrefab, nameof(onHitVFXPrefab), warnings);
             ValidateAnimatorOverride(errors, warnings);
             return errors.Count == 0;
+        }
+
+        private void ValidateInlineCombo(List<string> errors, List<string> warnings)
+        {
+            if (comboSteps == null || comboSteps.Count == 0)
+            {
+                return;
+            }
+
+            bool hasValidStep = false;
+            var duplicateCheck = new HashSet<SkillTypeSO>();
+
+            for (int i = 0; i < comboSteps.Count; i++)
+            {
+                var step = comboSteps[i];
+                if (step == null)
+                {
+                    errors.Add($"comboSteps[{i}] is null.");
+                    continue;
+                }
+
+                hasValidStep = true;
+
+                if (!duplicateCheck.Add(step))
+                {
+                    warnings.Add($"Duplicate combo step reference detected. index={i}, skill={step.name}");
+                }
+
+                if (step == this)
+                {
+                    errors.Add($"comboSteps[{i}] references self.");
+                }
+
+                if (step.HasComboSteps)
+                {
+                    warnings.Add($"Step skill has its own inline combo steps. index={i}, skill={step.name}");
+                }
+
+                if (step.AnimatorOverride == null)
+                {
+                    warnings.Add($"Step skill has no animator override. index={i}, skill={step.name}");
+                }
+            }
+
+            if (!hasValidStep)
+            {
+                errors.Add("comboSteps contains no valid step skills.");
+                return;
+            }
+
+            if (HasComboCycle(this, new HashSet<SkillTypeSO>(), new HashSet<SkillTypeSO>()))
+            {
+                errors.Add("comboSteps contains a cyclic reference.");
+            }
+        }
+
+        private static bool HasComboCycle(
+            SkillTypeSO node,
+            HashSet<SkillTypeSO> visiting,
+            HashSet<SkillTypeSO> visited)
+        {
+            if (node == null)
+            {
+                return false;
+            }
+
+            if (visiting.Contains(node))
+            {
+                return true;
+            }
+
+            if (!visited.Add(node))
+            {
+                return false;
+            }
+
+            visiting.Add(node);
+
+            if (node.comboSteps != null)
+            {
+                for (int i = 0; i < node.comboSteps.Count; i++)
+                {
+                    if (HasComboCycle(node.comboSteps[i], visiting, visited))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            visiting.Remove(node);
+            return false;
         }
 
         private void ValidateSubSkills(List<string> errors)
@@ -278,9 +464,6 @@ namespace TH.Resource
             return false;
         }
 
-
-
-        // 애니메이션 오버라이드와 Hit 이벤트 설정을 검증
         private static void ValidateEffectPrefab(GameObject prefab, string fieldName, List<string> warnings)
         {
             if (prefab == null)
@@ -314,7 +497,6 @@ namespace TH.Resource
             var attackClips = new HashSet<AnimationClip>();
             var fallbackClips = new HashSet<AnimationClip>();
 
-            // Attack 명명 규칙을 우선 적용하고, 없으면 전체 클립을 폴백으로 사용
             for (int i = 0; i < overridePairs.Count; i++)
             {
                 var original = overridePairs[i].Key;
@@ -348,14 +530,14 @@ namespace TH.Resource
                 }
 
                 var events = AnimationUtility.GetAnimationEvents(clip);
-                int hitCount = 0;
+                int hitCountInClip = 0;
                 for (int i = 0; i < events.Length; i++)
                 {
                     var evt = events[i];
-                    if (string.Equals(evt.functionName, "Hit", StringComparison.Ordinal)|| 
+                    if (string.Equals(evt.functionName, "Hit", StringComparison.Ordinal) ||
                         string.Equals(evt.functionName, "shoot", StringComparison.OrdinalIgnoreCase))
                     {
-                        hitCount++;
+                        hitCountInClip++;
                         hasAnyHit = true;
 
                         if (evt.time <= 0f || evt.time >= clip.length)
@@ -363,20 +545,20 @@ namespace TH.Resource
                             warnings.Add($"Hit event timing is near clip boundary. clip={clip.name}, time={evt.time:0.###}, length={clip.length:0.###}");
                         }
                     }
-                    else if (string.Equals(evt.functionName, "hit", StringComparison.OrdinalIgnoreCase) || 
-                            string.Equals(evt.functionName, "shoot", StringComparison.OrdinalIgnoreCase))
+                    else if (string.Equals(evt.functionName, "hit", StringComparison.OrdinalIgnoreCase) ||
+                             string.Equals(evt.functionName, "shoot", StringComparison.OrdinalIgnoreCase))
                     {
                         warnings.Add($"Animation event function name uses wrong case. Expected 'Hit'. clip={clip.name}, function={evt.functionName}");
                     }
                 }
 
-                if (hitCount == 0)
+                if (hitCountInClip == 0)
                 {
                     errors.Add($"Missing Hit event in attack clip. clip={clip.name}");
                 }
-                else if (hitCount > 1)
+                else if (hitCountInClip > 1)
                 {
-                    warnings.Add($"Multiple Hit events found in clip. clip={clip.name}, count={hitCount}");
+                    warnings.Add($"Multiple Hit events found in clip. clip={clip.name}, count={hitCountInClip}");
                 }
             }
 
@@ -386,13 +568,10 @@ namespace TH.Resource
             }
         }
 
-        // 클립 이름에 Attack 키워드가 포함되는지 확인 (임시 사용)
         private static bool ContainsAttackWord(AnimationClip clip)
         {
             return clip != null && clip.name.IndexOf("Attack", StringComparison.OrdinalIgnoreCase) >= 0;
         }
 #endif
-        #endregion
-    
     }
 }

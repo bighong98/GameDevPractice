@@ -27,15 +27,15 @@ namespace TH.Combat
                 return false;
 
             // 콤보 시퀀스 미보유 가드
-            if (skill.ComboSequence is not { HasSteps: true } comboSequence)
+            if (!skill.HasComboSteps)
                 return false;
 
-            int stepCount = Mathf.Max(1, comboSequence.StepCount);
+            int stepCount = Mathf.Max(1, skill.ComboStepCount);
             if (stepCount <= 1)
                 return false;
 
             // 유효 타임아웃 미설정 가드
-            float comboTimeout = Mathf.Max(0f, comboSequence.ComboTimeout);
+            float comboTimeout = Mathf.Max(0f, skill.ComboTimeout);
             if (comboTimeout <= 0f)
                 return false;
 
@@ -57,8 +57,8 @@ namespace TH.Combat
         // 현재 공격 프리뷰 스킬 결정
         private SkillTypeSO GetPreviewSkill()
         {
-            // 유효 보류 공격 우선 재사용 경로
-            if (TryGetValidPendingState(out _, out _, out _))
+            // 보류 공격 존재 시 현재 소비된 스킬 프리뷰를 우선 유지
+            if (hasPendingAttack && pendingAttackSkill.IsNotNull())
             {
                 return pendingAttackSkill;
             }
@@ -83,18 +83,18 @@ namespace TH.Combat
             if (baseSkill.IsNull()) return false;
 
             // 콤보 시퀀스 미보유 스킬 단일 단계 처리
-            if (baseSkill.ComboSequence is not { HasSteps: true } comboSequence)
+            if (!baseSkill.HasComboSteps)
             {
                 resolved = baseSkill;
                 return true;
             }
 
-            stepCount = Mathf.Max(1, comboSequence.StepCount);
+            stepCount = Mathf.Max(1, baseSkill.ComboStepCount);
             var context = GetOrCreateComboContext(baseSkill);
 
             int nextStepIndex = context.NextStepIndex;
             // 타임아웃 초과 시 0단계 리셋
-            if (ShouldResetCombo(comboSequence.ComboTimeout, context))
+            if (ShouldResetCombo(baseSkill.ComboTimeout, context))
             {
                 nextStepIndex = 0;
             }
@@ -105,7 +105,7 @@ namespace TH.Combat
                 nextStepIndex = 0;
             }
 
-            resolved = comboSequence.GetStepSkill(nextStepIndex, baseSkill);
+            resolved = baseSkill.GetComboStepSkill(nextStepIndex, baseSkill);
             stepIndex = nextStepIndex;
             return true;
         }
@@ -148,7 +148,7 @@ namespace TH.Combat
                 return;
 
             // 비콤보/단일단계 스킬 가드
-            if (stepCount <= 1 || baseSkill.ComboSequence is not { HasSteps: true } comboSequence)
+            if (stepCount <= 1 || !baseSkill.HasComboSteps)
                 return;
 
             var context = GetOrCreateComboContext(baseSkill);
@@ -156,7 +156,7 @@ namespace TH.Combat
             if (context.NextStepIndex <= 0)
                 return;
 
-            float comboTimeout = Mathf.Max(0f, comboSequence.ComboTimeout);
+            float comboTimeout = Mathf.Max(0f, baseSkill.ComboTimeout);
             isActiveComboTimeoutPending = true;
             activeComboTimeoutBaseSkill = baseSkill;
             activeComboTimeoutExpectedNextStepIndex = context.NextStepIndex;
@@ -197,10 +197,19 @@ namespace TH.Combat
         // 프리뷰 기준 해석 스킬 상태 동기화
         private void UpdateResolvedSkillFromPreview(bool forceNotify)
         {
-            // 보류 공격 유효 상태 우선 반영
-            if (TryGetValidPendingState(out var pendingBase, out var pendingStepIndex, out var pendingStepCount))
+            // 보류 공격 존재 시 유효성 재평가보다 현재 소비된 스킬 상태를 우선 반영
+            if (hasPendingAttack && pendingAttackSkill.IsNotNull())
             {
-                SetResolvedSkill(pendingAttackSkill, pendingBase, pendingStepIndex, pendingStepCount, forceNotify);
+                var resolvedBaseSkill = pendingBaseSkill.IsNotNull()
+                    ? pendingBaseSkill
+                    : (HasActiveSkill ? skillBook.ActiveSkill : null);
+
+                SetResolvedSkill(
+                    pendingAttackSkill,
+                    resolvedBaseSkill,
+                    Mathf.Max(0, pendingComboStepIndex),
+                    Mathf.Max(1, pendingComboStepCount),
+                    forceNotify);
                 return;
             }
 

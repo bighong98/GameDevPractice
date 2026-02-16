@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using TH.Attribute;
@@ -82,6 +82,8 @@ namespace TH.Combat
         // 타임아웃 만료 시각
         private float activeComboTimeoutAt;
 
+        // 현재 실행 고정 스킬
+        private SkillTypeSO executingSkill;
         // 현재 해석 완료 스킬
         private SkillTypeSO resolvedSkill;
         // 현재 해석 완료 베이스 스킬
@@ -136,6 +138,10 @@ namespace TH.Combat
         public SkillTypeSO ActiveSkill => skillBook?.ActiveSkill;
         // 해석 완료 스킬 보유 상태
         public bool HasResolvedSkill => resolvedSkill.IsNotNull();
+        // 실행 고정 스킬 보유 상태
+        public bool HasExecutingSkill => executingSkill.IsNotNull();
+        // 현재 실행 고정 스킬 참조
+        public SkillTypeSO ExecutingSkill => executingSkill;
         // 현재 해석 완료 스킬 참조
         public SkillTypeSO ResolvedSkill => resolvedSkill;
         // 활성 스킬 즉시 사용 가능 상태

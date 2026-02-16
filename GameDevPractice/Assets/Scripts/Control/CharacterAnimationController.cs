@@ -66,19 +66,7 @@ namespace TH.Control
 
         private void Start()
         {
-            if (skillController != null && skillController.HasResolvedSkill)
-            {
-                ApplySkillAnimator(skillController.ResolvedSkill);
-                return;
-            }
-
-            if (skillController != null && skillController.HasActiveSkill)
-            {
-                ApplySkillAnimator(skillController.ActiveSkill);
-                return;
-            }
-
-            ApplySkillAnimator(null);
+            ApplySkillAnimator(ResolveEffectiveSkill());
         }
 
         private void OnEnable()
@@ -125,12 +113,14 @@ namespace TH.Control
 
         private void HandleActiveSkillChanged(SkillTypeSO skill)
         {
-            ApplySkillAnimator(skill);
+            _ = skill;
+            ApplySkillAnimator(ResolveEffectiveSkill());
         }
 
         private void HandleResolvedSkillChanged(SkillTypeSO skill)
         {
-            ApplySkillAnimator(skill);
+            _ = skill;
+            ApplySkillAnimator(ResolveEffectiveSkill());
         }
 
         private void HandleAttackSpeedChanged(float value)
@@ -265,6 +255,11 @@ namespace TH.Control
 
         private SkillTypeSO ResolveEffectiveSkill()
         {
+            if (skillController != null && skillController.HasExecutingSkill)
+            {
+                return skillController.ExecutingSkill;
+            }
+
             if (skillController != null && skillController.HasResolvedSkill)
             {
                 return skillController.ResolvedSkill;

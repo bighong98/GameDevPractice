@@ -33,7 +33,7 @@ namespace TH.Attribute
         private IFloatingTextSpawner textSpawner;
         private IKillEventHandler killEventHandler;
 
-        private Collider collider;
+        private new Collider collider;
 
         public event Action OnDead;
         public event Action OnRevived;
@@ -254,7 +254,7 @@ namespace TH.Attribute
             if (data.ratio is not (float storedHpRatio and >= 0)) return false;
 
             if (data.isDead) Die();
-            SetCurrentHp(maxHp * storedHpRatio);
+            SetCurrentHp(maxHp * storedHpRatio, byForce: true);
 
             this.Log($"[{gameObject.name}] - Health.RestoreState: ratio: {storedHpRatio} -> hp is set to {hp})", Logg.LoggingMode.Completed); 
             return true;
