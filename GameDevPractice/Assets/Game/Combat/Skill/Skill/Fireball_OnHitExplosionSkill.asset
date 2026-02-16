@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7ae70b95bc711424ab96997d90ea21eb, type: 3}
-  m_Name: Fireball_OnHitExplosionTest
+  m_Name: Fireball_OnHitExplosionSkill
   m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.SkillTypeSO
   skillId: Fireball_OnHitExplosionTest
   attackSourceStatSO: {fileID: 11400000, guid: f33892e137b94bf4e9d027c090bd8c4f, type: 2}
@@ -33,7 +33,7 @@ MonoBehaviour:
   animatorOverride: {fileID: 22100000, guid: 02612d1855855bf40972d636cba04f13, type: 2}
   projectilePrefab: {fileID: 1111895543867379590, guid: 4d654d0ea2ce7e44aa38d9e4596715f7, type: 3}
   skillVFXPrefab: {fileID: 0}
-  onHitVFXPrefab: {fileID: 0}
+  onHitVFXPrefab: {fileID: 2302457091093092515, guid: 69d1b1037536b504884c93bb73d662db, type: 3}
   castSfx: {fileID: 8300000, guid: da396a16a7f24f64cbb0054f5a56b46a, type: 3}
   skillCategory: 0
   skillSlotImage: {fileID: 21300000, guid: 4408269a96438e84796304f4ac0ed623, type: 3}

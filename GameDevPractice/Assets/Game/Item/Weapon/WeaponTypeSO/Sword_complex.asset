@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 361e7764f46e225498b2d9903851f06d, type: 3}
-  m_Name: Sword_complexTest
+  m_Name: Sword_complex
   m_EditorClassIdentifier: Assembly-CSharp::WeaponTypeSO
   prefab: {fileID: 7059132959080541948, guid: d4c092d9dca59304fba951cae1d05868, type: 3}
   nameString: "\uD654\uC5FC\uAC80"

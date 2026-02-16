@@ -29,6 +29,11 @@ MonoBehaviour:
     - PreLoad_DataSO
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0707f9d6eca13be4e80ab300d9ab7cba
+    m_Address: Cond_OnHit_TargetHpLe50.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 0d3c487e8b931674196325ae2cb7c2d0
     m_Address: Sword_ComplexSkill.asset
     m_ReadOnly: 0
@@ -69,6 +74,16 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4013b219d744b69459630b3798c316dd
+    m_Address: Eff_OnHit_ApplyAdditionalSkill_Default.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4b64e243ddb5dd941961795ebdbfbb11
+    m_Address: Profile_OnHit_Explosion_Area_Default.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 4f18c80df16a4ae4194559bba2f3ab9b
     m_Address: Simple Bow.fbx
     m_ReadOnly: 0
@@ -96,6 +111,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 69d1b1037536b504884c93bb73d662db
     m_Address: Fireball Impact.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6bdf234ca6b34e14a84ce36d0838db17
+    m_Address: ProjectileBurst_Default.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -139,6 +159,16 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a03743230ced3b342bd182efcd0f4ae5
+    m_Address: Eff_OnHit_ExplosionArea_Default.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a3bdec409badf0c4db04d28ac30e4e69
+    m_Address: Cond_OnHit_Chance100.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a73ecc94afab3c446b6b4668596140e5
     m_Address: UserInput.inputactions
     m_ReadOnly: 0
@@ -149,13 +179,28 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b491a1dc83be9f04caa92344671f34aa
+    m_Address: AreaHit_ExcludeParimary.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b8f889a91be35174bbbb38d1057b6493
     m_Address: PolyAdventureTexture_01.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bca5c2b8c5bf03e4287a36131b02af67
+    m_Address: AreaHit_Default.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: bfbe2e8b331e2cc42be1591f949c0e41
     m_Address: Characters_Texture_Red.mat
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c2f50193abfceb64abe3c6b8237d6c91
+    m_Address: DirectHit_Default.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

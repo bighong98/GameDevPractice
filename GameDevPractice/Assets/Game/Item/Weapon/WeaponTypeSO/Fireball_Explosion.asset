@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 361e7764f46e225498b2d9903851f06d, type: 3}
-  m_Name: Fireball_OnHitExplosionTest
+  m_Name: Fireball_Explosion
   m_EditorClassIdentifier: Assembly-CSharp::WeaponTypeSO
   prefab: {fileID: 1181656062549879669, guid: 272caf2c346b5e04ea0b11b49067dc0a, type: 3}
   nameString: "\uD3ED\uBC1C\uD558\uB294 \uD654\uC5FC \uC9C0\uD321\uC774"
