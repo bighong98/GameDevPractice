@@ -62,7 +62,7 @@ namespace TH.Combat
             return cloned;
         }
 
-        public bool Evaluate(in SkillOnHitProcContext context)
+        public bool Evaluate(in SkillOnHitContext context)
         {
             if (conditions == null || conditions.Count == 0)
             {
@@ -86,7 +86,7 @@ namespace TH.Combat
             return true;
         }
 
-        public void Execute(in SkillOnHitProcContext context, ICombatSystem combatSystem)
+        public void Execute(in SkillOnHitContext context, ICombatSystem combatSystem)
         {
             if (combatSystem == null || triggeredSkills == null)
             {
@@ -110,7 +110,7 @@ namespace TH.Combat
 
         private static void ExecuteTriggeredSkill(
             SkillTypeSO skill,
-            in SkillOnHitProcContext context,
+            in SkillOnHitContext context,
             ICombatSystem combatSystem)
         {
             if (combatSystem == null || context.Attacker.IsNull() || context.PrimaryTarget.IsNull() || skill == null)
@@ -154,7 +154,7 @@ namespace TH.Combat
 
         private static bool TryExecuteTriggeredSkillByProfile(
             SkillTypeSO skill,
-            in SkillOnHitProcContext context,
+            in SkillOnHitContext context,
             float perHitDamage,
             IReadOnlyList<float> hitDamages,
             ICombatSystem combatSystem)

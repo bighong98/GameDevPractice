@@ -7,7 +7,7 @@ namespace TH.Combat
     {
         [SerializeField, Range(0f, 1f)] private float chance = 1f;
 
-        public override bool Evaluate(in SkillOnHitProcContext context)
+        public override bool Evaluate(in SkillOnHitContext context)
         {
             _ = context;
 

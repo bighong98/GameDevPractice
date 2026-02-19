@@ -25,7 +25,7 @@ namespace TH.Combat
         public bool PropagateAdditionalSkillReference => propagateAdditionalSkillReference;
 
 
-        public override void Execute(in SkillOnHitProcContext context, ICombatSystem combatSystem)
+        public override void Execute(in SkillOnHitContext context, ICombatSystem combatSystem)
         {
             if (combatSystem == null || context.Attacker.IsNull() || context.PrimaryTarget.IsNull() || additionalSkill.IsNull())
             {

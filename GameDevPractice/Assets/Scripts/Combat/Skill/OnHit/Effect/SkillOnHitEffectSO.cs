@@ -5,6 +5,6 @@ namespace TH.Combat
 {
     public abstract class SkillOnHitEffectSO : ScriptableObject
     {
-        public abstract void Execute(in SkillOnHitProcContext context, ICombatSystem combatSystem);
+        public abstract void Execute(in SkillOnHitContext context, ICombatSystem combatSystem);
     }
 }

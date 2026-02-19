@@ -15,7 +15,7 @@ namespace TH.Combat
         [SerializeField] private SkillHitProcHealthRatioComparison comparison = SkillHitProcHealthRatioComparison.LessOrEqual;
         [SerializeField, Range(0f, 1f)] private float threshold = 0.5f;
 
-        public override bool Evaluate(in SkillOnHitProcContext context)
+        public override bool Evaluate(in SkillOnHitContext context)
         {
             if (context.PrimaryTarget.IsNull())
             {

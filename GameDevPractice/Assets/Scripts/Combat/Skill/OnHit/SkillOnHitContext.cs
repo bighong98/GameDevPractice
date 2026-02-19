@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace TH.Combat
 {
-    public readonly struct SkillOnHitProcContext
+    public readonly struct SkillOnHitContext
     {
         public readonly HitResult HitResult;
         public readonly Health PrimaryTarget;
@@ -16,7 +16,7 @@ namespace TH.Combat
         public int AttackInstanceId => HitResult.AttackInstanceId;
         public float AppliedDamage => HitResult.Damage;
 
-        public SkillOnHitProcContext(in HitResult hitResult, Health primaryTarget)
+        public SkillOnHitContext(in HitResult hitResult, Health primaryTarget)
         {
             HitResult = hitResult;
             PrimaryTarget = primaryTarget;

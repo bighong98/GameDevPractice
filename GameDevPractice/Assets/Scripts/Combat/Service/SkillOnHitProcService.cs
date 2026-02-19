@@ -53,11 +53,11 @@ namespace TH.Combat.Service
             Logg.Log(
                 $"[{nameof(SkillOnHitTriggerService)}] process on-hit. skill={result.Skill.name}, attackId={result.AttackInstanceId}, entryCount={entries.Count}",
                 Logg.LoggingMode.Completed);
-            var context = new SkillOnHitProcContext(result, primaryTarget);
+            var context = new SkillOnHitContext(result, primaryTarget);
             ExecuteEntries(entries, result.Skill.GetInstanceID(), context);
         }
 
-        private void ExecuteEntries(IReadOnlyList<SkillTriggerRuleEntry> entries, int skillInstanceId, in SkillOnHitProcContext context)
+        private void ExecuteEntries(IReadOnlyList<SkillTriggerRuleEntry> entries, int skillInstanceId, in SkillOnHitContext context)
         {
             for (int i = 0; i < entries.Count; i++)
             {
