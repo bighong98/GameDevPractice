@@ -28,7 +28,11 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
     // 라인 배치 시 행 간격 계수
     [SerializeField] private float batchLineHeightMultiplier = 0.9f;
     // 스프레드/그룹 배치 시 열 간격 기본값
-    [SerializeField] private float batchHorizontalStep = 18f;
+    [SerializeField] private float batchHorizontalStep = 18f;    // 스프레드 배치 시 열별 수직 오프셋 비율 lineStep 기준
+    [SerializeField, Range(0f, 0.6f)] private float batchSpreadVerticalOffsetRatio = 0.24f;
+    // 스프레드 배치 시 미세 수직 지터 비율 lineStep 기준
+    [SerializeField, Range(0f, 0.3f)] private float batchSpreadVerticalJitterRatio = 0.08f;
+
     // 배치에서 실제 렌더링 허용 최대 항목 수
     [SerializeField] private int maxBatchEntries = 6;
     // 배치 타이밍 스태거 지연 간격 sec
@@ -278,7 +282,7 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
     }
     
     // 현재 배치 모드에 따라 visible 항목 anchoredPosition 배치 계산
-    private void LayoutVisibleTextItems(float fontSize)
+private void LayoutVisibleTextItems(float fontSize)
     {
         float lineStep = Mathf.Max(1f, fontSize * batchLineHeightMultiplier);
         if (useGroupedBatchLayout)
@@ -302,20 +306,22 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
         for (int i = 0; i < visibleTextCount; i++)
         {
             var itemRect = textItems[i].rectTransform;
+            int columnIndex = 0;
             float x = 0f;
             if (i > 0)
             {
-                float spread = Mathf.Ceil(i * 0.5f);
-                x = ((i & 1) == 1 ? 1f : -1f) * spread * batchHorizontalStep;
+                int spread = Mathf.CeilToInt(i * 0.5f);
+                columnIndex = ((i & 1) == 1 ? spread : -spread);
+                x = columnIndex * batchHorizontalStep;
             }
 
-            float y = ResolveTopDownRowY(i, rowCount, lineStep);
+            float y = ResolveTopDownRowY(i, rowCount, lineStep) + ResolveSpreadYOffset(i, columnIndex, lineStep);
             itemRect.anchoredPosition = new Vector2(x, y);
         }
     }
 
     // 그룹 키 기준 열 분리 + 열 내 행 적층 배치 로직
-    private void LayoutGroupedBatchItems(float lineStep)
+private void LayoutGroupedBatchItems(float lineStep)
     {
         int count = Mathf.Min(visibleTextCount, textItems.Count);
         if (count <= 0)
@@ -350,11 +356,24 @@ public class FloatingTextController : MonoBehaviour, IPoolObject, IFloatingTextC
         {
             int column = columnByItem[i];
             int row = rowByColumn[column]++;
-            float x = (column - center) * horizontalStep;
-            float y = ResolveTopDownRowY(row, totalRowsByColumn[column], lineStep);
+            float columnOffset = column - center;
+            float x = columnOffset * horizontalStep;
+            float y = ResolveTopDownRowY(row, totalRowsByColumn[column], lineStep) + ResolveSpreadYOffset(row, columnOffset, lineStep);
             textItems[i].rectTransform.anchoredPosition = new Vector2(x, y);
         }
     }
+
+private float ResolveSpreadYOffset(int rowIndex, float columnOffset, float lineStep)
+    {
+        if (currentBatchLayout != FloatingTextBatchLayout.Spread)
+            return 0f;
+
+        float major = columnOffset * lineStep * Mathf.Max(0f, batchSpreadVerticalOffsetRatio);
+        float jitterScale = lineStep * Mathf.Max(0f, batchSpreadVerticalJitterRatio);
+        float minor = Mathf.Sin((rowIndex + 1) * 1.73f + columnOffset * 0.81f) * jitterScale;
+        return major + minor;
+    }
+
 
     private static float ResolveTopDownRowY(int rowIndex, int totalRows, float lineStep)
     {

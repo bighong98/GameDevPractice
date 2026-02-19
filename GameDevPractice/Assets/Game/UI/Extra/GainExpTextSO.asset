@@ -17,4 +17,4 @@ MonoBehaviour:
   fadeOutDuration: 0.35
   startOffset: {x: 0, y: 2, z: 0}
   textColor: {r: 0.25943398, g: 0.93610793, b: 1, a: 0.7058824}
-  textSize: 2
+  textSize: 1.5
