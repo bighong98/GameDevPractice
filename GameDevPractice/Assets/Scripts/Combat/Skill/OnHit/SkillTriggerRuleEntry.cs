@@ -16,12 +16,6 @@ namespace TH.Combat
         [SerializeField] private List<SkillConditionSO> conditions = new();
         [SerializeField] private List<SkillTypeSO> triggeredSkills = new();
 
-#if UNITY_EDITOR
-        [Header("Legacy OnHit Effects (Editor Only)")]
-        [SerializeField] private List<SkillOnHitEffectSO> legacyEffects = new();
-        [SerializeField, HideInInspector] private int lastLegacyImportSignature;
-#endif
-
         public IReadOnlyList<SkillConditionSO> Conditions => conditions;
         public IReadOnlyList<SkillTypeSO> TriggeredSkills => triggeredSkills;
         public bool OncePerAttackInstance => oncePerAttackInstance;
@@ -29,25 +23,31 @@ namespace TH.Combat
         public bool HasEffects => HasTriggeredSkills;
 
 #if UNITY_EDITOR
-        public bool HasLegacyEffects => legacyEffects != null && legacyEffects.Exists(effect => effect != null);
-
-        public bool ClearLegacyEffects()
+        public void SetTriggeredSkillsForEditor(IReadOnlyList<SkillTypeSO> skills, bool overwrite)
         {
-            bool changed = false;
-
-            if (legacyEffects != null && legacyEffects.Count > 0)
+            if (!overwrite && HasTriggeredSkills)
             {
-                legacyEffects.Clear();
-                changed = true;
+                return;
             }
 
-            if (lastLegacyImportSignature != 0)
+            triggeredSkills ??= new List<SkillTypeSO>();
+            triggeredSkills.Clear();
+
+            if (skills == null || skills.Count == 0)
             {
-                lastLegacyImportSignature = 0;
-                changed = true;
+                return;
             }
 
-            return changed;
+            for (int i = 0; i < skills.Count; i++)
+            {
+                var skill = skills[i];
+                if (skill == null)
+                {
+                    continue;
+                }
+
+                triggeredSkills.Add(skill);
+            }
         }
 #endif
 
@@ -59,12 +59,6 @@ namespace TH.Combat
                 conditions = conditions != null ? new List<SkillConditionSO>(conditions) : new List<SkillConditionSO>(),
                 triggeredSkills = CloneTriggeredSkills()
             };
-
-#if UNITY_EDITOR
-            cloned.legacyEffects = legacyEffects != null ? new List<SkillOnHitEffectSO>(legacyEffects) : new List<SkillOnHitEffectSO>();
-            cloned.lastLegacyImportSignature = lastLegacyImportSignature;
-#endif
-
             return cloned;
         }
 
@@ -113,83 +107,6 @@ namespace TH.Combat
                 ExecuteTriggeredSkill(triggeredSkill, context, combatSystem);
             }
         }
-
-#if UNITY_EDITOR
-        public bool ImportLegacyEffectsToTriggeredSkills(bool overwrite, out int convertedCount, out int skippedCount)
-        {
-            convertedCount = 0;
-            skippedCount = 0;
-
-            if (legacyEffects == null || legacyEffects.Count == 0)
-            {
-                return false;
-            }
-
-            if (!overwrite && HasTriggeredSkills)
-            {
-                return false;
-            }
-
-            int signature = ComputeLegacyEffectSignature();
-            if (!overwrite && signature == lastLegacyImportSignature)
-            {
-                return false;
-            }
-
-            triggeredSkills ??= new List<SkillTypeSO>();
-            triggeredSkills.Clear();
-
-            for (int i = 0; i < legacyEffects.Count; i++)
-            {
-                if (TryGetSkillFromLegacyEffect(legacyEffects[i], out var converted))
-                {
-                    triggeredSkills.Add(converted);
-                    convertedCount++;
-                }
-                else
-                {
-                    skippedCount++;
-                }
-            }
-
-            lastLegacyImportSignature = signature;
-            return true;
-        }
-
-        private static bool TryGetSkillFromLegacyEffect(SkillOnHitEffectSO legacyEffect, out SkillTypeSO converted)
-        {
-            converted = null;
-
-            if (legacyEffect is not SkillOnHitApplyAdditionalSkillEffectSO additional)
-            {
-                return false;
-            }
-
-            if (additional.AdditionalSkill == null)
-            {
-                return false;
-            }
-
-            converted = additional.AdditionalSkill;
-            return true;
-        }
-
-        private int ComputeLegacyEffectSignature()
-        {
-            unchecked
-            {
-                int hash = 17;
-                hash = (hash * 31) + legacyEffects.Count;
-                for (int i = 0; i < legacyEffects.Count; i++)
-                {
-                    int id = legacyEffects[i] != null ? legacyEffects[i].GetInstanceID() : 0;
-                    hash = (hash * 31) + id;
-                }
-
-                return hash;
-            }
-        }
-#endif
 
         private static void ExecuteTriggeredSkill(
             SkillTypeSO skill,

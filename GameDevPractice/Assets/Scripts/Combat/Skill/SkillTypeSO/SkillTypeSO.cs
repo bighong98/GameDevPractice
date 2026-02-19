@@ -25,25 +25,28 @@ namespace TH.Resource
         [SerializeField, Min(0f)] private float cooldown = 1f;
         
         [SerializeField] private SkillExecutionProfileSO executionProfile;
-        [Header("OnHit Proc")]
-        [SerializeField] private List<SkillTriggerRuleEntry> onHitTriggeredSkills = new();
 
         [Header("Sub Skill")]
         [SerializeField] private List<SkillTypeSO> subSkills = new();
 
+        [Header("OnHit Effects")]
+        [SerializeField] private List<SkillTriggerRuleEntry> onHitTriggeredSkills = new();
+
 #if UNITY_EDITOR
-        [Header("Sequence Preset (Editor Only)")]
-        [SerializeField] private ComboSequenceSO comboSequence;
+        [Header("OnHit Effects Preset(Editor Only)")]
+        [SerializeField] private List<SkillOnHitEffectSO> onHitEffects = new();
+        [SerializeField, HideInInspector] private int lastImportedOnHitEffectsSignature;
 
-        [Header("OnHit Proc Preset (Editor Only)")]
-        [SerializeField] private SkillOnHitProcProfileSO onHitProcProfile;
-        [SerializeField, HideInInspector] private SkillOnHitProcProfileSO lastImportedOnHitProcProfile;
-        [SerializeField, HideInInspector] private ComboSequenceSO lastImportedComboSequence;
 #endif
-
         [Header("Sequence")]
         [SerializeField, Min(0f)] private float comboTimeout = DefaultComboTimeout;
         [SerializeField] private List<SkillTypeSO> comboSteps = new();
+
+#if UNITY_EDITOR
+        [Header("Sequence Preset (Editor Only)")]
+        [SerializeField] private ComboSequenceSO comboSequence;
+        [SerializeField, HideInInspector] private ComboSequenceSO lastImportedComboSequence;
+#endif
 
         [Header("Targeting")]
         [SerializeField] private SkillTargetPolicy targetPolicy = SkillTargetPolicy.EnemyOnlyDefault;
@@ -123,8 +126,7 @@ namespace TH.Resource
         private void OnValidate()
         {
             TryAutoImportComboSequence();
-            TryAutoImportOnHitProcProfile();
-            TryAutoImportInlineLegacyOnHitEffects();
+            TryAutoImportOnHitEffects();
         }
 
         private void TryAutoImportComboSequence()
@@ -215,15 +217,15 @@ namespace TH.Resource
             EditorUtility.SetDirty(this);
         }
 
-        private void TryAutoImportOnHitProcProfile()
+        private void TryAutoImportOnHitEffects()
         {
             bool changed = false;
 
-            if (onHitProcProfile == null)
+            if (onHitEffects == null || onHitEffects.Count == 0)
             {
-                if (lastImportedOnHitProcProfile != null)
+                if (lastImportedOnHitEffectsSignature != 0)
                 {
-                    lastImportedOnHitProcProfile = null;
+                    lastImportedOnHitEffectsSignature = 0;
                     changed = true;
                 }
 
@@ -235,18 +237,24 @@ namespace TH.Resource
                 return;
             }
 
-            if (onHitProcProfile == lastImportedOnHitProcProfile)
+            int signature = ComputeOnHitEffectsSignature();
+            if (signature == lastImportedOnHitEffectsSignature)
             {
                 return;
             }
 
-            if (IsInlineOnHitProcAtDefault())
+            bool imported = ImportOnHitEffects(out int skippedCount);
+            if (imported)
             {
-                ImportOnHitProcProfile(onHitProcProfile, overwrite: true);
                 changed = true;
             }
 
-            lastImportedOnHitProcProfile = onHitProcProfile;
+            if (skippedCount > 0)
+            {
+                Debug.LogWarning($"[SkillTypeSO:{name}] onHitEffects skipped {skippedCount} unsupported effect(s) during auto import.", this);
+            }
+
+            lastImportedOnHitEffectsSignature = signature;
             changed = true;
 
             if (changed)
@@ -255,135 +263,99 @@ namespace TH.Resource
             }
         }
 
-        private bool IsInlineOnHitProcAtDefault()
+        private bool ImportOnHitEffects(out int skippedCount)
         {
-            return onHitTriggeredSkills == null || onHitTriggeredSkills.Count == 0;
-        }
-
-        private void ImportOnHitProcProfile(SkillOnHitProcProfileSO source, bool overwrite)
-        {
-            if (source == null)
-            {
-                return;
-            }
-
-            if (!overwrite && !IsInlineOnHitProcAtDefault())
-            {
-                return;
-            }
+            skippedCount = 0;
 
             onHitTriggeredSkills ??= new List<SkillTriggerRuleEntry>();
             onHitTriggeredSkills.Clear();
 
-            var sourceEntries = source.Entries;
-            if (sourceEntries == null)
+            if (onHitEffects == null || onHitEffects.Count == 0)
             {
-                return;
+                return true;
             }
 
-            for (int i = 0; i < sourceEntries.Count; i++)
+            var convertedSkills = new List<SkillTypeSO>(onHitEffects.Count);
+            for (int i = 0; i < onHitEffects.Count; i++)
             {
-                var entry = sourceEntries[i];
-                if (entry == null)
+                if (TryConvertOnHitEffectToTriggeredSkill(onHitEffects[i], out var convertedSkill))
                 {
-                    continue;
+                    convertedSkills.Add(convertedSkill);
                 }
-
-                var cloned = entry.Clone();
-                if (cloned.ImportLegacyEffectsToTriggeredSkills(overwrite: false, out _, out int skippedCount) && skippedCount > 0)
+                else
                 {
-                    Debug.LogWarning($"[SkillTypeSO:{name}] onHitProcProfile[{i}] skipped {skippedCount} unsupported legacy effect(s) during import.", this);
+                    skippedCount++;
                 }
-
-                _ = cloned.ClearLegacyEffects();
-
-                onHitTriggeredSkills.Add(cloned);
             }
+
+            if (convertedSkills.Count == 0)
+            {
+                return true;
+            }
+
+            var entry = new SkillTriggerRuleEntry();
+            entry.SetTriggeredSkillsForEditor(convertedSkills, overwrite: true);
+            onHitTriggeredSkills.Add(entry);
+            return true;
         }
 
-        [ContextMenu("Reimport OnHit Proc Preset (Force)")]
-        private void ReimportOnHitProcPresetInEditor()
+        [ContextMenu("Reimport OnHit Effects (Force)")]
+        private void ReimportOnHitEffectsInEditor()
         {
-            if (onHitProcProfile == null)
+            if (onHitEffects == null || onHitEffects.Count == 0)
             {
-                Debug.LogWarning($"[SkillTypeSO:{name}] onHitProcProfile preset is null.", this);
+                Debug.LogWarning($"[SkillTypeSO:{name}] onHitEffects is empty.", this);
                 return;
             }
 
-            ImportOnHitProcProfile(onHitProcProfile, overwrite: true);
-            lastImportedOnHitProcProfile = onHitProcProfile;
+            _ = ImportOnHitEffects(out int skippedCount);
+            lastImportedOnHitEffectsSignature = ComputeOnHitEffectsSignature();
+
+            if (skippedCount > 0)
+            {
+                Debug.LogWarning($"[SkillTypeSO:{name}] onHitEffects skipped {skippedCount} unsupported effect(s) during force reimport.", this);
+            }
+
             EditorUtility.SetDirty(this);
         }
 
-        private void TryAutoImportInlineLegacyOnHitEffects()
+        private static bool TryConvertOnHitEffectToTriggeredSkill(SkillOnHitEffectSO effect, out SkillTypeSO convertedSkill)
         {
-            if (onHitTriggeredSkills == null || onHitTriggeredSkills.Count == 0)
+            convertedSkill = null;
+
+            if (effect is not SkillOnHitApplyAdditionalSkillEffectSO additional)
             {
-                return;
+                return false;
             }
 
-            bool changed = false;
-            for (int i = 0; i < onHitTriggeredSkills.Count; i++)
+            if (additional.AdditionalSkill == null)
             {
-                var entry = onHitTriggeredSkills[i];
-                if (entry == null)
-                {
-                    continue;
-                }
-
-                bool imported = entry.ImportLegacyEffectsToTriggeredSkills(overwrite: false, out _, out int skippedCount);
-                if (imported && skippedCount > 0)
-                {
-                    Debug.LogWarning($"[SkillTypeSO:{name}] onHitProcEntries[{i}] skipped {skippedCount} unsupported legacy effect(s) during auto import.", this);
-                }
-
-                bool cleared = entry.ClearLegacyEffects();
-                if (imported || cleared)
-                {
-                    changed = true;
-                }
+                return false;
             }
 
-            if (changed)
-            {
-                EditorUtility.SetDirty(this);
-            }
+            convertedSkill = additional.AdditionalSkill;
+            return true;
         }
 
-        [ContextMenu("Reimport Inline Legacy OnHit Effects (Force)")]
-        private void ReimportInlineLegacyOnHitEffectsInEditor()
+        private int ComputeOnHitEffectsSignature()
         {
-            if (onHitTriggeredSkills == null || onHitTriggeredSkills.Count == 0)
+            if (onHitEffects == null || onHitEffects.Count == 0)
             {
-                Debug.LogWarning($"[SkillTypeSO:{name}] no onHitProcEntries to reimport.", this);
-                return;
+                return 0;
             }
 
-            bool changed = false;
-            for (int i = 0; i < onHitTriggeredSkills.Count; i++)
+            unchecked
             {
-                var entry = onHitTriggeredSkills[i];
-                if (entry == null)
+                int hash = 17;
+                hash = (hash * 31) + onHitEffects.Count;
+
+                for (int i = 0; i < onHitEffects.Count; i++)
                 {
-                    continue;
+                    int id = onHitEffects[i] != null ? onHitEffects[i].GetInstanceID() : 0;
+                    hash = (hash * 31) + id;
                 }
 
-                bool imported = entry.ImportLegacyEffectsToTriggeredSkills(overwrite: true, out _, out int skippedCount);
-                if (imported && skippedCount > 0)
-                {
-                    Debug.LogWarning($"[SkillTypeSO:{name}] onHitProcEntries[{i}] skipped {skippedCount} unsupported legacy effect(s) during force reimport.", this);
-                }
-
-                bool cleared = entry.ClearLegacyEffects();
-                if (imported || cleared)
-                {
-                    changed = true;
-                }
-            }
-
-            if (changed)
-            {
-                EditorUtility.SetDirty(this);
+                return hash;
             }
         }
 
@@ -474,10 +446,6 @@ namespace TH.Resource
             if (executionProfile != null && !executionProfile.HasActions)
             {
                 errors.Add("executionProfile is assigned but has no actions.");
-            }
-            if (onHitProcProfile != null && !onHitProcProfile.HasEntries)
-            {
-                warnings.Add("onHitProcProfile is assigned but has no valid proc entries.");
             }
 
             ValidateInlineOnHitProc(errors, warnings);

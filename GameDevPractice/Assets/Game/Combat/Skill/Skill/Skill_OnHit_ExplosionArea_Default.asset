@@ -24,8 +24,6 @@ MonoBehaviour:
   onHitTriggeredSkills: []
   subSkills: []
   comboSequence: {fileID: 0}
-  onHitProcProfile: {fileID: 0}
-  lastImportedOnHitProcProfile: {fileID: 0}
   lastImportedComboSequence: {fileID: 0}
   comboTimeout: 0.75
   comboSteps: []

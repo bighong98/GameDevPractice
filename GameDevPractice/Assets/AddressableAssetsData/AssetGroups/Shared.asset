@@ -89,11 +89,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 4b64e243ddb5dd941961795ebdbfbb11
-    m_Address: Profile_OnHit_Explosion_Area_Default.asset
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 4f18c80df16a4ae4194559bba2f3ab9b
     m_Address: Simple Bow.fbx
     m_ReadOnly: 0
