@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 457b66f19e90d544d84960ea2d7b758d, type: 3}
+  m_Name: SVP_OnHit_HitPoint
+  m_EditorClassIdentifier: Assembly-CSharp::TH.Combat.SkillVfxProfileSO
+  cues:
+  - cueId: OnHit_HitPoint
+    trigger: 1
+    markerName: 
+    effectPrefab: {fileID: 0}
+    anchorType: 3
+    anchorName: 
+    follow: 0
+    oncePerAttackInstance: 0
+    positionOffset: {x: 0, y: 0, z: 0}
+    groundLayerMask:
+      serializedVersion: 2
+      m_Bits: 0
+    groundRayStartHeight: 0
+    groundRayDistance: 0

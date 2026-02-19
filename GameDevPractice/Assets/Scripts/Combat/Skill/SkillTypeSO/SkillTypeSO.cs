@@ -25,11 +25,11 @@ namespace TH.Resource
         [Header("Sub Skill")]
         [SerializeField] private List<SkillTypeSO> subSkills = new();
 
-        [Header("OnHit Effects")]
+        [Header("OnHit Triggered Skill")]
         [SerializeField] private List<SkillTriggerRuleEntry> onHitTriggeredSkills = new();
 
 #if UNITY_EDITOR
-        [Header("OnHit Effects Preset(Editor Only)")]
+        [Header("OnHit Triggered Skill Preset(Editor Only)")]
         [SerializeField] private List<SkillOnHitEffectSO> onHitEffects = new();
         [SerializeField, HideInInspector] private int lastImportedOnHitEffectsSignature;
 
@@ -58,8 +58,12 @@ namespace TH.Resource
         [SerializeField] private GameObject projectilePrefab;
 
         [Header("VFX")]
-        [SerializeField] private GameObject skillVFXPrefab;
-        [SerializeField] private GameObject onHitVFXPrefab;
+        [SerializeField] private List<SkillVFXCue> skillVfxCues = new();
+#if UNITY_EDITOR
+        [Header("VFX Preset (Editor Only)")]
+        [SerializeField] private SkillVfxProfileSO skillEffectProfile;
+        [SerializeField, HideInInspector] private int lastImportedSkillVfxProfileSignature;
+#endif
 
         [Header("SFX")]
         [SerializeField] private AudioClip castSfx;
@@ -94,12 +98,11 @@ namespace TH.Resource
         public AnimatorOverrideController AnimatorOverride => animatorOverride;
         public bool HasProjectile => projectilePrefab != null;
         public GameObject ProjectilePrefab => projectilePrefab;
-        public bool HasSkillEffect => skillVFXPrefab != null;
-        public GameObject SkillEffectPrefab => skillVFXPrefab;
-        public bool HasOnHitEffect => onHitVFXPrefab != null;
-        public GameObject OnHitEffectPrefab => onHitVFXPrefab;
-        public bool HasImpactEffect => HasOnHitEffect;
-        public GameObject ImpactParticlePrefab => onHitVFXPrefab;
+        public IReadOnlyList<SkillVFXCue> SkillVfxCues => skillVfxCues;
+        public bool HasSkillVfxCues => skillVfxCues != null && skillVfxCues.Exists(cue => cue != null && cue.IsValid);
+#if UNITY_EDITOR
+        public SkillVfxProfileSO SkillEffectProfile => skillEffectProfile;
+#endif
 
         public SkillTypeSO GetComboStepSkill(int index, SkillTypeSO fallback)
         {

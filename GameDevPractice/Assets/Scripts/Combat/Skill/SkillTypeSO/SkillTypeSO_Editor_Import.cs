@@ -15,6 +15,7 @@ namespace TH.Resource
         {
             TryAutoImportComboSequence();
             TryAutoImportOnHitEffects();
+            TryAutoImportSkillVfxProfile();
         }
 
         private void TryAutoImportComboSequence()
@@ -241,6 +242,152 @@ namespace TH.Resource
                 {
                     int id = onHitEffects[i] != null ? onHitEffects[i].GetInstanceID() : 0;
                     hash = (hash * 31) + id;
+                }
+
+                return hash;
+            }
+        }
+
+        private void TryAutoImportSkillVfxProfile()
+        {
+            bool changed = false;
+
+            if (skillEffectProfile == null)
+            {
+                if (lastImportedSkillVfxProfileSignature != 0)
+                {
+                    lastImportedSkillVfxProfileSignature = 0;
+                    changed = true;
+                }
+
+                if (changed)
+                {
+                    EditorUtility.SetDirty(this);
+                }
+
+                return;
+            }
+
+            int signature = ComputeSkillVfxProfileSignature(skillEffectProfile);
+            if (signature == lastImportedSkillVfxProfileSignature)
+            {
+                return;
+            }
+
+            if (IsInlineSkillVfxAtDefault())
+            {
+                ImportSkillVfxProfile(skillEffectProfile, overwrite: true);
+                changed = true;
+            }
+
+            lastImportedSkillVfxProfileSignature = signature;
+            changed = true;
+
+            if (changed)
+            {
+                EditorUtility.SetDirty(this);
+            }
+        }
+
+        private bool IsInlineSkillVfxAtDefault()
+        {
+            return skillVfxCues == null ||
+                   skillVfxCues.Count == 0 ||
+                   !skillVfxCues.Exists(cue => cue != null && cue.IsValid);
+        }
+
+        private void ImportSkillVfxProfile(SkillVfxProfileSO source, bool overwrite)
+        {
+            if (source == null)
+            {
+                return;
+            }
+
+            if (!overwrite && !IsInlineSkillVfxAtDefault())
+            {
+                return;
+            }
+
+            skillVfxCues ??= new List<SkillVFXCue>();
+            skillVfxCues.Clear();
+
+            var sourceCues = source.Cues;
+            if (sourceCues == null || sourceCues.Count == 0)
+            {
+                return;
+            }
+
+            for (int i = 0; i < sourceCues.Count; i++)
+            {
+                var clonedCue = CloneSkillVfxCue(sourceCues[i]);
+                if (clonedCue == null)
+                {
+                    continue;
+                }
+
+                skillVfxCues.Add(clonedCue);
+            }
+        }
+
+        [ContextMenu("Reimport Skill VFX Preset (Force)")]
+        private void ReimportSkillVfxProfileInEditor()
+        {
+            if (skillEffectProfile == null)
+            {
+                Logg.LogWarning($"[SkillTypeSO:{name}] skillEffectProfile preset is null.", this);
+                return;
+            }
+
+            ImportSkillVfxProfile(skillEffectProfile, overwrite: true);
+            lastImportedSkillVfxProfileSignature = ComputeSkillVfxProfileSignature(skillEffectProfile);
+            EditorUtility.SetDirty(this);
+        }
+
+        private static SkillVFXCue CloneSkillVfxCue(SkillVFXCue source)
+        {
+            if (source == null)
+            {
+                return null;
+            }
+
+            string json = JsonUtility.ToJson(source);
+            return JsonUtility.FromJson<SkillVFXCue>(json);
+        }
+
+        private static int ComputeSkillVfxProfileSignature(SkillVfxProfileSO profile)
+        {
+            if (profile == null || !profile.HasCues || profile.Cues == null)
+            {
+                return 0;
+            }
+
+            unchecked
+            {
+                int hash = 17;
+                hash = (hash * 31) + profile.GetInstanceID();
+                hash = (hash * 31) + profile.Cues.Count;
+
+                for (int i = 0; i < profile.Cues.Count; i++)
+                {
+                    var cue = profile.Cues[i];
+                    if (cue == null)
+                    {
+                        hash = (hash * 31);
+                        continue;
+                    }
+
+                    hash = (hash * 31) + (cue.CueId?.GetHashCode() ?? 0);
+                    hash = (hash * 31) + (int)cue.Trigger;
+                    hash = (hash * 31) + (cue.MarkerName?.GetHashCode() ?? 0);
+                    hash = (hash * 31) + (cue.EffectPrefab != null ? cue.EffectPrefab.GetInstanceID() : 0);
+                    hash = (hash * 31) + (int)cue.AnchorType;
+                    hash = (hash * 31) + (cue.AnchorName?.GetHashCode() ?? 0);
+                    hash = (hash * 31) + (cue.Follow ? 1 : 0);
+                    hash = (hash * 31) + (cue.OncePerAttackInstance ? 1 : 0);
+                    hash = (hash * 31) + cue.PositionOffset.GetHashCode();
+                    hash = (hash * 31) + cue.GroundLayerMask.value;
+                    hash = (hash * 31) + cue.GroundRayStartHeight.GetHashCode();
+                    hash = (hash * 31) + cue.GroundRayDistance.GetHashCode();
                 }
 
                 return hash;

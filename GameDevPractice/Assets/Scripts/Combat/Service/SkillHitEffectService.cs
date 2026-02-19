@@ -14,45 +14,22 @@ namespace TH.Combat.Service
 
         private static void HandleHitApplied(in HitResult result, IDamageable target)
         {
-            if (result.Skill == null || !result.Skill.HasOnHitEffect)
+            if (result.Skill == null)
             {
                 return;
             }
 
-            if (result.HasHitPoint)
+            var targetComponent = target as Component;
+            var effectContext = new SkillEffectPlayContext(
+                result.Attacker as Component,
+                targetComponent,
+                result.HitPoint,
+                result.HasHitPoint,
+                result.AttackInstanceId);
+            if (SkillEffectPlayer.TryPlaySkillEffect(result.Skill, SkillEffectTrigger.OnHit, effectContext))
             {
-                SkillEffectPlayer.TryPlayOnHitEffect(result.Skill, result.HitPoint);
                 return;
             }
-
-            if (target is not Component targetComponent)
-            {
-                return;
-            }
-
-            var resolvedPosition = ResolveHitEffectPosition(targetComponent);
-            SkillEffectPlayer.TryPlayOnHitEffect(result.Skill, resolvedPosition);
-        }
-
-
-        private static Vector3 ResolveHitEffectPosition(Component targetComponent)
-        {
-            if (targetComponent == null)
-            {
-                return default;
-            }
-
-            if (targetComponent.TryGetComponent<Collider>(out var collider))
-            {
-                return collider.bounds.center;
-            }
-
-            if (targetComponent.TryGetComponent<Renderer>(out var renderer))
-            {
-                return renderer.bounds.center;
-            }
-
-            return targetComponent.transform.position;
         }
     }
 }

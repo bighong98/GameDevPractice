@@ -6,6 +6,7 @@ using System.IO;
 using System.Reflection;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
+using TH.Combat;
 using TH.Resource;
 using UnityEditor;
 using UnityEngine;
@@ -539,12 +540,34 @@ public static class SkillTypeXlsxSyncTool
             executionProfileName = skill.ExecutionProfile != null ? skill.ExecutionProfile.name : string.Empty,
             animatorOverrideName = skill.AnimatorOverride != null ? skill.AnimatorOverride.name : string.Empty,
             projectilePrefabName = skill.ProjectilePrefab != null ? skill.ProjectilePrefab.name : string.Empty,
-            skillVfxPrefabName = skill.SkillEffectPrefab != null ? skill.SkillEffectPrefab.name : string.Empty,
-            onHitVfxPrefabName = skill.OnHitEffectPrefab != null ? skill.OnHitEffectPrefab.name : string.Empty,
+            skillVfxPrefabName = ResolveFirstCuePrefabName(skill, SkillEffectTrigger.OnConsume),
+            onHitVfxPrefabName = ResolveFirstCuePrefabName(skill, SkillEffectTrigger.OnHit),
             castSfxName = skill.CastSFX != null ? skill.CastSFX.name : string.Empty,
             skillSlotImageName = skill.SkillSlotImage != null ? skill.SkillSlotImage.name : string.Empty,
             serializedJson = includeSerializedJson ? EditorJsonUtility.ToJson(skill, false) : string.Empty
         };
+    }
+
+    private static string ResolveFirstCuePrefabName(SkillTypeSO skill, SkillEffectTrigger trigger)
+    {
+        if (skill == null || !skill.HasSkillVfxCues || skill.SkillVfxCues == null)
+        {
+            return string.Empty;
+        }
+
+        var cues = skill.SkillVfxCues;
+        for (int i = 0; i < cues.Count; i++)
+        {
+            var cue = cues[i];
+            if (cue == null || !cue.IsValid || cue.Trigger != trigger || cue.EffectPrefab == null)
+            {
+                continue;
+            }
+
+            return cue.EffectPrefab.name;
+        }
+
+        return string.Empty;
     }
 
     private static void ApplyRow(SkillTypeSO skill, SkillTypeXlsxRow row, bool applySerializedJson)

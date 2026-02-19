@@ -20,8 +20,15 @@ MonoBehaviour:
   damageType: 1
   range: 4
   cooldown: 1
-  comboSequence: {fileID: 0}
   executionProfile: {fileID: 11400000, guid: 9d5a2f2f814813946b4d0b26aa737201, type: 2}
+  subSkills: []
+  onHitTriggeredSkills: []
+  onHitEffects: []
+  lastImportedOnHitEffectsSignature: 0
+  comboTimeout: 0.75
+  comboSteps: []
+  comboSequence: {fileID: 0}
+  lastImportedComboSequence: {fileID: 0}
   targetPolicy:
     allowedGroups: 2
     allowSelf: 0
@@ -30,8 +37,51 @@ MonoBehaviour:
   affectedByAttackSpeed: 1
   animatorOverride: {fileID: 22100000, guid: bb775ed55d1346646a899626d7d4b3bf, type: 2}
   projectilePrefab: {fileID: 0}
-  skillVFXPrefab: {fileID: 0}
-  onHitVFXPrefab: {fileID: 5602590985138988741, guid: 20b27818abf007b4c91e694a1931a851, type: 3}
+  skillVfxCues:
+  - cueId: OnConsume_Grund_LongSword
+    trigger: 0
+    markerName: 
+    effectPrefab: {fileID: 4204685358974784452, guid: b81f27256b9d6904b864940a7e0e222e, type: 3}
+    anchorType: 2
+    anchorName: 
+    follow: 0
+    oncePerAttackInstance: 0
+    positionOffset: {x: 0, y: 0, z: 0}
+    groundLayerMask:
+      serializedVersion: 2
+      m_Bits: 128
+    groundRayStartHeight: 1.5
+    groundRayDistance: 6
+  - cueId: OnConsume_Grund_LongSword
+    trigger: 1
+    markerName: 
+    effectPrefab: {fileID: 516796640606800711, guid: 3af87cf3870b72f408b6ee4c689bbc02, type: 3}
+    anchorType: 3
+    anchorName: 
+    follow: 0
+    oncePerAttackInstance: 0
+    positionOffset: {x: 0, y: 0, z: 0}
+    groundLayerMask:
+      serializedVersion: 2
+      m_Bits: 128
+    groundRayStartHeight: 1.5
+    groundRayDistance: 6
+  - cueId: legacy.onhit
+    trigger: 1
+    markerName: 
+    effectPrefab: {fileID: 5602590985138988741, guid: 20b27818abf007b4c91e694a1931a851, type: 3}
+    anchorType: 3
+    anchorName: 
+    follow: 0
+    oncePerAttackInstance: 0
+    positionOffset: {x: 0, y: 0, z: 0}
+    groundLayerMask:
+      serializedVersion: 2
+      m_Bits: 0
+    groundRayStartHeight: 1.5
+    groundRayDistance: 6
+  skillEffectProfile: {fileID: 11400000, guid: 3d7ede2244ae16c44842918749054689, type: 2}
+  lastImportedSkillVfxProfileSignature: 811600065
   castSfx: {fileID: 8300000, guid: 4e7a9f408abdba8459fdccbeaea95215, type: 3}
   skillCategory: 0
   skillSlotImage: {fileID: 21300000, guid: 95052c6b62fb3de4695beaa99f842ac2, type: 3}

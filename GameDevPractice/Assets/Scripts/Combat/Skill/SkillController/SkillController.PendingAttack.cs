@@ -89,7 +89,13 @@ namespace TH.Combat
             // 스킬 이펙트 재생 경로
             if (attacker is Component attackerComponent)
             {
-                SkillEffectPlayer.TryPlaySkillEffect(resolved, attackerComponent.transform);
+                var effectContext = new SkillEffectPlayContext(
+                    attackerComponent,
+                    null,
+                    default,
+                    hasHitPoint: false,
+                    attackInstanceId);
+                SkillEffectPlayer.TryPlaySkillEffect(resolved, SkillEffectTrigger.OnConsume, effectContext);
             }
 
             OnSkillConsumed?.Invoke(resolved);

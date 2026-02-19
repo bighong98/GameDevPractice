@@ -1,6 +1,7 @@
 #if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using TH.Combat;
 using TH.Utils;
 using UnityEditor;
 using UnityEngine;
@@ -99,8 +100,7 @@ namespace TH.Resource
             ValidateInlineOnHitProc(errors, warnings);
             ValidateInlineCombo(errors, warnings);
             ValidateSubSkills(errors);
-            ValidateEffectPrefab(skillVFXPrefab, nameof(skillVFXPrefab), warnings);
-            ValidateEffectPrefab(onHitVFXPrefab, nameof(onHitVFXPrefab), warnings);
+            ValidateInlineSkillVfx(warnings);
             ValidateAnimatorOverride(errors, warnings);
             return errors.Count == 0;
         }
@@ -386,6 +386,51 @@ namespace TH.Resource
             if (prefab.GetComponent<SimplePooledParticlePlayer>() == null)
             {
                 warnings.Add($"{fieldName} does not contain SimplePooledParticlePlayer. Pool playback can fail at runtime.");
+            }
+        }
+
+        private void ValidateInlineSkillVfx(List<string> warnings)
+        {
+            if (skillVfxCues == null || skillVfxCues.Count == 0)
+            {
+                return;
+            }
+
+            bool hasValidCue = false;
+            for (int i = 0; i < skillVfxCues.Count; i++)
+            {
+                var cue = skillVfxCues[i];
+                if (cue == null)
+                {
+                    warnings.Add($"skillVfxCues[{i}] is null.");
+                    continue;
+                }
+
+                if (cue.EffectPrefab == null)
+                {
+                    warnings.Add($"skillVfxCues[{i}].effectPrefab is null.");
+                    continue;
+                }
+
+                hasValidCue = true;
+                ValidateEffectPrefab(cue.EffectPrefab, $"skillVfxCues[{i}].effectPrefab", warnings);
+
+                if (cue.Trigger == SkillEffectTrigger.OnAnimMarker &&
+                    string.IsNullOrWhiteSpace(cue.MarkerName))
+                {
+                    warnings.Add($"skillVfxCues[{i}] trigger is OnAnimMarker but markerName is empty.");
+                }
+
+                if (cue.AnchorType == SkillEffectAnchorType.WeaponSocket &&
+                    string.IsNullOrWhiteSpace(cue.AnchorName))
+                {
+                    warnings.Add($"skillVfxCues[{i}] anchorType is WeaponSocket but anchorName is empty.");
+                }
+            }
+
+            if (!hasValidCue)
+            {
+                warnings.Add("skillVfxCues contains no valid cue with effectPrefab.");
             }
         }
 

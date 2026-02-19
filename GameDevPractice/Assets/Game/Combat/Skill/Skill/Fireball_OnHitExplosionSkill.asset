@@ -21,17 +21,19 @@ MonoBehaviour:
   range: 20
   cooldown: 1
   executionProfile: {fileID: 11400000, guid: 91415d6afb7673844bc9d9123a961bf7, type: 2}
+  subSkills: []
   onHitTriggeredSkills:
   - oncePerAttackInstance: 1
     conditions:
     - {fileID: 11400000, guid: a3bdec409badf0c4db04d28ac30e4e69, type: 2}
     triggeredSkills:
     - {fileID: 11400000, guid: 0552002d4306ea14e9ea8cbeb1199fc2, type: 2}
-  subSkills: []
-  comboSequence: {fileID: 0}
-  lastImportedComboSequence: {fileID: 0}
+  onHitEffects: []
+  lastImportedOnHitEffectsSignature: 0
   comboTimeout: 0.75
   comboSteps: []
+  comboSequence: {fileID: 0}
+  lastImportedComboSequence: {fileID: 0}
   targetPolicy:
     allowedGroups: 2
     allowSelf: 0
@@ -40,8 +42,23 @@ MonoBehaviour:
   affectedByAttackSpeed: 1
   animatorOverride: {fileID: 22100000, guid: 02612d1855855bf40972d636cba04f13, type: 2}
   projectilePrefab: {fileID: 1111895543867379590, guid: 4d654d0ea2ce7e44aa38d9e4596715f7, type: 3}
-  skillVFXPrefab: {fileID: 0}
-  onHitVFXPrefab: {fileID: 2302457091093092515, guid: 69d1b1037536b504884c93bb73d662db, type: 3}
+  skillVfxCues:
+  - cueId: legacy.onhit
+    trigger: 1
+    markerName: 
+    effectPrefab: {fileID: 2302457091093092515, guid: 69d1b1037536b504884c93bb73d662db, type: 3}
+    anchorType: 3
+    anchorName: 
+    follow: 0
+    oncePerAttackInstance: 0
+    positionOffset: {x: 0, y: 0, z: 0}
+    groundLayerMask:
+      serializedVersion: 2
+      m_Bits: 0
+    groundRayStartHeight: 1.5
+    groundRayDistance: 6
+  skillEffectProfile: {fileID: 0}
+  lastImportedSkillVfxProfileSignature: 0
   castSfx: {fileID: 8300000, guid: da396a16a7f24f64cbb0054f5a56b46a, type: 3}
   skillCategory: 0
   skillSlotImage: {fileID: 21300000, guid: 4408269a96438e84796304f4ac0ed623, type: 3}
