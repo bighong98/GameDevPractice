@@ -29,5 +29,5 @@ MonoBehaviour:
     destinationState: {fileID: 11400000, guid: aebd0b6c5f806a346a562df8927ab54d, type: 2}
   - condition: {fileID: 11400000, guid: 5d08da84b4f664c4890db4f51a1d5086, type: 2}
     destinationState: {fileID: 11400000, guid: 16deb90229b9bec408b94b3510134c35, type: 2}
-  allowSelfTransition: 0
+  allowSelfTransition: 1
   transitionLockRequired: 1

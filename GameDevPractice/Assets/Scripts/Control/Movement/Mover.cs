@@ -156,16 +156,34 @@ namespace TH.Control.Movement
         {
             if (state is not MoverSaveData data) return false;
             if (!TryGetComponent(out navMeshAgent)) return false;
-            
-            // NavMeshAgent의 transform 간섭 차단 방지 및 기존 경로 제거
-            navMeshAgent.ResetPath();
-            navMeshAgent.enabled = false; 
-            
-            this.Log($"({gameObject.name}) - set position: {data.position.ToVector()}, set rotation: {data.rotation.ToVector()}", Logg.LoggingMode.Completed);
-            transform.position = data.position.ToVector();
-            transform.eulerAngles = data.rotation.ToVector();
-            
-            navMeshAgent.enabled = true;
+
+            Vector3 restoredPosition = data.position.ToVector();
+            Vector3 restoredRotation = data.rotation.ToVector();
+
+            // Clear previous move target so AI cannot resume stale destination after load.
+            currentDestination = Vector3.zero;
+
+            bool wasAgentEnabled = navMeshAgent.enabled;
+            if (wasAgentEnabled)
+            {
+                navMeshAgent.ResetPath();
+                navMeshAgent.velocity = Vector3.zero;
+                navMeshAgent.isStopped = true;
+                navMeshAgent.enabled = false;
+            }
+
+            this.Log($"({gameObject.name}) - set position: {restoredPosition}, set rotation: {restoredRotation}", Logg.LoggingMode.Completed);
+            transform.position = restoredPosition;
+            transform.eulerAngles = restoredRotation;
+
+            if (wasAgentEnabled)
+            {
+                navMeshAgent.enabled = true;
+                navMeshAgent.ResetPath();
+                navMeshAgent.velocity = Vector3.zero;
+                navMeshAgent.isStopped = true;
+            }
+
             return true;
         }
 
