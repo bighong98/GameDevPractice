@@ -29,12 +29,12 @@ namespace TH.Combat
             // 보류 공격 존재 시 재사용 우선 경로
             if (hasPendingAttack)
             {
-                if (TryReusePendingAttack(attacker, out attackSource))
+                if (!attacker.IsNull() &&
+                    ReferenceEquals(pendingAttacker, attacker) &&
+                    IsPendingAttackReusableState())
                 {
-                    executingSkill = pendingAttackSkill;
-                    LogConsumeState("reuse_pending_success");
-                    SyncDebugValues();
-                    return true;
+                    LogConsumeState("blocked_by_pending_attack");
+                    return false;
                 }
 
                 // 재사용 실패 보류 상태 정리
@@ -58,47 +58,11 @@ namespace TH.Combat
             }
 
             LogConsumeState("resolved_preview", baseSkill, resolved, stepIndex, stepCount);
-
-            int attackInstanceId = TakeNextAttackInstanceId();
-            // 공격 소스 생성 실패 가드
-            if (!TryBuildAttackSource(attacker, resolved, attackInstanceId, out attackSource))
-            {
-                LogConsumeState("build_attack_source_failed", baseSkill, resolved, stepIndex, stepCount, attackInstanceId);
-                return false;
-            }
-
-            // 타이밍 스케일 반영 쿨다운 계산
-            float cooldownTimingScale = ResolveSkillTimingScale(attacker);
-            float scaledCooldown = baseSkill.Cooldown / Mathf.Max(0.01f, cooldownTimingScale);
-            if (!skillCaster.Consume(baseSkill, scaledCooldown))
-            {
-                LogConsumeState("consume_failed", baseSkill, resolved, stepIndex, stepCount, attackInstanceId);
-                attackSource = default;
-                return false;
-            }
-
-            // 콤보 진행/타임아웃/보류 상태 커밋
-            CommitComboProgress(baseSkill, stepIndex, stepCount);
-            ScheduleActiveComboTimeout(baseSkill, stepCount);
-            SetPendingAttack(attacker, resolved, attackSource, baseSkill, stepIndex, stepCount);
+            SetPendingAttack(attacker, resolved, baseSkill, stepIndex, stepCount);
             executingSkill = resolved;
-            LogConsumeState("pending_set_before_resolved_update", baseSkill, resolved, stepIndex, stepCount, attackInstanceId);
+            LogConsumeState("pending_armed", baseSkill, resolved, stepIndex, stepCount);
             UpdateResolvedSkillFromPreview(forceNotify: true);
-            LogConsumeState("after_resolved_update", baseSkill, resolved, stepIndex, stepCount, attackInstanceId);
-
-            // 스킬 이펙트 재생 경로
-            if (attacker is Component attackerComponent)
-            {
-                var effectContext = new SkillEffectPlayContext(
-                    attackerComponent,
-                    null,
-                    default,
-                    hasHitPoint: false,
-                    attackInstanceId);
-                SkillEffectPlayer.TryPlaySkillEffect(resolved, SkillEffectTrigger.OnConsume, effectContext);
-            }
-
-            OnSkillConsumed?.Invoke(resolved);
+            LogConsumeState("after_resolved_update", baseSkill, resolved, stepIndex, stepCount);
             SyncDebugValues();
             return true;
         }
@@ -119,15 +83,34 @@ namespace TH.Combat
             string pendingBaseName = pendingBaseSkill.IsNotNull() ? pendingBaseSkill.name : "null";
             string baseSkillName = baseSkill.IsNotNull() ? baseSkill.name : "null";
             string resolvedPreviewName = resolvedPreviewSkill.IsNotNull() ? resolvedPreviewSkill.name : "null";
+            string ownerName = gameObject != null ? gameObject.name : "null";
+            int ownerInstanceId = gameObject != null ? gameObject.GetInstanceID() : 0;
 
             Logg.Log(
                 $"[{nameof(SkillController)}.{nameof(TryConsumeActiveSkill)}] " +
+                $"owner={ownerName}#{ownerInstanceId}, " +
                 $"stage={stage}, frame={Time.frameCount}, time={Time.time:0.000}, " +
                 $"active={activeSkillName}, resolvedCurrent={resolvedSkillName}, " +
                 $"baseArg={baseSkillName}, resolvedArg={resolvedPreviewName}, step={stepIndex}/{stepCount}, attackId={attackInstanceId}, " +
                 $"pending={hasPendingAttack}, pendingSkill={pendingSkillName}, pendingBase={pendingBaseName}, " +
                 $"pendingStep={pendingComboStepIndex}/{pendingComboStepCount}, currentStep={currentComboStepIndex}/{currentComboStepCount}",
-                Logg.LoggingMode.Completed);
+                Logg.LoggingMode.InProgress);
+        }
+
+        [Conditional("UNITY_EDITOR")]
+        [Conditional("DEVELOPMENT_BUILD")]
+        private void LogPendingExecuteState(string stage, SkillTypeSO skill, int attackInstanceId, Health target)
+        {
+            string ownerName = gameObject != null ? gameObject.name : "null";
+            int ownerInstanceId = gameObject != null ? gameObject.GetInstanceID() : 0;
+            string skillName = skill.IsNotNull() ? skill.name : "null";
+            string targetName = target.IsNotNull() ? target.name : "null";
+
+            Logg.Log(
+                $"[{nameof(SkillController)}.{nameof(TryExecutePendingAttack)}] " +
+                $"owner={ownerName}#{ownerInstanceId}, stage={stage}, frame={Time.frameCount}, time={Time.time:0.000}, " +
+                $"skill={skillName}, attackId={attackInstanceId}, target={targetName}",
+                Logg.LoggingMode.InProgress);
         }
 
         // 소비 없는 프리뷰 공격 소스 생성
@@ -161,22 +144,71 @@ namespace TH.Combat
                 return false;
             }
 
-            bool executed = ExecutePendingAttack(target);
+            var baseSkill = pendingBaseSkill.IsNotNull()
+                ? pendingBaseSkill
+                : (HasActiveSkill ? skillBook.ActiveSkill : null);
+            if (baseSkill.IsNull())
+            {
+                CancelPendingAttack(PendingCancelReason.InvalidatedOnExecute, refreshResolvedFromPreview: true);
+                return false;
+            }
+
+            float timingScale = ResolveSkillTimingScale(attacker);
+            if (!skillCaster.IsReady(baseSkill))
+            {
+                LogPendingExecuteState("execute_blocked_not_ready", pendingAttackSkill, 0, target);
+                CancelPendingAttack(PendingCancelReason.InvalidatedOnExecute, refreshResolvedFromPreview: true);
+                return false;
+            }
+
+            float scaledCooldown = baseSkill.Cooldown / Mathf.Max(0.01f, timingScale);
+            if (!skillCaster.Consume(baseSkill, scaledCooldown))
+            {
+                LogPendingExecuteState("execute_consume_failed", pendingAttackSkill, 0, target);
+                CancelPendingAttack(PendingCancelReason.InvalidatedOnExecute, refreshResolvedFromPreview: true);
+                return false;
+            }
+
+            int attackInstanceId = TakeNextAttackInstanceId();
+            CommitComboProgress(baseSkill, pendingComboStepIndex, pendingComboStepCount);
+            ScheduleActiveComboTimeout(baseSkill, pendingComboStepCount);
+            SkillTypeSO executedSkill = pendingAttackSkill;
+            executingSkill = executedSkill;
+
+            if (attacker is Component attackerComponent && executedSkill.IsNotNull())
+            {
+                var effectContext = new SkillEffectPlayContext(
+                    attackerComponent,
+                    null,
+                    default,
+                    hasHitPoint: false,
+                    attackInstanceId);
+                SkillEffectPlayer.TryPlaySkillEffect(executedSkill, SkillEffectTrigger.OnConsume, effectContext);
+            }
+
+            OnSkillConsumed?.Invoke(executedSkill);
+
+            LogPendingExecuteState("execute_begin", executedSkill, attackInstanceId, target);
+            bool executed = ExecutePendingAttack(target, timingScale, attackInstanceId);
             if (executed)
             {
+                LogPendingExecuteState("execute_success", executedSkill, attackInstanceId, target);
+                lastUsedSkill = executedSkill;
+                executingSkill = null;
                 // 성공 실행 시 보류 상태 해제
                 ClearPendingAttack();
                 UpdateResolvedSkillFromPreview(forceNotify: true);
                 return true;
             }
 
+            LogPendingExecuteState("execute_rejected", executedSkill, attackInstanceId, target);
             // 실행 거부 시 보류 상태 정리
             CancelPendingAttack(PendingCancelReason.ExecutionRejected, refreshResolvedFromPreview: true);
             return false;
         }
 
         // 보류 공격 실제 실행 경로
-        private bool ExecutePendingAttack(Health target)
+        private bool ExecutePendingAttack(Health target, float timingScale, int attackInstanceId)
         {
             var skill = pendingAttackSkill;
             if (skill.IsNull())
@@ -184,12 +216,9 @@ namespace TH.Combat
                 return false;
             }
 
-            float timingScale = ResolveSkillTimingScale(pendingAttacker);
-            int attackInstanceId = pendingAttackSource.AttackInstanceId;
-
             if (!skill.HasSubSkills)
             {
-                return TryExecuteSingleSkill(skill, target, timingScale, attackInstanceId, usePendingAttackSource: true);
+                return TryExecuteSingleSkill(skill, target, timingScale, attackInstanceId);
             }
 
             bool anyExecuted = false;
@@ -202,7 +231,7 @@ namespace TH.Combat
                     continue;
                 }
 
-                if (TryExecuteSingleSkill(subSkill, target, timingScale, attackInstanceId, usePendingAttackSource: false))
+                if (TryExecuteSingleSkill(subSkill, target, timingScale, attackInstanceId))
                 {
                     anyExecuted = true;
                 }
@@ -211,19 +240,14 @@ namespace TH.Combat
             return anyExecuted;
         }
 
-        private bool TryExecuteSingleSkill(SkillTypeSO skill, Health target, float timingScale, int attackInstanceId, bool usePendingAttackSource)
+        private bool TryExecuteSingleSkill(SkillTypeSO skill, Health target, float timingScale, int attackInstanceId)
         {
             if (skill.IsNull())
             {
                 return false;
             }
 
-            AttackSource attackSource = default;
-            if (usePendingAttackSource)
-            {
-                attackSource = pendingAttackSource;
-            }
-            else if (!TryBuildAttackSource(pendingAttacker, skill, attackInstanceId, out attackSource))
+            if (!TryBuildAttackSource(pendingAttacker, skill, attackInstanceId, out var attackSource))
             {
                 return false;
             }
@@ -262,14 +286,14 @@ namespace TH.Combat
         }
 
         // 보류 공격 상태 적재
-        private void SetPendingAttack(IAttacker attacker, SkillTypeSO skill, in AttackSource attackSource, SkillTypeSO baseSkill, int stepIndex, int stepCount)
+        private void SetPendingAttack(IAttacker attacker, SkillTypeSO skill, SkillTypeSO baseSkill, int stepIndex, int stepCount)
         {
             pendingAttacker = attacker;
             pendingAttackSkill = skill;
-            pendingAttackSource = attackSource;
             pendingBaseSkill = baseSkill;
             pendingComboStepIndex = Mathf.Max(0, stepIndex);
             pendingComboStepCount = Mathf.Max(1, stepCount);
+            pendingAttackIssuedFrame = Time.frameCount;
             hasPendingAttack = true;
         }
 
@@ -277,54 +301,12 @@ namespace TH.Combat
         private void ClearPendingAttack()
         {
             hasPendingAttack = false;
-            pendingAttackSource = default;
             pendingAttackSkill = null;
             pendingAttacker = null;
             pendingBaseSkill = null;
             pendingComboStepIndex = 0;
             pendingComboStepCount = 1;
-        }
-
-        // 동일 공격자 기준 보류 공격 재사용 시도
-        private bool TryReusePendingAttack(IAttacker attacker, out AttackSource attackSource)
-        {
-            attackSource = default;
-
-            // 재사용 가능한 보류 상태 검증
-            if (!TryGetValidPendingState(out var baseSkill, out var stepIndex, out var stepCount))
-            {
-                return false;
-            }
-
-            // 공격자 일치 검증
-            if (attacker.IsNull() || !ReferenceEquals(pendingAttacker, attacker))
-            {
-                return false;
-            }
-
-            attackSource = pendingAttackSource;
-            SetResolvedSkill(pendingAttackSkill, baseSkill, stepIndex, stepCount, forceNotify: true);
-            return true;
-        }
-
-        // 유효 보류 상태 조회
-        private bool TryGetValidPendingState(out SkillTypeSO baseSkill, out int stepIndex, out int stepCount)
-        {
-            baseSkill = null;
-            stepIndex = 0;
-            stepCount = 1;
-
-            // 보류 스킬 미존재 가드
-            if (!hasPendingAttack || pendingAttackSkill.IsNull())
-            {
-                return false;
-            }
-
-            baseSkill = pendingBaseSkill;
-            stepIndex = Mathf.Max(0, pendingComboStepIndex);
-            stepCount = Mathf.Max(1, pendingComboStepCount);
-
-            return IsPendingAttackReusableStateFor(baseSkill, stepIndex, stepCount);
+            pendingAttackIssuedFrame = -1;
         }
 
         // 현재 캐시 값 기준 보류 재사용 상태 평가
@@ -337,13 +319,7 @@ namespace TH.Combat
         private bool IsPendingAttackReusableStateFor(SkillTypeSO baseSkill, int stepIndex, int stepCount)
         {
             // 기본 필드 무결성 가드
-            if (!hasPendingAttack || pendingAttackSkill.IsNull() || pendingAttackSource.Skill.IsNull())
-            {
-                return false;
-            }
-
-            // 공격 소스 스킬 불일치 가드
-            if (pendingAttackSource.Skill != pendingAttackSkill)
+            if (!hasPendingAttack || pendingAttackSkill.IsNull())
             {
                 return false;
             }
@@ -363,16 +339,6 @@ namespace TH.Combat
             int resolvedStepCount = Mathf.Max(1, baseSkill.ComboStepCount);
             int resolvedStepIndex = Mathf.Clamp(stepIndex, 0, resolvedStepCount - 1);
             if (resolvedStepCount != Mathf.Max(1, stepCount))
-            {
-                return false;
-            }
-
-            // 콤보 타임아웃 초과 가드
-            var context = GetOrCreateComboContext(baseSkill);
-            float comboTimeout = Mathf.Max(0f, baseSkill.ComboTimeout);
-            if (comboTimeout > 0f &&
-                context.LastConsumeTime >= 0f &&
-                Time.time > context.LastConsumeTime + comboTimeout)
             {
                 return false;
             }

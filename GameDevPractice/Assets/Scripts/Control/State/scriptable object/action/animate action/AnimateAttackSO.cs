@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using TH.Control.State;
@@ -30,15 +31,19 @@ namespace TH.Control.Data
 
             if (animator.GetCurrentAnimatorStateInfo(AnimatorBaseLayer).shortNameHash == AttackASSHash)
             {
+                LogAttackAnimTrigger(animator, "crossfade_same_state");
                 animator.CrossFade(
                     stateHashName: AttackASSHash, 
                     normalizedTransitionDuration: Mathf.Clamp01(retriggerTransitionDuration), 
                     layer: AnimatorBaseLayer, 
                     normalizedTimeOffset: Mathf.Clamp01(retriggerNormalizedTimeOffset));
+                LogAttackAnimTrigger(animator, "crossfade_same_state_after");
             }
             else
             {
+                LogAttackAnimTrigger(animator, "play_from_start");
                 animator.Play(AttackASSHash, AnimatorBaseLayer, 0f);
+                LogAttackAnimTrigger(animator, "play_from_start_after");
             }
         }
 
@@ -96,8 +101,51 @@ namespace TH.Control.Data
                     await UniTask.Yield(PlayerLoopTiming.Update, cancellationToken: token).SuppressCancellationThrow();
                 }
             }
-            catch (Exception e) { Debug.LogError($"[{name}] Animation monitor error: {e}"); }
+            catch (Exception e) { Logg.LogError($"[{name}] Animation monitor error: {e}"); }
             finally { onCompleted?.Invoke(); }
+        }
+
+        [Conditional("UNITY_EDITOR")]
+        [Conditional("DEVELOPMENT_BUILD")]
+        private void LogAttackAnimTrigger(Animator animator, string mode)
+        {
+            var stateInfo = animator.GetCurrentAnimatorStateInfo(AnimatorBaseLayer);
+            bool inTransition = animator.IsInTransition(AnimatorBaseLayer);
+            string currentClip = ResolveCurrentClipName(animator);
+            string nextClip = ResolveNextClipName(animator);
+            string controllerName = animator.runtimeAnimatorController != null
+                ? animator.runtimeAnimatorController.name
+                : "null";
+
+            Logg.Log(
+                $"[{nameof(AnimateAttackSO)}.{nameof(Execute)}] mode={mode}, " +
+                $"frame={Time.frameCount}, time={Time.time:0.000}, " +
+                $"controller={controllerName}, inTransition={inTransition}, " +
+                $"stateHash={stateInfo.shortNameHash}, norm={stateInfo.normalizedTime:0.000}, " +
+                $"currentClip={currentClip}, nextClip={nextClip}",
+                Logg.LoggingMode.InProgress);
+        }
+
+        private static string ResolveCurrentClipName(Animator animator)
+        {
+            var clips = animator.GetCurrentAnimatorClipInfo(AnimatorBaseLayer);
+            if (clips == null || clips.Length == 0 || clips[0].clip == null)
+            {
+                return "none";
+            }
+
+            return clips[0].clip.name;
+        }
+
+        private static string ResolveNextClipName(Animator animator)
+        {
+            var clips = animator.GetNextAnimatorClipInfo(AnimatorBaseLayer);
+            if (clips == null || clips.Length == 0 || clips[0].clip == null)
+            {
+                return "none";
+            }
+
+            return clips[0].clip.name;
         }
     }
 }

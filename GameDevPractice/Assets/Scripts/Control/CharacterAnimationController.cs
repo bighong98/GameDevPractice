@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using TH.Attribute.Stat;
 using TH.Combat;
 using TH.Resource;
@@ -14,6 +15,7 @@ namespace TH.Control
         private const string DefaultAttackSpeedMultiplierParameter = "AttackSpeedMultiplier";
         private const float DefaultBaseAttackSpeedStatValue = 100f;
         private const float LegacyCurveTargetNormalizedAttackSpeed = 4f;
+        private static readonly int AttackStateShortNameHash = Animator.StringToHash("Attack");
         private const float LegacyCurveTargetMultiplier = 2f;
 
         [Header("Default")]
@@ -146,6 +148,7 @@ namespace TH.Control
             }
 
             lastEffectiveSkill = ResolveEffectiveSkill();
+            LogAnimatorSelection(skill);
             CacheAttackSpeedParameter();
             RefreshAttackAnimationSpeed();
         }
@@ -260,6 +263,12 @@ namespace TH.Control
                 return skillController.ExecutingSkill;
             }
 
+            // Keep the currently playing attack clip stable until the state exits Attack.
+            if (IsAttackStateActive() && lastEffectiveSkill.IsNotNull())
+            {
+                return lastEffectiveSkill;
+            }
+
             if (skillController != null && skillController.HasResolvedSkill)
             {
                 return skillController.ResolvedSkill;
@@ -271,6 +280,28 @@ namespace TH.Control
             }
 
             return null;
+        }
+
+        private bool IsAttackStateActive()
+        {
+            if (animator.IsNull())
+            {
+                return false;
+            }
+
+            var current = animator.GetCurrentAnimatorStateInfo(0);
+            if (current.shortNameHash == AttackStateShortNameHash)
+            {
+                return true;
+            }
+
+            if (!animator.IsInTransition(0))
+            {
+                return false;
+            }
+
+            var next = animator.GetNextAnimatorStateInfo(0);
+            return next.shortNameHash == AttackStateShortNameHash;
         }
 
         private void CacheAttackSpeedParameter()
@@ -394,5 +425,34 @@ namespace TH.Control
             resolvedAttackCoefficientDebug = debugSkill.IsNotNull() ? debugSkill.AttackCoefficient : 1f;
         }
 #endif
+
+        [Conditional("UNITY_EDITOR")]
+        [Conditional("DEVELOPMENT_BUILD")]
+        private void LogAnimatorSelection(SkillTypeSO selectedSkill)
+        {
+            string selectedName = selectedSkill.IsNotNull() ? selectedSkill.name : "null";
+            string selectedOverride = selectedSkill.IsNotNull() && selectedSkill.AnimatorOverride.IsNotNull()
+                ? selectedSkill.AnimatorOverride.name
+                : "base";
+            string activeName = skillController != null && skillController.HasActiveSkill && skillController.ActiveSkill.IsNotNull()
+                ? skillController.ActiveSkill.name
+                : "null";
+            string resolvedName = skillController != null && skillController.HasResolvedSkill && skillController.ResolvedSkill.IsNotNull()
+                ? skillController.ResolvedSkill.name
+                : "null";
+            string executingName = skillController != null && skillController.HasExecutingSkill && skillController.ExecutingSkill.IsNotNull()
+                ? skillController.ExecutingSkill.name
+                : "null";
+            string runtimeControllerName = animator != null && animator.runtimeAnimatorController != null
+                ? animator.runtimeAnimatorController.name
+                : "null";
+
+            Logg.Log(
+                $"[{nameof(CharacterAnimationController)}.{nameof(ApplySkillAnimator)}] " +
+                $"owner={gameObject.name}, frame={Time.frameCount}, time={Time.time:0.000}, " +
+                $"selected={selectedName}, selectedOverride={selectedOverride}, runtimeController={runtimeControllerName}, " +
+                $"executing={executingName}, resolved={resolvedName}, active={activeName}",
+                Logg.LoggingMode.InProgress);
+        }
     }
 }

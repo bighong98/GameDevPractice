@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using TH.Attribute;
 using TH.Combat;
 using TH.Resource;
@@ -49,11 +50,17 @@ public class Fighter : MonoBehaviour, IFighter
     {
         if (skillController.IsNull()) return;
 
-        _ = skillController.TryConsumeActiveSkill(this, out _);
+        bool consumed = skillController.TryConsumeActiveSkill(this, out _);
+        LogAttackFlow("Attack", consumed);
     }
 
     public void SetTarget(Health attackTarget)
     {
+        if (ReferenceEquals(target, attackTarget))
+        {
+            return;
+        }
+
         target = attackTarget;
         OnTargetSet?.Invoke(target);
     }
@@ -90,8 +97,31 @@ public class Fighter : MonoBehaviour, IFighter
     {
         if (!IsTargetValid) return;
         if (skillController.IsNull()) return;
-        if (!skillController.TryExecutePendingAttack(this, target)) return;
+        bool executed = skillController.TryExecutePendingAttack(this, target);
+        LogAttackFlow("TriggerAttack", executed);
+        if (!executed) return;
 
         OnAttack?.Invoke();
+    }
+
+    [Conditional("UNITY_EDITOR")]
+    [Conditional("DEVELOPMENT_BUILD")]
+    private void LogAttackFlow(string stage, bool result)
+    {
+        string targetName = target.IsNotNull() ? target.name : "null";
+        string activeName = skillController != null && skillController.HasActiveSkill && skillController.ActiveSkill.IsNotNull()
+            ? skillController.ActiveSkill.name
+            : "null";
+        string resolvedName = skillController != null && skillController.HasResolvedSkill && skillController.ResolvedSkill.IsNotNull()
+            ? skillController.ResolvedSkill.name
+            : "null";
+        string executingName = skillController != null && skillController.HasExecutingSkill && skillController.ExecutingSkill.IsNotNull()
+            ? skillController.ExecutingSkill.name
+            : "null";
+
+        Logg.Log(
+            $"[{nameof(Fighter)}.{stage}] owner={name}, frame={Time.frameCount}, time={Time.time:0.000}, result={result}, " +
+            $"target={targetName}, active={activeName}, resolved={resolvedName}, executing={executingName}",
+            Logg.LoggingMode.InProgress);
     }
 }

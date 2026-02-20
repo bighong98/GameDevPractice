@@ -110,10 +110,7 @@ namespace TH.Combat
         private List<float> BuildHitDamages(float perHitDamage, int hitCount)
         {
             int resolvedHitCount = Mathf.Max(1, hitCount);
-            // 보류 공격 참조 충돌 회피 이중 버퍼 선택
-            var hitDamages = hasPendingAttack && ReferenceEquals(pendingAttackSource.HitDamages, primaryPendingHitDamages)
-                ? secondaryPendingHitDamages
-                : primaryPendingHitDamages;
+            var hitDamages = primaryPendingHitDamages;
 
             hitDamages.Clear();
             if (hitDamages.Capacity < resolvedHitCount)

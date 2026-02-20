@@ -62,13 +62,27 @@ public class ProjectileSpawner : Spawner<AttackProjectile>, ISkillProjectileExec
 
     public bool TryExecuteProjectile(in AttackSource attackSource, Health target, SkillTypeSO skill)
     {
-        _ = skill;
+        var ownerComponent = currentOwner as Component;
+        string ownerName = ownerComponent != null ? ownerComponent.name : "null";
+        string targetName = target != null ? target.name : "null";
+        string skillName = skill != null ? skill.name : "null";
+
+        this.Log(
+            $"[{nameof(ProjectileSpawner)}.{nameof(TryExecuteProjectile)}] owner={ownerName}, frame={Time.frameCount}, time={Time.time:0.000}, " +
+            $"skill={skillName}, attackId={attackSource.AttackInstanceId}, target={targetName}",
+            Logg.LoggingMode.InProgress);
+
         projectileAttackSource = attackSource;
 
         if (target != null)
             SetTarget(target);
 
-        return Shoot();
+        bool shot = Shoot();
+        this.Log(
+            $"[{nameof(ProjectileSpawner)}.{nameof(TryExecuteProjectile)}] owner={ownerName}, result={(shot ? "shot" : "failed")}, " +
+            $"attackId={attackSource.AttackInstanceId}",
+            Logg.LoggingMode.InProgress);
+        return shot;
     }
 
     private void OnDisable()

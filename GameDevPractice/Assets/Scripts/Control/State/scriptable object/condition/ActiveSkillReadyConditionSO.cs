@@ -52,6 +52,7 @@ namespace TH.Control.Data
             // 스킬 Ready 이벤트가 활성 스킬 대상이고 타겟이 유효할 때 트리거
             void HandleSkillReady(SkillTypeSO skill)
             {
+                if (!skillController.HasActiveSkill || !skillController.IsActiveSkillReady) return;
                 if (skillController.ActiveSkill != skill) return;
                 if (!attacker.IsTargetValid) return;
                 onTriggered.Invoke();

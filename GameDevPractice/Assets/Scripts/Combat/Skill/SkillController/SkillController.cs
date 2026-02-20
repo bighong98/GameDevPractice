@@ -71,7 +71,6 @@ namespace TH.Combat
         // 보류 공격 1차 히트 데미지 버퍼
         private readonly List<float> primaryPendingHitDamages = new(8);
         // 보류 공격 2차 히트 데미지 버퍼
-        private readonly List<float> secondaryPendingHitDamages = new(8);
 
         // 활성 콤보 타임아웃 예약 상태
         private bool isActiveComboTimeoutPending;
@@ -84,6 +83,7 @@ namespace TH.Combat
 
         // 현재 실행 고정 스킬
         private SkillTypeSO executingSkill;
+        private SkillTypeSO lastUsedSkill;
         // 현재 해석 완료 스킬
         private SkillTypeSO resolvedSkill;
         // 현재 해석 완료 베이스 스킬
@@ -96,7 +96,6 @@ namespace TH.Combat
         // 보류 공격 존재 상태
         private bool hasPendingAttack;
         // 보류 공격 소스
-        private AttackSource pendingAttackSource;
         // 보류 공격 스킬
         private SkillTypeSO pendingAttackSkill;
         // 보류 공격 베이스 스킬
@@ -107,6 +106,8 @@ namespace TH.Combat
         private int pendingComboStepCount = 1;
         // 보류 공격 생성 주체
         private IAttacker pendingAttacker;
+        // 보류 공격이 생성된 프레임 (동일 프레임 내 중복 트리거 허용용)
+        private int pendingAttackIssuedFrame = -1;
 
         // 광역 대상 수집 버퍼
         private readonly List<Health> areaTargetsBuffer = new();
@@ -142,10 +143,12 @@ namespace TH.Combat
         public bool HasExecutingSkill => executingSkill.IsNotNull();
         // 현재 실행 고정 스킬 참조
         public SkillTypeSO ExecutingSkill => executingSkill;
+        public bool HasLastUsedSkill => lastUsedSkill.IsNotNull();
+        public SkillTypeSO LastUsedSkill => lastUsedSkill;
         // 현재 해석 완료 스킬 참조
         public SkillTypeSO ResolvedSkill => resolvedSkill;
         // 활성 스킬 즉시 사용 가능 상태
-        public bool IsActiveSkillReady => HasActiveSkill && skillCaster.IsReady(skillBook.ActiveSkill);
+        public bool IsActiveSkillReady => HasActiveSkill && !hasPendingAttack && skillCaster.IsReady(skillBook.ActiveSkill);
 
         // 현재 프리뷰 스킬 기준 사거리
         public float ActiveSkillRange
