@@ -122,18 +122,16 @@ public class AttackProjectile : MonoBehaviour, IPoolObject
 
     private void OnTriggerEnter(Collider other)
     {
-        //todo: Target이 아닐 때 처리
-        //todo: 대상이 사망 상태일 때 처리
         //todo: 논타겟팅/타겟팅 스킬의 투사체일 때 처리
 
         if (TryResolveDamageable(other, out var victim) && combatSystem != null)
         {
-            this.Log($"OnTriggerEnter(): apply hit to '{(victim as Component)?.name ?? "unknown"}'", Logg.LoggingMode.InProgress);
+            this.Log($"OnTriggerEnter(): apply hit to '{(victim as Component)?.name ?? "unknown"}'", Logg.LoggingMode.Completed);
             combatSystem.ApplyHit(attackSource.ToRequest(victim, transform.position, hasHitPoint: true));
         }
         else
         {
-            this.Log($"OnTriggerEnter(): no damageable resolved from '{other.name}'", Logg.LoggingMode.InProgress);
+            this.Log($"OnTriggerEnter(): no damageable resolved from '{other.name}'", Logg.LoggingMode.Completed);
         }
         this.Log($"OnTriggerEnter(): collided with {other}", Logg.LoggingMode.Completed);
         OnHit?.Invoke(transform.position);

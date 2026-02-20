@@ -39,6 +39,13 @@ MonoBehaviour:
     - SFX
     - Sound
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c01bbab8442e45146be860df82582360
+    m_Address: SFX_impactbigheavy01.wav
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_Asset
+    - Sound
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: c230389cdba1a4d47bda71c4d0e2b6f9
     m_Address: SortingSFX
     m_ReadOnly: 0

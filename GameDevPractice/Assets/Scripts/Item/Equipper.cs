@@ -30,6 +30,9 @@ namespace TH.Item
         private WeaponTypeSO currentWeaponType;
         private WeaponTypeHolder currentRightWeapon;
         private WeaponTypeHolder currentLeftWeapon;
+        
+        private ObjectPool<IPoolObject> currentRightWeaponPool;
+        private ObjectPool<IPoolObject> currentLeftWeaponPool;
         private readonly Dictionary<(WeaponTypeSO, WeaponTypeSO.Hand), ObjectPool<IPoolObject>> weaponPools = new();
 
         private const string DefaultRootName = "Root";
@@ -170,6 +173,10 @@ namespace TH.Item
                 EnsureWeaponProjectileSpawner(weaponType, result);
 
                 slot = result;
+                if (hand == WeaponTypeSO.Hand.Left)
+                    currentLeftWeaponPool = pool;
+                else
+                    currentRightWeaponPool = pool;
 
                 if (ignoreLocalPosition)
                     ApplyIgnoreLocalPosition(result);
@@ -238,9 +245,13 @@ namespace TH.Item
 
         private void DeSpawnWeapon()
         {
-            void ReleaseOnHand(WeaponTypeSO.Hand hand, ref WeaponTypeHolder weapon)
+            void ReleaseOnHand(WeaponTypeSO.Hand hand, ref WeaponTypeHolder weapon, ref ObjectPool<IPoolObject> activePool)
             {
-                if (weapon == null) return;
+                if (weapon == null)
+                {
+                    activePool = null;
+                    return;
+                }
 
                 if (_cachedLocalTransforms.TryGetValue(weapon, out var cached))
                 {
@@ -257,16 +268,30 @@ namespace TH.Item
                     skillController.ClearProjectileExecutor(equippedProjectileSpawner);
                 }
 
-                if (weaponPools.TryGetValue((weapon.Type, hand), out var pool))
+                if (activePool != null)
                 {
-                    pool.Release(weapon);
+                    activePool.Release(weapon);
+                }
+                else if (currentWeaponType != null && weaponPools.TryGetValue((currentWeaponType, hand), out var fallbackPool))
+                {
+                    fallbackPool.Release(weapon);
+                }
+                else if (weapon.Type != null && weaponPools.TryGetValue((weapon.Type, hand), out var typePool))
+                {
+                    typePool.Release(weapon);
+                }
+                else
+                {
+                    weapon.gameObject.SetActive(false);
+                    this.LogWarning($"Failed to resolve pool when despawning weapon: {weapon.name}");
                 }
 
                 weapon = null;
+                activePool = null;
             }
 
-            ReleaseOnHand(WeaponTypeSO.Hand.Right, ref currentRightWeapon);
-            ReleaseOnHand(WeaponTypeSO.Hand.Left, ref currentLeftWeapon);
+            ReleaseOnHand(WeaponTypeSO.Hand.Right, ref currentRightWeapon, ref currentRightWeaponPool);
+            ReleaseOnHand(WeaponTypeSO.Hand.Left, ref currentLeftWeapon, ref currentLeftWeaponPool);
             currentWeaponType = null;
         }
 

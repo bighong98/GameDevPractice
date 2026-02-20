@@ -1,0 +1,59 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ae70b95bc711424ab96997d90ea21eb, type: 3}
+  m_Name: Fireball_ExplosionArea_Default
+  m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.SkillTypeSO
+  skillId: OnHit_ExplosionArea_Default
+  attackSourceStatSO: {fileID: 11400000, guid: f33892e137b94bf4e9d027c090bd8c4f, type: 2}
+  baseDamage: 1
+  hitCount: 1
+  attackCoefficient: 1
+  damageType: 2
+  range: 4
+  cooldown: 0
+  executionProfile: {fileID: 11400000, guid: 8bbcbe4bd64a20c439c230c1252cb49f, type: 2}
+  subSkills: []
+  onHitTriggeredSkills: []
+  onHitEffects: []
+  lastImportedOnHitEffectsSignature: 0
+  comboTimeout: 0.75
+  comboSteps: []
+  comboSequence: {fileID: 0}
+  lastImportedComboSequence: {fileID: 0}
+  targetPolicy:
+    allowedGroups: 2
+    allowSelf: 0
+    includeDeadTargets: 0
+  animationSpeedMultiplier: 1
+  affectedByAttackSpeed: 1
+  animatorOverride: {fileID: 0}
+  projectilePrefab: {fileID: 0}
+  skillVfxCues:
+  - cueId: legacy.onhit
+    trigger: 1
+    markerName: 
+    effectPrefab: {fileID: 4392015020884566884, guid: 5ff9b20571c4b744bac922167d0a068b, type: 3}
+    sfxClip: {fileID: 8300000, guid: af2c78ece9c3f6a4b83fc3562a867d9c, type: 3}
+    anchorType: 3
+    anchorName: 
+    follow: 0
+    oncePerAttackInstance: 1
+    positionOffset: {x: 0, y: 0, z: 0}
+    groundLayerMask:
+      serializedVersion: 2
+      m_Bits: 0
+    groundRayStartHeight: 1.5
+    groundRayDistance: 6
+  skillEffectProfile: {fileID: 0}
+  lastImportedSkillVfxProfileSignature: 0
+  skillCategory: 1
+  skillSlotImage: {fileID: 0}

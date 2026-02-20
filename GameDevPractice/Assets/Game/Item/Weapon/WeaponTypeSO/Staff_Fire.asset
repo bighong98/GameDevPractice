@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 361e7764f46e225498b2d9903851f06d, type: 3}
+  m_Name: Staff_Fire
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponTypeSO
+  prefab: {fileID: 1181656062549879669, guid: 272caf2c346b5e04ea0b11b49067dc0a, type: 3}
+  nameString: "\uAE30\uBCF8 \uD654\uC5FC \uC9C0\uD321\uC774"
+  sprite: {fileID: 21300000, guid: 02ff976d39577774bb44b83610e61dec, type: 3}
+  itemType: 1
+  maxAmount: 1
+  desc: "\uD654\uC5FC \uAD6C\uCCB4\uB97C \uBC1C\uC0AC\uD558\uB294 \uB9C8\uBC95 \uBB34\uAE30\uC774\uB2E4.
+    \uBE60\uB978 \uCC3D\uC0C1\uACFC \uC548\uC815\uC801\uC778 \uD0C0\uACA9 \uD310\uC815\uC744
+    \uACE0\uB824\uD574 \uC81C\uC791\uB418\uC5C8\uB2E4."
+  itemUseEffects: []
+  itemUseSFXReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
+  equipmentType: 1
+  slotType: 0
+  equipmentStats:
+  - type: {fileID: 11400000, guid: f33892e137b94bf4e9d027c090bd8c4f, type: 2}
+    calculation: 0
+    value: 20
+  weaponType: 0
+  EquippedPrefab: {fileID: 3327907661040384045, guid: 8d0abf9e8c434e44bbfa79ef7ce6693f, type: 3}
+  equippedPrefabLeft: {fileID: 0}
+  hand: 1
+  defaultSkill: {fileID: 11400000, guid: 8f79b74127da75d42b7b7db7ca5534fb, type: 2}

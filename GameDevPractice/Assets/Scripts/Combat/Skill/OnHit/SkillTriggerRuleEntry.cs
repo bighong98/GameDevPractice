@@ -349,7 +349,7 @@ namespace TH.Combat
 
         private static void Trace(string msg)
         {
-            Logg.Log($"[{nameof(SkillTriggerRuleEntry)}] {msg}", Logg.LoggingMode.InProgress);
+            Logg.Log($"[{nameof(SkillTriggerRuleEntry)}] {msg}", Logg.LoggingMode.Completed);
         }
 
         private sealed class FallbackOnHitExecutionServices : ISkillExecutionServices
