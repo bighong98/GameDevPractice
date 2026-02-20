@@ -156,19 +156,6 @@ namespace TH.Combat
                 return previewSkill.IsNotNull() ? Mathf.Max(0f, previewSkill.Range) : 0f;
             }
         }
-
-        // 현재 프리뷰 스킬 기준 캐스팅 SFX
-        public AudioClip ActiveSkillSFX
-        {
-            get
-            {
-                var previewSkill = GetPreviewSkill();
-                return previewSkill.IsNotNull() ? previewSkill.CastSFX : null;
-            }
-        }
-
-        // 해석 완료 스킬 기준 캐스팅 SFX
-        public AudioClip ResolvedSkillSFX => HasResolvedSkill ? resolvedSkill.CastSFX : null;
         // 현재 콤보 단계 인덱스
         public int CurrentComboStepIndex => currentComboStepIndex;
         // 현재 콤보 총 단계 수

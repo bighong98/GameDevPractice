@@ -12,21 +12,22 @@ namespace TH.Combat
 
     public enum SkillEffectAnchorType
     {
-        PlayerRoot = 0,
+        CharacterRoot = 0,
         WeaponSocket = 1,
-        GroundUnderPlayer = 2,
+        GroundUnderCharacter = 2,
         HitPoint = 3,
         TargetCenter = 4
     }
 
     [Serializable]
-    public sealed class SkillVFXCue
+    public sealed class SkillEffectCue
     {
         [SerializeField] private string cueId;
         [SerializeField] private SkillEffectTrigger trigger = SkillEffectTrigger.OnConsume;
         [SerializeField] private string markerName;
         [SerializeField] private GameObject effectPrefab;
-        [SerializeField] private SkillEffectAnchorType anchorType = SkillEffectAnchorType.PlayerRoot;
+        [SerializeField] private AudioClip sfxClip;
+        [SerializeField] private SkillEffectAnchorType anchorType = SkillEffectAnchorType.CharacterRoot;
         [SerializeField] private string anchorName;
         [SerializeField] private bool follow;
         [SerializeField] private bool oncePerAttackInstance;
@@ -39,6 +40,7 @@ namespace TH.Combat
         public SkillEffectTrigger Trigger => trigger;
         public string MarkerName => markerName;
         public GameObject EffectPrefab => effectPrefab;
+        public AudioClip SfxClip => sfxClip;
         public SkillEffectAnchorType AnchorType => anchorType;
         public string AnchorName => anchorName;
         public bool Follow => follow;
@@ -48,6 +50,6 @@ namespace TH.Combat
         public float GroundRayStartHeight => Mathf.Max(0f, groundRayStartHeight);
         public float GroundRayDistance => Mathf.Max(0.1f, groundRayDistance);
 
-        public bool IsValid => effectPrefab != null;
+        public bool IsValid => effectPrefab != null || sfxClip != null;
     }
 }

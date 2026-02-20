@@ -79,6 +79,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3db396ca27d0cc641a0c26cc9c598355
+    m_Address: Sword_BasicSkill
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 3dc7f98de12cfbd4fb6d2b6f89c6ca92
     m_Address: Shape_18 1.png
     m_ReadOnly: 0
@@ -106,6 +111,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5870227852be9114281496d886b8e465
     m_Address: Profile_Melee_Area.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5cd53c555bc830b41b96b4405ec81bb6
+    m_Address: Bow_BasicSkill
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -149,6 +159,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8f79b74127da75d42b7b7db7ca5534fb
+    m_Address: Fireball_BasicSkill
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 91415d6afb7673844bc9d9123a961bf7
     m_Address: Profile_Projectile_Default.asset
     m_ReadOnly: 0
@@ -156,6 +171,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 917b62a0c0e7bdc4a8669116f5c98233
     m_Address: Icons.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9b314ff0f32b1e440b4626b01bbbb750
+    m_Address: Long Sword_BasicSkill
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -216,6 +236,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: c525b71ddfe92b340bcf857aaeb20ef1
     m_Address: Sword_sequence.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: caa9c92c06bbef340a4bca8c6a52f62a
+    m_Address: Unarmed_BasicSkill
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

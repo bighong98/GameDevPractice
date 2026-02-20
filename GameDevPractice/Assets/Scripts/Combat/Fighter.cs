@@ -1,7 +1,6 @@
 using System;
 using TH.Attribute;
 using TH.Combat;
-using TH.Core.Service;
 using TH.Resource;
 using TH.Utils;
 using UnityEngine;
@@ -31,8 +30,6 @@ public class Fighter : MonoBehaviour, IFighter
     public Health Target => target;
 
     private ISkillController skillController;
-    private AudioClip currAttackSfx;
-
     private void Awake()
     {
         if (!TryGetComponent(out skillController))
@@ -52,10 +49,7 @@ public class Fighter : MonoBehaviour, IFighter
     {
         if (skillController.IsNull()) return;
 
-        currAttackSfx = null;
-        if (!skillController.TryConsumeActiveSkill(this, out _)) return;
-
-        currAttackSfx = skillController.ResolvedSkillSFX;
+        _ = skillController.TryConsumeActiveSkill(this, out _);
     }
 
     public void SetTarget(Health attackTarget)
@@ -98,24 +92,6 @@ public class Fighter : MonoBehaviour, IFighter
         if (skillController.IsNull()) return;
         if (!skillController.TryExecutePendingAttack(this, target)) return;
 
-        var attackSfx = ResolveCurrentAttackSfx();
-        if (attackSfx != null)
-            SoundManager.Instance.Play(Enums.AudioType.Effect, attackSfx);
-
         OnAttack?.Invoke();
-    }
-
-    private AudioClip ResolveCurrentAttackSfx()
-    {
-        if (currAttackSfx != null)
-            return currAttackSfx;
-
-        if (skillController.IsNotNull() && skillController.HasResolvedSkill)
-            return skillController.ResolvedSkillSFX;
-
-        if (skillController.IsNotNull() && skillController.HasActiveSkill)
-            return skillController.ActiveSkillSFX;
-
-        return null;
     }
 }

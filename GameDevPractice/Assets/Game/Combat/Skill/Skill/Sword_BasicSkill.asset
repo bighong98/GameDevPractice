@@ -41,11 +41,27 @@ MonoBehaviour:
   - cueId: legacy.onhit
     trigger: 1
     markerName: 
-    effectPrefab: {fileID: 5602590985138988741, guid: 20b27818abf007b4c91e694a1931a851, type: 3}
+    effectPrefab: {fileID: 4791478664128434501, guid: 4f0813776eff15c4ea6dffecc161aa7e, type: 3}
+    sfxClip: {fileID: 0}
     anchorType: 3
     anchorName: 
     follow: 0
     oncePerAttackInstance: 0
+    positionOffset: {x: 0, y: 0, z: 0}
+    groundLayerMask:
+      serializedVersion: 2
+      m_Bits: 0
+    groundRayStartHeight: 1.5
+    groundRayDistance: 6
+  - cueId: legacy_castsfx
+    trigger: 0
+    markerName: 
+    effectPrefab: {fileID: 0}
+    sfxClip: {fileID: 8300000, guid: 4e7a9f408abdba8459fdccbeaea95215, type: 3}
+    anchorType: 0
+    anchorName: 
+    follow: 0
+    oncePerAttackInstance: 1
     positionOffset: {x: 0, y: 0, z: 0}
     groundLayerMask:
       serializedVersion: 2

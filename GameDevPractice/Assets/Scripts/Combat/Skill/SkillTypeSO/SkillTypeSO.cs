@@ -58,15 +58,13 @@ namespace TH.Resource
         [SerializeField] private GameObject projectilePrefab;
 
         [Header("VFX")]
-        [SerializeField] private List<SkillVFXCue> skillVfxCues = new();
+        [SerializeField] private List<SkillEffectCue> skillVfxCues = new();
 #if UNITY_EDITOR
         [Header("VFX Preset (Editor Only)")]
-        [SerializeField] private SkillVfxProfileSO skillEffectProfile;
+        [SerializeField] private SkillEffectProfileSO skillEffectProfile;
         [SerializeField, HideInInspector] private int lastImportedSkillVfxProfileSignature;
 #endif
 
-        [Header("SFX")]
-        [SerializeField] private AudioClip castSfx;
 
         [Header("UI")]
         [SerializeField] private SkillCategory skillCategory = SkillCategory.AdditiveSkill;
@@ -92,16 +90,15 @@ namespace TH.Resource
         public SkillTargetPolicy TargetPolicy => targetPolicy;
         public float AnimationSpeedMultiplier => Mathf.Max(0.01f, animationSpeedMultiplier);
         public bool AffectedByAttackSpeed => affectedByAttackSpeed;
-        public AudioClip CastSFX => castSfx;
         public SkillCategory SkillCategory => skillCategory;
         public Sprite SkillSlotImage => skillSlotImage;
         public AnimatorOverrideController AnimatorOverride => animatorOverride;
         public bool HasProjectile => projectilePrefab != null;
         public GameObject ProjectilePrefab => projectilePrefab;
-        public IReadOnlyList<SkillVFXCue> SkillVfxCues => skillVfxCues;
+        public IReadOnlyList<SkillEffectCue> SkillVfxCues => skillVfxCues;
         public bool HasSkillVfxCues => skillVfxCues != null && skillVfxCues.Exists(cue => cue != null && cue.IsValid);
 #if UNITY_EDITOR
-        public SkillVfxProfileSO SkillEffectProfile => skillEffectProfile;
+        public SkillEffectProfileSO SkillEffectProfile => skillEffectProfile;
 #endif
 
         public SkillTypeSO GetComboStepSkill(int index, SkillTypeSO fallback)

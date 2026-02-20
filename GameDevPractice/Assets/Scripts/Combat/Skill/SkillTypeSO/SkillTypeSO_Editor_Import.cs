@@ -296,7 +296,7 @@ namespace TH.Resource
                    !skillVfxCues.Exists(cue => cue != null && cue.IsValid);
         }
 
-        private void ImportSkillVfxProfile(SkillVfxProfileSO source, bool overwrite)
+        private void ImportSkillVfxProfile(SkillEffectProfileSO source, bool overwrite)
         {
             if (source == null)
             {
@@ -308,7 +308,7 @@ namespace TH.Resource
                 return;
             }
 
-            skillVfxCues ??= new List<SkillVFXCue>();
+            skillVfxCues ??= new List<SkillEffectCue>();
             skillVfxCues.Clear();
 
             var sourceCues = source.Cues;
@@ -343,7 +343,7 @@ namespace TH.Resource
             EditorUtility.SetDirty(this);
         }
 
-        private static SkillVFXCue CloneSkillVfxCue(SkillVFXCue source)
+        private static SkillEffectCue CloneSkillVfxCue(SkillEffectCue source)
         {
             if (source == null)
             {
@@ -351,10 +351,10 @@ namespace TH.Resource
             }
 
             string json = JsonUtility.ToJson(source);
-            return JsonUtility.FromJson<SkillVFXCue>(json);
+            return JsonUtility.FromJson<SkillEffectCue>(json);
         }
 
-        private static int ComputeSkillVfxProfileSignature(SkillVfxProfileSO profile)
+        private static int ComputeSkillVfxProfileSignature(SkillEffectProfileSO profile)
         {
             if (profile == null || !profile.HasCues || profile.Cues == null)
             {
@@ -380,6 +380,7 @@ namespace TH.Resource
                     hash = (hash * 31) + (int)cue.Trigger;
                     hash = (hash * 31) + (cue.MarkerName?.GetHashCode() ?? 0);
                     hash = (hash * 31) + (cue.EffectPrefab != null ? cue.EffectPrefab.GetInstanceID() : 0);
+                    hash = (hash * 31) + (cue.SfxClip != null ? cue.SfxClip.GetInstanceID() : 0);
                     hash = (hash * 31) + (int)cue.AnchorType;
                     hash = (hash * 31) + (cue.AnchorName?.GetHashCode() ?? 0);
                     hash = (hash * 31) + (cue.Follow ? 1 : 0);

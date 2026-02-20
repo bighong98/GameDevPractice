@@ -542,7 +542,7 @@ public static class SkillTypeXlsxSyncTool
             projectilePrefabName = skill.ProjectilePrefab != null ? skill.ProjectilePrefab.name : string.Empty,
             skillVfxPrefabName = ResolveFirstCuePrefabName(skill, SkillEffectTrigger.OnConsume),
             onHitVfxPrefabName = ResolveFirstCuePrefabName(skill, SkillEffectTrigger.OnHit),
-            castSfxName = skill.CastSFX != null ? skill.CastSFX.name : string.Empty,
+            castSfxName = ResolveFirstCueSfxName(skill, SkillEffectTrigger.OnConsume),
             skillSlotImageName = skill.SkillSlotImage != null ? skill.SkillSlotImage.name : string.Empty,
             serializedJson = includeSerializedJson ? EditorJsonUtility.ToJson(skill, false) : string.Empty
         };
@@ -565,6 +565,28 @@ public static class SkillTypeXlsxSyncTool
             }
 
             return cue.EffectPrefab.name;
+        }
+
+        return string.Empty;
+    }
+
+    private static string ResolveFirstCueSfxName(SkillTypeSO skill, SkillEffectTrigger trigger)
+    {
+        if (skill == null || !skill.HasSkillVfxCues || skill.SkillVfxCues == null)
+        {
+            return string.Empty;
+        }
+
+        var cues = skill.SkillVfxCues;
+        for (int i = 0; i < cues.Count; i++)
+        {
+            var cue = cues[i];
+            if (cue == null || cue.Trigger != trigger || cue.SfxClip == null)
+            {
+                continue;
+            }
+
+            return cue.SfxClip.name;
         }
 
         return string.Empty;

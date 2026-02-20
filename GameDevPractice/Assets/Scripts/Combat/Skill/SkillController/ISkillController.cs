@@ -42,10 +42,6 @@ namespace TH.Combat
         bool IsActiveSkillReady { get; }
         // 현재 프리뷰 기준 유효 사거리
         float ActiveSkillRange { get; }
-        // 현재 프리뷰 기준 캐스팅 SFX
-        AudioClip ActiveSkillSFX { get; }
-        // 해석 완료 스킬 기준 캐스팅 SFX
-        AudioClip ResolvedSkillSFX { get; }
         // 현재 콤보 단계 인덱스
         int CurrentComboStepIndex { get; }
         // 현재 콤보 총 단계 수
@@ -90,4 +86,3 @@ namespace TH.Combat
         bool TryExecuteProjectile(in AttackSource attackSource, Health target, SkillTypeSO skill);
     }
 }
-

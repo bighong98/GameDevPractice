@@ -39,23 +39,9 @@ MonoBehaviour:
   affectedByAttackSpeed: 1
   animatorOverride: {fileID: 22100000, guid: bad3b4482a681fb4bb377898a52a866d, type: 2}
   projectilePrefab: {fileID: 0}
-  skillVfxCues:
-  - cueId: legacy.onhit
-    trigger: 1
-    markerName: 
-    effectPrefab: {fileID: 5602590985138988741, guid: 20b27818abf007b4c91e694a1931a851, type: 3}
-    anchorType: 3
-    anchorName: 
-    follow: 0
-    oncePerAttackInstance: 0
-    positionOffset: {x: 0, y: 0, z: 0}
-    groundLayerMask:
-      serializedVersion: 2
-      m_Bits: 0
-    groundRayStartHeight: 1.5
-    groundRayDistance: 6
+  skillVfxCues: []
   skillEffectProfile: {fileID: 0}
   lastImportedSkillVfxProfileSignature: 0
-  castSfx: {fileID: 8300000, guid: 4e7a9f408abdba8459fdccbeaea95215, type: 3}
+  castSfx: {fileID: 0}
   skillCategory: 0
   skillSlotImage: {fileID: 0}

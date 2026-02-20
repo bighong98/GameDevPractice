@@ -50,7 +50,7 @@ namespace TH.Combat.Service
                     continue;
                 }
 
-                if (TryPlayCue(cue, in context))
+                if (TryPlayCue(cue, in context, out _))
                 {
                     anyPlayed = true;
                 }
@@ -59,7 +59,7 @@ namespace TH.Combat.Service
             return anyPlayed;
         }
 
-        private static bool IsCueMatch(SkillVFXCue cue, SkillEffectTrigger trigger, string markerName)
+        private static bool IsCueMatch(SkillEffectCue cue, SkillEffectTrigger trigger, string markerName)
         {
             if (cue == null || !cue.IsValid)
             {
@@ -81,8 +81,20 @@ namespace TH.Combat.Service
             return string.Equals(configuredMarker, runtimeMarker, StringComparison.Ordinal);
         }
 
-        private static bool TryPlayCue(SkillVFXCue cue, in SkillEffectPlayContext context)
+        private static bool TryPlayCue(SkillEffectCue cue, in SkillEffectPlayContext context, out bool playedSfx)
         {
+            playedSfx = TryPlaySfxCue(cue);
+            bool playedVfx = TryPlayVfxCue(cue, in context);
+            return playedSfx || playedVfx;
+        }
+
+        private static bool TryPlayVfxCue(SkillEffectCue cue, in SkillEffectPlayContext context)
+        {
+            if (cue == null || cue.EffectPrefab == null)
+            {
+                return false;
+            }
+
             if (!TryResolveSpawnPose(cue, in context, out var anchorTransform, out var position, out var rotation))
             {
                 return false;
@@ -118,8 +130,19 @@ namespace TH.Combat.Service
             return true;
         }
 
+        private static bool TryPlaySfxCue(SkillEffectCue cue)
+        {
+            if (cue == null || cue.SfxClip == null || SoundManager.Instance == null)
+            {
+                return false;
+            }
+
+            SoundManager.Instance.Play(Enums.AudioType.Effect, cue.SfxClip);
+            return true;
+        }
+
         private static bool TryResolveSpawnPose(
-            SkillVFXCue cue,
+            SkillEffectCue cue,
             in SkillEffectPlayContext context,
             out Transform anchorTransform,
             out Vector3 position,
@@ -131,7 +154,7 @@ namespace TH.Combat.Service
 
             switch (cue.AnchorType)
             {
-                case SkillEffectAnchorType.PlayerRoot:
+                case SkillEffectAnchorType.CharacterRoot:
                     if (context.AttackerComponent == null)
                     {
                         return false;
@@ -157,7 +180,7 @@ namespace TH.Combat.Service
                     rotation = anchorTransform.rotation;
                     return true;
 
-                case SkillEffectAnchorType.GroundUnderPlayer:
+                case SkillEffectAnchorType.GroundUnderCharacter:
                     if (context.AttackerComponent == null)
                     {
                         return false;
@@ -226,7 +249,7 @@ namespace TH.Combat.Service
             return false;
         }
 
-        private static Vector3 ResolveGroundPosition(SkillVFXCue cue, Vector3 playerPosition)
+        private static Vector3 ResolveGroundPosition(SkillEffectCue cue, Vector3 playerPosition)
         {
             int layerMask = ResolveGroundLayerMask(cue);
             var rayStart = playerPosition + Vector3.up * cue.GroundRayStartHeight;
@@ -244,7 +267,7 @@ namespace TH.Combat.Service
             return playerPosition;
         }
 
-        private static int ResolveGroundLayerMask(SkillVFXCue cue)
+        private static int ResolveGroundLayerMask(SkillEffectCue cue)
         {
             if (cue.GroundLayerMask.value != 0)
             {

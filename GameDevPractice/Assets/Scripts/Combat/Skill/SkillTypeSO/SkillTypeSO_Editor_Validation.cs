@@ -406,14 +406,18 @@ namespace TH.Resource
                     continue;
                 }
 
-                if (cue.EffectPrefab == null)
+                if (!cue.IsValid)
                 {
-                    warnings.Add($"skillVfxCues[{i}].effectPrefab is null.");
+                    warnings.Add($"skillVfxCues[{i}] has no payload. Assign effectPrefab or sfxClip.");
                     continue;
                 }
 
                 hasValidCue = true;
-                ValidateEffectPrefab(cue.EffectPrefab, $"skillVfxCues[{i}].effectPrefab", warnings);
+
+                if (cue.EffectPrefab != null)
+                {
+                    ValidateEffectPrefab(cue.EffectPrefab, $"skillVfxCues[{i}].effectPrefab", warnings);
+                }
 
                 if (cue.Trigger == SkillEffectTrigger.OnAnimMarker &&
                     string.IsNullOrWhiteSpace(cue.MarkerName))
@@ -421,7 +425,8 @@ namespace TH.Resource
                     warnings.Add($"skillVfxCues[{i}] trigger is OnAnimMarker but markerName is empty.");
                 }
 
-                if (cue.AnchorType == SkillEffectAnchorType.WeaponSocket &&
+                if (cue.EffectPrefab != null &&
+                    cue.AnchorType == SkillEffectAnchorType.WeaponSocket &&
                     string.IsNullOrWhiteSpace(cue.AnchorName))
                 {
                     warnings.Add($"skillVfxCues[{i}] anchorType is WeaponSocket but anchorName is empty.");
@@ -430,7 +435,7 @@ namespace TH.Resource
 
             if (!hasValidCue)
             {
-                warnings.Add("skillVfxCues contains no valid cue with effectPrefab.");
+                warnings.Add("skillVfxCues contains no valid cue with effectPrefab or sfxClip.");
             }
         }
 

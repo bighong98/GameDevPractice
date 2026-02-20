@@ -20,8 +20,15 @@ MonoBehaviour:
   damageType: 1
   range: 2
   cooldown: 1
-  comboSequence: {fileID: 0}
   executionProfile: {fileID: 11400000, guid: 191c39a59b71a9d4a86e0366198e604f, type: 2}
+  subSkills: []
+  onHitTriggeredSkills: []
+  onHitEffects: []
+  lastImportedOnHitEffectsSignature: 0
+  comboTimeout: 0.75
+  comboSteps: []
+  comboSequence: {fileID: 0}
+  lastImportedComboSequence: {fileID: 0}
   targetPolicy:
     allowedGroups: 2
     allowSelf: 0
@@ -30,6 +37,24 @@ MonoBehaviour:
   affectedByAttackSpeed: 1
   animatorOverride: {fileID: 22100000, guid: 5c7039ae908815140967aa18fab57f0f, type: 2}
   projectilePrefab: {fileID: 0}
+  skillVfxCues:
+  - cueId: legacy_castsfx
+    trigger: 0
+    markerName: 
+    effectPrefab: {fileID: 0}
+    sfxClip: {fileID: 8300000, guid: 1f53a5fc6bd934e46a5d8cfa8fd27b64, type: 3}
+    anchorType: 0
+    anchorName: 
+    follow: 0
+    oncePerAttackInstance: 1
+    positionOffset: {x: 0, y: 0, z: 0}
+    groundLayerMask:
+      serializedVersion: 2
+      m_Bits: 0
+    groundRayStartHeight: 1.5
+    groundRayDistance: 6
+  skillEffectProfile: {fileID: 0}
+  lastImportedSkillVfxProfileSignature: 0
   castSfx: {fileID: 8300000, guid: 1f53a5fc6bd934e46a5d8cfa8fd27b64, type: 3}
   skillCategory: 0
   skillSlotImage: {fileID: 0}
