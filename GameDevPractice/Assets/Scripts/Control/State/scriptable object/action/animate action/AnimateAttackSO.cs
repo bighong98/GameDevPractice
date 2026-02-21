@@ -75,29 +75,29 @@ namespace TH.Control.Data
             try
             {
                 await UniTask.Yield(PlayerLoopTiming.Update, token).SuppressCancellationThrow();
-                
+
                 while (true)
                 {
                     if (token.IsCancellationRequested) break;
                     if (animator == null) break;
-                    
+
                     var stateInfo = animator.GetCurrentAnimatorStateInfo(0);
-                    
+
                     // Attack 상태에서 벗어났으면 종료
                     if (stateInfo.shortNameHash != AttackASSHash)
                     {
-                        Logg.Log($"[{GetType().Name}] MonitorAnimationAsync - exited Attack state", Logg.LoggingMode.Completed);
+                        Logg.Log($"[{GetType().Name}] MonitorAnimationAsync - exited Attack state", Logg.LoggingMode.InProgress);
                         return;
                     }
-                    
+
                     // 모션 캔슬 가능 조건 체크
                     if (stateInfo.normalizedTime >= Mathf.Max(0f, stateUnlockNormalizedTime) ||
                         animator.GetFloat(CancelAllowHash) > Mathf.Clamp01(cancelAllowThreshold))
                     {
-                        Logg.Log($"[{GetType().Name}] MonitorAnimationAsync - unlock state transition", Logg.LoggingMode.Completed);
+                        Logg.Log($"[{GetType().Name}] MonitorAnimationAsync - unlock state transition", Logg.LoggingMode.InProgress);
                         return;
                     }
-                    
+
                     await UniTask.Yield(PlayerLoopTiming.Update, cancellationToken: token).SuppressCancellationThrow();
                 }
             }
@@ -123,7 +123,7 @@ namespace TH.Control.Data
                 $"controller={controllerName}, inTransition={inTransition}, " +
                 $"stateHash={stateInfo.shortNameHash}, norm={stateInfo.normalizedTime:0.000}, " +
                 $"currentClip={currentClip}, nextClip={nextClip}",
-                Logg.LoggingMode.Completed);
+                Logg.LoggingMode.InProgress);
         }
 
         private static string ResolveCurrentClipName(Animator animator)

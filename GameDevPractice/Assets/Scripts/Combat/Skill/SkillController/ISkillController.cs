@@ -40,6 +40,8 @@ namespace TH.Combat
         SkillTypeSO ExecutingSkill { get; }
         // 활성 스킬 즉시 사용 가능 상태
         bool IsActiveSkillReady { get; }
+        // 보류 공격 존재 상태
+        bool HasPendingAttack { get; }
         // 현재 프리뷰 기준 유효 사거리
         float ActiveSkillRange { get; }
         // 현재 콤보 단계 인덱스
@@ -73,6 +75,8 @@ namespace TH.Combat
         bool TryBuildPreviewAttackSource(IAttacker attacker, out AttackSource attackSource);
         // 보류 공격 실행 시도
         bool TryExecutePendingAttack(IAttacker attacker, Health target);
+        // stale 판단으로 보류 공격 취소 시도
+        bool TryCancelPendingAttackIfStale();
         // 투사체 실행기 등록
         void SetProjectileExecutor(ISkillProjectileExecutor executor);
         // 투사체 실행기 해제

@@ -32,6 +32,7 @@ namespace TH.Control.Movement
         
         private Vector3 currentDestination = Vector3.zero;
         private const float distanceTolerance = 2.0f;
+        private const float distanceCompareBuffer = 0.1f;
 
         private void Awake()
         {
@@ -68,9 +69,36 @@ namespace TH.Control.Movement
         public void SetDestination(Vector3 destination, bool notify = true)
         {
             if (destination == Vector3.zero) return;
-            
+
             currentDestination = destination;
             if (notify) OnDestinationSet?.Invoke();
+        }
+
+        public bool SetDestination(Transform target, float requiredDistance, bool notify = true)
+        {
+            if (target == null) return false;
+
+            float clampedRequiredDistance = Mathf.Max(0f, requiredDistance);
+            float bufferedRequiredDistance = clampedRequiredDistance + distanceCompareBuffer;
+            Vector3 toTarget = target.position - transform.position;
+            float sqrRequiredDistance = bufferedRequiredDistance * bufferedRequiredDistance;
+
+            if (toTarget.sqrMagnitude <= sqrRequiredDistance)
+            {
+                currentDestination = Vector3.zero;
+
+                if (navMeshAgent != null)
+                {
+                    navMeshAgent.ResetPath();
+                    navMeshAgent.isStopped = true;
+                }
+
+                return false;
+            }
+
+            Vector3 destination = target.position - toTarget.normalized * clampedRequiredDistance;
+            SetDestination(destination, notify);
+            return true;
         }
 
         public void Move(MoveType moveType = MoveType.Run)

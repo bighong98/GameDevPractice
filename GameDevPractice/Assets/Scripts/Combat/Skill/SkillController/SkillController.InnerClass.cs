@@ -22,7 +22,8 @@ namespace TH.Combat
             InvalidatedOnConsume,
             InvalidatedByStateChange,
             InvalidatedOnExecute,
-            ExecutionRejected
+            ExecutionRejected,
+            StalePendingDetected
         }
 
         // 등록 스킬 목록/활성 스킬 저장소

@@ -16,7 +16,7 @@ namespace TH.Combat
         Health Target { get; }
 
         void Attack();
-        void SetTarget(Health target);
+        void SetTarget(Health target, bool forceNotify = false);
         bool CanAttack(GameObject combatTarget, out Health targetHealth);
     }
 }

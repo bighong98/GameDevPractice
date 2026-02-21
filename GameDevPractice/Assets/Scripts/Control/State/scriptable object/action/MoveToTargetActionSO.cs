@@ -14,7 +14,13 @@ namespace TH.Control.Data
             if (!controller.Components.TryGet(out IMover mover)) return;
             if (!attackable.IsTargetValid) return;
             
-            mover.SetDestination(attackable.Target.transform.position, notify: false);
+            float requiredDistance = 0f;
+            if (controller.Components.TryGet(out ISkillController skillController) && skillController.HasActiveSkill)
+            {
+                requiredDistance = skillController.ActiveSkillRange;
+            }
+
+            mover.SetDestination(attackable.Target.transform, requiredDistance, notify: false);
         }
     }
 }

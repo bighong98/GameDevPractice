@@ -149,6 +149,7 @@ namespace TH.Combat
         public SkillTypeSO ResolvedSkill => resolvedSkill;
         // 활성 스킬 즉시 사용 가능 상태
         public bool IsActiveSkillReady => HasActiveSkill && !hasPendingAttack && skillCaster.IsReady(skillBook.ActiveSkill);
+        public bool HasPendingAttack => hasPendingAttack;
 
         // 현재 프리뷰 스킬 기준 사거리
         public float ActiveSkillRange
@@ -240,6 +241,11 @@ namespace TH.Combat
             if (resourceLoader != null)
             {
                 resourceLoader.OnLabelResourcesLoadedAll -= HandleResourceLabelLoaded;
+            }
+
+            if (hasPendingAttack)
+            {
+                CancelPendingAttack(PendingCancelReason.InvalidatedByStateChange, refreshResolvedFromPreview: false);
             }
 
             CancelActiveComboTimeoutRoutine();

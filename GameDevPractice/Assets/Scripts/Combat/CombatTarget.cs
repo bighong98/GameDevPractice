@@ -14,7 +14,7 @@ namespace TH.Combat
             if (!caller.Components.TryGet(out IAttacker attacker)) return false;
             if (!attacker.CanAttack(gameObject, out var self)) return false;
             
-            attacker.SetTarget(self);
+            attacker.SetTarget(self, forceNotify: true);
             return true;
         }
 

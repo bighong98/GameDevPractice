@@ -14,15 +14,23 @@ namespace TH.Control.Data
         {
             if (!controller.IsNotNull()) return base.Decide(controller);
             if (!controller.Components.TryGet(out IAttacker attacker)) return base.Decide(controller);
+            // 현재 사용 중인 스킬이 있는 경우 상태 전이x
+            if (!controller.Components.TryGet(out ISkillController skillController) &&
+                skillController.HasExecutingSkill)
+            {
+                return false;
+            }
 
             return attacker.IsTargetValid;
         }
 
         public override IDisposable Bind(IActionStateController controller, Action onTriggered)
         {
-            if (!controller.Components.TryGet(out IAttacker attacker)
-                || onTriggered == null)
+            if (!controller.Components.TryGet(out IAttacker attacker) ||
+                !controller.Components.TryGet(out ISkillController skillController) ||
+                onTriggered == null)
                 return base.Bind(controller, onTriggered);
+            ;
 
             attacker.OnTargetSet += Handler;
 
@@ -32,7 +40,14 @@ namespace TH.Control.Data
                     attacker.OnTargetSet -= Handler;
             });
             
-            void Handler(Health h) { if (h.IsNotNull()) onTriggered.Invoke(); }
+            void Handler(Health h)
+            {
+                if (!h.IsNotNull()) return;
+                if (!attacker.IsTargetValid) return;
+                if (skillController.IsNotNull() && skillController.HasExecutingSkill) return;
+
+                onTriggered.Invoke();
+            }
         }
     }
 }

@@ -105,11 +105,32 @@ namespace TH.Combat
             int ownerInstanceId = gameObject != null ? gameObject.GetInstanceID() : 0;
             string skillName = skill.IsNotNull() ? skill.name : "null";
             string targetName = target.IsNotNull() ? target.name : "null";
+            string pendingSkillName = pendingAttackSkill.IsNotNull() ? pendingAttackSkill.name : "null";
+            string pendingBaseName = pendingBaseSkill.IsNotNull() ? pendingBaseSkill.name : "null";
 
             Logg.Log(
                 $"[{nameof(SkillController)}.{nameof(TryExecutePendingAttack)}] " +
                 $"owner={ownerName}#{ownerInstanceId}, stage={stage}, frame={Time.frameCount}, time={Time.time:0.000}, " +
-                $"skill={skillName}, attackId={attackInstanceId}, target={targetName}",
+                $"skill={skillName}, attackId={attackInstanceId}, target={targetName}, " +
+                $"pending={hasPendingAttack}, pendingSkill={pendingSkillName}, pendingBase={pendingBaseName}, " +
+                $"pendingStep={pendingComboStepIndex}/{pendingComboStepCount}",
+                Logg.LoggingMode.Completed);
+        }
+
+        [Conditional("UNITY_EDITOR")]
+        [Conditional("DEVELOPMENT_BUILD")]
+        private void LogPendingCancelState(PendingCancelReason reason)
+        {
+            string ownerName = gameObject != null ? gameObject.name : "null";
+            int ownerInstanceId = gameObject != null ? gameObject.GetInstanceID() : 0;
+            string pendingSkillName = pendingAttackSkill.IsNotNull() ? pendingAttackSkill.name : "null";
+            string pendingBaseName = pendingBaseSkill.IsNotNull() ? pendingBaseSkill.name : "null";
+
+            Logg.Log(
+                $"[{nameof(SkillController)}.{nameof(CancelPendingAttack)}] owner={ownerName}#{ownerInstanceId}, " +
+                $"reason={reason}, frame={Time.frameCount}, time={Time.time:0.000}, " +
+                $"pending={hasPendingAttack}, pendingSkill={pendingSkillName}, pendingBase={pendingBaseName}, " +
+                $"pendingStep={pendingComboStepIndex}/{pendingComboStepCount}",
                 Logg.LoggingMode.Completed);
         }
 
@@ -128,11 +149,16 @@ namespace TH.Combat
         // 보류 공격 즉시 실행 시도
         public bool TryExecutePendingAttack(IAttacker attacker, Health target)
         {
-            if (!hasPendingAttack) return false;
+            if (!hasPendingAttack)
+            {
+                LogPendingExecuteState("execute_blocked_no_pending", pendingAttackSkill, 0, target);
+                return false;
+            }
 
             // 공격자/대상 무효 입력 가드
             if (attacker.IsNull() || target.IsNull())
             {
+                LogPendingExecuteState("execute_invalid_input", pendingAttackSkill, 0, target);
                 CancelPendingAttack(PendingCancelReason.InvalidatedOnExecute, refreshResolvedFromPreview: true);
                 return false;
             }
@@ -140,6 +166,7 @@ namespace TH.Combat
             // 보류 생성 주체 불일치 또는 상태 불일치 가드
             if (!ReferenceEquals(pendingAttacker, attacker) || !IsPendingAttackReusableState())
             {
+                LogPendingExecuteState("execute_invalid_owner_or_state", pendingAttackSkill, 0, target);
                 CancelPendingAttack(PendingCancelReason.InvalidatedOnExecute, refreshResolvedFromPreview: true);
                 return false;
             }
@@ -149,6 +176,7 @@ namespace TH.Combat
                 : (HasActiveSkill ? skillBook.ActiveSkill : null);
             if (baseSkill.IsNull())
             {
+                LogPendingExecuteState("execute_invalid_base_skill", pendingAttackSkill, 0, target);
                 CancelPendingAttack(PendingCancelReason.InvalidatedOnExecute, refreshResolvedFromPreview: true);
                 return false;
             }
@@ -205,6 +233,17 @@ namespace TH.Combat
             // 실행 거부 시 보류 상태 정리
             CancelPendingAttack(PendingCancelReason.ExecutionRejected, refreshResolvedFromPreview: true);
             return false;
+        }
+
+        public bool TryCancelPendingAttackIfStale()
+        {
+            if (!hasPendingAttack)
+            {
+                return false;
+            }
+
+            CancelPendingAttack(PendingCancelReason.StalePendingDetected, refreshResolvedFromPreview: true);
+            return true;
         }
 
         // 보류 공격 실제 실행 경로
@@ -350,13 +389,12 @@ namespace TH.Combat
         // 보류 공격 취소 + 필요 시 해석 상태 갱신
         private void CancelPendingAttack(PendingCancelReason reason, bool refreshResolvedFromPreview)
         {
-            _ = reason;
-
             if (!hasPendingAttack)
             {
                 return;
             }
 
+            LogPendingCancelState(reason);
             ClearPendingAttack();
             executingSkill = null;
 

@@ -23,7 +23,9 @@ public class Fighter : MonoBehaviour, IFighter
             if (!IsTargetValid) return false;
             if (skillController.IsNull() || !skillController.HasActiveSkill) return false;
 
-            return Vector3.Distance(transform.position, target.transform.position) <= skillController.ActiveSkillRange;
+            float range = Mathf.Max(0f, skillController.ActiveSkillRange) + RangeCompareBuffer;
+            float sqrDistance = (target.transform.position - transform.position).sqrMagnitude;
+            return sqrDistance <= range * range;
         }
     }
 
@@ -31,17 +33,45 @@ public class Fighter : MonoBehaviour, IFighter
     public Health Target => target;
 
     private ISkillController skillController;
+    private Animator animator;
+    private Health pendingExecutionTarget;
+    private bool pendingStaleWatchActive;
+    private int pendingStaleWatchStartFrame = -1;
+    private float pendingStaleWatchStartTime = -1f;
+    private float nextAttackReadyBlockedLogTime;
+    private const float AttackReadyBlockedLogInterval = 0.5f;
+    private const float RangeCompareBuffer = 0.1f;
+    private const float PendingStaleMinDuration = 0.2f;
+    private const float PendingStaleNoAnimatorDuration = 0.8f;
+    private const int PendingStaleMinFrames = 8;
+    private const int AnimatorBaseLayer = 0;
+    private static readonly int AttackStateHash = Animator.StringToHash("Attack");
+
     private void Awake()
     {
         if (!TryGetComponent(out skillController))
             Logg.LogWarning($"[{gameObject.name}.{GetType().Name}] No ISkillController found");
+
+        TryGetComponent(out animator);
+    }
+
+    private void OnDisable()
+    {
+        DisarmPendingStaleWatch();
     }
 
     private void Update()
     {
+        TryCancelStalePendingAttack();
+
         if (!IsTargetValid) return;
         if (skillController.IsNull() || !skillController.HasActiveSkill) return;
-        if (!skillController.IsActiveSkillReady) return;
+
+        if (!skillController.IsActiveSkillReady)
+        {
+            LogAttackReadyBlocked("update_not_ready");
+            return;
+        }
 
         OnAttackReady?.Invoke();
     }
@@ -51,18 +81,30 @@ public class Fighter : MonoBehaviour, IFighter
         if (skillController.IsNull()) return;
 
         bool consumed = skillController.TryConsumeActiveSkill(this, out _);
+        if (consumed)
+        {
+            CacheExecutionTargetSnapshot();
+            ArmPendingStaleWatch();
+        }
+        else
+        {
+            ClearExecutionTargetSnapshot();
+            SyncPendingStaleWatchState();
+        }
+
         LogAttackFlow("Attack", consumed);
     }
 
-    public void SetTarget(Health attackTarget)
+    public void SetTarget(Health attackTarget, bool forceNotify = false)
     {
-        if (ReferenceEquals(target, attackTarget))
+        if (!forceNotify && ReferenceEquals(target, attackTarget))
         {
             return;
         }
 
         target = attackTarget;
         OnTargetSet?.Invoke(target);
+        LogAttackFlow(forceNotify ? "SetTarget_force" : "SetTarget", target.IsNotNull());
     }
 
     public bool CanAttack(GameObject attackTarget, out Health targetHealth)
@@ -95,9 +137,27 @@ public class Fighter : MonoBehaviour, IFighter
 
     private void TriggerAttack()
     {
-        if (!IsTargetValid) return;
-        if (skillController.IsNull()) return;
-        bool executed = skillController.TryExecutePendingAttack(this, target);
+        if (skillController.IsNull())
+        {
+            ClearExecutionTargetSnapshot();
+            DisarmPendingStaleWatch();
+            LogAttackFlow("TriggerAttack_blocked_no_skill_controller", false);
+            return;
+        }
+
+        var executionTarget = ResolveExecutionTarget();
+        if (executionTarget.IsNull() || executionTarget.IsDead)
+        {
+            bool canceled = skillController.TryExecutePendingAttack(this, null);
+            ClearExecutionTargetSnapshot();
+            SyncPendingStaleWatchState();
+            LogAttackFlow("TriggerAttack_blocked_invalid_target", canceled);
+            return;
+        }
+
+        bool executed = skillController.TryExecutePendingAttack(this, executionTarget);
+        ClearExecutionTargetSnapshot();
+        SyncPendingStaleWatchState();
         LogAttackFlow("TriggerAttack", executed);
         if (!executed) return;
 
@@ -106,9 +166,31 @@ public class Fighter : MonoBehaviour, IFighter
 
     [Conditional("UNITY_EDITOR")]
     [Conditional("DEVELOPMENT_BUILD")]
+    private void LogAttackReadyBlocked(string stage)
+    {
+        if (Time.time < nextAttackReadyBlockedLogTime)
+        {
+            return;
+        }
+
+        nextAttackReadyBlockedLogTime = Time.time + AttackReadyBlockedLogInterval;
+
+        float range = skillController != null ? skillController.ActiveSkillRange : 0f;
+        float distance = target.IsNotNull() ? Vector3.Distance(transform.position, target.transform.position) : -1f;
+
+        Logg.Log(
+            $"[{nameof(Fighter)}.{stage}] owner={name}, frame={Time.frameCount}, time={Time.time:0.000}, " +
+            $"targetValid={IsTargetValid}, inRange={IsTargetInRange}, distance={distance:0.###}, range={range:0.###}, " +
+            $"activeReady={(skillController != null && skillController.IsActiveSkillReady)}",
+            Logg.LoggingMode.Completed);
+    }
+
+    [Conditional("UNITY_EDITOR")]
+    [Conditional("DEVELOPMENT_BUILD")]
     private void LogAttackFlow(string stage, bool result)
     {
         string targetName = target.IsNotNull() ? target.name : "null";
+        string snapshotTargetName = pendingExecutionTarget.IsNotNull() ? pendingExecutionTarget.name : "null";
         string activeName = skillController != null && skillController.HasActiveSkill && skillController.ActiveSkill.IsNotNull()
             ? skillController.ActiveSkill.name
             : "null";
@@ -121,7 +203,120 @@ public class Fighter : MonoBehaviour, IFighter
 
         Logg.Log(
             $"[{nameof(Fighter)}.{stage}] owner={name}, frame={Time.frameCount}, time={Time.time:0.000}, result={result}, " +
-            $"target={targetName}, active={activeName}, resolved={resolvedName}, executing={executingName}",
+            $"target={targetName}, snapshotTarget={snapshotTargetName}, active={activeName}, resolved={resolvedName}, executing={executingName}",
             Logg.LoggingMode.Completed);
+    }
+
+    private void CacheExecutionTargetSnapshot()
+    {
+        pendingExecutionTarget = IsTargetValid ? target : null;
+    }
+
+    private Health ResolveExecutionTarget()
+    {
+        if (pendingExecutionTarget.IsNotNull() && !pendingExecutionTarget.IsDead)
+        {
+            return pendingExecutionTarget;
+        }
+
+        return null;
+    }
+
+    private void ClearExecutionTargetSnapshot()
+    {
+        pendingExecutionTarget = null;
+    }
+
+    private void TryCancelStalePendingAttack()
+    {
+        if (skillController.IsNull()) return;
+
+        if (!skillController.HasPendingAttack)
+        {
+            DisarmPendingStaleWatch();
+            return;
+        }
+
+        if (!pendingStaleWatchActive)
+        {
+            ArmPendingStaleWatch();
+            return;
+        }
+
+        int elapsedFrames = Time.frameCount - pendingStaleWatchStartFrame;
+        float elapsedTime = Time.time - pendingStaleWatchStartTime;
+        if (elapsedFrames < PendingStaleMinFrames || elapsedTime < PendingStaleMinDuration)
+        {
+            return;
+        }
+
+        bool shouldCancel;
+        if (animator.IsNotNull())
+        {
+            shouldCancel = !IsAnimatorInAttackPhase();
+        }
+        else
+        {
+            shouldCancel = elapsedTime >= PendingStaleNoAnimatorDuration;
+        }
+
+        if (!shouldCancel)
+        {
+            return;
+        }
+
+        bool canceled = skillController.TryCancelPendingAttackIfStale();
+        if (!canceled)
+        {
+            return;
+        }
+
+        ClearExecutionTargetSnapshot();
+        DisarmPendingStaleWatch();
+        LogAttackFlow("stale_pending_canceled", true);
+    }
+
+    private bool IsAnimatorInAttackPhase()
+    {
+        if (animator.IsNull() || !animator.isActiveAndEnabled)
+        {
+            return false;
+        }
+
+        if (animator.GetCurrentAnimatorStateInfo(AnimatorBaseLayer).shortNameHash == AttackStateHash)
+        {
+            return true;
+        }
+
+        if (!animator.IsInTransition(AnimatorBaseLayer))
+        {
+            return false;
+        }
+
+        return animator.GetNextAnimatorStateInfo(AnimatorBaseLayer).shortNameHash == AttackStateHash;
+    }
+
+    private void ArmPendingStaleWatch()
+    {
+        pendingStaleWatchActive = true;
+        pendingStaleWatchStartFrame = Time.frameCount;
+        pendingStaleWatchStartTime = Time.time;
+    }
+
+    private void DisarmPendingStaleWatch()
+    {
+        pendingStaleWatchActive = false;
+        pendingStaleWatchStartFrame = -1;
+        pendingStaleWatchStartTime = -1f;
+    }
+
+    private void SyncPendingStaleWatchState()
+    {
+        if (skillController.IsNotNull() && skillController.HasPendingAttack)
+        {
+            return;
+        }
+
+        DisarmPendingStaleWatch();
     }
 }
