@@ -216,7 +216,27 @@ namespace TH.UI
         {
             if (registerCulling == null || target == null || cullingHandle.IsValid) return;
             cullingHandle = registerCulling(this);
+            TryApplyInitialScreenState();
         }
+
+        private void TryApplyInitialScreenState()
+        {
+            if (target == null || rect == null) return;
+
+            var camera = Camera.main;
+            if (camera == null) return;
+
+            var screenPos = camera.WorldToScreenPoint(target.position);
+            bool isVisible = screenPos.z > 0f
+                             && screenPos.x >= 0f && screenPos.x <= Screen.width
+                             && screenPos.y >= 0f && screenPos.y <= Screen.height;
+
+            if (isVisible)
+                rect.position = screenPos;
+
+            SetDisplayerActive(isVisible);
+        }
+
 
         private void UnregisterCulling()
         {
