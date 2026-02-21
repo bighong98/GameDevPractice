@@ -14,12 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
   m_GroupName: Default Local Group
   m_GUID: 3b559008265abd04ba68b9cac872e7db
-  m_SerializeEntries:
-  - m_GUID: af2c78ece9c3f6a4b83fc3562a867d9c
-    m_Address: Assets/Asset Packs/sfx/Deadly Kombat Free version/fire_punch_finisher_06.wav
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
+  m_SerializeEntries: []
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: ba2aeaf5da86ad943b7448d84aa19f98, type: 2}
   m_SchemaSet:

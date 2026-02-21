@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using TH.Attribute;
@@ -23,14 +24,28 @@ public class AttackProjectile : MonoBehaviour, IPoolObject
 
     private AttackSource attackSource;
     private ICombatSystem combatSystem;
+    private readonly HashSet<IDamageable> hitVictims = new();
+    private bool canPierceTargets;
+    private int maxPierceTargets;
+    private int piercedTargetCount;
+    private float maxTravelDistance;
+    private Vector3 launchStartPosition;
+
 
     public event Action<Vector3> OnHit;
     
     private void Update()
     {
         if (!isLaunched) return;
-        
+
         transform.Translate(Vector3.forward * (speed * Time.deltaTime));
+
+        if (!IsTravelDistanceExceeded())
+        {
+            return;
+        }
+
+        KillSelf();
     }
 
     public void SetProjectile(ICombatSystem combatSys, AttackSource atkSource)
@@ -44,14 +59,31 @@ public class AttackProjectile : MonoBehaviour, IPoolObject
         attackSource = atkSource;
     }
 
+    public void ConfigurePiercing(bool allowPierce, int maxTargets)
+    {
+        canPierceTargets = allowPierce;
+        maxPierceTargets = Mathf.Max(0, maxTargets);
+    }
+
+    public void ConfigureMaxTravelDistance(float maxDistance)
+    {
+        maxTravelDistance = Mathf.Max(0f, maxDistance);
+    }
+
+
+
     public void SetTargetAndShoot(Health newTarget, bool homing)
     {
         if (newTarget == null) return;
         
         target = newTarget;
         transform.LookAt(GetAim());
+        launchStartPosition = transform.position;
+
 
         ResetProjectileCTS();
+        ResetPierceState();
+
         Launch(homing);
     }
 
@@ -120,19 +152,64 @@ public class AttackProjectile : MonoBehaviour, IPoolObject
         ReleaseSelf();
     }
 
+    private void ResetPierceState()
+    {
+        piercedTargetCount = 0;
+        hitVictims.Clear();
+    }
+
+    private bool IsPierceLimitReached()
+    {
+        return maxPierceTargets > 0 && piercedTargetCount >= maxPierceTargets;
+    }
+
+    private bool IsTravelDistanceExceeded()
+    {
+        if (maxTravelDistance <= 0f)
+        {
+            return false;
+        }
+
+        float sqrDistance = (transform.position - launchStartPosition).sqrMagnitude;
+        return sqrDistance >= maxTravelDistance * maxTravelDistance;
+    }
+
+
+
     private void OnTriggerEnter(Collider other)
     {
-        //todo: 논타겟팅/타겟팅 스킬의 투사체일 때 처리
+        //todo: 히트타겟팅/논타겟팅 스킬 투사체일 때 처리
+
+        if (!isLaunched)
+        {
+            return;
+        }
 
         if (TryResolveDamageable(other, out var victim) && combatSystem != null)
         {
+            if (!hitVictims.Add(victim))
+            {
+                this.Log($"OnTriggerEnter(): duplicate victim '{(victim as Component)?.name ?? "unknown"}', ignored", Logg.LoggingMode.Completed);
+                return;
+            }
+
             this.Log($"OnTriggerEnter(): apply hit to '{(victim as Component)?.name ?? "unknown"}'", Logg.LoggingMode.Completed);
             combatSystem.ApplyHit(attackSource.ToRequest(victim, transform.position, hasHitPoint: true));
+            OnHit?.Invoke(transform.position);
+
+            piercedTargetCount++;
+            this.Log($"OnTriggerEnter(): collided with {other}", Logg.LoggingMode.Completed);
+
+            if (canPierceTargets && !IsPierceLimitReached())
+            {
+                return;
+            }
+
+            KillSelf();
+            return;
         }
-        else
-        {
-            this.Log($"OnTriggerEnter(): no damageable resolved from '{other.name}'", Logg.LoggingMode.Completed);
-        }
+
+        this.Log($"OnTriggerEnter(): no damageable resolved from '{other.name}'", Logg.LoggingMode.Completed);
         this.Log($"OnTriggerEnter(): collided with {other}", Logg.LoggingMode.Completed);
         OnHit?.Invoke(transform.position);
         KillSelf();
@@ -171,13 +248,15 @@ public class AttackProjectile : MonoBehaviour, IPoolObject
 
     public void OnGetFromPool()
     {
-        
+        ResetPierceState();
     }
 
     public void OnReleaseFromPool()
     {
         target = null;
         isLaunched = false;
+        launchStartPosition = default;
+        ResetPierceState();
     }
 
     public void OnDestroyFromPool()

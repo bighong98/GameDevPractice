@@ -39,6 +39,14 @@ MonoBehaviour:
     - SFX
     - Sound
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: af2c78ece9c3f6a4b83fc3562a867d9c
+    m_Address: fire_punch_finisher_06.wav
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_Asset
+    - SFX
+    - Sound
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: c01bbab8442e45146be860df82582360
     m_Address: SFX_impactbigheavy01.wav
     m_ReadOnly: 0

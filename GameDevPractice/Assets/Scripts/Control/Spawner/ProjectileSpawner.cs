@@ -16,6 +16,10 @@ public class ProjectileSpawner : Spawner<AttackProjectile>, ISkillProjectileExec
 
     private ICombatSystem combatSystem;
     private AttackSource projectileAttackSource;
+    private bool projectilePierceTargets;
+    private int projectileMaxPierceTargets;
+    private float projectileMaxTravelDistance;
+
 
     private IAttacker currentOwner;
     private SkillTargetLayerMaskResolver projectileLayerResolver;
@@ -30,7 +34,7 @@ public class ProjectileSpawner : Spawner<AttackProjectile>, ISkillProjectileExec
 
     public void InitializeProjectileSpawner(IAttacker owner, SkillTypeSO skillTypeSO, AttackSource attackSource)
     {
-        _ = skillTypeSO;
+        ApplyProjectileSkillOptions(skillTypeSO);
         combatSystem ??= ServiceLocator.Get<ICombatSystem>();
 
         if (owner is not { } shootingWeaponOwner)
@@ -48,6 +52,8 @@ public class ProjectileSpawner : Spawner<AttackProjectile>, ISkillProjectileExec
             if (obj is not AttackProjectile projectile) return;
 
             projectile.SetProjectile(combatSystem, projectileAttackSource);
+            projectile.ConfigurePiercing(projectilePierceTargets, projectileMaxPierceTargets);
+            projectile.ConfigureMaxTravelDistance(projectileMaxTravelDistance);
             ApplyProjectileLayer(projectile);
         };
 
@@ -56,6 +62,8 @@ public class ProjectileSpawner : Spawner<AttackProjectile>, ISkillProjectileExec
             if (obj is not AttackProjectile projectile) return;
 
             projectile.SetProjectile(projectileAttackSource);
+            projectile.ConfigurePiercing(projectilePierceTargets, projectileMaxPierceTargets);
+            projectile.ConfigureMaxTravelDistance(projectileMaxTravelDistance);
             ApplyProjectileLayer(projectile);
         };
     }
@@ -73,6 +81,7 @@ public class ProjectileSpawner : Spawner<AttackProjectile>, ISkillProjectileExec
             Logg.LoggingMode.Completed);
 
         projectileAttackSource = attackSource;
+        ApplyProjectileSkillOptions(skill);
 
         if (target != null)
             SetTarget(target);
@@ -147,6 +156,22 @@ public class ProjectileSpawner : Spawner<AttackProjectile>, ISkillProjectileExec
         hasTarget = target != null;
     }
 
+    private void ApplyProjectileSkillOptions(SkillTypeSO skill)
+    {
+        if (skill.IsNull())
+        {
+            projectilePierceTargets = false;
+            projectileMaxPierceTargets = 0;
+            projectileMaxTravelDistance = 0f;
+            return;
+        }
+
+        projectilePierceTargets = skill.ProjectilePierceTargets;
+        projectileMaxPierceTargets = skill.ProjectileMaxPierceTargets;
+        projectileMaxTravelDistance = skill.ProjectileMaxTravelDistance;
+    }
+
+
     private bool Shoot()
     {
         if (!hasTarget) return false;
@@ -157,6 +182,8 @@ public class ProjectileSpawner : Spawner<AttackProjectile>, ISkillProjectileExec
 
         ApplyProjectileLayer(projectile);
         projectile.SetProjectile(combatSystem, projectileAttackSource);
+        projectile.ConfigurePiercing(projectilePierceTargets, projectileMaxPierceTargets);
+        projectile.ConfigureMaxTravelDistance(projectileMaxTravelDistance);
         projectile.SetTargetAndShoot(projectileTarget, isHoming);
         return true;
     }

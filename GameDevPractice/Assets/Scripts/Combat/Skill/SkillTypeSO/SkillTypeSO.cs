@@ -56,6 +56,9 @@ namespace TH.Resource
 
         [Header("Projectile")]
         [SerializeField] private GameObject projectilePrefab;
+        [SerializeField] private bool projectilePierceTargets;
+        [SerializeField, Min(0)] private int projectileMaxPierceTargets;
+        [SerializeField, Min(0f)] private float projectileMaxTravelDistance;
 
         [Header("VFX")]
         [SerializeField] private List<SkillEffectCue> skillVfxCues = new();
@@ -95,6 +98,9 @@ namespace TH.Resource
         public AnimatorOverrideController AnimatorOverride => animatorOverride;
         public bool HasProjectile => projectilePrefab != null;
         public GameObject ProjectilePrefab => projectilePrefab;
+        public bool ProjectilePierceTargets => projectilePierceTargets;
+        public int ProjectileMaxPierceTargets => Mathf.Max(0, projectileMaxPierceTargets);
+        public float ProjectileMaxTravelDistance => Mathf.Max(0f, projectileMaxTravelDistance);
         public IReadOnlyList<SkillEffectCue> SkillVfxCues => skillVfxCues;
         public bool HasSkillVfxCues => skillVfxCues != null && skillVfxCues.Exists(cue => cue != null && cue.IsValid);
 #if UNITY_EDITOR
