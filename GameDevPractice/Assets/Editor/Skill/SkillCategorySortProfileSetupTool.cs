@@ -54,7 +54,7 @@ public static class SkillCategorySortProfileSetupTool
         if (rulesProp.arraySize <= 0)
         {
             rulesProp.arraySize = 3;
-            SetRule(rulesProp, 0, SkillCategory.WeaponDefaultSkill, 300);
+            SetRule(rulesProp, 0, SkillCategory.BasicSkill, 300);
             SetRule(rulesProp, 1, SkillCategory.AdditiveSkill, 200);
             SetRule(rulesProp, 2, SkillCategory.UltimateSkill, 100);
 
@@ -95,10 +95,10 @@ public static class SkillCategorySortProfileSetupTool
             if (categoryProp == null)
                 continue;
 
-            if (categoryProp.enumValueIndex == (int)SkillCategory.WeaponDefaultSkill)
+            if (categoryProp.enumValueIndex == (int)SkillCategory.BasicSkill)
                 continue;
 
-            categoryProp.enumValueIndex = (int)SkillCategory.WeaponDefaultSkill;
+            categoryProp.enumValueIndex = (int)SkillCategory.BasicSkill;
             serializedObject.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(skill);
             updatedCount++;

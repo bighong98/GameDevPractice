@@ -1,0 +1,77 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ae70b95bc711424ab96997d90ea21eb, type: 3}
+  m_Name: Sword_ShootBlade
+  m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.SkillTypeSO
+  skillId: "\uAC80\uAE30 \uBC1C\uC0AC"
+  attackSourceStatSO: {fileID: 11400000, guid: cf7022ca8cb84ae4395e9b8e2edbcdf2, type: 2}
+  baseDamage: 1
+  hitCount: 3
+  attackCoefficient: 1
+  damageType: 1
+  range: 20
+  cooldown: 1
+  executionProfile: {fileID: 11400000, guid: 91415d6afb7673844bc9d9123a961bf7, type: 2}
+  subSkills: []
+  onHitTriggeredSkills: []
+  onHitEffects: []
+  lastImportedOnHitEffectsSignature: 0
+  comboTimeout: 0.75
+  comboSteps: []
+  comboSequence: {fileID: 0}
+  lastImportedComboSequence: {fileID: 0}
+  targetPolicy:
+    allowedGroups: 2
+    allowSelf: 0
+    includeDeadTargets: 0
+  animationSpeedMultiplier: 1
+  affectedByAttackSpeed: 1
+  animatorOverride: {fileID: 22100000, guid: bad3b4482a681fb4bb377898a52a866d, type: 2}
+  projectilePrefab: {fileID: 2391472091514340193, guid: 03e50783bddcb2a4a8191cb4dac7ae5d, type: 3}
+  projectilePierceTargets: 1
+  projectileMaxPierceTargets: 0
+  projectileMaxTravelDistance: 0
+  skillVfxCues:
+  - cueId: legacy.onhit
+    trigger: 1
+    markerName: 
+    effectPrefab: {fileID: 4791478664128434501, guid: 4f0813776eff15c4ea6dffecc161aa7e, type: 3}
+    sfxClip: {fileID: 0}
+    anchorType: 3
+    anchorName: 
+    follow: 0
+    oncePerAttackInstance: 0
+    positionOffset: {x: 0, y: 0, z: 0}
+    groundLayerMask:
+      serializedVersion: 2
+      m_Bits: 0
+    groundRayStartHeight: 1.5
+    groundRayDistance: 6
+  - cueId: legacy_castsfx
+    trigger: 0
+    markerName: 
+    effectPrefab: {fileID: 0}
+    sfxClip: {fileID: 8300000, guid: 3005c2aee967e624ea1e0101b4b37f32, type: 3}
+    anchorType: 0
+    anchorName: 
+    follow: 0
+    oncePerAttackInstance: 1
+    positionOffset: {x: 0, y: 0, z: 0}
+    groundLayerMask:
+      serializedVersion: 2
+      m_Bits: 0
+    groundRayStartHeight: 1.5
+    groundRayDistance: 6
+  skillEffectProfile: {fileID: 0}
+  lastImportedSkillVfxProfileSignature: 0
+  skillCategory: 1
+  skillSlotImage: {fileID: 21300000, guid: 90e99a7fde056a4418b9fe16084adb5c, type: 3}

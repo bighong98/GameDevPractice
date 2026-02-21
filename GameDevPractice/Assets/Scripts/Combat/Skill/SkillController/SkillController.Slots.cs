@@ -198,7 +198,7 @@ namespace TH.Combat
                 }
             }
 
-            EnsureCategoryPriority(SkillCategory.WeaponDefaultSkill);
+            EnsureCategoryPriority(SkillCategory.BasicSkill);
             EnsureCategoryPriority(SkillCategory.AdditiveSkill);
             EnsureCategoryPriority(SkillCategory.UltimateSkill);
         }
@@ -215,7 +215,7 @@ namespace TH.Combat
         {
             return category switch
             {
-                SkillCategory.WeaponDefaultSkill => 300,
+                SkillCategory.BasicSkill => 300,
                 SkillCategory.AdditiveSkill => 200,
                 SkillCategory.UltimateSkill => 100,
                 _ => 0

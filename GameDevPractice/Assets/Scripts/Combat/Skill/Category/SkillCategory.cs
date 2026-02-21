@@ -2,8 +2,10 @@ namespace TH.Resource
 {
     public enum SkillCategory
     {
-        WeaponDefaultSkill = 0,
+        BasicSkill = 0,
         AdditiveSkill = 1,
-        UltimateSkill = 2
+        EnhancedSkill = 2,
+        UltimateSkill = 3,
+        SpecialSKill = 20,
     }
 }

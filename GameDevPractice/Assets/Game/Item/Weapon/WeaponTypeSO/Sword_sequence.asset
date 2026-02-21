@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Sword_sequence
   m_EditorClassIdentifier: Assembly-CSharp::WeaponTypeSO
   prefab: {fileID: 7059132959080541948, guid: d4c092d9dca59304fba951cae1d05868, type: 3}
-  nameString: "\uD654\uC5FC\uAC80"
+  nameString: "\uC804\uBB38\uAC00\uC6A9 \uAC80"
   sprite: {fileID: 21300000, guid: 95052c6b62fb3de4695beaa99f842ac2, type: 3}
   itemType: 1
   maxAmount: 1
@@ -39,4 +39,6 @@ MonoBehaviour:
   EquippedPrefab: {fileID: 8466340430826345119, guid: f88d5b41db4f06b4e8240c80f2f734db, type: 3}
   equippedPrefabLeft: {fileID: 8466340430826345119, guid: 11cda9c8e3d9d034f8df6480f16d820b, type: 3}
   hand: 2
-  defaultSkill: {fileID: 11400000, guid: 265746d0fd0a1cc468b00352e243cf4d, type: 2}
+  defaultSkills:
+  - {fileID: 11400000, guid: 265746d0fd0a1cc468b00352e243cf4d, type: 2}
+  - {fileID: 11400000, guid: 5c4c02cf2b475b241a45617c4616396b, type: 2}

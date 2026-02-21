@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace TH.Resource
@@ -7,15 +8,15 @@ namespace TH.Resource
     {
         [Header("Weapon")]
         public Enums.WeaponType weaponType;
-        
+
         [Tooltip("GripHand: Both - 오른손 무기 프리펩으로 사용")]
         public GameObject EquippedPrefab;
         [SerializeField] private GameObject equippedPrefabLeft;
         [SerializeField] private Hand hand;
-        [SerializeField] private SkillTypeSO defaultSkill;
+        [SerializeField] private List<SkillTypeSO> defaultSkills = new();
 
         public Hand GripHand => hand;
-        public SkillTypeSO DefaultSkill => defaultSkill;
+        public IReadOnlyList<SkillTypeSO> DefaultSkills => defaultSkills;
         public GameObject EquippedPrefabLeft => equippedPrefabLeft != null ? equippedPrefabLeft : EquippedPrefab;
 
         public enum Hand
@@ -26,4 +27,3 @@ namespace TH.Resource
         }
     }
 }
-

@@ -35,18 +35,40 @@ public class ActiveSkillSlotUI : BaseSlotUI, IHighlightableSlotUI
     public void SetSkill(SkillTypeSO skill)
     {
         boundSkill = skill;
-        // 스킬 해제 입력 시 슬롯 전체 초기화
+
         if (boundSkill == null)
         {
             Clear();
             return;
         }
 
-        // 아이콘 반영 후 쿨다운/타임아웃 표시 초기값 설정
-        ApplySkillIcon(boundSkill.SkillSlotImage);
+        ApplySkillIcon(ResolveSkillIcon(boundSkill));
         SetCooldown(0f, boundSkill.Cooldown);
         SetSequenceTimeout(0f, 0f);
     }
+
+    private static Sprite ResolveSkillIcon(SkillTypeSO skill)
+    {
+        if (skill == null)
+            return null;
+
+        if (skill.SkillSlotImage != null)
+            return skill.SkillSlotImage;
+
+        var comboSteps = skill.ComboSteps;
+        if (comboSteps == null)
+            return null;
+
+        for (int i = 0; i < comboSteps.Count; i++)
+        {
+            SkillTypeSO comboStep = comboSteps[i];
+            if (comboStep != null && comboStep.SkillSlotImage != null)
+                return comboStep.SkillSlotImage;
+        }
+
+        return null;
+    }
+
 
     // 쿨다운 잔여시간 표시 계산 및 텍스트 동기화
     public void SetCooldown(float remainingCooldown, float totalCooldown)

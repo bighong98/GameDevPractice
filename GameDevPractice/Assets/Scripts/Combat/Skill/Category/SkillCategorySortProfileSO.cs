@@ -16,7 +16,7 @@ namespace TH.Resource
 
         [SerializeField] private List<Rule> rules = new()
         {
-            new Rule { category = SkillCategory.WeaponDefaultSkill, priority = 300 },
+            new Rule { category = SkillCategory.BasicSkill, priority = 300 },
             new Rule { category = SkillCategory.AdditiveSkill, priority = 200 },
             new Rule { category = SkillCategory.UltimateSkill, priority = 100 }
         };

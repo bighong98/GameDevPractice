@@ -16,6 +16,8 @@ namespace TH.Combat
     // 스킬 등록/활성/쿨다운 조회 책임 파트
     public sealed partial class SkillController
     {
+        private const string unarmedFallbackWeaponAddressKey = "Unarmed.asset";
+
         // 스킬 등록 + 쿨다운 추적기 연동 처리
         public bool RegisterSkill(SkillTypeSO skill, bool setActive = false)
         {
@@ -126,23 +128,42 @@ namespace TH.Combat
             }
         }
 
-        // 무기 기본 스킬 정책 반영 + 사용 가능 스킬 목록 동기화
-        private void SyncAvailableSkillSet(bool forceNotify)
+        // 무기 스킬 정책 반영 + 사용 가능 스킬 목록 동기화
+        private void SyncAvailableSkillSet(bool forceNotify, SkillTypeSO preferredActiveSkill = null)
         {
             if (skillBook == null) return;
 
             bool changed = false;
-            if (syncWithEquippedWeapon && equippedWeaponDefaultSkill.IsNotNull())
+            if (syncWithEquippedWeapon)
             {
-                changed |= skillBook.RemoveAvailableWhere(skill =>
-                    skill.IsNotNull() &&
-                    skill.SkillCategory == SkillCategory.WeaponDefaultSkill &&
-                    skill != equippedWeaponDefaultSkill);
+                equippedWeaponSkillByCategory.Clear();
+                for (int i = 0; i < equippedWeaponSkills.Count; i++)
+                {
+                    SkillTypeSO weaponSkill = equippedWeaponSkills[i];
+                    if (weaponSkill.IsNull())
+                    {
+                        continue;
+                    }
 
-                changed |= skillBook.SetAvailable(equippedWeaponDefaultSkill, true);
+                    // 동일 카테고리에서는 뒤 항목 우선
+                    equippedWeaponSkillByCategory[weaponSkill.SkillCategory] = weaponSkill;
+                }
+
+                if (equippedWeaponSkillByCategory.Count > 0)
+                {
+                    changed |= skillBook.RemoveAvailableWhere(skill =>
+                        skill.IsNotNull() &&
+                        equippedWeaponSkillByCategory.TryGetValue(skill.SkillCategory, out var selectedWeaponSkill) &&
+                        skill != selectedWeaponSkill);
+                }
+
+                foreach (var pair in equippedWeaponSkillByCategory)
+                {
+                    changed |= skillBook.SetAvailable(pair.Value, true);
+                }
             }
 
-            EnsureActiveSkillIsAvailable();
+            changed |= EnsureActiveSkillIsAvailable(preferredActiveSkill);
             bool slotOrderChanged = RebuildOrderedAvailableSkills(notifySlotChanges: true);
 
             if (forceNotify || changed || slotOrderChanged)
@@ -151,16 +172,117 @@ namespace TH.Combat
             }
         }
 
-        // 활성 스킬이 사용 가능 목록에서 빠진 경우 첫 사용 가능 스킬로 보정
-        private void EnsureActiveSkillIsAvailable()
+        // 활성 스킬 보정 (기존 활성 유지 -> BasicSkill 우선 -> 캐릭터 기본 무기 BasicSkill fallback)
+        private bool EnsureActiveSkillIsAvailable(SkillTypeSO preferredActiveSkill)
         {
-            if (skillBook == null || !HasActiveSkill) return;
-            if (skillBook.ContainsAvailable(skillBook.ActiveSkill)) return;
+            if (skillBook == null) return false;
+
+            if (preferredActiveSkill.IsNotNull() && skillBook.ContainsAvailable(preferredActiveSkill))
+            {
+                SetActiveSkill(preferredActiveSkill);
+                return false;
+            }
+
+            if (HasActiveSkill && skillBook.ContainsAvailable(skillBook.ActiveSkill)) return false;
+
+            if (TryGetAvailableSkillByCategory(SkillCategory.BasicSkill, out var availableBasicSkill))
+            {
+                SetActiveSkill(availableBasicSkill);
+                return false;
+            }
+
+            bool changed = false;
+            if (TryResolveDefaultWeaponBasicSkill(out var fallbackBasicSkill))
+            {
+                if (!skillBook.Contains(fallbackBasicSkill))
+                {
+                    bool added = skillBook.Register(fallbackBasicSkill);
+                    skillCaster?.TrackSkill(fallbackBasicSkill);
+                    if (added)
+                    {
+                        OnSkillBookChanged?.Invoke();
+                        changed = true;
+                    }
+                }
+
+                changed |= skillBook.SetAvailable(fallbackBasicSkill, true);
+                SetActiveSkill(fallbackBasicSkill);
+                return changed;
+            }
 
             if (skillBook.TryGetFirstAvailable(out var firstAvailableSkill))
             {
                 SetActiveSkill(firstAvailableSkill);
             }
+
+            return changed;
+        }
+
+        private bool TryGetAvailableSkillByCategory(SkillCategory category, out SkillTypeSO skill)
+        {
+            skill = null;
+            if (skillBook == null)
+            {
+                return false;
+            }
+
+            var availableSkills = skillBook.AvailableSkills;
+            for (int i = availableSkills.Count - 1; i >= 0; i--)
+            {
+                SkillTypeSO candidate = availableSkills[i];
+                if (candidate.IsNull() || candidate.SkillCategory != category)
+                {
+                    continue;
+                }
+
+                skill = candidate;
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool TryResolveDefaultWeaponBasicSkill(out SkillTypeSO basicSkill)
+        {
+            basicSkill = null;
+            if (equipHolder.IsNotNull() && TryGetBasicSkillFromWeapon(equipHolder.DefaultWeaponInfo, out basicSkill))
+            {
+                return true;
+            }
+
+            resourceLoader ??= ServiceLocator.Get<IResourceLoader>();
+            if (resourceLoader.IsNull() ||
+                !resourceLoader.TryLoad(unarmedFallbackWeaponAddressKey, out WeaponTypeSO unarmedWeapon) ||
+                unarmedWeapon.IsNull())
+            {
+                return false;
+            }
+
+            return TryGetBasicSkillFromWeapon(unarmedWeapon, out basicSkill);
+        }
+
+        private static bool TryGetBasicSkillFromWeapon(WeaponTypeSO weapon, out SkillTypeSO basicSkill)
+        {
+            basicSkill = null;
+            if (weapon.IsNull())
+            {
+                return false;
+            }
+
+            IReadOnlyList<SkillTypeSO> weaponSkills = weapon.DefaultSkills;
+            for (int i = weaponSkills.Count - 1; i >= 0; i--)
+            {
+                SkillTypeSO candidate = weaponSkills[i];
+                if (candidate.IsNull() || candidate.SkillCategory != SkillCategory.BasicSkill)
+                {
+                    continue;
+                }
+
+                basicSkill = candidate;
+                return true;
+            }
+
+            return false;
         }
     }
 }

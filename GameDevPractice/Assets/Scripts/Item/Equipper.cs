@@ -299,19 +299,11 @@ namespace TH.Item
         {
             this.Log($"EnsureWeaponProjectileSpawner() invoked weaponType: {weaponType}, equippedWeaponInstance: {result}", Logg.LoggingMode.Completed);
             if (weaponType.IsNull() || result.IsNull()) return;
-
-            var skill = weaponType.DefaultSkill;
-            if (skill.IsNull() || !skill.HasProjectile || skill.ProjectilePrefab.IsNull()) return;
             if (skillController.IsNull()) return;
             skillController.TryBuildPreviewAttackSource(fighter, out var attackSource);
 
             var projectileSpawner = result.gameObject.GetOrAddComponent<ProjectileSpawner>();
-            projectileSpawner.InitializeProjectileSpawner(fighter, skill, attackSource);
-            if (!projectileSpawner.HasPool)
-            {
-                projectileSpawner.SetPool(skill.ProjectilePrefab);
-            }
-
+            projectileSpawner.InitializeProjectileSpawner(fighter, null, attackSource);
             skillController.SetProjectileExecutor(projectileSpawner);
         }
 

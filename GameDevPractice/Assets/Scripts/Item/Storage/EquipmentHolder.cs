@@ -17,6 +17,7 @@ namespace TH.Item
 
         public bool IsEquippingWeapon => currentWeapon != null;
         public WeaponTypeSO GetEquippedWeaponInfo => currentWeapon;
+        public WeaponTypeSO DefaultWeaponInfo => defaultWeapon;
 
         [SerializeField] private WeaponTypeSO defaultWeapon; // 장비 장착해제시 적용되어야할 무기종(ex-Unarmed)
         private WeaponTypeSO currentWeapon;

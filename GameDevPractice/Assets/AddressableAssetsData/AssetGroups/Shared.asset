@@ -22,11 +22,6 @@ MonoBehaviour:
     - PreLoad_DataSO
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 02ee32bc747de2a4e90254719b6ebf88
-    m_Address: Sword_complex.asset
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 05d90a2556c9ce0478d30f3d943def18
     m_Address: Outfit_HeadGear
     m_ReadOnly: 0
@@ -36,11 +31,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 0707f9d6eca13be4e80ab300d9ab7cba
     m_Address: Cond_OnHit_TargetHpLe50.asset
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 082c55684a630da47a4fc9ab541f96bc
-    m_Address: Fireball_Explosion.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -231,11 +221,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: c343b627e5f2bf44185be8e9d60672f4
     m_Address: DamageTextSO.asset
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: c525b71ddfe92b340bcf857aaeb20ef1
-    m_Address: Sword_sequence.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

@@ -70,6 +70,11 @@ public class ProjectileSpawner : Spawner<AttackProjectile>, ISkillProjectileExec
 
     public bool TryExecuteProjectile(in AttackSource attackSource, Health target, SkillTypeSO skill)
     {
+        if (skill.IsNull() || !skill.HasProjectile || skill.ProjectilePrefab.IsNull())
+        {
+            return false;
+        }
+
         var ownerComponent = currentOwner as Component;
         string ownerName = ownerComponent != null ? ownerComponent.name : "null";
         string targetName = target != null ? target.name : "null";
@@ -82,6 +87,10 @@ public class ProjectileSpawner : Spawner<AttackProjectile>, ISkillProjectileExec
 
         projectileAttackSource = attackSource;
         ApplyProjectileSkillOptions(skill);
+        if (!EnsurePoolForSkill(skill))
+        {
+            return false;
+        }
 
         if (target != null)
             SetTarget(target);
@@ -92,6 +101,21 @@ public class ProjectileSpawner : Spawner<AttackProjectile>, ISkillProjectileExec
             $"attackId={attackSource.AttackInstanceId}",
             Logg.LoggingMode.Completed);
         return shot;
+    }
+
+    private bool EnsurePoolForSkill(SkillTypeSO skill)
+    {
+        if (skill.IsNull() || skill.ProjectilePrefab.IsNull())
+        {
+            return false;
+        }
+
+        if (!HasPool || Prefab != skill.ProjectilePrefab)
+        {
+            SetPool(skill.ProjectilePrefab);
+        }
+
+        return HasPool;
     }
 
     private void OnDisable()

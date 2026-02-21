@@ -15,6 +15,20 @@ MonoBehaviour:
   m_GroupName: Weapon Data
   m_GUID: 597dbe6ac39c4a14184875887bf009e8
   m_SerializeEntries:
+  - m_GUID: 02ee32bc747de2a4e90254719b6ebf88
+    m_Address: Sword_complex.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 082c55684a630da47a4fc9ab541f96bc
+    m_Address: Fireball_Explosion.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 0a600904131b2d64994bee447b8efe39
     m_Address: Unarmed.asset
     m_ReadOnly: 0
@@ -36,6 +50,13 @@ MonoBehaviour:
     - PreLoad_DataSO
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5c4c02cf2b475b241a45617c4616396b
+    m_Address: Sword_ShootBlade.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 6b7af030474e11c47a6955ef88e5837e
     m_Address: Fireball.asset
     m_ReadOnly: 0
@@ -45,6 +66,13 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 9c28bcdec3e86fb4dbee350fb3cc7f89
     m_Address: Long Sword
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c525b71ddfe92b340bcf857aaeb20ef1
+    m_Address: Sword_sequence.asset
     m_ReadOnly: 0
     m_SerializedLabels:
     - PreLoad_DataSO
