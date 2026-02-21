@@ -187,6 +187,10 @@ namespace TH.Control.Movement
             return true;
         }
 
+        public void ResetToDefaultState()
+        {
+            ResetMovementState();
+        }
         #endregion
     }
 }

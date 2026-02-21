@@ -229,6 +229,11 @@ namespace TH.Attribute
             return false;
         }
 
+        public void ResetToDefaultState()
+        {
+            SetXp(0f, updateLevel: true);
+        }
+
         #endregion
         
         #region Test (Editor Only)

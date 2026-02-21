@@ -94,7 +94,7 @@ namespace TH.Combat
                 $"baseArg={baseSkillName}, resolvedArg={resolvedPreviewName}, step={stepIndex}/{stepCount}, attackId={attackInstanceId}, " +
                 $"pending={hasPendingAttack}, pendingSkill={pendingSkillName}, pendingBase={pendingBaseName}, " +
                 $"pendingStep={pendingComboStepIndex}/{pendingComboStepCount}, currentStep={currentComboStepIndex}/{currentComboStepCount}",
-                Logg.LoggingMode.InProgress);
+                Logg.LoggingMode.Completed);
         }
 
         [Conditional("UNITY_EDITOR")]
@@ -110,7 +110,7 @@ namespace TH.Combat
                 $"[{nameof(SkillController)}.{nameof(TryExecutePendingAttack)}] " +
                 $"owner={ownerName}#{ownerInstanceId}, stage={stage}, frame={Time.frameCount}, time={Time.time:0.000}, " +
                 $"skill={skillName}, attackId={attackInstanceId}, target={targetName}",
-                Logg.LoggingMode.InProgress);
+                Logg.LoggingMode.Completed);
         }
 
         // 소비 없는 프리뷰 공격 소스 생성

@@ -260,6 +260,20 @@ namespace TH.Attribute
             return true;
         }
 
+        public void ResetToDefaultState()
+        {
+            lastAttacker = null;
+
+            if (maxHp <= 0f)
+            {
+                IsDead = false;
+                SetColliderEnabled(true);
+                return;
+            }
+
+            SetCurrentHp(maxHp, byForce: true);
+        }
+
         #endregion
 
         #region IHealable

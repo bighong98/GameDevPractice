@@ -429,7 +429,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1599618502693370758, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
       propertyPath: uniqueIdentifier
-      value: f73631bf-76bb-4373-9ef7-a23a99e57087
+      value: player
       objectReference: {fileID: 0}
     - target: {fileID: 4072935400606114782, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
       propertyPath: m_SizeDelta.x

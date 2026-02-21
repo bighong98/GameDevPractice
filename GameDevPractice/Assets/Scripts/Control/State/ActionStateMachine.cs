@@ -45,9 +45,22 @@ namespace TH.Control.State
         {
             if (_stateTokenSource == null)
                 RenewStateToken();
-            
-            if (currentState == null && initialState != null)
-                TransitionToState(initialState);
+
+            if (initialState == null) return;
+
+            // 상태머신을 초기 상태로 재진입
+            // -> 풀 재사용 객체 이벤트 전이 정상화 목적
+            if (currentState != null)
+            {
+                UnbindTransitions();
+                _pendingState = null;
+                _stateArmed.Clear();
+                _globalArmed.Clear();
+                ResetTransitionLocksOnStateChange();
+                currentState = null;
+            }
+
+            TransitionToState(initialState, ignoreLock: true);
         }
 
         private void OnDisable()

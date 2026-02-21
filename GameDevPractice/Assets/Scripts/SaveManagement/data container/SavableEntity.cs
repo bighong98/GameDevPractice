@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using TH.Core.Service;
 using TH.Utils;
 using UnityEngine;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 using UnityEngine.SceneManagement;
 
 namespace TH.SaveLoad
@@ -11,16 +13,15 @@ namespace TH.SaveLoad
     public class SavableEntity : MonoBehaviour, ISavableEntity
     {
         [SerializeField] private string uniqueIdentifier = "";
+        [SerializeField] private bool autoRegisterToRegistry = true;
         [SerializeField] private bool isGlobal = false;
         public bool IsGlobal => isGlobal;
         
         private static readonly Dictionary<string, SavableEntity> GlobalLookup = new Dictionary<string, SavableEntity>();
         private static readonly Dictionary<string, string> SavedTypeLookup = new Dictionary<string, string>(); // (ISavable 구현 클래스 이름, 세이브 데이터 저장 객체 이름) -> RestoreState()에서 사용 목적
-        // private static ISaveSystem saveSystem;
         private static ISaveEntityRegistry saveEntityRegistry;
         
         private readonly List<ISavable> savables = new();
-        
         private static readonly string UniqueIdentifierPropertyName = "uniqueIdentifier";
 
         public string UniqueIdentifier => uniqueIdentifier;
@@ -29,19 +30,61 @@ namespace TH.SaveLoad
 
         private void Awake()
         {
+            saveEntityRegistry ??= ServiceLocator.Get<ISaveEntityRegistry>();
             RebuildSavableList();
-            saveEntityRegistry = ServiceLocator.Get<ISaveEntityRegistry>();
         }
 
         private void Start()
         {
-            saveEntityRegistry.RegisterEntity(this, isGlobal, destroyCancellationToken);
+            TryGetUniqueIdAndRegisterSelf();
+
+            if (!autoRegisterToRegistry) return;
+            if (!IsValidIdentifier(uniqueIdentifier)) return;
+            if (IsRegistered) return;
+
+            saveEntityRegistry?.RegisterEntity(this, isGlobal, destroyCancellationToken);
         }
+
+        public void SetRuntimeUniqueId(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return;
+
+            if (!string.IsNullOrEmpty(uniqueIdentifier)
+                && GlobalLookup.TryGetValue(uniqueIdentifier, out var current)
+                && current == this)
+            {
+                GlobalLookup.Remove(uniqueIdentifier);
+            }
+
+            uniqueIdentifier = id;
+            GlobalLookup[uniqueIdentifier] = this;
+        }
+
+        public void SetAutoRegisterToRegistry(bool enabled, bool unregisterIfDisabled = true)
+        {
+            autoRegisterToRegistry = enabled;
+
+            if (!enabled && unregisterIfDisabled)
+            {
+                UnregisterFromRegistry();
+            }
+        }
+
+        public void UnregisterFromRegistry()
+        {
+            if (!IsRegistered) return;
+
+            saveEntityRegistry ??= ServiceLocator.Get<ISaveEntityRegistry>();
+            saveEntityRegistry?.UnRegisterEntity(this, destroyCancellationToken);
+        }
+
 
         private void OnDestroy()
         {
             savables.Clear();
         }
+        
+        #region ISavableEntity
         
         object ISavable.CaptureState()
         {
@@ -126,30 +169,88 @@ namespace TH.SaveLoad
                 }
             }
         }
+
+        public void ResetToDefaultState()
+        {
+            this.Log($"{gameObject.name} - ResetToDefaultState", Logg.LoggingMode.Completed);
+
+            foreach (var savable in savables)
+            {
+                if (savable == null) continue;
+
+                try
+                {
+                    savable.ResetToDefaultState();
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"[SavableEntity] ResetToDefaultState() failed for {savable.GetType().AssemblyQualifiedName}: {e}");
+                }
+            }
+        }
+        #endregion
+        
+        #region Unique Identifier
         
 #if UNITY_EDITOR
         private void OnValidate()
         {
-            if (Application.IsPlaying(gameObject)) return; // 에디터 모드가 아닌 경우 return
-            if (string.IsNullOrEmpty(gameObject.scene.path)) return; // 프리팹 내부의 GO인 경우 return
+            if (Application.IsPlaying(gameObject)) return; // 에디터 플레이 모드인 경우 return
+            if (PrefabUtility.IsPartOfPrefabAsset(gameObject)) return; // 프리팹 에셋(프리팹 모드 포함)인 경우 return
+            if (!gameObject.scene.IsValid() || string.IsNullOrEmpty(gameObject.scene.path)) return; // 씬에 배치되지 않은 GO인 경우 return
 
             TryGetUniqueIdAndRegisterSelf();
         }
 
-        private void TryGetUniqueIdAndRegisterSelf()
+        private void TryGetUniqueIdAndRegisterSelfInEditor()
         {
             SerializedObject serializedObject = new SerializedObject(this);
             SerializedProperty property = serializedObject.FindProperty(UniqueIdentifierPropertyName);
-            
-            if (string.IsNullOrEmpty(property.stringValue) || !IsUnique(property.stringValue)) // 고유식별자가 비어있거나, 유일한 고유식별자가 아닌 경우
+
+            if (!IsValidIdentifier(property.stringValue))
             {
-                property.stringValue = System.Guid.NewGuid().ToString(); // 고유식별자 생성
-                serializedObject.ApplyModifiedProperties(); // 고유식별자 적용
+                property.stringValue = System.Guid.NewGuid().ToString(); // 고유 식별자 생성
+                serializedObject.ApplyModifiedProperties(); // 고유 식별자 적용
             }
 
-            GlobalLookup[property.stringValue] = this; // 글로벌 룩업 딕셔너리에 자기자신을 등록
+            GlobalLookup[property.stringValue] = this; // 글로벌 룩업 딕셔너리에 자기 자신을 등록
         }
 #endif
+
+        private void TryGetUniqueIdAndRegisterSelf()
+        {
+#if UNITY_EDITOR
+            if (!Application.IsPlaying(gameObject))
+            {
+                TryGetUniqueIdAndRegisterSelfInEditor();
+                return;
+            }
+#endif
+            TryGetUniqueIdAndRegisterSelfAtRuntime();
+        }
+
+        private void TryGetUniqueIdAndRegisterSelfAtRuntime()
+        {
+            if (!IsValidIdentifier(uniqueIdentifier))
+            {
+                uniqueIdentifier = System.Guid.NewGuid().ToString();
+            }
+
+            GlobalLookup[uniqueIdentifier] = this;
+        }
+
+        private bool IsValidIdentifier(string candidate)
+        {
+            if (string.IsNullOrEmpty(candidate)) return false;
+            if (IsDefaultIdentifier(candidate)) return false;
+            return IsUnique(candidate);
+        }
+
+        private const string DefaultIdentifierConvention = "_default";
+        private bool IsDefaultIdentifier(string candidate)
+        {
+            return candidate.EndsWith(DefaultIdentifierConvention);
+        }
         
         private bool IsUnique(string candidate)
         {
@@ -171,6 +272,8 @@ namespace TH.SaveLoad
 
             return false;
         }
+
+        #endregion
 
         private void TryCacheSavedTypeName(string savedTypeName, ISavable instance)
         {

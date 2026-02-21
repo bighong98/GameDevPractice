@@ -328,6 +328,12 @@ namespace TH.Item.Storage
             ValidateQuickSlotBindingsAsync().Forget();
             return true;
         }
+        public void ResetToDefaultState()
+        {
+            InitSlots();
+            ClearAllSlots();
+            OnStorageChanged?.Invoke();
+        }
 
         private void ClearAllSlots()
         {

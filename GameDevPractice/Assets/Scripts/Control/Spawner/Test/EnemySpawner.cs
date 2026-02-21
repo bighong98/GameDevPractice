@@ -5,21 +5,43 @@ using Cysharp.Threading.Tasks;
 using TH.Attribute;
 using TH.Control.Movement;
 using TH.Core.Pool;
-using TH.Resource;
+using TH.SaveLoad;
 using TH.Utils;
+using Unity.Serialization.Json;
 using UnityEngine;
 using UnityEngine.AI;
 using Random = UnityEngine.Random;
+using TH.Resource;
+
 
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 
 [DisallowMultipleComponent]
-public class EnemySpawner : Spawner<CharacterTypeHolder>
+[RequireComponent(typeof(SavableEntity))]
+public class EnemySpawner : Spawner<CharacterTypeHolder>, ISavable
 {
-    [Header("Enemy")]
-    [SerializeField] private GameObject enemyPrefab;
+    [Serializable]
+    private sealed class EnemySpawnerSaveData
+    {
+        public int nextSpawnSequence;
+        public List<EnemySnapshot> snapshots = new();
+    }
+
+    [Serializable]
+    private sealed class EnemySnapshot
+    {
+        public string spawnKey;
+        public List<EnemyPayloadEntry> payload = new();
+    }
+
+    [Serializable]
+    private sealed class EnemyPayloadEntry
+    {
+        public string typeName;
+        public string jsonPayload;
+    }
 
     [Header("Pool")]
     [SerializeField, Min(0)] private int capacity = 10;
@@ -39,22 +61,36 @@ public class EnemySpawner : Spawner<CharacterTypeHolder>
     [SerializeField] private bool drawGizmoAlways;
 #endif
 
-    private readonly HashSet<IPoolObject> activeEnemies = new();
+    private readonly Dictionary<IPoolObject, string> enemySpawnKeys = new();
+    private readonly Dictionary<string, IPoolObject> enemyBySpawnKey = new();
+    private readonly List<IPoolObject> snapshotBuffer = new();
     private readonly Collider[] overlapBuffer = new Collider[32];
+    private static readonly SaveTypeResolver SaveTypeResolver = new();
 
     private CancellationTokenSource spawnLoopCts;
-    private bool isInitialized;
+    private int nextSpawnSequence;
+    private bool hasStarted;
+    private SavableEntity spawnerSavableEntity;
+    private string spawnerKeyPrefix;
 
     private TimeSpan cachedSpawnInterval;
     private float cachedSpawnIntervalSeconds = -1f;
 
     private const int DefaultMaxCount = 100;
+    private const char SpawnKeyDelimiter = ':';
     private int MaxActiveCount => max == 0 ? DefaultMaxCount : max;
+
+    private void Awake()
+    {
+        TryInitializeSpawnerKeyPrefix();
+    }
 
     protected override void Start()
     {
+        TryInitializeSpawnerKeyPrefix();
         InitializePool();
         UpdateSpawnIntervalCache(force: true);
+        hasStarted = true;
 
         if (spawnOnStart)
             StartSpawning();
@@ -62,7 +98,10 @@ public class EnemySpawner : Spawner<CharacterTypeHolder>
 
     private void OnEnable()
     {
-        if (spawnOnStart && isInitialized)
+        if (!Application.isPlaying || !hasStarted)
+            return;
+
+        if (spawnOnStart)
             StartSpawning();
     }
 
@@ -71,17 +110,15 @@ public class EnemySpawner : Spawner<CharacterTypeHolder>
         StopSpawning();
     }
 
-    private void OnValidate()
-    {
-        UpdateSpawnIntervalCache(force: true);
-    }
-
     public void StartSpawning()
     {
-        if (!isInitialized)
+        if (!Application.isPlaying)
+            return;
+
+        if (!HasPool)
             InitializePool();
 
-        if (!isInitialized || spawnLoopCts != null)
+        if (!HasPool || spawnLoopCts != null)
             return;
 
         UpdateSpawnIntervalCache();
@@ -104,6 +141,9 @@ public class EnemySpawner : Spawner<CharacterTypeHolder>
 
     public GameObject SpawnEnemyNow()
     {
+        if (!Application.isPlaying)
+            return null;
+
         if (!CanSpawn())
             return null;
 
@@ -151,19 +191,17 @@ public class EnemySpawner : Spawner<CharacterTypeHolder>
 
     private void InitializePool()
     {
-        if (isInitialized)
+        if (HasPool)
             return;
 
-        if (enemyPrefab == null)
+        if (prefab == null)
         {
-            Logg.LogError($"[{nameof(EnemySpawner)}.{nameof(InitializePool)}] enemyPrefab is null");
+            Logg.LogError($"[{nameof(EnemySpawner)}.{nameof(InitializePool)}] prefab is null");
             return;
         }
 
-        SetPool(enemyPrefab, null, OnEnemyGet, OnEnemyRelease, capacity, max);
-        isInitialized = pool != null;
-
-        if (!isInitialized)
+        SetPool(prefab, null, OnEnemyGet, OnEnemyRelease, capacity, max);
+        if (!HasPool)
             Logg.LogError($"[{nameof(EnemySpawner)}.{nameof(InitializePool)}] failed to create pool. Ensure prefab has an IPoolObject component.");
     }
 
@@ -180,10 +218,10 @@ public class EnemySpawner : Spawner<CharacterTypeHolder>
 
     private bool CanSpawn()
     {
-        if (!isInitialized)
+        if (!HasPool)
             return false;
 
-        return activeEnemies.Count < MaxActiveCount;
+        return ActiveObjectCount < MaxActiveCount;
     }
 
     private bool TryGetSpawnPosition(out Vector3 spawnPosition)
@@ -247,7 +285,7 @@ public class EnemySpawner : Spawner<CharacterTypeHolder>
         if (enemy == null)
             return;
 
-        activeEnemies.Add(enemy);
+        AssignSpawnKey(enemy, GetNextSpawnKey());
     }
 
     private void OnEnemyRelease(IPoolObject enemy)
@@ -255,7 +293,296 @@ public class EnemySpawner : Spawner<CharacterTypeHolder>
         if (enemy == null)
             return;
 
-        activeEnemies.Remove(enemy);
+        if (enemySpawnKeys.TryGetValue(enemy, out var spawnKey))
+        {
+            enemySpawnKeys.Remove(enemy);
+            if (!string.IsNullOrEmpty(spawnKey))
+                enemyBySpawnKey.Remove(spawnKey);
+        }
+
+        if (enemy is Component enemyComponent
+            && enemyComponent.TryGetComponent(out SavableEntity savableEntity))
+        {
+            savableEntity.SetAutoRegisterToRegistry(false);
+        }
+    }
+
+    object ISavable.CaptureState()
+    {
+        return CaptureState();
+    }
+
+    public object CaptureState()
+    {
+        var data = new EnemySpawnerSaveData
+        {
+            nextSpawnSequence = nextSpawnSequence,
+            snapshots = new List<EnemySnapshot>()
+        };
+
+        CopyActiveObjectsTo(snapshotBuffer);
+        foreach (var enemy in snapshotBuffer)
+        {
+            if (TryCreateSnapshot(enemy, out var snapshot))
+            {
+                data.snapshots.Add(snapshot);
+            }
+        }
+        snapshotBuffer.Clear();
+
+        return data;
+    }
+
+    public bool RestoreState(object state)
+    {
+        if (state is not EnemySpawnerSaveData data)
+            return false;
+
+        var wasSpawning = spawnLoopCts != null;
+
+        StopSpawning();
+        ReleaseAllActiveEnemies();
+
+        if (!HasPool)
+            InitializePool();
+
+        if (!HasPool)
+            return false;
+
+        var maxSequence = -1;
+        if (data.snapshots != null)
+        {
+            foreach (var snapshot in data.snapshots)
+            {
+                if (!TrySpawnEnemyFromSnapshot(snapshot))
+                    continue;
+
+                if (TryExtractSequence(snapshot.spawnKey, out var sequence) && sequence > maxSequence)
+                    maxSequence = sequence;
+            }
+        }
+
+        nextSpawnSequence = Mathf.Max(data.nextSpawnSequence, maxSequence + 1);
+
+        if (wasSpawning && enabled)
+            StartSpawning();
+
+        return true;
+    }
+
+    public void ResetToDefaultState()
+    {
+        var wasSpawning = spawnLoopCts != null;
+
+        StopSpawning();
+        ReleaseAllActiveEnemies();
+        nextSpawnSequence = 0;
+
+        if (wasSpawning && enabled && spawnOnStart)
+            StartSpawning();
+    }
+
+    private bool TryCreateSnapshot(IPoolObject enemy, out EnemySnapshot snapshot)
+    {
+        snapshot = null;
+        if (enemy == null || enemy is not Component enemyComponent)
+            return false;
+
+        if (!enemySpawnKeys.TryGetValue(enemy, out var spawnKey) || string.IsNullOrEmpty(spawnKey))
+            return false;
+
+        if (enemyComponent.TryGetComponent(out TH.Attribute.Health health) && health.IsDead)
+            return false;
+
+        if (!enemyComponent.TryGetComponent(out SavableEntity savableEntity))
+            return false;
+
+        if (savableEntity.CaptureState() is not Dictionary<string, object> payloadDict)
+            return false;
+
+        snapshot = new EnemySnapshot
+        {
+            spawnKey = spawnKey,
+            payload = new List<EnemyPayloadEntry>()
+        };
+
+        foreach (var (typeName, payload) in payloadDict)
+        {
+            if (string.IsNullOrEmpty(typeName) || payload == null)
+                continue;
+
+            if (SaveTypeResolver.GetTypeByName(typeName) is not { } payloadType)
+                continue;
+
+            try
+            {
+                var json = JsonSerialization.ToJson(payload, new JsonSerializationParameters
+                {
+                    SerializedType = payloadType
+                });
+
+                snapshot.payload.Add(new EnemyPayloadEntry
+                {
+                    typeName = typeName,
+                    jsonPayload = json
+                });
+            }
+            catch (Exception e)
+            {
+                this.LogWarning($"Serialize enemy snapshot payload failed ({typeName}) - {e.Message}");
+            }
+        }
+
+        return true;
+    }
+
+    private bool TrySpawnEnemyFromSnapshot(EnemySnapshot snapshot)
+    {
+        if (snapshot == null || string.IsNullOrEmpty(snapshot.spawnKey))
+            return false;
+
+        if (enemyBySpawnKey.ContainsKey(snapshot.spawnKey))
+            return true;
+
+        var spawnedEnemy = Spawn();
+        if (spawnedEnemy == null)
+            return false;
+
+        AssignSpawnKey(spawnedEnemy, snapshot.spawnKey);
+
+        if (spawnedEnemy is not Component enemyComponent)
+            return true;
+
+        if (!enemyComponent.TryGetComponent(out SavableEntity savableEntity))
+            return true;
+
+        var restoredPayload = DeserializeSnapshotPayload(snapshot.payload);
+        if (restoredPayload.Count == 0)
+            return true;
+
+        return savableEntity.RestoreState((object)restoredPayload);
+    }
+
+    private Dictionary<string, object> DeserializeSnapshotPayload(List<EnemyPayloadEntry> payloadEntries)
+    {
+        var payload = new Dictionary<string, object>();
+        if (payloadEntries == null)
+            return payload;
+
+        foreach (var entry in payloadEntries)
+        {
+            if (entry == null || string.IsNullOrEmpty(entry.typeName) || string.IsNullOrEmpty(entry.jsonPayload))
+                continue;
+
+            if (SaveTypeResolver.GetTypeByName(entry.typeName) is not { } stateType)
+                continue;
+
+            var fromJsonMethod = SaveTypeResolver.GetFromJsonMethod(stateType);
+            if (fromJsonMethod == null)
+                continue;
+
+            try
+            {
+                var restored = fromJsonMethod.Invoke(null, new object[]
+                {
+                    entry.jsonPayload,
+                    new JsonSerializationParameters { SerializedType = stateType }
+                });
+
+                if (restored != null)
+                    payload[entry.typeName] = restored;
+            }
+            catch (Exception e)
+            {
+                this.LogWarning($"Deserialize enemy snapshot payload failed ({entry.typeName}) - {e.Message}");
+            }
+        }
+
+        return payload;
+    }
+
+    private void ReleaseAllActiveEnemies()
+    {
+        ReleaseTrackedActiveObjects();
+        ClearActiveObjectTracking();
+        snapshotBuffer.Clear();
+        enemySpawnKeys.Clear();
+        enemyBySpawnKey.Clear();
+    }
+
+    private void AssignSpawnKey(IPoolObject enemy, string spawnKey)
+    {
+        if (enemy == null || string.IsNullOrEmpty(spawnKey))
+            return;
+
+        if (enemyBySpawnKey.TryGetValue(spawnKey, out var existingEnemy)
+            && existingEnemy != null
+            && existingEnemy != enemy)
+        {
+            enemySpawnKeys.Remove(existingEnemy);
+        }
+
+        if (enemySpawnKeys.TryGetValue(enemy, out var previousKey) && !string.IsNullOrEmpty(previousKey))
+        {
+            enemyBySpawnKey.Remove(previousKey);
+        }
+
+        enemySpawnKeys[enemy] = spawnKey;
+        enemyBySpawnKey[spawnKey] = enemy;
+
+        if (enemy is not Component enemyComponent)
+            return;
+
+        if (!enemyComponent.TryGetComponent(out SavableEntity savableEntity))
+            return;
+
+        savableEntity.SetAutoRegisterToRegistry(false);
+        savableEntity.SetRuntimeUniqueId(spawnKey);
+    }
+
+    private string GetNextSpawnKey()
+    {
+        TryInitializeSpawnerKeyPrefix();
+
+        if (string.IsNullOrEmpty(spawnerKeyPrefix))
+        {
+            spawnerKeyPrefix = Guid.NewGuid().ToString();
+            if (spawnerSavableEntity != null)
+                spawnerSavableEntity.SetRuntimeUniqueId(spawnerKeyPrefix);
+        }
+
+        return $"{spawnerKeyPrefix}{SpawnKeyDelimiter}{nextSpawnSequence++}";
+    }
+
+    private void TryInitializeSpawnerKeyPrefix()
+    {
+        if (!string.IsNullOrEmpty(spawnerKeyPrefix))
+            return;
+
+        if (spawnerSavableEntity == null && !TryGetComponent(out spawnerSavableEntity))
+            return;
+
+        var candidate = spawnerSavableEntity.UniqueIdentifier;
+        if (string.IsNullOrEmpty(candidate))
+        {
+            candidate = Guid.NewGuid().ToString();
+            spawnerSavableEntity.SetRuntimeUniqueId(candidate);
+        }
+
+        spawnerKeyPrefix = candidate;
+    }
+
+    private static bool TryExtractSequence(string spawnKey, out int sequence)
+    {
+        sequence = -1;
+        if (string.IsNullOrEmpty(spawnKey))
+            return false;
+
+        var delimiterIndex = spawnKey.LastIndexOf(SpawnKeyDelimiter);
+        if (delimiterIndex < 0 || delimiterIndex >= spawnKey.Length - 1)
+            return false;
+
+        return int.TryParse(spawnKey[(delimiterIndex + 1)..], out sequence);
     }
 
 #if UNITY_EDITOR

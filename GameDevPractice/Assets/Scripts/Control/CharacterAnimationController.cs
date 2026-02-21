@@ -452,7 +452,7 @@ namespace TH.Control
                 $"owner={gameObject.name}, frame={Time.frameCount}, time={Time.time:0.000}, " +
                 $"selected={selectedName}, selectedOverride={selectedOverride}, runtimeController={runtimeControllerName}, " +
                 $"executing={executingName}, resolved={resolvedName}, active={activeName}",
-                Logg.LoggingMode.InProgress);
+                Logg.LoggingMode.Completed);
         }
     }
 }

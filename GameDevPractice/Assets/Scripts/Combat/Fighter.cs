@@ -122,6 +122,6 @@ public class Fighter : MonoBehaviour, IFighter
         Logg.Log(
             $"[{nameof(Fighter)}.{stage}] owner={name}, frame={Time.frameCount}, time={Time.time:0.000}, result={result}, " +
             $"target={targetName}, active={activeName}, resolved={resolvedName}, executing={executingName}",
-            Logg.LoggingMode.InProgress);
+            Logg.LoggingMode.Completed);
     }
 }

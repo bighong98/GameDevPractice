@@ -219,6 +219,9 @@ namespace TH.Core.Service
 
             if (!pools.TryGetValue(obj.Origin, out var pool))
             {
+                if (SpawnerOwnedPoolRegistry.TryRelease(obj))
+                    return;
+
                 Logg.LogWarning($"[{nameof(PoolManager)}.{nameof(ReleaseFromPool)}] Pool not found for origin: {obj.Origin.name}");
                 return;
             }

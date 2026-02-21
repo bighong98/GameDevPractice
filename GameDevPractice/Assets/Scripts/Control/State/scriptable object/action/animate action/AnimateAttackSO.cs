@@ -123,7 +123,7 @@ namespace TH.Control.Data
                 $"controller={controllerName}, inTransition={inTransition}, " +
                 $"stateHash={stateInfo.shortNameHash}, norm={stateInfo.normalizedTime:0.000}, " +
                 $"currentClip={currentClip}, nextClip={nextClip}",
-                Logg.LoggingMode.InProgress);
+                Logg.LoggingMode.Completed);
         }
 
         private static string ResolveCurrentClipName(Animator animator)

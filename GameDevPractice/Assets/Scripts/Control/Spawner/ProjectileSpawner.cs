@@ -70,7 +70,7 @@ public class ProjectileSpawner : Spawner<AttackProjectile>, ISkillProjectileExec
         this.Log(
             $"[{nameof(ProjectileSpawner)}.{nameof(TryExecuteProjectile)}] owner={ownerName}, frame={Time.frameCount}, time={Time.time:0.000}, " +
             $"skill={skillName}, attackId={attackSource.AttackInstanceId}, target={targetName}",
-            Logg.LoggingMode.InProgress);
+            Logg.LoggingMode.Completed);
 
         projectileAttackSource = attackSource;
 
@@ -81,7 +81,7 @@ public class ProjectileSpawner : Spawner<AttackProjectile>, ISkillProjectileExec
         this.Log(
             $"[{nameof(ProjectileSpawner)}.{nameof(TryExecuteProjectile)}] owner={ownerName}, result={(shot ? "shot" : "failed")}, " +
             $"attackId={attackSource.AttackInstanceId}",
-            Logg.LoggingMode.InProgress);
+            Logg.LoggingMode.Completed);
         return shot;
     }
 

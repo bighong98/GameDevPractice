@@ -307,7 +307,7 @@ namespace TH.Item
 
             var projectileSpawner = result.gameObject.GetOrAddComponent<ProjectileSpawner>();
             projectileSpawner.InitializeProjectileSpawner(fighter, skill, attackSource);
-            if (projectileSpawner.pool == null)
+            if (!projectileSpawner.HasPool)
             {
                 projectileSpawner.SetPool(skill.ProjectilePrefab);
             }

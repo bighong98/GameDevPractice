@@ -193,11 +193,18 @@ namespace TH.Resource
         {
             this.Log($"ReleaseSelf() invoked", Logg.LoggingMode.Completed);
             if (token.IsCancellationRequested) return;
-            if (gameObject.activeSelf && Origin != null)
+            if (!gameObject.activeSelf) return;
+
+            if (SpawnerOwnedPoolRegistry.TryRelease(this))
             {
-                this.Log($"ReleaseSelf - Origin: {Origin}", Logg.LoggingMode.Completed);
-                PoolManager.Instance.ReleaseFromPool(this);
+                this.Log("ReleaseSelf - released by spawner-owned pool", Logg.LoggingMode.Completed);
+                return;
             }
+
+            if (Origin == null) return;
+
+            this.Log($"ReleaseSelf - Origin: {Origin}", Logg.LoggingMode.Completed);
+            PoolManager.Instance.ReleaseFromPool(this);
         }
 
         #endregion

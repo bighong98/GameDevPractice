@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using TH.Utils;
 using UnityEngine.SceneManagement;
 
@@ -48,6 +48,12 @@ namespace TH.Item
             NotifyStorageChanged();
 
             return true;
+        }
+        public void ResetToDefaultState()
+        {
+            _hasRestoredState = false;
+            Clear();
+            NotifyStorageChanged();
         }
 
         private static List<IGameItem> ExtractSaveData(object state)

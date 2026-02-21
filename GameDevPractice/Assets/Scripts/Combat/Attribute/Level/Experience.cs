@@ -48,6 +48,12 @@ namespace TH.Attribute
 
             return false;
         }
+
+        public void ResetToDefaultState()
+        {
+            XP = 0;
+            OnExperienceChanged?.Invoke(XP);
+        }
     }
 }
 
