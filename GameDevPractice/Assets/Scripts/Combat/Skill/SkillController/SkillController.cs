@@ -200,16 +200,6 @@ namespace TH.Combat
                 RegisterSkill(initialSkills[i]);
             }
 
-            // 기본 활성 스킬 우선 적용 분기
-            if (defaultActiveSkill.IsNotNull())
-            {
-                SetActiveSkill(defaultActiveSkill);
-            }
-            // 기본 미지정 시 첫 등록 스킬 활성 분기
-            else if (!HasActiveSkill && skillBook.TryGetFirst(out var firstSkill))
-            {
-                SetActiveSkill(firstSkill);
-            }
 
             // 프리뷰 기반 해석 결과 초기 동기화
             UpdateResolvedSkillFromPreview(forceNotify: HasActiveSkill);
@@ -317,8 +307,6 @@ namespace TH.Combat
             // 필수 참조 유효성 가드
             if (weapon.IsNull() || skillBook == null || skillCaster == null) return;
 
-            // 기존 활성 스킬 스냅샷 보관
-            SkillTypeSO previousActiveSkill = HasActiveSkill ? ActiveSkill : null;
             // 이전 무기 스킬 목록 스냅샷 보관
             var previousWeaponSkills = new List<SkillTypeSO>(equippedWeaponSkills);
             // 현재 장착 무기 스킬 캐시 갱신
@@ -359,7 +347,7 @@ namespace TH.Combat
             }
 
             // available 목록 동기화 및 활성 스킬 보정
-            SyncAvailableSkillSet(forceNotify: addedAny || removedAny, preferredActiveSkill: previousActiveSkill);
+            SyncAvailableSkillSet(forceNotify: addedAny || removedAny);
         }
 
         // 무기 스킬 캐시 갱신 및 중복 제거

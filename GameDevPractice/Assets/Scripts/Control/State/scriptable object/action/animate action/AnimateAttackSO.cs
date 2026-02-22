@@ -94,7 +94,7 @@ namespace TH.Control.Data
                     if (stateInfo.normalizedTime >= Mathf.Max(0f, stateUnlockNormalizedTime) ||
                         animator.GetFloat(CancelAllowHash) > Mathf.Clamp01(cancelAllowThreshold))
                     {
-                        Logg.Log($"[{GetType().Name}] MonitorAnimationAsync - unlock state transition", Logg.LoggingMode.InProgress);
+                        Logg.Log($"[{GetType().Name}] MonitorAnimationAsync - unlock state transition", Logg.LoggingMode.Completed);
                         return;
                     }
 
@@ -123,7 +123,7 @@ namespace TH.Control.Data
                 $"controller={controllerName}, inTransition={inTransition}, " +
                 $"stateHash={stateInfo.shortNameHash}, norm={stateInfo.normalizedTime:0.000}, " +
                 $"currentClip={currentClip}, nextClip={nextClip}",
-                Logg.LoggingMode.InProgress);
+                Logg.LoggingMode.Completed);
         }
 
         private static string ResolveCurrentClipName(Animator animator)

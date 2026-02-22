@@ -29,7 +29,12 @@ namespace TH.Control.Movement
         
         public event Action OnDestinationSet;   
         public event Action OnArrived;
+        public event Action<Transform> OnFollowingTargetSet;
+
+        public Transform FollowingTarget => followingTarget;
+
         
+        private Transform followingTarget;
         private Vector3 currentDestination = Vector3.zero;
         private const float distanceTolerance = 2.0f;
         private const float distanceCompareBuffer = 0.1f;
@@ -101,6 +106,27 @@ namespace TH.Control.Movement
             return true;
         }
 
+        public void Follow(Transform target)
+        {
+            SetFollowingTarget(target);
+
+            if (followingTarget == null)
+            {
+                ResetMovementState();
+                return;
+            }
+
+            MoveTo(followingTarget.position, MoveType.Run, notify: false);
+        }
+
+        private void SetFollowingTarget(Transform target)
+        {
+            if (ReferenceEquals(followingTarget, target)) return;
+
+            followingTarget = target;
+            OnFollowingTargetSet?.Invoke(followingTarget);
+        }
+
         public void Move(MoveType moveType = MoveType.Run)
         {
             if (currentDestination == Vector3.zero) return;
@@ -118,6 +144,7 @@ namespace TH.Control.Movement
         public void ResetMovementState()
         {
             currentDestination = Vector3.zero;
+            SetFollowingTarget(null);
 
             if (navMeshAgent == null) return;
 
@@ -190,6 +217,7 @@ namespace TH.Control.Movement
 
             // Clear previous move target so AI cannot resume stale destination after load.
             currentDestination = Vector3.zero;
+            SetFollowingTarget(null);
 
             bool wasAgentEnabled = navMeshAgent.enabled;
             if (wasAgentEnabled)

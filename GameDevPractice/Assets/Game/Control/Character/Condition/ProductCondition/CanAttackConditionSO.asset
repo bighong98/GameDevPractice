@@ -14,5 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TH.Control.Data.CompositeConditionSO
   measure: 3
   conditions:
-  - {fileID: 11400000, guid: a33ed81b398c1c64d9270f02ee06d2ef, type: 2}
+  - {fileID: 11400000, guid: 52fb27d837f4fb0499a958b5a49823a0, type: 2}
   - {fileID: 11400000, guid: fb8467ea25f0cb44bb79e9fde10c994b, type: 2}
+  - {fileID: 11400000, guid: a33ed81b398c1c64d9270f02ee06d2ef, type: 2}

@@ -15,6 +15,7 @@ namespace TH.Control
         [SerializeField] private float waypointTolerance = 2f;
         
         private IAttacker attacker;
+        private ISkillController skillController;
         private Health health;
         private IMover mover;
         
@@ -33,6 +34,7 @@ namespace TH.Control
         private void Awake()
         {
             TryGetComponent(out attacker);
+            TryGetComponent(out skillController);
             TryGetComponent(out mover);
             TryGetComponent(out health);
             
@@ -70,6 +72,7 @@ namespace TH.Control
             if (!isTargetValid && isInSight)
             {
                 attacker.SetTarget(playerHealth);
+                skillController?.TryRequestActiveSkill();
             }
             // 타겟이 있는데 사거리 밖으로 나간 경우 -> 타겟 해제
             else if (isTargetValid && !isInSight)

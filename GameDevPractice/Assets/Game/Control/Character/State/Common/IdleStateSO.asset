@@ -19,6 +19,9 @@ MonoBehaviour:
   transitions:
   - condition: {fileID: 11400000, guid: 5d08da84b4f664c4890db4f51a1d5086, type: 2}
     destinationState: {fileID: 11400000, guid: 16deb90229b9bec408b94b3510134c35, type: 2}
-  - condition: {fileID: 11400000, guid: 52fb27d837f4fb0499a958b5a49823a0, type: 2}
+  - condition: {fileID: 11400000, guid: 046f474f308a4b240b63b32a81bc314a, type: 2}
     destinationState: {fileID: 11400000, guid: aebd0b6c5f806a346a562df8927ab54d, type: 2}
+  - condition: {fileID: 11400000, guid: 4cf2e9d6bf42a18449c08ab688bb405a, type: 2}
+    destinationState: {fileID: 11400000, guid: a6399e600cad3064d8bb74e9a62dd747, type: 2}
   allowSelfTransition: 0
+  transitionLockRequired: 0

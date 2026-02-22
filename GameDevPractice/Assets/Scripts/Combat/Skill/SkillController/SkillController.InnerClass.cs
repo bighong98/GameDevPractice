@@ -48,12 +48,6 @@ namespace TH.Combat
 
                 skills.Add(skill);
                 availableSkills.Add(skill);
-                // 최초 등록 스킬 자동 활성화
-                if (ActiveSkill.IsNull())
-                {
-                    ActiveSkill = skill;
-                }
-
                 return true;
             }
 
@@ -71,6 +65,14 @@ namespace TH.Combat
                 if (ActiveSkill == skill) return false;
 
                 ActiveSkill = skill;
+                return true;
+            }
+
+            public bool ClearActive()
+            {
+                if (ActiveSkill.IsNull()) return false;
+
+                ActiveSkill = null;
                 return true;
             }
 

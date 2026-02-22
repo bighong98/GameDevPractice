@@ -4,6 +4,7 @@ using TH.Attribute;
 using TH.Combat;
 using TH.Resource;
 using TH.Utils;
+using TH.Control.Movement;
 using UnityEngine;
 
 public interface IFighter : IAttacker { }
@@ -33,6 +34,7 @@ public class Fighter : MonoBehaviour, IFighter
     public Health Target => target;
 
     private ISkillController skillController;
+    private IMover mover;
     private Animator animator;
     private Health pendingExecutionTarget;
     private bool pendingStaleWatchActive;
@@ -53,6 +55,7 @@ public class Fighter : MonoBehaviour, IFighter
             Logg.LogWarning($"[{gameObject.name}.{GetType().Name}] No ISkillController found");
 
         TryGetComponent(out animator);
+        TryGetComponent(out mover);
     }
 
     private void OnDisable()
@@ -97,12 +100,14 @@ public class Fighter : MonoBehaviour, IFighter
 
     public void SetTarget(Health attackTarget, bool forceNotify = false)
     {
-        if (!forceNotify && ReferenceEquals(target, attackTarget))
+        if (ReferenceEquals(target, attackTarget) && !forceNotify)
         {
             return;
         }
 
         target = attackTarget;
+        mover?.Follow(target.IsNotNull() ? target.transform : null);
+
         OnTargetSet?.Invoke(target);
         LogAttackFlow(forceNotify ? "SetTarget_force" : "SetTarget", target.IsNotNull());
     }

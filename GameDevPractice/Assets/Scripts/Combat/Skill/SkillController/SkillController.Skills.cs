@@ -47,8 +47,12 @@ namespace TH.Combat
         // 활성 스킬 전환 + 콤보/보류 상태 초기화 처리
         public bool SetActiveSkill(SkillTypeSO skill)
         {
-            // null 입력 및 초기화 이전 가드
-            if (skill.IsNull() || skillBook == null) return false;
+            // null 입력은 활성 스킬 해제 요청으로 처리
+            if (skillBook == null) return false;
+            if (skill.IsNull())
+            {
+                return ClearActiveSkill();
+            }
 
             // 미등록 스킬 입력 시 선등록 경로
             if (!skillBook.Contains(skill))
@@ -73,6 +77,97 @@ namespace TH.Combat
             return changed;
         }
 
+        // 필요 시점에만 활성 스킬을 지연 선택/보정
+        public bool TryRequestActiveSkill()
+        {
+            if (skillBook == null) return false;
+
+            if (HasActiveSkill && skillBook.ContainsAvailable(skillBook.ActiveSkill))
+            {
+                return true;
+            }
+
+            bool notifySkillBookChanged = false;
+            bool forceNotifyAvailable = false;
+
+            SkillTypeSO requestedSkill = null;
+            if (defaultActiveSkill.IsNotNull() && skillBook.ContainsAvailable(defaultActiveSkill))
+            {
+                requestedSkill = defaultActiveSkill;
+            }
+            else if (TryGetAvailableSkillByCategory(SkillCategory.BasicSkill, out var availableBasicSkill))
+            {
+                requestedSkill = availableBasicSkill;
+            }
+            else if (TryResolveDefaultWeaponBasicSkill(out var fallbackBasicSkill))
+            {
+                if (!skillBook.Contains(fallbackBasicSkill))
+                {
+                    bool added = skillBook.Register(fallbackBasicSkill);
+                    skillCaster?.TrackSkill(fallbackBasicSkill);
+                    if (added)
+                    {
+                        notifySkillBookChanged = true;
+                        forceNotifyAvailable = true;
+                    }
+                }
+
+                if (skillBook.SetAvailable(fallbackBasicSkill, true))
+                {
+                    forceNotifyAvailable = true;
+                }
+
+                requestedSkill = fallbackBasicSkill;
+            }
+            else if (skillBook.TryGetFirstAvailable(out var firstAvailableSkill))
+            {
+                requestedSkill = firstAvailableSkill;
+            }
+
+            if (notifySkillBookChanged)
+            {
+                OnSkillBookChanged?.Invoke();
+            }
+
+            if (forceNotifyAvailable)
+            {
+                SyncAvailableSkillSet(forceNotify: true);
+            }
+
+            if (requestedSkill.IsNull())
+            {
+                ClearActiveSkill();
+                return false;
+            }
+
+            SetActiveSkill(requestedSkill);
+            return HasActiveSkill && skillBook.ActiveSkill == requestedSkill;
+        }
+
+        private bool ClearActiveSkill()
+        {
+            if (skillBook == null || !HasActiveSkill)
+            {
+                return false;
+            }
+
+            SkillTypeSO previousActiveSkill = skillBook.ActiveSkill;
+            bool changed = skillBook.ClearActive();
+            if (!changed)
+            {
+                return false;
+            }
+
+            CancelActiveComboTimeoutRoutine();
+            ResetComboProgress(previousActiveSkill);
+            ClearPendingAttack();
+            executingSkill = null;
+            OnActiveSkillChanged?.Invoke(null);
+            UpdateResolvedSkillFromPreview(forceNotify: true);
+            SyncDebugValues();
+            return true;
+        }
+
         // 사용 가능 스킬 변경 적용 처리
         public bool ApplySkillAvailabilityChange(SkillTypeSO targetSkill, SkillTypeSO replacementSkill = null)
         {
@@ -95,11 +190,6 @@ namespace TH.Combat
             {
                 OnSkillSlotHighlightRequested?.Invoke(targetSkill);
                 return false;
-            }
-
-            if (HasActiveSkill && ActiveSkill == targetSkill)
-            {
-                SetActiveSkill(replacementSkill);
             }
 
             SyncAvailableSkillSet(forceNotify: true);
@@ -129,7 +219,7 @@ namespace TH.Combat
         }
 
         // 무기 스킬 정책 반영 + 사용 가능 스킬 목록 동기화
-        private void SyncAvailableSkillSet(bool forceNotify, SkillTypeSO preferredActiveSkill = null)
+        private void SyncAvailableSkillSet(bool forceNotify)
         {
             if (skillBook == null) return;
 
@@ -163,7 +253,7 @@ namespace TH.Combat
                 }
             }
 
-            changed |= EnsureActiveSkillIsAvailable(preferredActiveSkill);
+            changed |= EnsureActiveSkillIsValid();
             bool slotOrderChanged = RebuildOrderedAvailableSkills(notifySlotChanges: true);
 
             if (forceNotify || changed || slotOrderChanged)
@@ -172,50 +262,14 @@ namespace TH.Combat
             }
         }
 
-        // 활성 스킬 보정 (기존 활성 유지 -> BasicSkill 우선 -> 캐릭터 기본 무기 BasicSkill fallback)
-        private bool EnsureActiveSkillIsAvailable(SkillTypeSO preferredActiveSkill)
+        // 현재 활성 스킬이 사용 가능 목록 밖으로 밀려난 경우 해제 처리
+        private bool EnsureActiveSkillIsValid()
         {
             if (skillBook == null) return false;
+            if (!HasActiveSkill) return false;
+            if (skillBook.ContainsAvailable(skillBook.ActiveSkill)) return false;
 
-            if (preferredActiveSkill.IsNotNull() && skillBook.ContainsAvailable(preferredActiveSkill))
-            {
-                SetActiveSkill(preferredActiveSkill);
-                return false;
-            }
-
-            if (HasActiveSkill && skillBook.ContainsAvailable(skillBook.ActiveSkill)) return false;
-
-            if (TryGetAvailableSkillByCategory(SkillCategory.BasicSkill, out var availableBasicSkill))
-            {
-                SetActiveSkill(availableBasicSkill);
-                return false;
-            }
-
-            bool changed = false;
-            if (TryResolveDefaultWeaponBasicSkill(out var fallbackBasicSkill))
-            {
-                if (!skillBook.Contains(fallbackBasicSkill))
-                {
-                    bool added = skillBook.Register(fallbackBasicSkill);
-                    skillCaster?.TrackSkill(fallbackBasicSkill);
-                    if (added)
-                    {
-                        OnSkillBookChanged?.Invoke();
-                        changed = true;
-                    }
-                }
-
-                changed |= skillBook.SetAvailable(fallbackBasicSkill, true);
-                SetActiveSkill(fallbackBasicSkill);
-                return changed;
-            }
-
-            if (skillBook.TryGetFirstAvailable(out var firstAvailableSkill))
-            {
-                SetActiveSkill(firstAvailableSkill);
-            }
-
-            return changed;
+            return ClearActiveSkill();
         }
 
         private bool TryGetAvailableSkillByCategory(SkillCategory category, out SkillTypeSO skill)

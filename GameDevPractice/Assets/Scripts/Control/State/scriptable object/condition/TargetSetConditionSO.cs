@@ -14,8 +14,8 @@ namespace TH.Control.Data
         {
             if (!controller.IsNotNull()) return base.Decide(controller);
             if (!controller.Components.TryGet(out IAttacker attacker)) return base.Decide(controller);
-            // 현재 사용 중인 스킬이 있는 경우 상태 전이x
-            if (!controller.Components.TryGet(out ISkillController skillController) &&
+
+            if (controller.Components.TryGet(out ISkillController skillController) &&
                 skillController.HasExecutingSkill)
             {
                 return false;

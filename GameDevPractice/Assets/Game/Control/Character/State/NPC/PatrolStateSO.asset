@@ -20,7 +20,7 @@ MonoBehaviour:
   onExitActions:
   - {fileID: 11400000, guid: c9502975d051df14aa8f8419e1e08784, type: 2}
   transitions:
-  - condition: {fileID: 11400000, guid: 52fb27d837f4fb0499a958b5a49823a0, type: 2}
+  - condition: {fileID: 11400000, guid: 046f474f308a4b240b63b32a81bc314a, type: 2}
     destinationState: {fileID: 11400000, guid: aebd0b6c5f806a346a562df8927ab54d, type: 2}
   allowSelfTransition: 0
   transitionLockRequired: 0

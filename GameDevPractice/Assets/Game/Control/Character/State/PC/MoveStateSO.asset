@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TH.Control.Data.WalkStateSO
   onEnterActions:
   - {fileID: 11400000, guid: 81c49f06e0fa7ed4dbfad3d52bfcb47f, type: 2}
+  - {fileID: 11400000, guid: 0a629967280d91a488415f2b26458eee, type: 2}
   updateActions:
   - {fileID: 11400000, guid: c81a42815fff3c9498b7fb7f247e88a5, type: 2}
   - {fileID: 11400000, guid: fa6c49b098404cc449013816ddd04dcf, type: 2}
@@ -22,7 +23,7 @@ MonoBehaviour:
   transitions:
   - condition: {fileID: 11400000, guid: e3b2979e803480a45976113e73009e7f, type: 2}
     destinationState: {fileID: 11400000, guid: 7e7e93bfb3dfa8f40a30639a63aefa01, type: 2}
-  - condition: {fileID: 11400000, guid: 52fb27d837f4fb0499a958b5a49823a0, type: 2}
+  - condition: {fileID: 11400000, guid: 046f474f308a4b240b63b32a81bc314a, type: 2}
     destinationState: {fileID: 11400000, guid: aebd0b6c5f806a346a562df8927ab54d, type: 2}
   allowSelfTransition: 0
   transitionLockRequired: 0

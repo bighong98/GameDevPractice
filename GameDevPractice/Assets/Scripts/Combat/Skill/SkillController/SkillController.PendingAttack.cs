@@ -22,8 +22,12 @@ namespace TH.Combat
         {
             attackSource = default;
 
-            // 활성 스킬 미보유 또는 공격자 미유효 가드
-            if (!HasActiveSkill || attacker.IsNull()) return false;
+            // 공격자 미유효 가드
+            if (attacker.IsNull()) return false;
+
+            // 스킬 소비 시점에 활성 스킬을 지연 보정
+            if (!HasActiveSkill && !TryRequestActiveSkill()) return false;
+            if (!HasActiveSkill) return false;
             LogConsumeState("begin");
 
             // 보류 공격 존재 시 재사용 우선 경로
