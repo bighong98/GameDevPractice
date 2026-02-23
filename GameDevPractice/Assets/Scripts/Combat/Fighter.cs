@@ -34,7 +34,6 @@ public class Fighter : MonoBehaviour, IFighter
     public Health Target => target;
 
     private ISkillController skillController;
-    private IMover mover;
     private Animator animator;
     private Health pendingExecutionTarget;
     private bool pendingStaleWatchActive;
@@ -54,8 +53,8 @@ public class Fighter : MonoBehaviour, IFighter
         if (!TryGetComponent(out skillController))
             Logg.LogWarning($"[{gameObject.name}.{GetType().Name}] No ISkillController found");
 
-        TryGetComponent(out animator);
-        TryGetComponent(out mover);
+        if (!TryGetComponent(out animator))
+            Logg.LogWarning($"[{gameObject.name}.{GetType().Name}] No Animator found");
     }
 
     private void OnDisable()
@@ -106,8 +105,6 @@ public class Fighter : MonoBehaviour, IFighter
         }
 
         target = attackTarget;
-        mover?.Follow(target.IsNotNull() ? target.transform : null);
-
         OnTargetSet?.Invoke(target);
         LogAttackFlow(forceNotify ? "SetTarget_force" : "SetTarget", target.IsNotNull());
     }
@@ -169,10 +166,18 @@ public class Fighter : MonoBehaviour, IFighter
         OnAttack?.Invoke();
     }
 
+    #region For Debug
+
+#if UNITY_EDITOR
+    [SerializeField] private bool logAttackFlow = false;
+#endif
+    
+
     [Conditional("UNITY_EDITOR")]
     [Conditional("DEVELOPMENT_BUILD")]
     private void LogAttackReadyBlocked(string stage)
     {
+        if (!logAttackFlow) return;
         if (Time.time < nextAttackReadyBlockedLogTime)
         {
             return;
@@ -187,13 +192,14 @@ public class Fighter : MonoBehaviour, IFighter
             $"[{nameof(Fighter)}.{stage}] owner={name}, frame={Time.frameCount}, time={Time.time:0.000}, " +
             $"targetValid={IsTargetValid}, inRange={IsTargetInRange}, distance={distance:0.###}, range={range:0.###}, " +
             $"activeReady={(skillController != null && skillController.IsActiveSkillReady)}",
-            Logg.LoggingMode.Completed);
+            Logg.LoggingMode.InProgress, context: this);
     }
 
     [Conditional("UNITY_EDITOR")]
     [Conditional("DEVELOPMENT_BUILD")]
     private void LogAttackFlow(string stage, bool result)
     {
+        if (!logAttackFlow) return;
         string targetName = target.IsNotNull() ? target.name : "null";
         string snapshotTargetName = pendingExecutionTarget.IsNotNull() ? pendingExecutionTarget.name : "null";
         string activeName = skillController != null && skillController.HasActiveSkill && skillController.ActiveSkill.IsNotNull()
@@ -209,8 +215,10 @@ public class Fighter : MonoBehaviour, IFighter
         Logg.Log(
             $"[{nameof(Fighter)}.{stage}] owner={name}, frame={Time.frameCount}, time={Time.time:0.000}, result={result}, " +
             $"target={targetName}, snapshotTarget={snapshotTargetName}, active={activeName}, resolved={resolvedName}, executing={executingName}",
-            Logg.LoggingMode.Completed);
+            Logg.LoggingMode.InProgress, context: this);
     }
+
+    #endregion
 
     private void CacheExecutionTargetSnapshot()
     {

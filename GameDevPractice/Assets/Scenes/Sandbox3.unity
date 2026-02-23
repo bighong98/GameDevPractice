@@ -23341,6 +23341,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Core_Sandbox3
       objectReference: {fileID: 0}
+    - target: {fileID: 4845309916841849827, guid: 4f9ef5c6d5e2fef4180a42a9095f1ff2, type: 3}
+      propertyPath: logStateTransition
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3724518008175084204, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
       propertyPath: uniqueIdentifier
       value: 7f74443a-5365-42a2-ad83-0483de1a7c5f

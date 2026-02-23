@@ -7,9 +7,9 @@ using UnityEngine;
 namespace TH.Control.Data
 {
     [CreateAssetMenu(
-        fileName = "ClearActiveSkillIfPlayerActionSO",
-        menuName = "Scriptable Objects/CharacterAction/Skill/ClearActiveSkillIfPlayerActionSO")]
-    public class ClearActiveSkillIfPlayerActionSO : CharacterActionSO
+        fileName = "ClearActiveSkillActionSO",
+        menuName = "Scriptable Objects/CharacterAction/Skill/ClearActiveSkillActionSO")]
+    public class ClearActiveSkillActionSO : CharacterActionSO
     {
         [SerializeField] private bool skipWhenFollowingTarget = true;
 

@@ -39,7 +39,7 @@ namespace TH.Control.Data
 
             void HandleFollowingTargetSet(Transform target)
             {
-                if (!target.IsNotNull()) return;
+                if (target.IsNull()) return;
                 onTriggered.Invoke();
             }
         }

@@ -7,27 +7,26 @@ using TH.Utils;
 using TH.Control.Movement;
 using TH.Core;
 using TH.Core.Service;
+using TH.Combat;
 
 
 namespace TH.Control
 {
-    public interface IPlayerController
-    {
-        ComponentProvider Components { get; }
-    }
+    public interface IPlayerController : IRaycastHolder {}
     
     public class PlayerController : MonoBehaviour, IPlayerController, ISightHandler
     {
-                [SerializeField] private Camera _camera;
+        [SerializeField] private Camera _camera;
         [SerializeField] private bool _enableInteractionOutline = true;
 
         private GameObject _outlinedTarget;
         private Renderer _outlinedRenderer;
         private int _outlinedOriginalLayer = -1;
-        // private Mover mover;
-        private Mover mover;
+        
+        private IMover mover;
         private IFighter fighter;
         private Health health;
+        private ISkillController skillController;
 
         public ComponentProvider Components { get; private set; }
 
@@ -36,7 +35,7 @@ namespace TH.Control
         private bool fightEnabled = true;
         private const float MaxNavMeshProjectionDistance = 1f;
 
-        public float SightThreshold { get; } = 30f;
+        public float SightThreshold { get; } = 30f * 30f;
         
         private void Awake()
         {
@@ -45,6 +44,7 @@ namespace TH.Control
             TryGetComponent(out mover);
             TryGetComponent(out fighter);
             TryGetComponent(out health);
+            TryGetComponent(out skillController);
 
             ServiceLocator.Get<IPlayerHolder>().SetPlayer(this);
         }
@@ -53,12 +53,18 @@ namespace TH.Control
         {
             InputManager.Instance.OnSelected += OnPointerPressed;
             InputManager.Instance.OnMoved += OnWASDInput;
+
+            if (fighter.IsNotNull())
+                fighter.OnTargetSet += OnFighterTargetSet;
         }
 
         private void OnDisable()
         {
             InputManager.Instance.OnSelected -= OnPointerPressed;
             InputManager.Instance.OnMoved -= OnWASDInput;
+
+            if (fighter.IsNotNull())
+                fighter.OnTargetSet -= OnFighterTargetSet;
         }
 
         private void Start()
@@ -88,7 +94,7 @@ namespace TH.Control
             // WASD 입력이 시작되면 즉시 기존 이동/전투 취소
             if (isWASDMoving)
             {
-                mover.CancelAction();
+                mover.Stop();
             }
         }
 
@@ -284,6 +290,18 @@ namespace TH.Control
         private void SetCursor(CursorType cursor)
         {
             
+        }
+
+        private Health fighterTargetBuffer;
+        private void OnFighterTargetSet(Health targetHealth)
+        {
+            if (fighterTargetBuffer != null && ReferenceEquals(fighterTargetBuffer, targetHealth))
+            {
+                skillController.TryRequestActiveSkill();
+                // mover.Follow(targetHealth.transform);
+            }
+
+            fighterTargetBuffer = targetHealth;
         }
     }
 }

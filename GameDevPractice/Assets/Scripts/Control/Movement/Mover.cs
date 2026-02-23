@@ -106,13 +106,13 @@ namespace TH.Control.Movement
             return true;
         }
 
-        public void Follow(Transform target)
+        public void Follow(Transform target, bool stopIfInvalidTarget)
         {
             SetFollowingTarget(target);
 
             if (followingTarget == null)
             {
-                ResetMovementState();
+                if (stopIfInvalidTarget) ResetMovementState();
                 return;
             }
 
@@ -121,7 +121,7 @@ namespace TH.Control.Movement
 
         private void SetFollowingTarget(Transform target)
         {
-            if (ReferenceEquals(followingTarget, target)) return;
+            if (target != null && ReferenceEquals(followingTarget, target)) return;
 
             followingTarget = target;
             OnFollowingTargetSet?.Invoke(followingTarget);
@@ -151,9 +151,6 @@ namespace TH.Control.Movement
             navMeshAgent.ResetPath();
             navMeshAgent.isStopped = true;
         }
-
-
-        public void CancelAction() => Stop();
 
         public void MoveTo(Vector3 destination, MoveType moveType = MoveType.Run, bool notify = true)
         {

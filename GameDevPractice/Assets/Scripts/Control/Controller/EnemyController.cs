@@ -72,7 +72,7 @@ namespace TH.Control
             if (!isTargetValid && isInSight)
             {
                 attacker.SetTarget(playerHealth);
-                skillController?.TryRequestActiveSkill();
+                skillController.TryRequestActiveSkill();
             }
             // 타겟이 있는데 사거리 밖으로 나간 경우 -> 타겟 해제
             else if (isTargetValid && !isInSight)
@@ -86,14 +86,14 @@ namespace TH.Control
             if (playerHolder.GetPlayerInstance is PlayerController p)
                 player = p;
             
-            if (!mover.IsNotNull()) return;
-            mover.OnArrived += SetNextDestination;
+            if (mover.IsNotNull())
+                mover.OnArrived += SetNextDestination;
         }
 
         private void OnDisable()
         {
-            if (!mover.IsNotNull()) return;
-            mover.OnArrived -= SetNextDestination;
+            if (mover.IsNotNull())
+                mover.OnArrived -= SetNextDestination;
         }
 
         #region Patrol Behaviour (WayPoint)

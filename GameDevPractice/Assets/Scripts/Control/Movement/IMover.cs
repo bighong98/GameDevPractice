@@ -14,7 +14,7 @@ namespace TH.Control.Movement
         void MoveTo(Vector3 destination, MoveType moveType = MoveType.Run, bool notify = true);
         void SetDestination(Vector3 destination, bool notify = true);
         bool SetDestination(Transform target, float requiredDistance, bool notify = true);
-        void Follow(Transform target);
+        void Follow(Transform target, bool stopIfInvalidTarget = false);
         void Move(MoveType moveType = MoveType.Run);
         void Stop();
     }

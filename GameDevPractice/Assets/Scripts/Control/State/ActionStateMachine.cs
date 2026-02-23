@@ -11,6 +11,10 @@ namespace TH.Control.State
     {
         [SerializeField] private ActionStateSO initialState;
         [SerializeField] private List<ActionStateTransition> globalTransitions = new();
+#if UNITY_EDITOR
+        [Header("Debug")]
+        [SerializeField] private bool logStateTransition;
+#endif
         
         private IActionState currentState;
         public IActionState remainState; // 상태를 유지할 때 사용하는 더미 상태
@@ -112,11 +116,14 @@ namespace TH.Control.State
                 return;
             }
 
-            this.Log($"{gameObject.name}: {currentState} -> {nextState}");
-
             if (!ignoreLock && IsTransitionLocked)
             {
-                this.Log($"[{gameObject.name}] TransitionToState() - new pendingState updated: ({nextState})", Logg.LoggingMode.Completed);
+#if UNITY_EDITOR
+                if (logStateTransition)
+                {
+                    this.Log($"[{gameObject.name}] TransitionToState() - new pendingState updated: ({nextState})", Logg.LoggingMode.InProgress);
+                }
+#endif
                 _pendingState = nextState;
                 return;
             }
@@ -128,17 +135,21 @@ namespace TH.Control.State
             UnbindTransitions();
             ResetTransitionLocksOnStateChange();
 
-            if (currentState.IsNotNull())
-                currentState.ExitState(this);
-
 #if UNITY_EDITOR
             var prevState = currentState;
 #endif
+            if (currentState.IsNotNull())
+                currentState.ExitState(this);
+
             currentState = nextState;
             stateTime = 0f;
+
 #if UNITY_EDITOR
-            this.Log($"[{gameObject.name}] TransitionToState({prevState?.GetType().Name} -> {nextState.GetType().Name})",
-                Logg.LoggingMode.Completed);
+            if (logStateTransition)
+            {
+                this.Log($"[{gameObject.name}] TransitionToState({prevState?.GetType().Name} " + 
+                        $"-> {nextState.GetType().Name})", Logg.LoggingMode.InProgress);
+            }
 #endif
             if (currentState.IsNotNull())
                 currentState.EnterState(this);

@@ -86,7 +86,7 @@ namespace TH.Control.Data
                     // Attack 상태에서 벗어났으면 종료
                     if (stateInfo.shortNameHash != AttackASSHash)
                     {
-                        Logg.Log($"[{GetType().Name}] MonitorAnimationAsync - exited Attack state", Logg.LoggingMode.InProgress);
+                        Logg.Log($"[{GetType().Name}] MonitorAnimationAsync - exited Attack state", Logg.LoggingMode.Completed);
                         return;
                     }
 
