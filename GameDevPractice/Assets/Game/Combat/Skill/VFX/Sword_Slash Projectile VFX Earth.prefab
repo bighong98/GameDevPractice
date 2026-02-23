@@ -13,6 +13,10 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3038515511254748203, guid: 0a6aa35eeb2241a43befc4ccae423907, type: 3}
+      propertyPath: stopAction
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3038515511254748203, guid: 0a6aa35eeb2241a43befc4ccae423907, type: 3}
       propertyPath: playOnAwake
       value: 1
       objectReference: {fileID: 0}
@@ -25,7 +29,23 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4046814070516281774, guid: 0a6aa35eeb2241a43befc4ccae423907, type: 3}
+      propertyPath: stopAction
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4046814070516281774, guid: 0a6aa35eeb2241a43befc4ccae423907, type: 3}
       propertyPath: playOnAwake
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4046814070516281774, guid: 0a6aa35eeb2241a43befc4ccae423907, type: 3}
+      propertyPath: CollisionModule.enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4046814070516281775, guid: 0a6aa35eeb2241a43befc4ccae423907, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 24f23db90bce29042bb08e160ddbd8ae, type: 2}
+    - target: {fileID: 4046814071347948319, guid: 0a6aa35eeb2241a43befc4ccae423907, type: 3}
+      propertyPath: stopAction
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4046814071347948319, guid: 0a6aa35eeb2241a43befc4ccae423907, type: 3}
@@ -73,6 +93,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4416080445347060709, guid: 0a6aa35eeb2241a43befc4ccae423907, type: 3}
+      propertyPath: stopAction
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4416080445347060709, guid: 0a6aa35eeb2241a43befc4ccae423907, type: 3}
       propertyPath: playOnAwake
       value: 1
       objectReference: {fileID: 0}
@@ -89,11 +113,27 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4416080446205361369, guid: 0a6aa35eeb2241a43befc4ccae423907, type: 3}
+      propertyPath: stopAction
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4416080446205361369, guid: 0a6aa35eeb2241a43befc4ccae423907, type: 3}
       propertyPath: playOnAwake
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4416080446743201623, guid: 0a6aa35eeb2241a43befc4ccae423907, type: 3}
+      propertyPath: stopAction
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4416080446743201623, guid: 0a6aa35eeb2241a43befc4ccae423907, type: 3}
       propertyPath: playOnAwake
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4416080446743201623, guid: 0a6aa35eeb2241a43befc4ccae423907, type: 3}
+      propertyPath: CollisionModule.enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4416080447252152767, guid: 0a6aa35eeb2241a43befc4ccae423907, type: 3}
+      propertyPath: stopAction
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4416080447252152767, guid: 0a6aa35eeb2241a43befc4ccae423907, type: 3}

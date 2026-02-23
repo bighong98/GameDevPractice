@@ -7,28 +7,31 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Flying Particles
-  m_Shader: {fileID: -6465566751694194690, guid: 4115401363447dc4a80ad55d19905407, type: 3}
+  m_Name: Flying Particles Earth Darker
+  m_Shader: {fileID: -6465566751694194690, guid: 79658e3bd03538747b0982ae4b4039a5, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
   - _ALPHATEST_ON
-  - _SURFACE_TYPE_TRANSPARENT
+  - _RECEIVE_SHADOWS_OFF
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 3000
+  m_CustomRenderQueue: 2450
   stringTagMap:
-    RenderType: Transparent
+    RenderType: TransparentCutout
   disabledShaderPasses:
   - MOTIONVECTORS
-  - DepthOnly
   - SHADOWCASTER
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _AlphaTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _BaseMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -70,15 +73,19 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: 55f2fad6733435a4aa13b4c6ab160672, type: 3}
+        m_Texture: {fileID: 2800000, guid: 64815c4876494b029a73f069f525d729, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MaskTex:
-        m_Texture: {fileID: 2800000, guid: 0d046a8d6716a594c81a715d08f1ef50, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
         m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NoiseTex:
+        m_Texture: {fileID: 2800000, guid: f6446cef2231473fbf5ad32efe336831, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
@@ -109,7 +116,7 @@ Material:
     m_Floats:
     - _AddPrecomputedVelocity: 0
     - _AlphaClip: 1
-    - _AlphaToMask: 0
+    - _AlphaToMask: 1
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
     - _BumpScale: 1
@@ -123,20 +130,26 @@ Material:
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
     - _Distortion: 0.051
-    - _DistortionPower: 0.08
+    - _DistortionPower: 0
     - _DistortionSpeed: 1
-    - _DstBlend: 10
-    - _DstBlendAlpha: 10
+    - _DstBlend: 0
+    - _DstBlendAlpha: 0
     - _Emission: 1
-    - _Enable_Speed_Control: 0
     - _EnvironmentReflections: 1
     - _FlagOffset: 0
+    - _FresnelPower: 6
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
     - _MaskRotation: 0
     - _Metallic: 0
-    - _NoiseScale: 0
+    - _NoiseAmplitude: 1
+    - _NoiseFrequency: 1
+    - _NoiseOctaveAmplitudeScale: 0.755
+    - _NoiseOctaveDomainWarping: 1
+    - _NoiseOctaveFrequencyScale: 3
+    - _NoisePower: 1.22
+    - _NoiseScale: 1
     - _OcclusionStrength: 1
     - _Opacity: 25.82
     - _Parallax: 0.005
@@ -144,7 +157,7 @@ Material:
     - _PowerDisp: 0
     - _QueueControl: 0
     - _QueueOffset: 0
-    - _ReceiveShadows: 1
+    - _ReceiveShadows: 0
     - _Rotation: 497.3
     - _Scale: 0
     - _ScrollX: 0
@@ -154,37 +167,41 @@ Material:
     - _SoftParticles: 20
     - _Soft_Particle: 170.9
     - _SpecularHighlights: 1
-    - _SrcBlend: 5
+    - _SrcBlend: 1
     - _SrcBlendAlpha: 1
     - _Strech: 0
     - _StrechY: 0
     - _Strength: 0
     - _Stretch: -0.21
-    - _Surface: 1
-    - _TexPower: 2.59
+    - _Surface: 0
+    - _TexPower: 0.001
     - _WorkflowMode: 1
     - _ZTest: 4
-    - _ZWrite: 0
+    - _ZWrite: 1
     - _ZWriteControl: 0
     m_Colors:
-    - _BackColor: {r: 0.041743267, g: 0, b: 0.4716981, a: 1}
+    - _BackColor: {r: 0.09433961, g: 0.009725252, b: 0, a: 1}
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Center: {r: 0, g: 0, b: 0, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _Colour: {r: 1.0566039, g: 0.74421513, b: 0.73264515, a: 0}
     - _CustomUV: {r: 0, g: 0, b: 0, a: 0}
     - _CustomVertexColor: {r: 0, g: 0, b: 0, a: 0}
     - _Direction: {r: 0, g: 0, b: 0, a: 0}
     - _DissolveScroll: {r: 1, g: 0, b: 0, a: 0}
-    - _DistortionSpeed: {r: 0.1, g: 0.1, b: 0, a: 0}
+    - _DistortionSpeed: {r: 0, g: 0, b: 0, a: 0}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _FrontColor: {r: 2.8563468, g: 0.9935119, b: 7.9066987, a: 1}
+    - _FresnelColor: {r: 3.2238944, g: 0.1856693, b: 0, a: 1}
+    - _FrontColor: {r: 0.532, g: 0.057537396, b: 0, a: 1}
     - _MaskCenter: {r: 0, g: 0, b: 0, a: 0}
+    - _NoiseAnimation: {r: 0, g: 0, b: 0, a: 0}
     - _NoiseSpeed: {r: 0, g: 0, b: 0, a: 0}
-    - _Offset: {r: -47.94, g: 19.62, b: 0, a: 0}
+    - _Offset: {r: 0, g: 0, b: 0, a: 0}
     - _Scroll: {r: -1, g: 0, b: 0, a: 0}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
     - _Speed: {r: 0, g: 0, b: 0, a: 0}
     - _Tilling: {r: 1, g: 1, b: 0, a: 0}
+    - _WarpSpeed: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!114 &2291466143926200987
