@@ -50,12 +50,17 @@ namespace TH.Combat
         // 현재 장착 무기 스킬 목록 캐시
         private readonly List<SkillTypeSO> equippedWeaponSkills = new();
         // 카테고리별 무기 스킬 선택 캐시
-        private readonly Dictionary<SkillCategory, SkillTypeSO> equippedWeaponSkillByCategory = new();
         // 쿨다운 추적기
         private SkillCaster skillCaster;
 
         // 스킬별 콤보 진행 컨텍스트 맵
         private readonly Dictionary<SkillTypeSO, ComboContext> comboContexts = new();
+        private readonly List<SkillTypeSO> effectiveAvailableSkills = new();
+        private readonly HashSet<SkillTypeSO> effectiveAvailableSkillSet = new();
+        private readonly Dictionary<SkillCategory, SkillTypeSO> categoryWinnerByType = new();
+        private readonly Dictionary<SkillCategory, int> categoryWinnerRawIndexByType = new();
+        private readonly Dictionary<SkillCategory, int> categoryWinnerProviderPriorityByType = new();
+        private readonly Dictionary<string, int> providerPriorityMap = new(StringComparer.Ordinal);
         // 정렬 전 사용 가능 스킬 목록
         private readonly List<SkillTypeSO> orderedAvailableSkills = new();
         // 이전 프레임 정렬 결과 스냅샷
@@ -178,7 +183,7 @@ namespace TH.Combat
         // 등록 스킬 읽기 전용 목록
         public IReadOnlyList<SkillTypeSO> RegisteredSkills => skillBook?.Skills ?? EmptySkills;
         // 사용 가능 스킬 읽기 전용 목록
-        public IReadOnlyList<SkillTypeSO> AvailableSkills => skillBook?.AvailableSkills ?? EmptySkills;
+        public IReadOnlyList<SkillTypeSO> AvailableSkills => effectiveAvailableSkills;
         // 정렬 반영 사용 가능 스킬 읽기 전용 목록
         public IReadOnlyList<SkillTypeSO> OrderedAvailableSkills => orderedAvailableSkills;
         // 대상 레이어 맵 외부 노출 참조
@@ -197,6 +202,7 @@ namespace TH.Combat
             skillBook = new SkillBook();
             skillCaster = new SkillCaster();
             targetingEvaluator = new SkillTargetingEvaluator(new SkillTargetLayerMaskResolver(skillTargetLayerMap));
+            InitializeProviderPriorityMap();
 
             // 초기 스킬 자동 등록 루프
             for (int i = 0; i < initialSkills.Count; i++)
@@ -319,7 +325,8 @@ namespace TH.Combat
             CacheEquippedWeaponSkills(weapon.DefaultSkills);
 
             // 장착 무기 스킬 등록 및 쿨다운 추적 등록
-            bool addedAny = false;
+            bool skillBookChanged = false;
+            bool availabilityChanged = false;
             for (int i = 0; i < equippedWeaponSkills.Count; i++)
             {
                 // 현재 순회 스킬 참조
@@ -328,13 +335,18 @@ namespace TH.Combat
                 if (skill.IsNull()) continue;
 
                 // 스킬북 등록 + 쿨다운 추적 동기화
-                bool added = skillBook.Register(skill);
+                bool wasRegistered = skillBook.Contains(skill);
+                bool changed = skillBook.Register(skill, equippedWeaponSkillProviderId, isAvailable: true);
                 skillCaster.TrackSkill(skill);
-                addedAny |= added;
+                availabilityChanged |= changed;
+
+                if (!wasRegistered && skillBook.Contains(skill))
+                {
+                    skillBookChanged = true;
+                }
             }
 
             // 이전 무기 스킬 available 해제 루프
-            bool removedAny = false;
             for (int i = 0; i < previousWeaponSkills.Count; i++)
             {
                 // 이전 무기 스킬 참조
@@ -343,17 +355,29 @@ namespace TH.Combat
                 if (oldSkill.IsNull()) continue;
 
                 // available 플래그 해제 누적
-                removedAny |= skillBook.SetAvailable(oldSkill, false);
+                if (equippedWeaponSkills.Contains(oldSkill))
+                {
+                    continue;
+                }
+
+                bool wasRegistered = skillBook.Contains(oldSkill);
+                bool changed = skillBook.Revoke(oldSkill, equippedWeaponSkillProviderId);
+                availabilityChanged |= changed;
+
+                if (wasRegistered && !skillBook.Contains(oldSkill))
+                {
+                    skillBookChanged = true;
+                }
             }
 
             // 신규 등록 발생 시 스킬북 변경 알림
-            if (addedAny)
+            if (skillBookChanged)
             {
                 OnSkillBookChanged?.Invoke();
             }
 
             // available 목록 동기화 및 활성 스킬 보정
-            SyncAvailableSkillSet(forceNotify: addedAny || removedAny);
+            SyncAvailableSkillSet(forceNotify: availabilityChanged);
         }
 
         // 무기 스킬 캐시 갱신 및 중복 제거

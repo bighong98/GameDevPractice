@@ -17,6 +17,10 @@ namespace TH.Combat
     public sealed partial class SkillController
     {
         private const string unarmedFallbackWeaponAddressKey = "Unarmed.asset";
+        private const string legacySkillProviderId = "legacy.manual";
+        private const string equippedWeaponSkillProviderId = "equipment.weapon.current";
+        private const int defaultLegacyProviderPriority = 100;
+        private const int defaultEquippedWeaponProviderPriority = 300;
 
         // 스킬 등록 + 쿨다운 추적기 연동 처리
         public bool RegisterSkill(SkillTypeSO skill, bool setActive = false)
@@ -24,8 +28,18 @@ namespace TH.Combat
             // null 입력 및 초기화 이전 가드
             if (skill.IsNull() || skillBook == null || skillCaster == null) return false;
 
+            if (skillBook.Contains(skill))
+            {
+                if (setActive)
+                {
+                    SetActiveSkill(skill);
+                }
+
+                return false;
+            }
+
             // 스킬북 등록 시도 + 쿨다운 추적 등록
-            bool added = skillBook.Register(skill);
+            bool added = skillBook.Register(skill, legacySkillProviderId, isAvailable: true);
             skillCaster.TrackSkill(skill);
 
             // 신규 등록 성공 시 목록 변경 이벤트 발행
@@ -42,6 +56,224 @@ namespace TH.Combat
             }
 
             return added;
+        }
+
+        // provider 기반 스킬 등록 처리
+        public bool RegisterSkillFromProvider(
+            SkillTypeSO skill,
+            string providerId,
+            bool setActive = false,
+            bool setAvailable = true)
+        {
+            if (skill.IsNull() || skillBook == null || skillCaster == null) return false;
+
+            bool wasRegistered = skillBook.Contains(skill);
+            bool changed = skillBook.Register(skill, providerId, setAvailable);
+            skillCaster.TrackSkill(skill);
+
+            bool isRegistered = skillBook.Contains(skill);
+            if (!wasRegistered && isRegistered)
+            {
+                OnSkillBookChanged?.Invoke();
+            }
+
+            if (changed)
+            {
+                SyncAvailableSkillSet(forceNotify: true);
+            }
+
+            if (setActive)
+            {
+                SetActiveSkill(skill);
+            }
+
+            return changed;
+        }
+
+        // provider 기반 스킬 해제 처리
+        public bool RemoveSkillFromProvider(SkillTypeSO skill, string providerId)
+        {
+            if (skill.IsNull() || skillBook == null) return false;
+
+            bool wasRegistered = skillBook.Contains(skill);
+            bool changed = skillBook.Revoke(skill, providerId);
+            if (!changed)
+            {
+                return false;
+            }
+
+            bool isRegistered = skillBook.Contains(skill);
+            if (wasRegistered && !isRegistered)
+            {
+                OnSkillBookChanged?.Invoke();
+            }
+
+            SyncAvailableSkillSet(forceNotify: true);
+            return true;
+        }
+
+        public void SetSkillProviderPriority(string providerId, int priority)
+        {
+            if (string.IsNullOrWhiteSpace(providerId))
+            {
+                return;
+            }
+
+            string resolvedProviderId = providerId.Trim();
+            if (providerPriorityMap.TryGetValue(resolvedProviderId, out int currentPriority) &&
+                currentPriority == priority)
+            {
+                return;
+            }
+
+            providerPriorityMap[resolvedProviderId] = priority;
+            SyncAvailableSkillSet(forceNotify: true);
+        }
+
+        private void InitializeProviderPriorityMap()
+        {
+            providerPriorityMap.Clear();
+            providerPriorityMap[equippedWeaponSkillProviderId] = defaultEquippedWeaponProviderPriority;
+            providerPriorityMap[legacySkillProviderId] = defaultLegacyProviderPriority;
+        }
+
+        private int ResolveProviderPriority(string providerId)
+        {
+            if (string.IsNullOrWhiteSpace(providerId))
+            {
+                return 0;
+            }
+
+            string resolvedProviderId = providerId.Trim();
+            return providerPriorityMap.TryGetValue(resolvedProviderId, out int priority) ? priority : 0;
+        }
+
+        private int ResolveBestAvailableProviderPriority(SkillTypeSO skill)
+        {
+            if (skillBook == null || skill.IsNull())
+            {
+                return int.MinValue;
+            }
+
+            return skillBook.GetMaxAvailableProviderPriority(skill, ResolveProviderPriority);
+        }
+
+        private bool RebuildEffectiveAvailableSkills()
+        {
+            if (skillBook == null)
+            {
+                bool hadAny = effectiveAvailableSkills.Count > 0;
+                effectiveAvailableSkills.Clear();
+                effectiveAvailableSkillSet.Clear();
+                categoryWinnerByType.Clear();
+                categoryWinnerRawIndexByType.Clear();
+                categoryWinnerProviderPriorityByType.Clear();
+                return hadAny;
+            }
+
+            var previous = new List<SkillTypeSO>(effectiveAvailableSkills);
+            effectiveAvailableSkills.Clear();
+            effectiveAvailableSkillSet.Clear();
+            categoryWinnerByType.Clear();
+            categoryWinnerRawIndexByType.Clear();
+            categoryWinnerProviderPriorityByType.Clear();
+
+            var rawAvailableSkills = skillBook.AvailableSkills;
+            for (int i = 0; i < rawAvailableSkills.Count; i++)
+            {
+                SkillTypeSO candidateSkill = rawAvailableSkills[i];
+                if (candidateSkill.IsNull())
+                {
+                    continue;
+                }
+
+                SkillCategory category = candidateSkill.SkillCategory;
+                int candidateProviderPriority = ResolveBestAvailableProviderPriority(candidateSkill);
+
+                if (!categoryWinnerByType.TryGetValue(category, out SkillTypeSO currentWinner))
+                {
+                    categoryWinnerByType[category] = candidateSkill;
+                    categoryWinnerRawIndexByType[category] = i;
+                    categoryWinnerProviderPriorityByType[category] = candidateProviderPriority;
+                    continue;
+                }
+
+                int currentWinnerRawIndex = categoryWinnerRawIndexByType[category];
+                int currentWinnerProviderPriority = categoryWinnerProviderPriorityByType[category];
+                if (ShouldReplaceCategoryWinner(
+                        currentWinner,
+                        currentWinnerProviderPriority,
+                        currentWinnerRawIndex,
+                        candidateSkill,
+                        candidateProviderPriority,
+                        i))
+                {
+                    categoryWinnerByType[category] = candidateSkill;
+                    categoryWinnerRawIndexByType[category] = i;
+                    categoryWinnerProviderPriorityByType[category] = candidateProviderPriority;
+                }
+            }
+
+            for (int i = 0; i < rawAvailableSkills.Count; i++)
+            {
+                SkillTypeSO skill = rawAvailableSkills[i];
+                if (skill.IsNull())
+                {
+                    continue;
+                }
+
+                if (!categoryWinnerByType.TryGetValue(skill.SkillCategory, out SkillTypeSO winner) ||
+                    winner != skill ||
+                    !effectiveAvailableSkillSet.Add(skill))
+                {
+                    continue;
+                }
+
+                effectiveAvailableSkills.Add(skill);
+            }
+
+            if (previous.Count != effectiveAvailableSkills.Count)
+            {
+                return true;
+            }
+
+            for (int i = 0; i < previous.Count; i++)
+            {
+                if (previous[i] != effectiveAvailableSkills[i])
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool ShouldReplaceCategoryWinner(
+            SkillTypeSO currentWinner,
+            int currentWinnerProviderPriority,
+            int currentWinnerRawIndex,
+            SkillTypeSO candidateSkill,
+            int candidateProviderPriority,
+            int candidateRawIndex)
+        {
+            if (candidateProviderPriority != currentWinnerProviderPriority)
+            {
+                return candidateProviderPriority > currentWinnerProviderPriority;
+            }
+
+            if (candidateRawIndex != currentWinnerRawIndex)
+            {
+                return candidateRawIndex > currentWinnerRawIndex;
+            }
+
+            return string.CompareOrdinal(
+                       candidateSkill.IsNotNull() ? candidateSkill.name : string.Empty,
+                       currentWinner.IsNotNull() ? currentWinner.name : string.Empty) > 0;
+        }
+
+        private bool ContainsEffectiveAvailableSkill(SkillTypeSO skill)
+        {
+            return skill.IsNotNull() && effectiveAvailableSkillSet.Contains(skill);
         }
 
         // 활성 스킬 전환 + 콤보/보류 상태 초기화 처리
@@ -94,8 +326,9 @@ namespace TH.Combat
         public bool TryRequestActiveSkill()
         {
             if (skillBook == null) return false;
+            RebuildEffectiveAvailableSkills();
 
-            if (HasActiveSkill && skillBook.ContainsAvailable(skillBook.ActiveSkill))
+            if (HasActiveSkill && ContainsEffectiveAvailableSkill(skillBook.ActiveSkill))
             {
                 return true;
             }
@@ -104,7 +337,7 @@ namespace TH.Combat
             bool forceNotifyAvailable = false;
 
             SkillTypeSO requestedSkill = null;
-            if (defaultActiveSkill.IsNotNull() && skillBook.ContainsAvailable(defaultActiveSkill))
+            if (defaultActiveSkill.IsNotNull() && ContainsEffectiveAvailableSkill(defaultActiveSkill))
             {
                 requestedSkill = defaultActiveSkill;
             }
@@ -132,9 +365,9 @@ namespace TH.Combat
 
                 requestedSkill = fallbackBasicSkill;
             }
-            else if (skillBook.TryGetFirstAvailable(out var firstAvailableSkill))
+            else if (effectiveAvailableSkills.Count > 0 && effectiveAvailableSkills[0].IsNotNull())
             {
-                requestedSkill = firstAvailableSkill;
+                requestedSkill = effectiveAvailableSkills[0];
             }
 
             if (notifySkillBookChanged)
@@ -303,39 +536,11 @@ namespace TH.Combat
             if (skillBook == null) return;
 
             bool changed = false;
-            if (syncWithEquippedWeapon)
-            {
-                equippedWeaponSkillByCategory.Clear();
-                for (int i = 0; i < equippedWeaponSkills.Count; i++)
-                {
-                    SkillTypeSO weaponSkill = equippedWeaponSkills[i];
-                    if (weaponSkill.IsNull())
-                    {
-                        continue;
-                    }
-
-                    // 동일 카테고리에서는 뒤 항목 우선
-                    equippedWeaponSkillByCategory[weaponSkill.SkillCategory] = weaponSkill;
-                }
-
-                if (equippedWeaponSkillByCategory.Count > 0)
-                {
-                    changed |= skillBook.RemoveAvailableWhere(skill =>
-                        skill.IsNotNull() &&
-                        equippedWeaponSkillByCategory.TryGetValue(skill.SkillCategory, out var selectedWeaponSkill) &&
-                        skill != selectedWeaponSkill);
-                }
-
-                foreach (var pair in equippedWeaponSkillByCategory)
-                {
-                    changed |= skillBook.SetAvailable(pair.Value, true);
-                }
-            }
-
+            bool effectiveChanged = RebuildEffectiveAvailableSkills();
             changed |= EnsureActiveSkillIsValid();
             bool slotOrderChanged = RebuildOrderedAvailableSkills(notifySlotChanges: true);
 
-            if (forceNotify || changed || slotOrderChanged)
+            if (forceNotify || effectiveChanged || changed || slotOrderChanged)
             {
                 OnAvailableSkillsChanged?.Invoke();
             }
@@ -346,7 +551,7 @@ namespace TH.Combat
         {
             if (skillBook == null) return false;
             if (!HasActiveSkill) return false;
-            if (skillBook.ContainsAvailable(skillBook.ActiveSkill)) return false;
+            if (ContainsEffectiveAvailableSkill(skillBook.ActiveSkill)) return false;
 
             return ClearActiveSkill();
         }
@@ -359,7 +564,7 @@ namespace TH.Combat
                 return false;
             }
 
-            var availableSkills = skillBook.AvailableSkills;
+            var availableSkills = effectiveAvailableSkills;
             for (int i = availableSkills.Count - 1; i >= 0; i--)
             {
                 SkillTypeSO candidate = availableSkills[i];

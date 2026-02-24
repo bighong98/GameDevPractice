@@ -108,7 +108,7 @@ namespace TH.Combat
                 registeredSkillOrder.Add(skill, i);
             }
 
-            var availableSkills = skillBook.AvailableSkills;
+            var availableSkills = effectiveAvailableSkills;
             for (int i = 0; i < availableSkills.Count; i++)
             {
                 SkillTypeSO skill = availableSkills[i];

@@ -57,6 +57,9 @@ namespace TH.Combat
 
         // 스킬 등록 처리
         bool RegisterSkill(SkillTypeSO skill, bool setActive = false);
+        bool RegisterSkillFromProvider(SkillTypeSO skill, string providerId, bool setActive = false, bool setAvailable = true);
+        bool RemoveSkillFromProvider(SkillTypeSO skill, string providerId);
+        void SetSkillProviderPriority(string providerId, int priority);
         // 활성 스킬 교체 처리
         bool SetActiveSkill(SkillTypeSO skill);
         // 외부 명령 기반 활성 스킬 해제 시도
