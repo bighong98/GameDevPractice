@@ -60,12 +60,17 @@ namespace TH.Combat
                 RegisterSkill(skill);
             }
 
+            bool preserveComboProgress = ShouldPreserveComboProgressOnActivation(skill);
             bool changed = skillBook.SetActive(skill);
             if (changed)
             {
                 // 이전 활성 스킬 파생 상태 정리
                 CancelActiveComboTimeoutRoutine();
-                ResetComboProgress(skill);
+                if (!preserveComboProgress)
+                {
+                    ResetComboProgress(skill);
+                }
+
                 ClearPendingAttack();
                 executingSkill = null;
                 OnActiveSkillChanged?.Invoke(skill);
@@ -75,6 +80,14 @@ namespace TH.Combat
             UpdateResolvedSkillFromPreview(forceNotify: changed || !HasResolvedSkill);
             SyncDebugValues();
             return changed;
+        }
+
+        public bool TryClearActiveSkill(bool respectComboPreserveMarker = false)
+        {
+            return ClearActiveSkill(
+                resetComboProgress: true,
+                preserveComboProgressOnNextActivation: false,
+                respectComboPreserveMarker: respectComboPreserveMarker);
         }
 
         // 필요 시점에만 활성 스킬을 지연 선택/보정
@@ -146,12 +159,29 @@ namespace TH.Combat
 
         private bool ClearActiveSkill()
         {
+            return ClearActiveSkill(
+                resetComboProgress: true,
+                preserveComboProgressOnNextActivation: false,
+                respectComboPreserveMarker: false);
+        }
+
+        private bool ClearActiveSkill(
+            bool resetComboProgress,
+            bool preserveComboProgressOnNextActivation,
+            bool respectComboPreserveMarker)
+        {
             if (skillBook == null || !HasActiveSkill)
             {
                 return false;
             }
 
             SkillTypeSO previousActiveSkill = skillBook.ActiveSkill;
+            if (respectComboPreserveMarker &&
+                ShouldIgnoreExternalClearByComboPreserveMarker(previousActiveSkill))
+            {
+                return false;
+            }
+
             bool changed = skillBook.ClearActive();
             if (!changed)
             {
@@ -159,13 +189,62 @@ namespace TH.Combat
             }
 
             CancelActiveComboTimeoutRoutine();
-            ResetComboProgress(previousActiveSkill);
+            if (resetComboProgress)
+            {
+                ResetComboProgress(previousActiveSkill, ignoreComboPreserveMarker: !respectComboPreserveMarker);
+            }
+
             ClearPendingAttack();
             executingSkill = null;
+
+            if (preserveComboProgressOnNextActivation && !resetComboProgress && previousActiveSkill.IsNotNull())
+            {
+                MarkPreservedComboProgressSkill(previousActiveSkill);
+            }
+            else
+            {
+                ClearPreservedComboProgressSkill(previousActiveSkill);
+                if (!resetComboProgress)
+                {
+                    ClearExternalClearIgnoreComboMarkerSkill(previousActiveSkill);
+                }
+            }
+
             OnActiveSkillChanged?.Invoke(null);
             UpdateResolvedSkillFromPreview(forceNotify: true);
             SyncDebugValues();
             return true;
+        }
+
+        private bool ShouldPreserveComboProgressOnActivation(SkillTypeSO skill)
+        {
+            if (skill.IsNull())
+            {
+                ClearPreservedComboProgressSkill();
+                return false;
+            }
+
+            if (preservedComboProgressSkill.IsNull())
+            {
+                return false;
+            }
+
+            bool shouldPreserve = preservedComboProgressSkill == skill;
+            ClearPreservedComboProgressSkill(skill);
+            return shouldPreserve;
+        }
+
+        private void MarkPreservedComboProgressSkill(SkillTypeSO skill)
+        {
+            preservedComboProgressSkill = skill;
+        }
+
+        private void ClearPreservedComboProgressSkill(SkillTypeSO skill = null)
+        {
+            if (skill.IsNull() || preservedComboProgressSkill == skill)
+            {
+                preservedComboProgressSkill = null;
+            }
         }
 
         // 사용 가능 스킬 변경 적용 처리

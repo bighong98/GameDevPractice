@@ -25,6 +25,8 @@ MonoBehaviour:
   onHitTriggeredSkills: []
   onHitEffects: []
   lastImportedOnHitEffectsSignature: 0
+  activeSkillPostExecutionPolicy: 1
+  preserveStepWithInterfere: 0
   comboTimeout: 0.75
   comboSteps: []
   comboSequence: {fileID: 0}

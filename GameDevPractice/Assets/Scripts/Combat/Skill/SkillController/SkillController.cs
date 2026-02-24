@@ -94,6 +94,11 @@ namespace TH.Combat
         // 현재 콤보 총 단계 수
         private int currentComboStepCount = 1;
 
+        // 자동 재활성화 시 콤보 진행 유지 대상
+        private SkillTypeSO preservedComboProgressSkill;
+        // 외부 활성 해제 명령 무시 마커 대상
+        private SkillTypeSO externalClearIgnoreComboMarkerSkill;
+
         // 보류 공격 존재 상태
         private bool hasPendingAttack;
         // 보류 공격 스킬
@@ -285,6 +290,7 @@ namespace TH.Combat
                     if (context.NextStepIndex == activeComboTimeoutExpectedNextStepIndex)
                     {
                         // 프리뷰 기반 해석 결과 강제 갱신
+                        ResetComboProgress(activeComboTimeoutBaseSkill, ignoreComboPreserveMarker: true);
                         UpdateResolvedSkillFromPreview(forceNotify: true);
                     }
                 }

@@ -1,13 +1,11 @@
-using System;
-using System.Collections.Generic;
 using UnityEngine;
-using TH.Attribute;
 using UnityEngine.AI;
 using TH.Utils;
 using TH.Control.Movement;
 using TH.Core;
 using TH.Core.Service;
 using TH.Combat;
+using TH.Attribute;
 
 
 namespace TH.Control
@@ -33,6 +31,7 @@ namespace TH.Control
         private Vector2 wasdInput = Vector2.zero;
         private bool isWASDMoving = false;
         private bool fightEnabled = true;
+        private const float WasdInputThresholdSqr = 0.01f;
         private const float MaxNavMeshProjectionDistance = 1f;
 
         public float SightThreshold { get; } = 30f * 30f;
@@ -47,6 +46,11 @@ namespace TH.Control
             TryGetComponent(out skillController);
 
             ServiceLocator.Get<IPlayerHolder>().SetPlayer(this);
+        }
+
+        private void Start()
+        {
+            _camera = _camera != null ? _camera : Camera.main;
         }
 
         private void OnEnable()
@@ -67,29 +71,29 @@ namespace TH.Control
                 fighter.OnTargetSet -= OnFighterTargetSet;
         }
 
-        private void Start()
-        {
-            _camera = Camera.main;
-        }
-
         private void Update()
         {
-            if (Time.timeScale <= float.Epsilon || health?.IsDead == true)
+            if (!CanProcessInput())
             {
                 return;
             }
 
             // WASD 입력이 있으면 지속적으로 이동 처리
-            if (isWASDMoving && wasdInput.sqrMagnitude > 0.01f)
+            if (isWASDMoving && wasdInput.sqrMagnitude > WasdInputThresholdSqr)
             {
                 HandleWASDMovement();
             }
         }
 
+        private bool CanProcessInput()
+        {
+            return Time.timeScale > float.Epsilon && health?.IsDead != true;
+        }
+
         private void OnWASDInput(Vector2 input)
         {
             wasdInput = input;
-            isWASDMoving = input.sqrMagnitude > 0.01f;
+            isWASDMoving = input.sqrMagnitude > WasdInputThresholdSqr;
             
             // WASD 입력이 시작되면 즉시 기존 이동/전투 취소
             if (isWASDMoving)
@@ -100,6 +104,11 @@ namespace TH.Control
 
         private void HandleWASDMovement()
         {
+            if (_camera == null)
+            {
+                _camera = Camera.main;
+                if (_camera == null) return;
+            }
             // 카메라 방향 기준으로 입력 변환
             Vector3 cameraForward = _camera.transform.forward;
             Vector3 cameraRight = _camera.transform.right;
@@ -113,7 +122,7 @@ namespace TH.Control
             // 이동 방향 계산
             Vector3 moveDirection = (cameraForward * wasdInput.y + cameraRight * wasdInput.x).normalized;
             
-            if (moveDirection.sqrMagnitude > 0.01f)
+            if (moveDirection.sqrMagnitude > WasdInputThresholdSqr)
             {
                 // 현재 위치에서 이동 방향으로 목표 지점 설정 (더 짧은 거리)
                 Vector3 targetPosition = transform.position + moveDirection * 2f; // 10f -> 2f로 변경
@@ -121,7 +130,6 @@ namespace TH.Control
                 // NavMesh 위의 유효한 위치로 변환
                 if (NavMesh.SamplePosition(targetPosition, out NavMeshHit navMeshHit, MaxNavMeshProjectionDistance, NavMesh.AllAreas))
                 {
-                    // mover.MoveTo(navMeshHit.position);
                     mover.SetDestination(navMeshHit.position);
                 }
             }
@@ -132,7 +140,7 @@ namespace TH.Control
         {
             Logg.Log($"[{nameof(PlayerController)}.{nameof(OnPointerPressed)}()] triggered", Logg.LoggingMode.Completed);
             
-            if (Time.timeScale <= float.Epsilon || health?.IsDead == true)
+            if (!CanProcessInput())
             {
                 return; // 게임이 일시정지 중이거나 플레이어가 사망한 경우 반응 없음
             }
@@ -148,11 +156,6 @@ namespace TH.Control
                 return; // 우선순위: 전투 > 이동
             }
             
-            if (TryMoveTo(pos))
-            {
-                return;
-            }
-            
             SetCursor(CursorType.None);
         }
 
@@ -161,7 +164,8 @@ namespace TH.Control
 
         private bool TryInteractWithComponent(Vector2 pointerPos)
         {
-            if (Physics.RaycastNonAlloc(GetPointerRay(pointerPos), hitResults) is not (int hitLength and > 0))
+            if (!TryGetPointerRay(pointerPos, out var ray) ||
+                Physics.RaycastNonAlloc(ray, hitResults) is not (int hitLength and > 0))
             {
                 SetInteractionOutline(null);
                 return false;
@@ -243,53 +247,25 @@ namespace TH.Control
             _outlinedTarget = null;
         }
 
-        private bool TryCombat(Vector2 pos)
+        private bool TryGetPointerRay(Vector2 pos, out Ray ray)
         {
-            if (Physics.RaycastNonAlloc(GetPointerRay(pos), hitResults) is int hitLength and > 0)
+            if (_camera == null)
             {
-                for (int i = 0 ; i < hitLength; i++)
+                _camera = Camera.main;
+                if (_camera == null)
                 {
-                    if (!fighter.CanAttack(hitResults[i].transform.gameObject, out Health targetHealth)) continue;
-                    
-                    SetCursor(CursorType.Combat);
-                    fighter.SetTarget(targetHealth);
-                    return true;
+                    ray = default;
+                    return false;
                 }
             }
 
-            return false;
-        }
-
-        private bool TryMoveTo(Vector2 pos)
-        {
-            if (!RaycastWithNavMesh(pos, out var navMeshPos)) return false;
-            
-            SetCursor(CursorType.Movement);
-            // mover.StartMoveAction(navMeshPos);
+            ray = _camera.ScreenPointToRay(pos);
             return true;
-        }
-        
-        private bool RaycastWithNavMesh(Vector2 pointerPos, out Vector3 target)
-        {
-            if (Physics.Raycast(GetPointerRay(pointerPos), out RaycastHit hit) &&
-                NavMesh.SamplePosition(hit.point, out NavMeshHit navMeshHit, MaxNavMeshProjectionDistance, NavMesh.AllAreas))
-            {
-                target = navMeshHit.position;
-                return true;
-            }
-
-            target = Vector3.zero;
-            return false;
-        }
-        
-        private Ray GetPointerRay(Vector2 pos)
-        {
-            return _camera.ScreenPointToRay(pos);
         }
 
         private void SetCursor(CursorType cursor)
         {
-            
+            // TODO: Cursor 시스템 미개발 상태
         }
 
         private Health fighterTargetBuffer;
@@ -298,7 +274,6 @@ namespace TH.Control
             if (fighterTargetBuffer != null && ReferenceEquals(fighterTargetBuffer, targetHealth))
             {
                 skillController.TryRequestActiveSkill();
-                // mover.Follow(targetHealth.transform);
             }
 
             fighterTargetBuffer = targetHealth;

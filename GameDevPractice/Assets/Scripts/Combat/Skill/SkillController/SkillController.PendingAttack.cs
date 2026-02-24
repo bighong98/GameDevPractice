@@ -229,7 +229,12 @@ namespace TH.Combat
                 executingSkill = null;
                 // 성공 실행 시 보류 상태 해제
                 ClearPendingAttack();
-                UpdateResolvedSkillFromPreview(forceNotify: true);
+                bool activeSkillClearedByPolicy = ApplyPostExecutionActiveSkillPolicy(baseSkill);
+                if (!activeSkillClearedByPolicy)
+                {
+                    UpdateResolvedSkillFromPreview(forceNotify: true);
+                }
+
                 return true;
             }
 
@@ -237,6 +242,29 @@ namespace TH.Combat
             // 실행 거부 시 보류 상태 정리
             CancelPendingAttack(PendingCancelReason.ExecutionRejected, refreshResolvedFromPreview: true);
             return false;
+        }
+
+        private bool ApplyPostExecutionActiveSkillPolicy(SkillTypeSO baseSkill)
+        {
+            if (baseSkill.IsNull() || !HasActiveSkill || skillBook == null || skillBook.ActiveSkill != baseSkill)
+            {
+                return false;
+            }
+
+            return baseSkill.PostExecutionPolicy switch
+            {
+                SkillTypeSO.ActiveSkillPostExecutionPolicy.DeactivateAndResetCombo =>
+                    ClearActiveSkill(
+                        resetComboProgress: true,
+                        preserveComboProgressOnNextActivation: false,
+                        respectComboPreserveMarker: false),
+                SkillTypeSO.ActiveSkillPostExecutionPolicy.DeactivateAndKeepCombo =>
+                    ClearActiveSkill(
+                        resetComboProgress: false,
+                        preserveComboProgressOnNextActivation: true,
+                        respectComboPreserveMarker: false),
+                _ => false
+            };
         }
 
         public bool TryCancelPendingAttackIfStale()

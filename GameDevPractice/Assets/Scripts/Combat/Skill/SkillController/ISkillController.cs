@@ -59,6 +59,8 @@ namespace TH.Combat
         bool RegisterSkill(SkillTypeSO skill, bool setActive = false);
         // 활성 스킬 교체 처리
         bool SetActiveSkill(SkillTypeSO skill);
+        // 외부 명령 기반 활성 스킬 해제 시도
+        bool TryClearActiveSkill(bool respectComboPreserveMarker = false);
         // 필요 시점에 활성 스킬을 지연 선택/보정
         bool TryRequestActiveSkill();
         // 사용 가능 스킬 변경 적용(교체 미지정 시 하이라이트 요청 처리)

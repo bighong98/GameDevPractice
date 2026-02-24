@@ -129,12 +129,21 @@ namespace TH.Combat
             if (stepCount <= 1)
             {
                 context.NextStepIndex = 0;
+                ClearExternalClearIgnoreComboMarkerSkill(baseSkill);
                 return;
             }
 
             // 마지막 단계 이후 0단계 순환
             int nextStep = consumedStepIndex + 1;
             context.NextStepIndex = nextStep < stepCount ? nextStep : 0;
+            if (context.NextStepIndex > 0)
+            {
+                MarkExternalClearIgnoreComboMarkerSkill(baseSkill);
+            }
+            else
+            {
+                ClearExternalClearIgnoreComboMarkerSkill(baseSkill);
+            }
         }
 
         // 활성 스킬 콤보 타임아웃 예약
@@ -173,13 +182,51 @@ namespace TH.Combat
         }
 
         // 특정 베이스 스킬 콤보 진행 상태 리셋
-        private void ResetComboProgress(SkillTypeSO baseSkill)
+        private bool ResetComboProgress(SkillTypeSO baseSkill, bool ignoreComboPreserveMarker = true)
         {
-            if (baseSkill.IsNull()) return;
+            if (baseSkill.IsNull()) return false;
+            if (!ignoreComboPreserveMarker && HasExternalClearIgnoreComboMarkerSkill(baseSkill))
+            {
+                return false;
+            }
 
             var context = GetOrCreateComboContext(baseSkill);
             context.NextStepIndex = 0;
             context.LastConsumeTime = -1f;
+            ClearPreservedComboProgressSkill(baseSkill);
+            ClearExternalClearIgnoreComboMarkerSkill(baseSkill);
+            return true;
+        }
+
+        private bool HasExternalClearIgnoreComboMarkerSkill(SkillTypeSO skill)
+        {
+            return skill.IsNotNull() &&
+                   skill.PreserveStepWithInterfere &&
+                   externalClearIgnoreComboMarkerSkill.IsNotNull() &&
+                   externalClearIgnoreComboMarkerSkill == skill;
+        }
+
+        private bool ShouldIgnoreExternalClearByComboPreserveMarker(SkillTypeSO skill)
+        {
+            return HasExternalClearIgnoreComboMarkerSkill(skill);
+        }
+
+        private void MarkExternalClearIgnoreComboMarkerSkill(SkillTypeSO skill)
+        {
+            if (skill.IsNull() || !skill.PreserveStepWithInterfere)
+            {
+                return;
+            }
+
+            externalClearIgnoreComboMarkerSkill = skill;
+        }
+
+        private void ClearExternalClearIgnoreComboMarkerSkill(SkillTypeSO skill = null)
+        {
+            if (skill.IsNull() || externalClearIgnoreComboMarkerSkill == skill)
+            {
+                externalClearIgnoreComboMarkerSkill = null;
+            }
         }
 
         // 베이스 스킬별 콤보 컨텍스트 조회/생성

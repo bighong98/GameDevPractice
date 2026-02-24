@@ -25,7 +25,7 @@ namespace TH.Control.Data
                 return;
             }
 
-            skillController.SetActiveSkill(null);
+            skillController.TryClearActiveSkill(respectComboPreserveMarker: true);
         }
     }
 }

@@ -42,3 +42,4 @@ MonoBehaviour:
   defaultSkills:
   - {fileID: 11400000, guid: 265746d0fd0a1cc468b00352e243cf4d, type: 2}
   - {fileID: 11400000, guid: 5c4c02cf2b475b241a45617c4616396b, type: 2}
+  - {fileID: 11400000, guid: 9660cea02b887474dacad91a4207c38a, type: 2}

@@ -10,6 +10,13 @@ namespace TH.Resource
     {
         private const float DefaultComboTimeout = 0.75f;
 
+        public enum ActiveSkillPostExecutionPolicy
+        {
+            KeepActive = 0,
+            DeactivateAndResetCombo = 1,
+            DeactivateAndKeepCombo = 2
+        }
+
         [Header("Skill Data")]
         [SerializeField] private string skillId;
         [SerializeField] private GameStatSO attackSourceStatSO;
@@ -34,7 +41,11 @@ namespace TH.Resource
         [SerializeField, HideInInspector] private int lastImportedOnHitEffectsSignature;
 
 #endif
+        [Header("Post Execution")]
+        [SerializeField] private ActiveSkillPostExecutionPolicy activeSkillPostExecutionPolicy = ActiveSkillPostExecutionPolicy.KeepActive;
+
         [Header("Sequence")]
+        [SerializeField] private bool preserveStepWithInterfere;
         [SerializeField, Min(0f)] private float comboTimeout = DefaultComboTimeout;
         [SerializeField] private List<SkillTypeSO> comboSteps = new();
 
@@ -85,6 +96,8 @@ namespace TH.Resource
         public int ComboStepCount => comboSteps?.Count ?? 0;
         public bool HasComboSteps => comboSteps != null && comboSteps.Exists(skill => skill != null);
         public IReadOnlyList<SkillTypeSO> ComboSteps => comboSteps;
+        public ActiveSkillPostExecutionPolicy PostExecutionPolicy => activeSkillPostExecutionPolicy;
+        public bool PreserveStepWithInterfere => preserveStepWithInterfere;
         public SkillExecutionProfileSO ExecutionProfile => executionProfile;
         public IReadOnlyList<SkillTriggerRuleEntry> OnHitProcEntries => onHitTriggeredSkills;
         public bool HasOnHitProcEntries => onHitTriggeredSkills != null && onHitTriggeredSkills.Exists(entry => entry != null && entry.HasTriggeredSkills);
