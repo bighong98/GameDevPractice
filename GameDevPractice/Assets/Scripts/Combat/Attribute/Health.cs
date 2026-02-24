@@ -7,6 +7,7 @@ using TH.Attribute.Stat;
 using TH.Combat;
 using TH.Core.Service;
 using TH.Resource;
+using TH.Core.Pool;
 using TH.Combat.Service;
 
 namespace TH.Attribute
@@ -24,6 +25,7 @@ namespace TH.Attribute
         // fields serailized for debug
         [SerializeField] private float maxHp = 1;
         [SerializeField] private float hp = 1;
+        [SerializeField] private bool returnToPoolOnDeath = false;
 
         private IStatHolder statHolder;
         private IGameStat maxHpStat;
@@ -180,7 +182,7 @@ namespace TH.Attribute
         }
 
 
-        private void Die()
+        private void Die(bool releaseToPool = true)
         {
             if (IsDead) return;
 
@@ -191,7 +193,22 @@ namespace TH.Attribute
             if (lastAttacker.IsNotNull())
                 killEventHandler?.HandleKillEvent(this, lastAttacker);
             lastAttacker = null;
+
+            if (releaseToPool)
+                TryReturnToPoolOnDeath();
         }
+
+        private void TryReturnToPoolOnDeath()
+        {
+            if (!returnToPoolOnDeath)
+                return;
+
+            if (!TryGetComponent(out IPoolObject pooledObject))
+                return;
+
+            pooledObject.ReleaseSelf();
+        }
+
 
         private void Revive()
         {
@@ -253,7 +270,7 @@ namespace TH.Attribute
             if (state is not HealthSaveData data) return false;
             if (data.ratio is not (float storedHpRatio and >= 0)) return false;
 
-            if (data.isDead) Die();
+            if (data.isDead) Die(releaseToPool: false);
             SetCurrentHp(maxHp * storedHpRatio, byForce: true);
 
             this.Log($"[{gameObject.name}] - Health.RestoreState: ratio: {storedHpRatio} -> hp is set to {hp})", Logg.LoggingMode.Completed); 
