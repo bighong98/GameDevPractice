@@ -58,7 +58,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 13787996, guid: 30cf93deff988e74e88a144bd2127c18, type: 3}
       propertyPath: m_RenderingLayerMask
-      value: 5
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 9572094, guid: 30cf93deff988e74e88a144bd2127c18, type: 3}

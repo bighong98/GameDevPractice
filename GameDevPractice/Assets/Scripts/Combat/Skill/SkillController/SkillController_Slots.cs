@@ -6,16 +6,20 @@ using UnityEngine;
 
 namespace TH.Combat
 {
+    // 슬롯 노출 순서 계산 및 변경 알림 파트
     public sealed partial class SkillController
     {
+        // 카테고리 정렬 프로파일 로드 주소 키
         private const string categorySortProfileAddressKey = "SkillCategorySortProfileSO";
 
+        // 슬롯 정렬 상태 초기화 진입점
         private void InitializeSlotOrderingState()
         {
             RebuildCategoryPriorityMap();
             TryLoadCategorySortProfile();
         }
 
+        // 슬롯 인덱스 기준 정렬 스킬 조회
         public bool TryGetOrderedSkillAt(int slotIndex, out SkillTypeSO skill)
         {
             skill = null;
@@ -29,6 +33,7 @@ namespace TH.Combat
             return skill.IsNotNull();
         }
 
+        // 지정 스킬 슬롯 인덱스 역탐색
         public int FindOrderedSkillSlotIndex(SkillTypeSO skill)
         {
             if (skill.IsNull())
@@ -47,6 +52,7 @@ namespace TH.Combat
             return -1;
         }
 
+        // 프리로드 완료 시 슬롯 정렬 상태 재초기화
         private void HandleResourceLabelLoaded(string label)
         {
             if (!string.Equals(label, Constants.PreLoadLabel, StringComparison.Ordinal))
@@ -57,6 +63,7 @@ namespace TH.Combat
             InitializeSlotOrderingState();
         }
 
+        // 카테고리 정렬 프로파일 로드 및 반영
         private void TryLoadCategorySortProfile()
         {
             if (resourceLoader == null || string.IsNullOrWhiteSpace(categorySortProfileAddressKey))
@@ -85,6 +92,7 @@ namespace TH.Combat
             }
         }
 
+        // 최종 사용 가능 스킬 슬롯 정렬 목록 재구축
         private bool RebuildOrderedAvailableSkills(bool notifySlotChanges)
         {
             orderedAvailableSkills.Clear();
@@ -146,6 +154,7 @@ namespace TH.Combat
             return changed;
         }
 
+        // 슬롯 정렬 비교 규칙 적용
         private int CompareSkillsForSlotOrder(SkillTypeSO left, SkillTypeSO right)
         {
             int leftCategoryPriority = GetCategoryPriority(left);
@@ -165,6 +174,7 @@ namespace TH.Combat
             return string.CompareOrdinal(left != null ? left.name : string.Empty, right != null ? right.name : string.Empty);
         }
 
+        // 스킬 카테고리 우선순위 조회
         private int GetCategoryPriority(SkillTypeSO skill)
         {
             SkillCategory category = skill.IsNotNull() ? skill.SkillCategory : SkillCategory.AdditiveSkill;
@@ -176,6 +186,7 @@ namespace TH.Combat
             return ResolveDefaultCategoryPriority(category);
         }
 
+        // 등록 순서 인덱스 조회
         private int ResolveRegisteredOrder(SkillTypeSO skill)
         {
             if (skill.IsNull())
@@ -186,6 +197,7 @@ namespace TH.Combat
             return registeredSkillOrder.TryGetValue(skill, out int index) ? index : int.MaxValue;
         }
 
+        // 카테고리 우선순위 맵 재구축
         private void RebuildCategoryPriorityMap()
         {
             categoryPriorityMap.Clear();
@@ -203,6 +215,7 @@ namespace TH.Combat
             EnsureCategoryPriority(SkillCategory.UltimateSkill);
         }
 
+        // 누락 카테고리 기본 우선순위 보정
         private void EnsureCategoryPriority(SkillCategory category)
         {
             if (!categoryPriorityMap.ContainsKey(category))
@@ -211,6 +224,7 @@ namespace TH.Combat
             }
         }
 
+        // 카테고리 기본 우선순위 계산
         private static int ResolveDefaultCategoryPriority(SkillCategory category)
         {
             return category switch

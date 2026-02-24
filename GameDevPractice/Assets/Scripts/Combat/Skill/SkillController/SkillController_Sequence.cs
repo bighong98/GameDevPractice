@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
@@ -198,6 +198,7 @@ namespace TH.Combat
             return true;
         }
 
+        // 외부 해제 무시 마커 보유 여부 판정
         private bool HasExternalClearIgnoreComboMarkerSkill(SkillTypeSO skill)
         {
             return skill.IsNotNull() &&
@@ -206,11 +207,13 @@ namespace TH.Combat
                    externalClearIgnoreComboMarkerSkill == skill;
         }
 
+        // 외부 해제 무시 정책 적용 여부 계산
         private bool ShouldIgnoreExternalClearByComboPreserveMarker(SkillTypeSO skill)
         {
             return HasExternalClearIgnoreComboMarkerSkill(skill);
         }
 
+        // 외부 해제 무시 마커 설정
         private void MarkExternalClearIgnoreComboMarkerSkill(SkillTypeSO skill)
         {
             if (skill.IsNull() || !skill.PreserveStepWithInterfere)
@@ -221,6 +224,7 @@ namespace TH.Combat
             externalClearIgnoreComboMarkerSkill = skill;
         }
 
+        // 외부 해제 무시 마커 해제
         private void ClearExternalClearIgnoreComboMarkerSkill(SkillTypeSO skill = null)
         {
             if (skill.IsNull() || externalClearIgnoreComboMarkerSkill == skill)

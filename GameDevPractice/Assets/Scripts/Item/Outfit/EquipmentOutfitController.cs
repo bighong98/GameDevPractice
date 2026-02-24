@@ -26,12 +26,28 @@ namespace TH.Item
         [FormerlySerializedAs("autoCollectActiveFallbackPartsInEditor")]
         [SerializeField] private bool autoCollectActiveDefaultKeysInEditor;
 
+        [Header("Outline Cache")]
+        [SerializeField] private bool trackRuntimeOutfitRendererChanges = false;
+        [SerializeField] private List<Renderer> alwaysIncludeRenderers = new();
+        [SerializeField] private bool autoCollectActiveAlwaysIncludeRenderersInEditor;
+        [SerializeField] private bool autoCollectSkipContainedRenderersInEditor = true;
+        [SerializeField, Range(0.01f, 1f)] private float autoCollectContainedVolumeRatioThreshold = 0.9f;
+
         private readonly Dictionary<OutfitPartTypeSO, List<OutfitPartKeyTag>> partsByPartType = new();
         private readonly Dictionary<OutfitPartTypeSO, OutfitKeySO> defaultKeyByPartType = new();
         private readonly Dictionary<OutfitPartTypeSO, OutfitKeySO> equippedKeyByPartType = new();
 
         private bool isInitialized;
         private bool isInitializing;
+
+        private readonly HashSet<Renderer> activeRendererSet = new();
+        private readonly List<Renderer> activeRenderers = new();
+        private readonly HashSet<OutfitPartKeyTag> subscribedOutfitParts = new();
+        private bool activeRendererTopologyDirty = true;
+        private bool activeRendererSelectionDirty = true;
+        private uint activeRendererVersion = 1;
+        private bool hasLoggedFixedCacheSlotChangeWarning;
+
 
         private void Awake()
         {
@@ -40,20 +56,32 @@ namespace TH.Item
 
             if (autoCollectPartsOnAwake && (outfitParts == null || outfitParts.Count == 0))
                 CollectOutfitParts();
+            else
+                RefreshOutfitPartSubscriptions();
 
             ClearVisualState();
+            MarkActiveRendererTopologyDirty();
         }
 
         private void OnEnable()
         {
             if (equipHolder != null)
                 equipHolder.OnSlotChanged += HandleSlotChanged;
+
+            RefreshOutfitPartSubscriptions();
         }
 
         private void OnDisable()
         {
             if (equipHolder != null)
                 equipHolder.OnSlotChanged -= HandleSlotChanged;
+
+            UnsubscribeOutfitPartEvents();
+        }
+
+        private void OnDestroy()
+        {
+            UnsubscribeOutfitPartEvents();
         }
 
         private void Start()
@@ -127,6 +155,8 @@ namespace TH.Item
             }
 
             outfitParts = uniqueParts;
+            RefreshOutfitPartSubscriptions();
+            MarkActiveRendererTopologyDirty();
         }
 
         private async UniTask BuildDefaultKeyCacheAsync(CancellationToken token)
@@ -177,7 +207,32 @@ namespace TH.Item
         {
             if (!isInitialized) return;
 
+            if (!trackRuntimeOutfitRendererChanges && !hasLoggedFixedCacheSlotChangeWarning)
+            {
+                hasLoggedFixedCacheSlotChangeWarning = true;
+                string characterName = gameObject != null ? gameObject.name : "<unknown>";
+                string slotIndexText = slot != null ? slot.Index.ToString() : "<null>";
+                Debug.LogWarning(
+                    $"[{nameof(EquipmentOutfitController)}] Runtime slot change detected while '{nameof(trackRuntimeOutfitRendererChanges)}' is disabled. Character='{characterName}', SlotIndex={slotIndexText}. Active outline renderer cache remains fixed.",
+                    this);
+            }
+
             ApplyAllFromHolder();
+        }
+
+        public bool TryGetActiveOutlineRenderers(out IReadOnlyList<Renderer> renderers, out uint version)
+        {
+            if (!isInitialized)
+            {
+                renderers = Array.Empty<Renderer>();
+                version = activeRendererVersion;
+                return false;
+            }
+
+            EnsureActiveRendererCache();
+            renderers = activeRenderers;
+            version = activeRendererVersion;
+            return activeRenderers.Count > 0;
         }
 
         public void ApplyAllFromHolder()
@@ -219,6 +274,8 @@ namespace TH.Item
 
                 ApplyPartTypeVisual(partType, selectedKey);
             }
+
+            MarkActiveRendererSelectionDirty();
         }
 
         private OutfitKeySO ResolveSelectedKey(OutfitPartTypeSO partType)
@@ -271,6 +328,7 @@ namespace TH.Item
         {
             processedVisualObjects.Clear();
             DisablePartObjects(outfitParts, processedVisualObjects);
+            MarkActiveRendererSelectionDirty();
         }
 
         private static void DisablePartObjects(IEnumerable<OutfitPartKeyTag> parts, ISet<GameObject> processedObjects)
@@ -293,7 +351,108 @@ namespace TH.Item
         private void CollectOutfitParts()
         {
             outfitParts = new List<OutfitPartKeyTag>(GetComponentsInChildren<OutfitPartKeyTag>(true));
+            RefreshOutfitPartSubscriptions();
+            MarkActiveRendererTopologyDirty();
         }
+
+        private void HandleOutfitPartRenderersChanged(OutfitPartKeyTag _)
+        {
+            MarkActiveRendererTopologyDirty();
+        }
+
+        private void RefreshOutfitPartSubscriptions()
+        {
+            UnsubscribeOutfitPartEvents();
+            if (!trackRuntimeOutfitRendererChanges || outfitParts == null)
+                return;
+
+            foreach (var part in outfitParts)
+            {
+                if (part == null || !subscribedOutfitParts.Add(part))
+                    continue;
+
+                part.RenderersChanged += HandleOutfitPartRenderersChanged;
+            }
+
+            MarkActiveRendererTopologyDirty();
+        }
+
+        private void UnsubscribeOutfitPartEvents()
+        {
+            if (subscribedOutfitParts.Count == 0)
+                return;
+
+            foreach (var part in subscribedOutfitParts)
+            {
+                if (part == null)
+                    continue;
+
+                part.RenderersChanged -= HandleOutfitPartRenderersChanged;
+            }
+
+            subscribedOutfitParts.Clear();
+        }
+
+        private void MarkActiveRendererTopologyDirty()
+        {
+            if (!trackRuntimeOutfitRendererChanges && isInitialized)
+                return;
+
+            activeRendererTopologyDirty = true;
+        }
+
+        private void MarkActiveRendererSelectionDirty()
+        {
+            if (!trackRuntimeOutfitRendererChanges && isInitialized)
+                return;
+
+            activeRendererSelectionDirty = true;
+        }
+
+        private void EnsureActiveRendererCache()
+        {
+            if (!activeRendererTopologyDirty && !activeRendererSelectionDirty)
+                return;
+
+            RebuildActiveRendererCache();
+        }
+
+        private void RebuildActiveRendererCache()
+        {
+            activeRendererSet.Clear();
+            activeRenderers.Clear();
+
+            if (outfitParts != null)
+            {
+                foreach (var part in outfitParts)
+                {
+                    if (part == null)
+                        continue;
+
+                    var renderers = part.GetCachedRenderersForRuntime();
+                    if (renderers == null || renderers.Length == 0)
+                        continue;
+
+                    foreach (var renderer in renderers)
+                    {
+                        AddRendererToActiveCache(renderer);
+                    }
+                }
+            }
+
+            if (alwaysIncludeRenderers != null)
+            {
+                foreach (var renderer in alwaysIncludeRenderers)
+                {
+                    AddRendererToActiveCache(renderer);
+                }
+            }
+
+            activeRendererTopologyDirty = false;
+            activeRendererSelectionDirty = false;
+            activeRendererVersion++;
+        }
+
 
         #region Validation (Editor Only)
 
@@ -309,6 +468,9 @@ namespace TH.Item
 
             if (autoCollectActiveDefaultKeysInEditor)
                 CollectActiveDefaultKeysInEditor();
+
+            if (autoCollectActiveAlwaysIncludeRenderersInEditor)
+                CollectActiveAlwaysIncludeRenderersInEditor();
 
             ValidateRequiredPartTypesInEditor();
         }
@@ -366,6 +528,117 @@ namespace TH.Item
             autoCollectActiveDefaultKeysInEditor = false;
             EditorUtility.SetDirty(this);
         }
+
+        private void CollectActiveAlwaysIncludeRenderersInEditor()
+        {
+            var renderers = GetComponentsInChildren<Renderer>(true);
+            var activeMeshRenderers = new List<Renderer>(renderers.Length);
+
+            foreach (var renderer in renderers)
+            {
+                if (!IsActiveMeshRendererForOutlineAutoCollect(renderer))
+                    continue;
+
+                activeMeshRenderers.Add(renderer);
+            }
+
+            var collected = new List<Renderer>(alwaysIncludeRenderers != null ? alwaysIncludeRenderers.Count : 0);
+            var seen = new HashSet<Renderer>();
+
+            if (alwaysIncludeRenderers != null)
+            {
+                foreach (var existingRenderer in alwaysIncludeRenderers)
+                {
+                    if (existingRenderer == null || !seen.Add(existingRenderer))
+                        continue;
+
+                    collected.Add(existingRenderer);
+                }
+            }
+
+            int addedCount = 0;
+            int skippedContainedCount = 0;
+
+            foreach (var renderer in activeMeshRenderers)
+            {
+                if (renderer.GetComponent<OutfitPartKeyTag>() != null)
+                    continue;
+
+                if (autoCollectSkipContainedRenderersInEditor && IsContainedRendererForOutlineAutoCollect(renderer, activeMeshRenderers))
+                {
+                    skippedContainedCount++;
+                    continue;
+                }
+
+                if (!seen.Add(renderer))
+                    continue;
+
+                collected.Add(renderer);
+                addedCount++;
+            }
+
+            alwaysIncludeRenderers = collected;
+            autoCollectActiveAlwaysIncludeRenderersInEditor = false;
+            EditorUtility.SetDirty(this);
+
+            Debug.Log(
+                $"[{nameof(EquipmentOutfitController)}] Auto-collected {addedCount} renderer(s) into '{nameof(alwaysIncludeRenderers)}' and skipped {skippedContainedCount} contained renderer(s).",
+                this);
+        }
+
+        private bool IsActiveMeshRendererForOutlineAutoCollect(Renderer renderer)
+        {
+            if (renderer == null || renderer.gameObject == null)
+                return false;
+
+            if (renderer is not MeshRenderer && renderer is not SkinnedMeshRenderer)
+                return false;
+
+            if (!renderer.enabled || !renderer.gameObject.activeInHierarchy)
+                return false;
+
+            return true;
+        }
+
+        private bool IsContainedRendererForOutlineAutoCollect(Renderer candidate, List<Renderer> activeMeshRenderers)
+        {
+            if (candidate == null || activeMeshRenderers == null || activeMeshRenderers.Count <= 1)
+                return false;
+
+            var candidateBounds = candidate.bounds;
+            var candidateVolume = GetBoundsVolume(candidateBounds);
+
+            for (int i = 0; i < activeMeshRenderers.Count; i++)
+            {
+                var other = activeMeshRenderers[i];
+                if (other == null || ReferenceEquals(other, candidate))
+                    continue;
+
+                var otherBounds = other.bounds;
+                if (!otherBounds.Contains(candidateBounds.min) || !otherBounds.Contains(candidateBounds.max))
+                    continue;
+
+                var otherVolume = GetBoundsVolume(otherBounds);
+                if (otherVolume <= 0f)
+                    continue;
+
+                if (candidateVolume <= 0f)
+                    return true;
+
+                var ratio = candidateVolume / otherVolume;
+                if (ratio <= autoCollectContainedVolumeRatioThreshold)
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static float GetBoundsVolume(Bounds bounds)
+        {
+            var size = bounds.size;
+            return Mathf.Abs(size.x * size.y * size.z);
+        }
+
 
         private void ValidateRequiredPartTypesInEditor()
         {
@@ -462,7 +735,15 @@ namespace TH.Item
         }
 #endif
         #endregion
-    
+
+        private void AddRendererToActiveCache(Renderer renderer)
+        {
+            if (renderer == null || !renderer.enabled || !renderer.gameObject.activeInHierarchy)
+                return;
+
+            if (activeRendererSet.Add(renderer))
+                activeRenderers.Add(renderer);
+        }
     }
 
     [Serializable]

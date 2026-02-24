@@ -65,29 +65,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bbd6e526a1bb489a8df34cbfcfca6bfc, type: 3}
-  m_Name: OutlineRenderFeature
-  m_EditorClassIdentifier: Assembly-CSharp::Xenon.OutlineRenderFeature
+  m_Script: {fileID: 11500000, guid: 312420e7960934bbaa47d364e225cd0c, type: 3}
+  m_Name: FreeOutline
+  m_EditorClassIdentifier: 
   m_Active: 1
-  FeatureSettings:
-    RenderPassEvent: 550
-    LayerMask:
-      serializedVersion: 2
-      m_Bits: 65536
-    RenderingLayerMask:
-      serializedVersion: 0
-      m_Bits: 4
-    OverrideMaterial: {fileID: 2100000, guid: 7dabe7602e584d6429b3e595f6f67c2a, type: 2}
-    BlitMaterial: {fileID: 2100000, guid: 28090b8780ebbd843b97e2cfb5ec583f, type: 2}
-    ClearDepth: 0
-  MaterialSettings:
-    OutlineScale: 0.5
-    RobertsCrossMultiplier: 100
-    DepthThreshold: 10
-    NormalThreshold: 1.04
-    SteepAngleThreshold: 0.2
-    SteepAngleMultiplier: 25
-    OutlineColor: {r: 1, g: 0, b: 0, a: 1}
+  settings: {fileID: 11400000, guid: 8a660c90656fb4f4fbb0d2e96b66d5ab, type: 2}
+  shaders:
+    mask: {fileID: 4800000, guid: 19ae7b440d27f4f9990007afdc74ddaf, type: 3}
+    outline: {fileID: 4800000, guid: fb375234a1509436fa2a7d37f08912f8, type: 3}
+    clear: {fileID: 4800000, guid: b854aa374420b4b47992044f7c9a0719, type: 3}
 --- !u!114 &7833122117494664109
 MonoBehaviour:
   m_ObjectHideFlags: 0

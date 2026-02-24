@@ -55,11 +55,17 @@ namespace TH.Combat
 
         // 스킬별 콤보 진행 컨텍스트 맵
         private readonly Dictionary<SkillTypeSO, ComboContext> comboContexts = new();
+        // 제공자 우선순위 반영 최종 사용 가능 스킬 목록
         private readonly List<SkillTypeSO> effectiveAvailableSkills = new();
+        // 최종 사용 가능 스킬 중복 판별 집합
         private readonly HashSet<SkillTypeSO> effectiveAvailableSkillSet = new();
+        // 카테고리별 대표 스킬 선정 결과 맵
         private readonly Dictionary<SkillCategory, SkillTypeSO> categoryWinnerByType = new();
+        // 카테고리 대표 스킬 원본 인덱스 캐시
         private readonly Dictionary<SkillCategory, int> categoryWinnerRawIndexByType = new();
+        // 카테고리 대표 스킬 제공자 우선순위 캐시
         private readonly Dictionary<SkillCategory, int> categoryWinnerProviderPriorityByType = new();
+        // 제공자 식별자별 우선순위 맵
         private readonly Dictionary<string, int> providerPriorityMap = new(StringComparer.Ordinal);
         // 정렬 전 사용 가능 스킬 목록
         private readonly List<SkillTypeSO> orderedAvailableSkills = new();

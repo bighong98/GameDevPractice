@@ -1,10 +1,13 @@
 using UnityEngine;
+using System.Collections.Generic;
 using UnityEngine.AI;
 using TH.Utils;
 using TH.Control.Movement;
 using TH.Core;
 using TH.Core.Service;
 using TH.Combat;
+
+using TH.Item;
 using TH.Attribute;
 
 
@@ -16,10 +19,11 @@ namespace TH.Control
     {
         [SerializeField] private Camera _camera;
         [SerializeField] private bool _enableInteractionOutline = true;
+        [SerializeField] private uint _interactionOutlineRenderingLayerMask = 1u << 2;
 
         private GameObject _outlinedTarget;
-        private Renderer _outlinedRenderer;
-        private int _outlinedOriginalLayer = -1;
+        private readonly List<Renderer> _outlinedRenderers = new();
+        private readonly List<uint> _outlinedOriginalRenderingLayerMasks = new();
         
         private IMover mover;
         private IFighter fighter;
@@ -69,6 +73,8 @@ namespace TH.Control
 
             if (fighter.IsNotNull())
                 fighter.OnTargetSet -= OnFighterTargetSet;
+
+            ClearInteractionOutline();
         }
 
         private void Update()
@@ -192,7 +198,7 @@ namespace TH.Control
         
         private void SetInteractionOutline(GameObject target)
         {
-            if (!_enableInteractionOutline)
+            if (!_enableInteractionOutline || _interactionOutlineRenderingLayerMask == 0)
             {
                 ClearInteractionOutline();
                 return;
@@ -205,45 +211,74 @@ namespace TH.Control
 
             if (_outlinedTarget == null) return;
 
+            if (TryGetOutfitOutlineRenderers(_outlinedTarget, out var outfitRenderers))
+            {
+                ApplyInteractionOutline(outfitRenderers);
+                return;
+            }
+
             var renderers = _outlinedTarget.GetComponentsInChildren<Renderer>(false);
             if (renderers == null || renderers.Length == 0) return;
 
-            SkinnedMeshRenderer skinnedRenderer = null;
-            Renderer meshRenderer = null;
+            ApplyInteractionOutline(renderers);
+        }
+
+        private void ApplyInteractionOutline(IEnumerable<Renderer> renderers)
+        {
             foreach (var renderer in renderers)
             {
-                if (renderer is SkinnedMeshRenderer skinned)
+                if (renderer == null)
                 {
-                    skinnedRenderer ??= skinned;
                     continue;
                 }
 
-                if (renderer is MeshRenderer)
-                {
-                    meshRenderer ??= renderer;
-                }
+                _outlinedRenderers.Add(renderer);
+                _outlinedOriginalRenderingLayerMasks.Add(renderer.renderingLayerMask);
+                renderer.renderingLayerMask |= _interactionOutlineRenderingLayerMask;
+            }
+        }
+
+        private static bool TryGetOutfitOutlineRenderers(GameObject target, out IReadOnlyList<Renderer> renderers)
+        {
+            renderers = null;
+            if (target == null)
+            {
+                return false;
             }
 
-            var targetRenderer = (Renderer)skinnedRenderer ?? meshRenderer;
-            if (targetRenderer == null) return;
+            if (!target.TryGetComponent<EquipmentOutfitController>(out var outfitController))
+            {
+                outfitController = target.GetComponentInParent<EquipmentOutfitController>();
+            }
 
-            int outlineLayer = LayerMask.NameToLayer("Outline");
-            if (outlineLayer < 0) return;
+            if (outfitController == null)
+            {
+                return false;
+            }
 
-            _outlinedRenderer = targetRenderer;
-            _outlinedOriginalLayer = targetRenderer.gameObject.layer;
-            targetRenderer.gameObject.layer = outlineLayer;
+            return outfitController.TryGetActiveOutlineRenderers(out renderers, out _);
         }
+
+
+
+
+
 
         private void ClearInteractionOutline()
         {
-            if (_outlinedRenderer != null)
+            for (int i = 0; i < _outlinedRenderers.Count; i++)
             {
-                _outlinedRenderer.gameObject.layer = _outlinedOriginalLayer;
+                var renderer = _outlinedRenderers[i];
+                if (renderer == null)
+                {
+                    continue;
+                }
+
+                renderer.renderingLayerMask = _outlinedOriginalRenderingLayerMasks[i];
             }
 
-            _outlinedRenderer = null;
-            _outlinedOriginalLayer = -1;
+            _outlinedRenderers.Clear();
+            _outlinedOriginalRenderingLayerMasks.Clear();
             _outlinedTarget = null;
         }
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
@@ -398,6 +398,7 @@ namespace TH.Combat
                 return false;
             }
 
+            // 빈 provider 식별자 레거시 키 정규화
             private static string ResolveProviderId(string providerId)
             {
                 return string.IsNullOrWhiteSpace(providerId) ? LegacyProviderId : providerId.Trim();

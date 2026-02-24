@@ -72,6 +72,10 @@ PrefabInstance:
       propertyPath: avatarAnchorProvider
       value: 
       objectReference: {fileID: 6969385209120220262}
+    - target: {fileID: 4962896568811172882, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}
+      propertyPath: m_RenderingLayerMask
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

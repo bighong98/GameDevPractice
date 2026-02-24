@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
@@ -73,6 +73,7 @@ namespace TH.Combat
 
         [Conditional("UNITY_EDITOR")]
         [Conditional("DEVELOPMENT_BUILD")]
+        // 스킬 소비 단계별 상태 로그 기록
         private void LogConsumeState(
             string stage,
             SkillTypeSO baseSkill = null,
@@ -103,6 +104,7 @@ namespace TH.Combat
 
         [Conditional("UNITY_EDITOR")]
         [Conditional("DEVELOPMENT_BUILD")]
+        // 보류 공격 실행 단계 상태 로그 기록
         private void LogPendingExecuteState(string stage, SkillTypeSO skill, int attackInstanceId, Health target)
         {
             string ownerName = gameObject != null ? gameObject.name : "null";
@@ -123,6 +125,7 @@ namespace TH.Combat
 
         [Conditional("UNITY_EDITOR")]
         [Conditional("DEVELOPMENT_BUILD")]
+        // 보류 공격 취소 사유 상태 로그 기록
         private void LogPendingCancelState(PendingCancelReason reason)
         {
             string ownerName = gameObject != null ? gameObject.name : "null";
@@ -244,6 +247,7 @@ namespace TH.Combat
             return false;
         }
 
+        // 실행 완료 후 활성 스킬 정책 적용
         private bool ApplyPostExecutionActiveSkillPolicy(SkillTypeSO baseSkill)
         {
             if (baseSkill.IsNull() || !HasActiveSkill || skillBook == null || skillBook.ActiveSkill != baseSkill)
@@ -267,6 +271,7 @@ namespace TH.Combat
             };
         }
 
+        // 외부 요청 기반 오래된 보류 공격 취소
         public bool TryCancelPendingAttackIfStale()
         {
             if (!hasPendingAttack)
@@ -311,6 +316,7 @@ namespace TH.Combat
             return anyExecuted;
         }
 
+        // 단일 스킬 실행 경로 분기 처리
         private bool TryExecuteSingleSkill(SkillTypeSO skill, Health target, float timingScale, int attackInstanceId)
         {
             if (skill.IsNull())

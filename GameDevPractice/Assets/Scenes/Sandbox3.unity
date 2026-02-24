@@ -637,6 +637,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4607489187838822, guid: 00e2e59cbc04eab4a982218df54ce70b, type: 3}
   m_PrefabInstance: {fileID: 39177261}
   m_PrefabAsset: {fileID: 0}
+--- !u!137 &41393229 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 1287575041901510335, guid: c9a6d3168ebf73a4c95e8559b4f44caf, type: 3}
+  m_PrefabInstance: {fileID: 1617791750}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &45294213
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -9790,6 +9795,11 @@ PrefabInstance:
 Transform:
   m_CorrespondingSourceObject: {fileID: 4202130902894980, guid: 6910e2407cd484a42a0c2598114751a0, type: 3}
   m_PrefabInstance: {fileID: 718082335}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &728536955 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 1416571744691945642, guid: c9a6d3168ebf73a4c95e8559b4f44caf, type: 3}
+  m_PrefabInstance: {fileID: 1617791750}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &737206809
 PrefabInstance:
@@ -20504,7 +20514,35 @@ PrefabInstance:
       value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 5724733626895847991, guid: c9a6d3168ebf73a4c95e8559b4f44caf, type: 3}
+      propertyPath: alwaysIncludeRenderers.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5724733626895847991, guid: c9a6d3168ebf73a4c95e8559b4f44caf, type: 3}
+      propertyPath: 'alwaysIncludeRenderers.Array.data[0]'
+      value: 
+      objectReference: {fileID: 41393229}
+    - target: {fileID: 5724733626895847991, guid: c9a6d3168ebf73a4c95e8559b4f44caf, type: 3}
+      propertyPath: 'alwaysIncludeRenderers.Array.data[1]'
+      value: 
+      objectReference: {fileID: 728536955}
+    - target: {fileID: 5724733626895847991, guid: c9a6d3168ebf73a4c95e8559b4f44caf, type: 3}
+      propertyPath: 'alwaysIncludeRenderers.Array.data[2]'
+      value: 
+      objectReference: {fileID: 41393229}
+    - target: {fileID: 5724733626895847991, guid: c9a6d3168ebf73a4c95e8559b4f44caf, type: 3}
+      propertyPath: 'alwaysIncludeRenderers.Array.data[3]'
+      value: 
+      objectReference: {fileID: 728536955}
+    - target: {fileID: 5724733626895847991, guid: c9a6d3168ebf73a4c95e8559b4f44caf, type: 3}
+      propertyPath: 'alwaysIncludeRenderers.Array.data[4]'
+      value: 
+      objectReference: {fileID: 728536955}
+    - target: {fileID: 5724733626895847991, guid: c9a6d3168ebf73a4c95e8559b4f44caf, type: 3}
       propertyPath: autoCollectActiveDefaultKeysInEditor
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5724733626895847991, guid: c9a6d3168ebf73a4c95e8559b4f44caf, type: 3}
+      propertyPath: autoCollectActiveAlwaysIncludeRenderersInEditor
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5724733626895847991, guid: c9a6d3168ebf73a4c95e8559b4f44caf, type: 3}

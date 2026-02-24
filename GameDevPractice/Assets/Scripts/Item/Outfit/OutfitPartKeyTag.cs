@@ -19,6 +19,8 @@ namespace TH.Item
 
         [NonSerialized] private OutfitKeySO resolvedKey;
         [NonSerialized] private bool isInitialized;
+        
+        public event Action<OutfitPartKeyTag> RenderersChanged;
         [NonSerialized] private Renderer[] cachedRenderers;
 
         public bool HasResolvedKey => resolvedKey != null;
@@ -32,6 +34,7 @@ namespace TH.Item
         private void OnTransformChildrenChanged()
         {
             cachedRenderers = null;
+            RenderersChanged?.Invoke(this);
         }
 
         public async UniTask InitializeAsync(CancellationToken token = default)
@@ -56,6 +59,12 @@ namespace TH.Item
                 renderer.enabled = visible;
             }
         }
+
+        public Renderer[] GetCachedRenderersForRuntime()
+        {
+            return GetRenderers();
+        }
+
 
         public bool IsMatch(OutfitKeySO other)
         {

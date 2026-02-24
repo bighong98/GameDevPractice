@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
@@ -16,10 +16,15 @@ namespace TH.Combat
     // 스킬 등록/활성/쿨다운 조회 책임 파트
     public sealed partial class SkillController
     {
+        // 비무장 기본 무기 로드 주소 키
         private const string unarmedFallbackWeaponAddressKey = "Unarmed.asset";
+        // 수동 등록 스킬 제공자 식별자
         private const string legacySkillProviderId = "legacy.manual";
+        // 현재 장착 무기 스킬 제공자 식별자
         private const string equippedWeaponSkillProviderId = "equipment.weapon.current";
+        // 수동 등록 제공자 기본 우선순위
         private const int defaultLegacyProviderPriority = 100;
+        // 장착 무기 제공자 기본 우선순위
         private const int defaultEquippedWeaponProviderPriority = 300;
 
         // 스킬 등록 + 쿨다운 추적기 연동 처리
@@ -112,6 +117,7 @@ namespace TH.Combat
             return true;
         }
 
+        // 제공자별 노출 우선순위 수동 조정
         public void SetSkillProviderPriority(string providerId, int priority)
         {
             if (string.IsNullOrWhiteSpace(providerId))
@@ -130,6 +136,7 @@ namespace TH.Combat
             SyncAvailableSkillSet(forceNotify: true);
         }
 
+        // 제공자 우선순위 맵 기본값 초기화
         private void InitializeProviderPriorityMap()
         {
             providerPriorityMap.Clear();
@@ -137,6 +144,7 @@ namespace TH.Combat
             providerPriorityMap[legacySkillProviderId] = defaultLegacyProviderPriority;
         }
 
+        // 제공자 식별자 기준 우선순위 조회
         private int ResolveProviderPriority(string providerId)
         {
             if (string.IsNullOrWhiteSpace(providerId))
@@ -148,6 +156,7 @@ namespace TH.Combat
             return providerPriorityMap.TryGetValue(resolvedProviderId, out int priority) ? priority : 0;
         }
 
+        // 스킬 노출 중 최고 제공자 우선순위 계산
         private int ResolveBestAvailableProviderPriority(SkillTypeSO skill)
         {
             if (skillBook == null || skill.IsNull())
@@ -158,6 +167,7 @@ namespace TH.Combat
             return skillBook.GetMaxAvailableProviderPriority(skill, ResolveProviderPriority);
         }
 
+        // 카테고리 중복 제거 반영 최종 사용 가능 목록 재구축
         private bool RebuildEffectiveAvailableSkills()
         {
             if (skillBook == null)
@@ -248,6 +258,7 @@ namespace TH.Combat
             return false;
         }
 
+        // 카테고리 대표 스킬 교체 판정
         private static bool ShouldReplaceCategoryWinner(
             SkillTypeSO currentWinner,
             int currentWinnerProviderPriority,
@@ -271,6 +282,7 @@ namespace TH.Combat
                        currentWinner.IsNotNull() ? currentWinner.name : string.Empty) > 0;
         }
 
+        // 최종 사용 가능 목록 포함 여부 조회
         private bool ContainsEffectiveAvailableSkill(SkillTypeSO skill)
         {
             return skill.IsNotNull() && effectiveAvailableSkillSet.Contains(skill);
@@ -314,6 +326,7 @@ namespace TH.Combat
             return changed;
         }
 
+        // 외부 요청 기반 활성 스킬 해제 시도
         public bool TryClearActiveSkill(bool respectComboPreserveMarker = false)
         {
             return ClearActiveSkill(
@@ -390,6 +403,7 @@ namespace TH.Combat
             return HasActiveSkill && skillBook.ActiveSkill == requestedSkill;
         }
 
+        // 기본 정책 기반 활성 스킬 해제 경로
         private bool ClearActiveSkill()
         {
             return ClearActiveSkill(
@@ -449,6 +463,7 @@ namespace TH.Combat
             return true;
         }
 
+        // 재활성화 시 콤보 진행 유지 여부 판정
         private bool ShouldPreserveComboProgressOnActivation(SkillTypeSO skill)
         {
             if (skill.IsNull())
@@ -467,11 +482,13 @@ namespace TH.Combat
             return shouldPreserve;
         }
 
+        // 다음 활성화까지 콤보 유지 대상 기록
         private void MarkPreservedComboProgressSkill(SkillTypeSO skill)
         {
             preservedComboProgressSkill = skill;
         }
 
+        // 콤보 유지 대상 마커 해제
         private void ClearPreservedComboProgressSkill(SkillTypeSO skill = null)
         {
             if (skill.IsNull() || preservedComboProgressSkill == skill)
@@ -556,6 +573,7 @@ namespace TH.Combat
             return ClearActiveSkill();
         }
 
+        // 카테고리 기준 사용 가능 스킬 역순 탐색
         private bool TryGetAvailableSkillByCategory(SkillCategory category, out SkillTypeSO skill)
         {
             skill = null;
@@ -580,6 +598,7 @@ namespace TH.Combat
             return false;
         }
 
+        // 기본 무기 기반 베이직 스킬 해석
         private bool TryResolveDefaultWeaponBasicSkill(out SkillTypeSO basicSkill)
         {
             basicSkill = null;
@@ -599,6 +618,7 @@ namespace TH.Combat
             return TryGetBasicSkillFromWeapon(unarmedWeapon, out basicSkill);
         }
 
+        // 무기 스킬 목록에서 베이직 스킬 추출
         private static bool TryGetBasicSkillFromWeapon(WeaponTypeSO weapon, out SkillTypeSO basicSkill)
         {
             basicSkill = null;
