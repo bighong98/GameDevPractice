@@ -246,17 +246,18 @@ public sealed class ActiveSkillSlotController : MonoBehaviour
         if (slotIndex < 0 || slotIndex >= panel.SlotCount)
             return;
 
-        if (!TryGetBaseSkillBySlot(slotIndex, out var baseSkill))
+        if (!TryGetGameSkillBySlot(slotIndex, out var gameSkill))
         {
             UpdateDisplayedSkillSnapshot(slotIndex, null);
             panel.ClearSlot(slotIndex);
             return;
         }
 
+        SkillTypeSO baseSkill = gameSkill.Definition;
         SkillTypeSO displaySkill = ResolveDisplaySkill(baseSkill);
         DrawSkillWithChangeHighlight(slotIndex, displaySkill, allowHighlight);
-        DrawCooldown(slotIndex, baseSkill);
-        DrawSequenceTimeout(slotIndex, baseSkill);
+        DrawCooldown(slotIndex, gameSkill);
+        DrawSequenceTimeout(slotIndex, gameSkill);
     }
 
     private void TryBindSkillControllerFromPlayerHolder()
@@ -308,7 +309,7 @@ public sealed class ActiveSkillSlotController : MonoBehaviour
         if (panel != null && slotIndex >= panel.SlotCount)
             return;
 
-        if (!skillController.TryGetOrderedSkillAt(slotIndex, out var skill) || skill == null)
+        if (!TryGetGameSkillBySlot(slotIndex, out var skill) || skill.IsNull())
             return;
 
         skillController.SetActiveSkill(skill);
@@ -406,10 +407,10 @@ public sealed class ActiveSkillSlotController : MonoBehaviour
         if (panel == null || skillController == null)
             return;
 
-        int count = Mathf.Min(panel.SlotCount, skillController.OrderedAvailableSkills.Count);
+        int count = Mathf.Min(panel.SlotCount, skillController.OrderedAvailableGameSkills.Count);
         for (int i = 0; i < count; i++)
         {
-            if (!TryGetBaseSkillBySlot(i, out var skill))
+            if (!TryGetGameSkillBySlot(i, out var skill))
             {
                 UpdateDisplayedSkillSnapshot(i, null);
                 panel.ClearSlot(i);
@@ -421,18 +422,18 @@ public sealed class ActiveSkillSlotController : MonoBehaviour
         }
     }
 
-    private void DrawCooldown(int slotIndex, SkillTypeSO skill)
+    private void DrawCooldown(int slotIndex, IGameSkill skill)
     {
-        if (panel == null || skillController == null || skill == null)
+        if (panel == null || skillController == null || skill.IsNull())
             return;
 
         float remainingCooldown = skillController.GetRemainingCooldown(skill);
         panel.DrawCooldown(slotIndex, remainingCooldown, skill.Cooldown);
     }
 
-    private void DrawSequenceTimeout(int slotIndex, SkillTypeSO skill)
+    private void DrawSequenceTimeout(int slotIndex, IGameSkill skill)
     {
-        if (panel == null || skillController == null || skill == null)
+        if (panel == null || skillController == null || skill.IsNull())
             return;
 
         if (skillController.TryGetActiveSequenceTimeout(skill, out var remainingTimeout, out var totalTimeout))
@@ -450,8 +451,11 @@ public sealed class ActiveSkillSlotController : MonoBehaviour
         if (slotIndex < 0)
             return;
 
-        DrawCooldown(slotIndex, skill);
-        DrawSequenceTimeout(slotIndex, skill);
+        if (!TryGetGameSkillBySlot(slotIndex, out var gameSkill))
+            return;
+
+        DrawCooldown(slotIndex, gameSkill);
+        DrawSequenceTimeout(slotIndex, gameSkill);
     }
 
     private int FindSkillSlotIndex(SkillTypeSO skill)
@@ -459,24 +463,46 @@ public sealed class ActiveSkillSlotController : MonoBehaviour
         if (skill == null || panel == null || skillController == null)
             return -1;
 
-        int slotIndex = skillController.FindOrderedSkillSlotIndex(skill);
-        if (slotIndex < 0 || slotIndex >= panel.SlotCount)
-            return -1;
+        var orderedGameSkills = skillController.OrderedAvailableGameSkills;
+        int count = Mathf.Min(panel.SlotCount, orderedGameSkills.Count);
+        for (int i = 0; i < count; i++)
+        {
+            var gameSkill = orderedGameSkills[i];
+            if (gameSkill.IsNotNull() && gameSkill.Definition == skill)
+            {
+                return i;
+            }
+        }
 
-        return slotIndex;
+        return -1;
     }
 
     private bool TryGetBaseSkillBySlot(int slotIndex, out SkillTypeSO baseSkill)
     {
         baseSkill = null;
 
+        if (!TryGetGameSkillBySlot(slotIndex, out var gameSkill))
+            return false;
+
+        baseSkill = gameSkill.Definition;
+        return baseSkill != null;
+    }
+
+    private bool TryGetGameSkillBySlot(int slotIndex, out IGameSkill gameSkill)
+    {
+        gameSkill = null;
+
         if (skillController == null || panel == null)
             return false;
         if (slotIndex < 0 || slotIndex >= panel.SlotCount)
             return false;
 
-        return skillController.TryGetOrderedSkillAt(slotIndex, out baseSkill);
+        if (!skillController.TryGetOrderedGameSkillAt(slotIndex, out gameSkill))
+            return false;
+
+        return gameSkill.IsNotNull();
     }
+
 
     private SkillTypeSO ResolveDisplaySkill(SkillTypeSO baseSkill)
     {
@@ -557,14 +583,18 @@ public sealed class ActiveSkillSlotController : MonoBehaviour
         if (panel == null || skillController == null || !skillController.HasActiveSkill)
             return;
 
-        int activeSlotIndex = FindSkillSlotIndex(skillController.ActiveSkill);
+        IGameSkill activeGameSkill = skillController.ActiveGameSkill;
+        if (activeGameSkill.IsNull())
+            return;
+
+        int activeSlotIndex = FindSkillSlotIndex(activeGameSkill.Definition);
         if (activeSlotIndex < 0)
             return;
 
-        SkillTypeSO displaySkill = ResolveDisplaySkill(skillController.ActiveSkill);
+        SkillTypeSO displaySkill = ResolveDisplaySkill(activeGameSkill.Definition);
         DrawSkillWithChangeHighlight(activeSlotIndex, displaySkill, allowHighlight: hasDisplaySkillSnapshot);
-        DrawCooldown(activeSlotIndex, skillController.ActiveSkill);
-        DrawSequenceTimeout(activeSlotIndex, skillController.ActiveSkill);
+        DrawCooldown(activeSlotIndex, activeGameSkill);
+        DrawSequenceTimeout(activeSlotIndex, activeGameSkill);
         RefreshActiveSkillHighlight();
         RefreshHoveredTooltip();
     }

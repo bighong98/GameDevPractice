@@ -19,6 +19,7 @@ namespace TH.Combat
         // 활성 스킬 콤보 타임아웃 조회
         public bool TryGetActiveSequenceTimeout(SkillTypeSO skill, out float remainingTimeout, out float totalTimeout)
         {
+            WarnLegacySkillTypePath("TryGetActiveSequenceTimeout(SkillTypeSO,float,float)");
             remainingTimeout = 0f;
             totalTimeout = 0f;
 

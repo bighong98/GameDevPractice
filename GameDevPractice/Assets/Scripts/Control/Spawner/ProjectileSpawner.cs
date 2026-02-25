@@ -34,7 +34,7 @@ public class ProjectileSpawner : Spawner<AttackProjectile>, ISkillProjectileExec
 
     public void InitializeProjectileSpawner(IAttacker owner, SkillTypeSO skillTypeSO, AttackSource attackSource)
     {
-        ApplyProjectileSkillOptions(skillTypeSO);
+        ApplyProjectileSkillOptions(skillTypeSO.IsNotNull() ? new GameSkill(skillTypeSO) : null);
         combatSystem ??= ServiceLocator.Get<ICombatSystem>();
 
         if (owner is not { } shootingWeaponOwner)
@@ -68,7 +68,7 @@ public class ProjectileSpawner : Spawner<AttackProjectile>, ISkillProjectileExec
         };
     }
 
-    public bool TryExecuteProjectile(in AttackSource attackSource, Health target, SkillTypeSO skill)
+    public bool TryExecuteProjectile(in AttackSource attackSource, Health target, IGameSkill skill)
     {
         if (skill.IsNull() || !skill.HasProjectile || skill.ProjectilePrefab.IsNull())
         {
@@ -78,7 +78,7 @@ public class ProjectileSpawner : Spawner<AttackProjectile>, ISkillProjectileExec
         var ownerComponent = currentOwner as Component;
         string ownerName = ownerComponent != null ? ownerComponent.name : "null";
         string targetName = target != null ? target.name : "null";
-        string skillName = skill != null ? skill.name : "null";
+        string skillName = skill != null ? skill.Name : "null";
 
         this.Log(
             $"[{nameof(ProjectileSpawner)}.{nameof(TryExecuteProjectile)}] owner={ownerName}, frame={Time.frameCount}, time={Time.time:0.000}, " +
@@ -103,7 +103,7 @@ public class ProjectileSpawner : Spawner<AttackProjectile>, ISkillProjectileExec
         return shot;
     }
 
-    private bool EnsurePoolForSkill(SkillTypeSO skill)
+    private bool EnsurePoolForSkill(IGameSkill skill)
     {
         if (skill.IsNull() || skill.ProjectilePrefab.IsNull())
         {
@@ -180,7 +180,7 @@ public class ProjectileSpawner : Spawner<AttackProjectile>, ISkillProjectileExec
         hasTarget = target != null;
     }
 
-    private void ApplyProjectileSkillOptions(SkillTypeSO skill)
+    private void ApplyProjectileSkillOptions(IGameSkill skill)
     {
         if (skill.IsNull())
         {

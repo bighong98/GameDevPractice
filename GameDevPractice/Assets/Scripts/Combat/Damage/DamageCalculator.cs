@@ -34,6 +34,8 @@ namespace TH.Combat
                     hitRequest.AttackInstanceId,
                     resolvedHitDamages,
                     hitRequest.Skill,
+                    hitRequest.RuntimeSkill,
+                    hitRequest.SkillRuntimeId,
                     hitRequest.HitPoint,
                     hitRequest.HasHitPoint);
             }
@@ -49,6 +51,8 @@ namespace TH.Combat
                 hitRequest.AttackInstanceId,
                 null,
                 hitRequest.Skill,
+                hitRequest.RuntimeSkill,
+                hitRequest.SkillRuntimeId,
                 hitRequest.HitPoint,
                 hitRequest.HasHitPoint);
         }

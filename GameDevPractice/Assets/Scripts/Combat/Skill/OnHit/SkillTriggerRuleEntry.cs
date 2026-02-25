@@ -145,8 +145,10 @@ namespace TH.Combat
                 context.AttackInstanceId,
                 hitDamages,
                 skill,
-                useHitPoint ? context.HitPosition : default,
-                useHitPoint);
+                runtimeSkill: context.SourceRuntimeSkill,
+                skillRuntimeId: context.SourceSkillRuntimeId,
+                hitPoint: useHitPoint ? context.HitPosition : default,
+                hasHitPoint: useHitPoint);
 
             Trace($"execute triggered skill via direct_hit. skill={skill.name}, damage={perHitDamage:0.###}, hitCount={hitCount}");
             combatSystem.ApplyHit(request);

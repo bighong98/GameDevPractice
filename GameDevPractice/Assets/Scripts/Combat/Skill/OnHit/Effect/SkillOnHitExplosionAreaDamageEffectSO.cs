@@ -94,7 +94,9 @@ namespace TH.Combat
                     context.AttackInstanceId,
                     BuildHitDamages(scaledDamage, resolvedHitCount),
                     resolvedSkillRef,
-                    center,
+                    runtimeSkill: context.SourceRuntimeSkill,
+                    skillRuntimeId: context.SourceSkillRuntimeId,
+                    hitPoint: center,
                     hasHitPoint: true);
 
                 combatSystem.ApplyHit(request);

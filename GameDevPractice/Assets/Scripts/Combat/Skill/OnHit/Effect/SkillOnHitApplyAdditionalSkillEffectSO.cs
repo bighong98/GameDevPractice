@@ -51,8 +51,10 @@ namespace TH.Combat
                 reuseAttackInstance ? context.AttackInstanceId : 0,
                 hitDamages,
                 propagateAdditionalSkillReference ? additionalSkill : null,
-                useHitPoint ? context.HitPosition : default,
-                useHitPoint);
+                runtimeSkill: context.SourceRuntimeSkill,
+                skillRuntimeId: context.SourceSkillRuntimeId,
+                hitPoint: useHitPoint ? context.HitPosition : default,
+                hasHitPoint: useHitPoint);
 
             combatSystem.ApplyHit(request);
         }

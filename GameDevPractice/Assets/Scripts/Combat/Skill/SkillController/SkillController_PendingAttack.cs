@@ -150,7 +150,12 @@ namespace TH.Combat
             var previewSkill = GetPreviewSkill();
             if (previewSkill.IsNull()) return false;
 
-            return TryBuildAttackSource(attacker, previewSkill, 0, out attackSource);
+            return TryBuildAttackSource(
+                attacker,
+                previewSkill,
+                0,
+                out attackSource,
+                ResolvePreferredRuntimeSkillForDefinition(previewSkill));
         }
 
         // 보류 공격 즉시 실행 시도
@@ -324,12 +329,23 @@ namespace TH.Combat
                 return false;
             }
 
-            if (!TryBuildAttackSource(pendingAttacker, skill, attackInstanceId, out var attackSource))
+            if (!TryBuildAttackSource(
+                    pendingAttacker,
+                    skill,
+                    attackInstanceId,
+                    out var attackSource,
+                    ResolvePreferredRuntimeSkillForDefinition(skill)))
             {
                 return false;
             }
 
-            var context = new SkillExecutionContext(pendingAttacker, target, skill, attackSource, timingScale);
+            var context = new SkillExecutionContext(
+                pendingAttacker,
+                target,
+                skill,
+                attackSource,
+                timingScale,
+                ResolvePreferredRuntimeSkillForDefinition(skill));
             if (!CanTargetWithPolicy(context, target))
             {
                 return false;
@@ -344,7 +360,7 @@ namespace TH.Combat
             if (skill.HasProjectile)
             {
                 if (projectileExecutor.IsNotNull() &&
-                    projectileExecutor.TryExecuteProjectile(attackSource, target, skill))
+                    projectileExecutor.TryExecuteProjectile(attackSource, target, ResolvePreferredRuntimeSkillForDefinition(skill)))
                 {
                     return true;
                 }

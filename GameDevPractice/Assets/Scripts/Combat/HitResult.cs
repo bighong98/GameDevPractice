@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using TH.Resource;
 using UnityEngine;
@@ -10,6 +11,8 @@ namespace TH.Combat
         public readonly int AttackInstanceId;
         public readonly IReadOnlyList<float> HitDamages;
         public readonly SkillTypeSO Skill;
+        public readonly IGameSkill RuntimeSkill;
+        public readonly string SkillRuntimeId;
         public readonly Vector3 HitPoint;
         public readonly bool HasHitPoint;
         public float Damage;
@@ -21,6 +24,8 @@ namespace TH.Combat
             AttackInstanceId = 0;
             HitDamages = null;
             Skill = null;
+            RuntimeSkill = null;
+            SkillRuntimeId = null;
             HitPoint = default;
             HasHitPoint = false;
             Damage = default;
@@ -32,6 +37,8 @@ namespace TH.Combat
             int attackInstanceId = 0,
             IReadOnlyList<float> hitDamages = null,
             SkillTypeSO skill = null,
+            IGameSkill runtimeSkill = null,
+            string skillRuntimeId = null,
             Vector3 hitPoint = default,
             bool hasHitPoint = false)
         {
@@ -39,6 +46,10 @@ namespace TH.Combat
             AttackInstanceId = attackInstanceId;
             HitDamages = hitDamages;
             Skill = skill;
+            RuntimeSkill = runtimeSkill;
+            SkillRuntimeId = !string.IsNullOrWhiteSpace(skillRuntimeId)
+                ? skillRuntimeId
+                : runtimeSkill?.RuntimeId;
             HitPoint = hitPoint;
             HasHitPoint = hasHitPoint;
             Damage = damage;

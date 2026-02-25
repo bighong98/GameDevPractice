@@ -52,6 +52,8 @@ namespace TH.Combat.Service
                 Interlocked.Increment(ref _attackSequence),
                 request.HitDamages,
                 request.Skill,
+                request.RuntimeSkill,
+                request.SkillRuntimeId,
                 request.HitPoint,
                 request.HasHitPoint);
         }

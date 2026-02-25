@@ -13,6 +13,8 @@ namespace TH.Combat
 
         public IAttacker Attacker => HitResult.Attacker;
         public SkillTypeSO SourceSkill => HitResult.Skill;
+        public IGameSkill SourceRuntimeSkill => HitResult.RuntimeSkill;
+        public string SourceSkillRuntimeId => HitResult.SkillRuntimeId;
         public int AttackInstanceId => HitResult.AttackInstanceId;
         public float AppliedDamage => HitResult.Damage;
 

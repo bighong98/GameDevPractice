@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using TH.Attribute.Stat;
 using TH.Resource;
@@ -14,6 +15,8 @@ namespace TH.Combat
         public readonly int AttackInstanceId;
         public readonly IReadOnlyList<float> HitDamages;
         public readonly SkillTypeSO Skill;
+        public readonly IGameSkill RuntimeSkill;
+        public readonly string SkillRuntimeId;
 
         public AttackSource(
             IAttacker attacker,
@@ -22,7 +25,9 @@ namespace TH.Combat
             DamageType damageType,
             int attackInstanceId = 0,
             IReadOnlyList<float> hitDamages = null,
-            SkillTypeSO skill = null)
+            SkillTypeSO skill = null,
+            IGameSkill runtimeSkill = null,
+            string skillRuntimeId = null)
         {
             Attacker = attacker;
             AttackSourceStat = attackSourceStat;
@@ -31,15 +36,19 @@ namespace TH.Combat
             AttackInstanceId = attackInstanceId;
             HitDamages = hitDamages;
             Skill = skill;
+            RuntimeSkill = runtimeSkill;
+            SkillRuntimeId = !string.IsNullOrWhiteSpace(skillRuntimeId)
+                ? skillRuntimeId
+                : runtimeSkill?.RuntimeId;
         }
 
         public AttackSource(IAttacker attacker, IGameStat attackSourceStat, DamageType damageType)
-            : this(attacker, attackSourceStat, 0f, damageType, 0, null, null)
+            : this(attacker, attackSourceStat, 0f, damageType, 0, null, null, null, null)
         {
         }
 
         public AttackSource(IAttacker attacker, float fixedDamage, DamageType damageType)
-            : this(attacker, null, fixedDamage, damageType, 0, null, null)
+            : this(attacker, null, fixedDamage, damageType, 0, null, null, null, null)
         {
         }
 
@@ -53,6 +62,8 @@ namespace TH.Combat
                 AttackInstanceId,
                 HitDamages,
                 Skill,
+                RuntimeSkill,
+                SkillRuntimeId,
                 hitPoint,
                 hasHitPoint);
         }

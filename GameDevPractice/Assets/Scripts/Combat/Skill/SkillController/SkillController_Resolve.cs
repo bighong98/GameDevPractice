@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
@@ -29,7 +29,12 @@ namespace TH.Combat
         }
 
         // 스킬 데이터 기반 공격 소스 생성
-        private bool TryBuildAttackSource(IAttacker attacker, SkillTypeSO skill, int attackInstanceId, out AttackSource attackSource)
+        private bool TryBuildAttackSource(
+            IAttacker attacker,
+            SkillTypeSO skill,
+            int attackInstanceId,
+            out AttackSource attackSource,
+            IGameSkill runtimeSkill = null)
         {
             attackSource = default;
 
@@ -55,7 +60,9 @@ namespace TH.Combat
                         skill.DamageType,
                         attackInstanceId,
                         null,
-                        skill);
+                        skill,
+                        runtimeSkill,
+                        runtimeSkill?.RuntimeId);
                     return true;
                 }
 
@@ -67,13 +74,24 @@ namespace TH.Combat
                     skill.DamageType,
                     attackInstanceId,
                     null,
-                    skill);
+                    skill,
+                    runtimeSkill,
+                    runtimeSkill?.RuntimeId);
                 return true;
             }
 
             // 다중 히트 데미지 배열 생성 경로
             var hitDamages = BuildHitDamages(perHitDamage, hitCount);
-            attackSource = new AttackSource(attacker, null, perHitDamage, skill.DamageType, attackInstanceId, hitDamages, skill);
+            attackSource = new AttackSource(
+                attacker,
+                null,
+                perHitDamage,
+                skill.DamageType,
+                attackInstanceId,
+                hitDamages,
+                skill,
+                runtimeSkill,
+                runtimeSkill?.RuntimeId);
             return true;
         }
 

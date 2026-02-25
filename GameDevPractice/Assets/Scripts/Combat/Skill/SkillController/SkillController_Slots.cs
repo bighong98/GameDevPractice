@@ -22,6 +22,7 @@ namespace TH.Combat
         // 슬롯 인덱스 기준 정렬 스킬 조회
         public bool TryGetOrderedSkillAt(int slotIndex, out SkillTypeSO skill)
         {
+            WarnLegacySkillTypePath("TryGetOrderedSkillAt(int,SkillTypeSO)");
             skill = null;
 
             if (slotIndex < 0 || slotIndex >= orderedAvailableSkills.Count)
@@ -36,6 +37,7 @@ namespace TH.Combat
         // 지정 스킬 슬롯 인덱스 역탐색
         public int FindOrderedSkillSlotIndex(SkillTypeSO skill)
         {
+            WarnLegacySkillTypePath("FindOrderedSkillSlotIndex(SkillTypeSO)");
             if (skill.IsNull())
             {
                 return -1;

@@ -30,6 +30,7 @@ namespace TH.Combat
         // 스킬 등록 + 쿨다운 추적기 연동 처리
         public bool RegisterSkill(SkillTypeSO skill, bool setActive = false)
         {
+            WarnLegacySkillTypePath("RegisterSkill(SkillTypeSO,bool)");
             // null 입력 및 초기화 이전 가드
             if (skill.IsNull() || skillBook == null || skillCaster == null) return false;
 
@@ -70,6 +71,7 @@ namespace TH.Combat
             bool setActive = false,
             bool setAvailable = true)
         {
+            WarnLegacySkillTypePath("RegisterSkillFromProvider(SkillTypeSO,string,bool,bool)");
             if (skill.IsNull() || skillBook == null || skillCaster == null) return false;
 
             bool wasRegistered = skillBook.Contains(skill);
@@ -98,6 +100,7 @@ namespace TH.Combat
         // provider 기반 스킬 해제 처리
         public bool RemoveSkillFromProvider(SkillTypeSO skill, string providerId)
         {
+            WarnLegacySkillTypePath("RemoveSkillFromProvider(SkillTypeSO,string)");
             if (skill.IsNull() || skillBook == null) return false;
 
             bool wasRegistered = skillBook.Contains(skill);
@@ -291,6 +294,7 @@ namespace TH.Combat
         // 활성 스킬 전환 + 콤보/보류 상태 초기화 처리
         public bool SetActiveSkill(SkillTypeSO skill)
         {
+            WarnLegacySkillTypePath("SetActiveSkill(SkillTypeSO)");
             // null 입력은 활성 스킬 해제 요청으로 처리
             if (skillBook == null) return false;
             if (skill.IsNull())
@@ -500,6 +504,7 @@ namespace TH.Combat
         // 사용 가능 스킬 변경 적용 처리
         public bool ApplySkillAvailabilityChange(SkillTypeSO targetSkill, SkillTypeSO replacementSkill = null)
         {
+            WarnLegacySkillTypePath("ApplySkillAvailabilityChange(SkillTypeSO,SkillTypeSO)");
             if (targetSkill.IsNull() || skillBook == null) return false;
 
             // 교체 대상 미지정 시 슬롯 하이라이트만 요청
@@ -528,6 +533,7 @@ namespace TH.Combat
         // 스킬 잔여 쿨다운 조회
         public float GetRemainingCooldown(SkillTypeSO skill)
         {
+            WarnLegacySkillTypePath("GetRemainingCooldown(SkillTypeSO)");
             if (skill.IsNull() || skillCaster == null) return 0f;
             return skillCaster.GetRemainingCooldown(skill);
         }

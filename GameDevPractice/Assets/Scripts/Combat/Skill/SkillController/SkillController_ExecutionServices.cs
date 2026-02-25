@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
@@ -46,7 +46,7 @@ namespace TH.Combat
             var attackSource = BuildModifiedAttackSource(context.AttackSource, damageScale, hitCountOverride,
                 allowReusableList: !canExecuteProjectile);
 
-            if (canExecuteProjectile && projectileExecutor.TryExecuteProjectile(attackSource, target, context.Skill))
+            if (canExecuteProjectile && projectileExecutor.TryExecuteProjectile(attackSource, target, ResolvePreferredRuntimeSkillForDefinition(context.Skill)))
             {
                 return true;
             }

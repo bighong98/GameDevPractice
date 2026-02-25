@@ -25,6 +25,13 @@ namespace TH.Combat
         event Action<SkillTypeSO, int, int> OnComboStepChanged;
         // 슬롯 하이라이트 요청 알림 이벤트
         event Action<SkillTypeSO> OnSkillSlotHighlightRequested;
+        event Action<IGameSkill> OnActiveGameSkillChanged;
+        event Action<IGameSkill> OnResolvedGameSkillChanged;
+        event Action<IGameSkill> OnGameSkillReady;
+        event Action<int, IGameSkill> OnGameSkillSlotChanged;
+        event Action<IGameSkill, int, int> OnGameComboStepChanged;
+        event Action<IGameSkill> OnGameSkillSlotHighlightRequested;
+
 
         // 활성 스킬 보유 상태
         bool HasActiveSkill { get; }
@@ -54,28 +61,44 @@ namespace TH.Combat
         IReadOnlyList<SkillTypeSO> AvailableSkills { get; }
         // 슬롯 정렬 반영 사용 가능 스킬 읽기 전용 목록
         IReadOnlyList<SkillTypeSO> OrderedAvailableSkills { get; }
+        IGameSkill ActiveGameSkill { get; }
+        IGameSkill ResolvedGameSkill { get; }
+        IGameSkill ExecutingGameSkill { get; }
+        IReadOnlyList<IGameSkill> RegisteredGameSkills { get; }
+        IReadOnlyList<IGameSkill> AvailableGameSkills { get; }
+        IReadOnlyList<IGameSkill> OrderedAvailableGameSkills { get; }
+
 
         // 스킬 등록 처리
         bool RegisterSkill(SkillTypeSO skill, bool setActive = false);
         bool RegisterSkillFromProvider(SkillTypeSO skill, string providerId, bool setActive = false, bool setAvailable = true);
         bool RemoveSkillFromProvider(SkillTypeSO skill, string providerId);
         void SetSkillProviderPriority(string providerId, int priority);
+        bool RegisterSkill(IGameSkill skill, bool setActive = false);
+        bool RegisterSkillFromProvider(IGameSkill skill, string providerId, bool setActive = false, bool setAvailable = true);
+        bool RemoveSkillFromProvider(IGameSkill skill, string providerId);
         // 활성 스킬 교체 처리
         bool SetActiveSkill(SkillTypeSO skill);
+        bool SetActiveSkill(IGameSkill skill);
         // 외부 명령 기반 활성 스킬 해제 시도
         bool TryClearActiveSkill(bool respectComboPreserveMarker = false);
         // 필요 시점에 활성 스킬을 지연 선택/보정
         bool TryRequestActiveSkill();
         // 사용 가능 스킬 변경 적용(교체 미지정 시 하이라이트 요청 처리)
         bool ApplySkillAvailabilityChange(SkillTypeSO targetSkill, SkillTypeSO replacementSkill = null);
+        bool ApplySkillAvailabilityChange(IGameSkill targetSkill, IGameSkill replacementSkill = null);
         // 슬롯 인덱스 기반 스킬 조회
         bool TryGetOrderedSkillAt(int slotIndex, out SkillTypeSO skill);
         // 스킬 기준 슬롯 인덱스 조회
         int FindOrderedSkillSlotIndex(SkillTypeSO skill);
+        bool TryGetOrderedGameSkillAt(int slotIndex, out IGameSkill skill);
+        int FindOrderedGameSkillSlotIndex(IGameSkill skill);
         // 스킬 잔여 쿨다운 조회
         float GetRemainingCooldown(SkillTypeSO skill);
+        float GetRemainingCooldown(IGameSkill skill);
         // 활성 시퀀스 타임아웃 조회
         bool TryGetActiveSequenceTimeout(SkillTypeSO skill, out float remainingTimeout, out float totalTimeout);
+        bool TryGetActiveSequenceTimeout(IGameSkill skill, out float remainingTimeout, out float totalTimeout);
         // 활성 스킬 소비 + 공격 소스 생성
         bool TryConsumeActiveSkill(IAttacker attacker, out AttackSource attackSource);
         // 소비 없는 프리뷰 공격 소스 생성
@@ -94,6 +117,6 @@ namespace TH.Combat
     public interface ISkillProjectileExecutor
     {
         // 투사체 실행 요청 처리
-        bool TryExecuteProjectile(in AttackSource attackSource, Health target, SkillTypeSO skill);
+        bool TryExecuteProjectile(in AttackSource attackSource, Health target, IGameSkill skill);
     }
 }
