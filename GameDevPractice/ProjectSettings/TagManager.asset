@@ -14,7 +14,7 @@ TagManager:
   - UI
   - Character
   - Environment
-  - 
+  - DissolveOnly
   - 
   - 
   - Ally
@@ -49,7 +49,7 @@ TagManager:
   - Default
   - Light Layer 1
   - Outline Layer
-  - Light Layer 3
+  - Dissolve Layer
   - Light Layer 3
   - Light Layer 5
   - Light Layer 6

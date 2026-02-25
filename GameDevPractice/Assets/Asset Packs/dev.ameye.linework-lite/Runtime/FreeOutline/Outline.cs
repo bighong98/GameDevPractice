@@ -1,6 +1,4 @@
-#if !UNITY_6000_0_OR_NEWER
 using LineworkLite.Common.Attributes;
-#endif
 using LineworkLite.Common.Utils;
 using UnityEngine;
 
@@ -11,12 +9,8 @@ namespace LineworkLite.FreeOutline
         [SerializeField, HideInInspector] public Material material;
         [SerializeField, HideInInspector] private bool isActive = true;
 
-#if UNITY_6000_0_OR_NEWER
-        public RenderingLayerMask RenderingLayer = RenderingLayerMask.defaultRenderingLayerMask;
-#else
         [RenderingLayerMask]
         public uint RenderingLayer = 1;
-#endif
         public LayerMask layerMask = ~0;
         public OutlineRenderQueue renderQueue = OutlineRenderQueue.Opaque;
         public Occlusion occlusion = Occlusion.WhenNotOccluded;
@@ -37,8 +31,34 @@ namespace LineworkLite.FreeOutline
 
         private void OnEnable()
         {
+            RenderingLayer = NormalizeSingleRenderingLayer(RenderingLayer);
             EnsureMaterialsAreInitialized();
         }
+
+        private void OnValidate()
+        {
+            RenderingLayer = NormalizeSingleRenderingLayer(RenderingLayer);
+        }
+
+        private static uint NormalizeSingleRenderingLayer(uint renderingLayerMask)
+        {
+            if (renderingLayerMask == 0)
+            {
+                return 1u;
+            }
+
+            for (var i = 0; i < 32; i++)
+            {
+                var layerBit = 1u << i;
+                if ((renderingLayerMask & layerBit) != 0)
+                {
+                    return layerBit;
+                }
+            }
+
+            return 1u;
+        }
+
 
         private void EnsureMaterialsAreInitialized()
         {

@@ -9,6 +9,7 @@ using TH.Combat;
 
 using TH.Item;
 using TH.Attribute;
+using TH.Rendering.Dissolve;
 
 
 namespace TH.Control
@@ -22,6 +23,7 @@ namespace TH.Control
         [SerializeField] private uint _interactionOutlineRenderingLayerMask = 1u << 2;
 
         private GameObject _outlinedTarget;
+        private CharacterSpecialEffectController _outlinedEffectController;
         private readonly List<Renderer> _outlinedRenderers = new();
         private readonly List<uint> _outlinedOriginalRenderingLayerMasks = new();
         
@@ -211,6 +213,13 @@ namespace TH.Control
 
             if (_outlinedTarget == null) return;
 
+            if (TryGetSpecialEffectController(_outlinedTarget, out var effectController) &&
+                effectController.TryApplyOutline(_interactionOutlineRenderingLayerMask))
+            {
+                _outlinedEffectController = effectController;
+                return;
+            }
+
             if (TryGetOutfitOutlineRenderers(_outlinedTarget, out var outfitRenderers))
             {
                 ApplyInteractionOutline(outfitRenderers);
@@ -259,6 +268,22 @@ namespace TH.Control
             return outfitController.TryGetActiveOutlineRenderers(out renderers, out _);
         }
 
+        private static bool TryGetSpecialEffectController(GameObject target, out CharacterSpecialEffectController controller)
+        {
+            controller = null;
+            if (target == null)
+            {
+                return false;
+            }
+
+            if (!target.TryGetComponent(out controller))
+            {
+                controller = target.GetComponentInParent<CharacterSpecialEffectController>();
+            }
+
+            return controller != null;
+        }
+
 
 
 
@@ -266,6 +291,12 @@ namespace TH.Control
 
         private void ClearInteractionOutline()
         {
+            if (_outlinedEffectController != null)
+            {
+                _outlinedEffectController.ClearOutline();
+                _outlinedEffectController = null;
+            }
+
             for (int i = 0; i < _outlinedRenderers.Count; i++)
             {
                 var renderer = _outlinedRenderers[i];

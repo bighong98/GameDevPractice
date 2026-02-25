@@ -80,7 +80,7 @@ Material:
     - _QueueOffset: 0
     - _Smoothness: 0.871
     m_Colors:
-    - _BaseColor: {r: 0.836455, g: 1, b: 0.3915094, a: 1}
+    - _BaseColor: {r: 0.8146683, g: 1, b: 0.3160377, a: 1}
     - _DirectionFactor: {r: 0, g: 0.1, b: 0, a: 0}
     - _DissolveDirection: {r: 0, g: 0, b: 0, a: 0}
     - _DissolveOffest: {r: 0, g: -0.24, b: 0, a: 0}

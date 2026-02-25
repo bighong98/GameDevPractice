@@ -72,9 +72,13 @@ PrefabInstance:
       propertyPath: avatarAnchorProvider
       value: 
       objectReference: {fileID: 6969385209120220262}
-    - target: {fileID: 4962896568811172882, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}
-      propertyPath: m_RenderingLayerMask
+    - target: {fileID: 4081182245730968892, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}
+      propertyPath: returnToPoolOnDeath
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5174886537910745246, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}
+      propertyPath: uniqueIdentifier
+      value: d4b233be-23c8-4ea6-a6c6-9a6739ea475c
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

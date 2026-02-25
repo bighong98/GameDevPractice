@@ -7,7 +7,6 @@ using TH.Attribute.Stat;
 using TH.Combat;
 using TH.Core.Service;
 using TH.Resource;
-using TH.Core.Pool;
 using TH.Combat.Service;
 
 namespace TH.Attribute
@@ -50,6 +49,8 @@ namespace TH.Attribute
         public float MaxHp => maxHp;
         public float HpRatio => hp / maxHp;
         public bool IsDead { get; private set; }
+        public bool ReturnToPoolOnDeath => returnToPoolOnDeath;
+        public bool ShouldReturnToPoolOnCurrentDeath { get; private set; }
 
         private IAttacker lastAttacker = null; // 가장 최근 자신에게 피해를 입힌 대상
 
@@ -188,25 +189,13 @@ namespace TH.Attribute
 
             IsDead = true;
             SetColliderEnabled(false);
+            ShouldReturnToPoolOnCurrentDeath = releaseToPool && returnToPoolOnDeath;
             OnDead?.Invoke();
+            ShouldReturnToPoolOnCurrentDeath = false;
 
             if (lastAttacker.IsNotNull())
                 killEventHandler?.HandleKillEvent(this, lastAttacker);
             lastAttacker = null;
-
-            if (releaseToPool)
-                TryReturnToPoolOnDeath();
-        }
-
-        private void TryReturnToPoolOnDeath()
-        {
-            if (!returnToPoolOnDeath)
-                return;
-
-            if (!TryGetComponent(out IPoolObject pooledObject))
-                return;
-
-            pooledObject.ReleaseSelf();
         }
 
 

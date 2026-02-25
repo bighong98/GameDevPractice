@@ -14,9 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   material: {fileID: 0}
   isActive: 1
-  RenderingLayer:
-    serializedVersion: 0
-    m_Bits: 4
+  RenderingLayer: 4
   layerMask:
     serializedVersion: 2
     m_Bits: 4294967295

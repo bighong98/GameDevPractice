@@ -2,6 +2,7 @@ using System;
 using LineworkLite.Common.Utils;
 using LineworkLite.Editor.Common.Utils;
 using UnityEditor;
+using UnityEngine.Rendering;
 using UnityEngine;
 using Outline = LineworkLite.FreeOutline.Outline;
 using Resolution = LineworkLite.Common.Utils.Resolution;
@@ -58,7 +59,7 @@ namespace LineworkLite.Editor.FreeOutline
             serializedObject.Update();
 
             EditorGUILayout.LabelField("Filters", EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(renderingLayer, EditorUtils.CommonStyles.OutlineLayer);
+            DrawSingleRenderingLayerDropdown();
             EditorGUILayout.PropertyField(layerMask, EditorUtils.CommonStyles.LayerMask);
             EditorGUILayout.PropertyField(renderQueue, EditorUtils.CommonStyles.RenderQueue);
             EditorGUILayout.Space();
@@ -120,5 +121,74 @@ namespace LineworkLite.Editor.FreeOutline
 
             serializedObject.ApplyModifiedProperties();
         }
+
+        private void DrawSingleRenderingLayerDropdown()
+        {
+            var layerNames = GetRenderingLayerMaskNames();
+            var currentMask = renderingLayer.uintValue;
+            var selectedLayer = GetSelectedLayerIndex(currentMask, 32);
+
+            var displayCount = Mathf.Max(layerNames.Length, selectedLayer + 1, 1);
+            var popupOptions = new string[displayCount];
+            var hasUndefinedLayer = false;
+
+            for (var i = 0; i < displayCount; i++)
+            {
+                if (i < layerNames.Length && !string.IsNullOrEmpty(layerNames[i]))
+                {
+                    popupOptions[i] = layerNames[i];
+                    continue;
+                }
+
+                popupOptions[i] = $"Unused Layer {i}";
+                hasUndefinedLayer = true;
+            }
+
+            EditorGUI.BeginChangeCheck();
+            var newSelectedLayer = EditorGUILayout.Popup(EditorUtils.CommonStyles.OutlineLayer, selectedLayer, popupOptions);
+            if (EditorGUI.EndChangeCheck())
+            {
+                renderingLayer.uintValue = 1u << Mathf.Clamp(newSelectedLayer, 0, 31);
+            }
+
+            if (hasUndefinedLayer)
+            {
+                EditorGUILayout.HelpBox(
+                    "One or more of the Rendering Layers is not defined in the Universal Global Settings asset.",
+                    MessageType.Warning);
+            }
+        }
+
+        private static int GetSelectedLayerIndex(uint renderingLayerMask, int maxLayerCount)
+        {
+            if (renderingLayerMask == 0)
+            {
+                return 0;
+            }
+
+            for (var i = 0; i < 32; i++)
+            {
+                var layerBit = 1u << i;
+                if ((renderingLayerMask & layerBit) == 0)
+                {
+                    continue;
+                }
+
+                return Mathf.Clamp(i, 0, Mathf.Max(0, maxLayerCount - 1));
+            }
+
+            return 0;
+        }
+
+        private static string[] GetRenderingLayerMaskNames()
+        {
+#if UNITY_6000_0_OR_NEWER
+            return RenderingLayerMask.GetDefinedRenderingLayerNames();
+#else
+            var renderPipeline = GraphicsSettings.currentRenderPipeline;
+            return renderPipeline != null ? renderPipeline.renderingLayerMaskNames : Array.Empty<string>();
+#endif
+        }
+
     }
 }

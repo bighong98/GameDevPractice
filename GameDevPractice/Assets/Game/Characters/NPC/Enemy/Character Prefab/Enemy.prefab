@@ -215,6 +215,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6061633697407881761, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
       insertIndex: -1
       addedObject: {fileID: -8422029113552395765}
+    - targetCorrespondingSourceObject: {fileID: 6061633697407881761, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3668142223287289448}
   m_SourcePrefab: {fileID: 100100000, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
 --- !u!1 &431537241663738169 stripped
 GameObject:
@@ -248,8 +251,49 @@ MonoBehaviour:
   chaseDistance: 8
   patrolPath: {fileID: 0}
   waypointTolerance: 2
+--- !u!114 &3668142223287289448
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 431537241663738169}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2b0f6b41f494584e95a4561a5c6687c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TH.Rendering.Dissolve.CharacterSpecialEffectController
+  health: {fileID: 4081182245730968892}
+  autoBindHealthOnAwake: 1
+  autoCollectRenderers: 1
+  includeInactiveRenderers: 1
+  targetRenderers: []
+  changeObjectLayerOnStart: 1
+  includeChildrenLayerChange: 1
+  dissolveLayerName: DissolveOnly
+  dissolveRenderingLayerMask: 8
+  dissolveStartDelay: 0.3
+  dissolveDuration: 1.2
+  dissolveStartValue: 1
+  dissolveEndValue: 0
+  restoreStateOnDisable: 1
+  remapMainTexToBaseMap: 1
+  remapColorToBaseColor: 1
+  remapBumpToNormal: 1
+  forceOpaqueBaseColorAlpha: 1
 --- !u!4 &2395544938457194976 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8132568554257588984, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
   m_PrefabInstance: {fileID: 5900313022876926744}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &4081182245730968892 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7584443095867729444, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
+  m_PrefabInstance: {fileID: 5900313022876926744}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 431537241663738169}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3158f4ba81cef3247ad0891f2bb3ed33, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

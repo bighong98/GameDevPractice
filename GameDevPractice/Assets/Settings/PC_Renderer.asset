@@ -27,7 +27,8 @@ MonoBehaviour:
   m_RendererFeatures:
   - {fileID: 7833122117494664109}
   - {fileID: 5272772416136866683}
-  m_RendererFeatureMap: ad6b866f10d7b46c7beb507d93a62c49
+  - {fileID: 6481855266623451641}
+  m_RendererFeatureMap: ad6b866f10d7b46c7beb507d93a62c49f9f195cc052df459
   m_UseNativeRenderPass: 1
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
@@ -37,10 +38,10 @@ MonoBehaviour:
     m_Bits: 4294967295
   m_OpaqueLayerMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 4294967039
   m_TransparentLayerMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 4294967039
   m_DefaultStencilState:
     overrideStencilState: 0
     stencilReference: 1
@@ -74,6 +75,39 @@ MonoBehaviour:
     mask: {fileID: 4800000, guid: 19ae7b440d27f4f9990007afdc74ddaf, type: 3}
     outline: {fileID: 4800000, guid: fb375234a1509436fa2a7d37f08912f8, type: 3}
     clear: {fileID: 4800000, guid: b854aa374420b4b47992044f7c9a0719, type: 3}
+--- !u!114 &6481855266623451641
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 00c03d755f90025468bcd3fcddaed5b2, type: 3}
+  m_Name: DeathDissolveRendererFeature
+  m_EditorClassIdentifier: Assembly-CSharp::TH.Rendering.Dissolve.DeathDissolveRendererFeature
+  m_Active: 1
+  settings:
+    profilerTag: DeathDissolvePass
+    injectionPoint: 300
+    renderQueueType: 0
+    layerMask:
+      serializedVersion: 2
+      m_Bits: 256
+    renderingLayerMask: 8
+    overrideMode: 1
+    overrideShader: {fileID: 0}
+    overrideShaderPassIndex: 0
+    overrideMaterial: {fileID: 2100000, guid: 1a50a9ace93fd614db63694d201e262b, type: 2}
+    overrideMaterialPassIndex: 0
+    shaderTagNames:
+    - UniversalForward
+    - UniversalForwardOnly
+    - SRPDefaultUnlit
+    - LightweightForward
+  renderInSceneView: 1
+  renderInGame: 1
 --- !u!114 &7833122117494664109
 MonoBehaviour:
   m_ObjectHideFlags: 0
