@@ -6,22 +6,44 @@ using TH.SceneManagement;
 using UnityEngine;
 using TH.Resource;
 using TH.Utils;
+#if UNITY_EDITOR
+using TH.Core.Data;
+#endif
 
 namespace TH.SaveLoad
 {
     public class SavingWrapper : MonoBehaviour
     {
-        [SerializeField] private bool loadMainMenuInEditor;
-
         private const string SceneCatalogKey = "SceneCatalogSO";
+#if UNITY_EDITOR
+        private const string GameBootSettingResourceKey = "GameBootSetting";
+#endif
 
         private ISaveSystem saveSystem;
         private IResourceLoader resourceLoader;
         private ISceneLoader sceneLoader;
         private SceneCatalogSO sceneCatalog;
+#if UNITY_EDITOR
+        private GameBootSetting gameBootSetting;
+#endif
+        private bool disableSaveLoadInEditor;
         
         private void Awake()
         {
+#if UNITY_EDITOR
+            gameBootSetting = Resources.Load<GameBootSetting>(GameBootSettingResourceKey);
+
+            if (gameBootSetting == null)
+                Logg.LogWarning($"[SavingWrapper] Missing Resources/{GameBootSettingResourceKey}.asset. Editor boot setting will default to LoadLastScene.");
+
+            disableSaveLoadInEditor = ShouldDisableSaveLoadInEditor();
+            if (disableSaveLoadInEditor)
+            {
+                this.Log("[SavingWrapper] Save/Load initialization skipped by GameBootSetting.");
+                return;
+            }
+#endif
+
             saveSystem = ServiceLocator.Get<ISaveSystem>();
             resourceLoader = ServiceLocator.Get<IResourceLoader>();
             sceneLoader = ServiceLocator.Get<ISceneLoader>();
@@ -31,25 +53,37 @@ namespace TH.SaveLoad
 
         private void OnEnable()
         {
+            if (disableSaveLoadInEditor) return;
+
             InputManager.Instance.OnSaveCalled += SaveCall;
             InputManager.Instance.OnLoadCalled += LoadCall;
         }
         
         private void OnDisable()
         {
+            if (disableSaveLoadInEditor) return;
+
             InputManager.Instance.OnSaveCalled -= SaveCall;
             InputManager.Instance.OnLoadCalled -= LoadCall;
         }
 
-        private void Init() => Init(Constants.PreLoadLabel);
+        private void Init()
+        {
+            if (disableSaveLoadInEditor) return;
+            Init(Constants.PreLoadLabel);
+        }
+
 
         private void Init(string label)
         {
+            if (disableSaveLoadInEditor) return;
             if (label != Constants.PreLoadLabel) return;
-            
+
             this.Log($"Init() invoked");
             LoadStartupScene().Forget();
         }
+
+
         
         private async UniTask LoadStartupScene()
         {
@@ -66,11 +100,21 @@ namespace TH.SaveLoad
         private bool ShouldLoadMainMenu()
         {
 #if UNITY_EDITOR
-            return loadMainMenuInEditor;
+            return gameBootSetting != null && gameBootSetting.LoadMainMenuInEditor;
 #else
             return true;
 #endif
         }
+
+        private bool ShouldDisableSaveLoadInEditor()
+        {
+#if UNITY_EDITOR
+            return gameBootSetting != null && gameBootSetting.DisableSaveLoadInEditor;
+#else
+            return false;
+#endif
+        }
+
 
         private async UniTask LoadMainMenuScene()
         {
@@ -100,12 +144,36 @@ namespace TH.SaveLoad
 
         public async UniTask Save()
         {
+            if (disableSaveLoadInEditor)
+            {
+                this.Log("Save() skipped by GameBootSetting", Logg.LoggingMode.InProgress);
+                return;
+            }
+
+            if (saveSystem == null)
+            {
+                Logg.LogWarning("[SavingWrapper] ISaveSystem is not available. Save() skipped.");
+                return;
+            }
+
             this.Log($"Save() invoked", Logg.LoggingMode.InProgress);
             await saveSystem.SaveAsync();
         }
 
         public async UniTask Load()
         {
+            if (disableSaveLoadInEditor)
+            {
+                this.Log("Load() skipped by GameBootSetting", Logg.LoggingMode.InProgress);
+                return;
+            }
+
+            if (saveSystem == null)
+            {
+                Logg.LogWarning("[SavingWrapper] ISaveSystem is not available. Load() skipped.");
+                return;
+            }
+
             this.Log($"Load() invoked", Logg.LoggingMode.InProgress);
             await saveSystem.LoadAsync();
         }

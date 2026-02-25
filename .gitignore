@@ -85,3 +85,5 @@ crashlytics-build.properties
 /GameDevPractice/ProfilerCaptures
 /GameDevPractice/PerfLogs
 /GameDevPractice/Resources/Data Table/xlsx
+GameDevPractice/Assets/Resources/GameBootSetting.asset
+GameDevPractice/Assets/Resources/GameBootSetting.asset.meta

@@ -13,6 +13,9 @@ using TH.Cinematic.Service;
 using TH.UI.Service;
 using TH.Combat.Service;
 using TH.Attribute.Service;
+#if UNITY_EDITOR
+using TH.Core.Data;
+#endif
 
 namespace TH.Core.Service
 {
@@ -21,18 +24,38 @@ namespace TH.Core.Service
     // 추후 Scene 개별 ServiceProvider 도입 시 확장 및 수정 필요
     public static class Bootstrapper
     {
+#if UNITY_EDITOR
+        private const string GameBootSettingResourceKey = "GameBootSetting";
+#endif
+
         // RuntimeInitializeOnLoadMethod()로 씬 로드 전 실행을 보장 + 메인 스레드 실행 보장
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static async void Init()
         {
             try
             {
+#if UNITY_EDITOR
+                if (ShouldIgnoreBootstrapperInEditor())
+                {
+                    Debug.Log("[Bootstrapper] Initialization skipped by GameBootSetting.");
+                    return;
+                }
+#endif
+
                 RegisterServices();
                 await InitializeSingletons();
                 await InitializeAsync();
             }
             catch (Exception e) {Debug.LogError(e);}
         }
+
+#if UNITY_EDITOR
+        private static bool ShouldIgnoreBootstrapperInEditor()
+        {
+            var setting = Resources.Load<GameBootSetting>(GameBootSettingResourceKey);
+            return setting != null && setting.IgnoreBootStrapperInEditor;
+        }
+#endif
         
         // 씬 로드 전 초기화가 필요한 서비스 등록
         // 등록 시 반드시 인터페이스 타입으로 등록할 것
