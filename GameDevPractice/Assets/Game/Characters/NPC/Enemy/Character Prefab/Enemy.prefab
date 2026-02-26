@@ -52,6 +52,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2315126, guid: 30cf93deff988e74e88a144bd2127c18, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 1eea6b6600e42c84dbc3133eb45c4c03, type: 2}
+    - target: {fileID: 2369332, guid: 30cf93deff988e74e88a144bd2127c18, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 1eea6b6600e42c84dbc3133eb45c4c03, type: 2}
     - target: {fileID: 9572094, guid: 30cf93deff988e74e88a144bd2127c18, type: 3}
       propertyPath: m_Enabled
       value: 0
@@ -270,12 +278,13 @@ MonoBehaviour:
   targetRenderers: []
   changeObjectLayerOnStart: 1
   includeChildrenLayerChange: 1
-  dissolveLayerName: DissolveOnly
+  dissolveLayer: 8
+  legacyDissolveLayerName: DissolveOnly
   dissolveRenderingLayerMask: 8
   dissolveStartDelay: 0.3
   dissolveDuration: 1.2
-  dissolveStartValue: 1
-  dissolveEndValue: 0
+  dissolveStartValue: 0
+  dissolveEndValue: 1
   restoreStateOnDisable: 1
   remapMainTexToBaseMap: 1
   remapColorToBaseColor: 1

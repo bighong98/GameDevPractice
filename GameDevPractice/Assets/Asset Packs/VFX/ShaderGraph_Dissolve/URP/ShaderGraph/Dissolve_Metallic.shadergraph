@@ -1019,8 +1019,8 @@
     "m_CustomSlotLabel": "",
     "m_DismissedVersion": 0,
     "m_Precision": 0,
-    "overrideHLSLDeclaration": false,
-    "hlslDeclarationOverride": 0,
+    "overrideHLSLDeclaration": true,
+    "hlslDeclarationOverride": 3,
     "m_Hidden": false,
     "m_PerRendererData": false,
     "m_customAttributes": [],
@@ -2310,7 +2310,7 @@
     "m_Title": "Dissolve Output",
     "m_Position": {
         "x": -1374.0,
-        "y": 293.0
+        "y": 292.9999694824219
     }
 }
 

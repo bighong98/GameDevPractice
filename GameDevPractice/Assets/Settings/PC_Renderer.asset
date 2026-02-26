@@ -88,8 +88,8 @@ MonoBehaviour:
   m_Name: DeathDissolveRendererFeature
   m_EditorClassIdentifier: Assembly-CSharp::TH.Rendering.Dissolve.DeathDissolveRendererFeature
   m_Active: 1
-  settings:
-    profilerTag: DeathDissolvePass
+  skinnedSettings:
+    profilerTag: DeathDissolveSkinnedPass
     injectionPoint: 300
     renderQueueType: 0
     layerMask:
@@ -100,6 +100,24 @@ MonoBehaviour:
     overrideShader: {fileID: 0}
     overrideShaderPassIndex: 0
     overrideMaterial: {fileID: 2100000, guid: 1a50a9ace93fd614db63694d201e262b, type: 2}
+    overrideMaterialPassIndex: 0
+    shaderTagNames:
+    - UniversalForward
+    - UniversalForwardOnly
+    - SRPDefaultUnlit
+    - LightweightForward
+  meshSettings:
+    profilerTag: DeathDissolveMeshPass
+    injectionPoint: 300
+    renderQueueType: 0
+    layerMask:
+      serializedVersion: 2
+      m_Bits: 256
+    renderingLayerMask: 16
+    overrideMode: 1
+    overrideShader: {fileID: 0}
+    overrideShaderPassIndex: 0
+    overrideMaterial: {fileID: 2100000, guid: ea892437fbe2b824c869225c020bb3e9, type: 2}
     overrideMaterialPassIndex: 0
     shaderTagNames:
     - UniversalForward
