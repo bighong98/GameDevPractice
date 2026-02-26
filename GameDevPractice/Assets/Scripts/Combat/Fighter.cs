@@ -30,11 +30,12 @@ public class Fighter : MonoBehaviour, IFighter
         }
     }
 
-    public bool IsTargetValid => target.IsNotNull() && !target.IsDead;
+    public bool IsTargetValid => IsTargetUsable(target);
     public Health Target => target;
 
     private ISkillController skillController;
     private Animator animator;
+    private CombatTarget subscribedCombatTarget;
     private Health pendingExecutionTarget;
     private bool pendingStaleWatchActive;
     private int pendingStaleWatchStartFrame = -1;
@@ -59,6 +60,7 @@ public class Fighter : MonoBehaviour, IFighter
 
     private void OnDisable()
     {
+        UnsubscribeTargetInvalidation();
         DisarmPendingStaleWatch();
     }
 
@@ -104,9 +106,11 @@ public class Fighter : MonoBehaviour, IFighter
             return;
         }
 
+        UnsubscribeTargetInvalidation();
         target = attackTarget;
+        SubscribeTargetInvalidation(target);
         OnTargetSet?.Invoke(target);
-        LogAttackFlow(forceNotify ? "SetTarget_force" : "SetTarget", target.IsNotNull());
+        LogAttackFlow(forceNotify ? "SetTarget_force" : "SetTarget", IsTargetUsable(target));
     }
 
     public bool CanAttack(GameObject attackTarget, out Health targetHealth)
@@ -227,7 +231,7 @@ public class Fighter : MonoBehaviour, IFighter
 
     private Health ResolveExecutionTarget()
     {
-        if (pendingExecutionTarget.IsNotNull() && !pendingExecutionTarget.IsDead)
+        if (IsTargetUsable(pendingExecutionTarget))
         {
             return pendingExecutionTarget;
         }
@@ -331,5 +335,53 @@ public class Fighter : MonoBehaviour, IFighter
         }
 
         DisarmPendingStaleWatch();
+    }
+
+    private void SubscribeTargetInvalidation(Health candidate)
+    {
+        if (candidate.IsNull() || !candidate.TryGetComponent(out CombatTarget combatTarget))
+        {
+            subscribedCombatTarget = null;
+            return;
+        }
+
+        subscribedCombatTarget = combatTarget;
+        subscribedCombatTarget.OnInvalidated += HandleTargetInvalidated;
+    }
+
+    private void UnsubscribeTargetInvalidation()
+    {
+        if (subscribedCombatTarget.IsNull())
+        {
+            return;
+        }
+
+        subscribedCombatTarget.OnInvalidated -= HandleTargetInvalidated;
+        subscribedCombatTarget = null;
+    }
+
+    private void HandleTargetInvalidated(CombatTarget invalidatedTarget)
+    {
+        if (target.IsNull() || invalidatedTarget.IsNull())
+        {
+            return;
+        }
+
+        if (!ReferenceEquals(invalidatedTarget.gameObject, target.gameObject))
+        {
+            return;
+        }
+
+        SetTarget(null);
+        ClearExecutionTargetSnapshot();
+        SyncPendingStaleWatchState();
+        LogAttackFlow("TargetInvalidated", true);
+    }
+
+    private static bool IsTargetUsable(Health candidate)
+    {
+        return candidate.IsNotNull() &&
+               !candidate.IsDead &&
+               candidate.gameObject.activeInHierarchy;
     }
 }

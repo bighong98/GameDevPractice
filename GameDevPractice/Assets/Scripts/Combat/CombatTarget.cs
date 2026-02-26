@@ -1,3 +1,4 @@
+using System;
 using TH.Control;
 using TH.Utils;
 using UnityEngine;
@@ -7,6 +8,8 @@ namespace TH.Combat
     [RequireComponent(typeof(TH.Attribute.Health))]
     public class CombatTarget : MonoBehaviour, IRaycastable
     {
+        public event Action<CombatTarget> OnInvalidated;
+
         public bool HandleRaycast(IRaycastHolder caller)
         {
             this.Log($"({gameObject.name}) - HandleRaycast({caller})", Logg.LoggingMode.Completed);
@@ -22,6 +25,11 @@ namespace TH.Combat
         public CursorType GetCursorType()
         {
             return CursorType.Combat;
+        }
+
+        private void OnDisable()
+        {
+            OnInvalidated?.Invoke(this);
         }
     }
 }
