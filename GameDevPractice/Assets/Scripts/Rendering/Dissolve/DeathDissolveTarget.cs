@@ -1,3 +1,4 @@
+using System;
 using LineworkLite.Common.Attributes;
 using TH.Attribute;
 using UnityEngine;
@@ -7,6 +8,7 @@ namespace TH.Rendering.Dissolve
 {
     // 레거시 디졸브 컴포넌트 호환 어댑터
     // 신규 통합 컨트롤러 설정 전달 브리지
+    [Obsolete] // use CharacterSpecialEffectController instead
     [DisallowMultipleComponent]
     public sealed class DeathDissolveTarget : MonoBehaviour
     {
