@@ -1,9 +1,11 @@
 ﻿namespace TH.Item
 {
+    // 인벤토리 필터 상태 관리 partial
     public sealed partial class PlayerStorage
     {
         #region IFilterableStorage
 
+        // 필터 상태 갱신 및 슬롯 가시성 재평가
         public void SetFilter(InventoryFilterType filter)
         {
             if (CurrentFilter == filter) return;
@@ -19,6 +21,7 @@
         }
 
         
+        // 필터 타입별 슬롯 표시 조건 판별
         public static bool IsVisibleByFilter(IGameItemSlot slot, InventoryFilterType filter)
         {
             return filter switch

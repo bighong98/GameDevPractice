@@ -13,33 +13,42 @@ using TH.Utils;
 
 namespace TH.SaveLoad
 {
+    // 저장 파일 I/O와 씬 전환 자동 저장 흐름 통합 관리 서비스
     public class SaveSystem : ISaveSystem
     {
-
-        
-        // outer services
+        // 외부 서비스 참조 묶음
         private readonly IResourceLoader resourceLoader;
         private readonly ISceneLoader sceneLoader;
         private readonly ISaveFileHandler saveFileHandler;
         private readonly ISaveEntityRegistry entityRegistry;
         
-        // sub classes
+        // 내부 직렬화 보조 객체 묶음
         private readonly SaveTypeResolver typeResolver;
         private readonly SaveStateSerializer stateSerializer;
         
+        // SceneCatalog 비동기 해석 완료 신호 소스
         private readonly UniTaskCompletionSource<SceneCatalogSO> catalogResolveTCS = new();
+        // SceneCatalog 해석 완료 대기 태스크 캐시
         private readonly UniTask<SceneCatalogSO> catalogResolved;
+        // 로드된 씬 카탈로그 참조
         private SceneCatalogSO sceneCatalog;
         
+        // 씬 카탈로그 리소스 키 상수
         private const string SceneCatalogKey = "SceneCatalogSO";
         
+        // 저장/로드 I/O 상호배제 세마포어
         private readonly SemaphoreSlim ioSemaphore = new (1, 1);
         
+        // 로드 중 상태 플래그
         private bool isLoading;
+        // 저장 요청 병합 플래그
         private bool saveRequested;
+        // 병합 대기 중 최신 저장 파일명
         private string requestedSaveFile;
+        // 병합 대기 중 최신 씬 엔트리
         private SceneEntry requestedSceneEntry;
 
+        // 의존 서비스 연결 및 초기 이벤트 구독 생성자
         public SaveSystem(ISceneLoader sceneLoader, IResourceLoader resourceLoader, 
             ISaveFileHandler saveFileHandler, ISaveEntityRegistry saveEntityRegistry)
         {
@@ -58,8 +67,6 @@ namespace TH.SaveLoad
 
             catalogResolved = catalogResolveTCS.Task.Preserve();
             LoadSceneCatalogAsync().Forget();
-
-            // LoadAsync(GetSaveFileName()).Forget(); //todo: 세이브파일 관리 기능 추가 후 제거
             
             sceneLoader.OnBeforeSceneChanged += OnBeforeSceneChanged;
             sceneLoader.OnAfterSceneChanged += OnAfterSceneChanged;
@@ -67,6 +74,7 @@ namespace TH.SaveLoad
 
         #region Initialization
 
+        // 씬 카탈로그 비동기 로드 및 대기 작업 실행 진입점
         private async UniTask LoadSceneCatalogAsync()
         {
             this.Log($"[SaveSystem] LoadSceneCatalogAsync() 시작");
@@ -92,6 +100,7 @@ namespace TH.SaveLoad
             }
         }
         
+        // 카탈로그 준비 후 레지스트리 대기 등록 실행
         private async UniTask RunPendingJobsAsync()
         {
             if (sceneCatalog == null)
@@ -101,22 +110,25 @@ namespace TH.SaveLoad
             }
 
             await UniTask.SwitchToMainThread();
-            // SceneCatalog 준비 완료 후 EntityRegistry의 대기 등록 작업 처리
+            // SceneCatalog 준비 완료 후 EntityRegistry 대기 등록 작업 실행
             var currentEntry = sceneCatalog.GetCurrentSceneEntry();
             entityRegistry.ProcessPendingRegistrations(currentEntry);
         }
 
+        // 씬 카탈로그 준비 완료 대기 유틸리티
         private async UniTask WaitForCatalog(CancellationToken token = default)
         {
             if (sceneCatalog != null) return; // sceneCatalog가 이미 세팅되어 있다면 await 없이 즉시 종료
             await catalogResolved.AttachExternalCancellation(token);
         }
 
+        // 메인 메뉴 엔트리 여부 판별 유틸리티
         private bool IsMainMenuSceneEntry(SceneEntry sceneEntry)
         {
             return sceneCatalog != null && sceneCatalog.IsMainMenuSceneEntry(sceneEntry);
         }
 
+        // 저장 대상 씬 여부 판별 유틸리티
         private static bool IsSaveTargetScene(SceneEntry sceneEntry)
         {
             return sceneEntry != null && sceneEntry.SaveTargetScene;
@@ -127,6 +139,7 @@ namespace TH.SaveLoad
         
         #region Load Last Scene
         
+        // 마지막 저장 씬 복원 로드 진입 API
         public async UniTask LoadLastScene(string saveFile = null)
         {
             try
@@ -167,6 +180,7 @@ namespace TH.SaveLoad
         
         #region Save/Load/Delete (public API)
 
+        // 저장 요청 병합 정책 포함 공개 저장 API
         public async UniTask SaveAsync(string saveFile = null, SceneEntry sceneEntry = null)
         {
             this.Log($"===== SaveAsync() 시작 ===== saveFile: {saveFile}, sceneEntry: {(sceneEntry != null ? sceneEntry.key : "NULL")}", Logg.LoggingMode.Completed);
@@ -213,7 +227,7 @@ namespace TH.SaveLoad
                 {
                     while (TryDequeueCoalescedSave(out var nextSaveFile, out var nextSaveEntry))
                     {
-                        this.Log($"대기 저장 처리: {nextSaveFile}");
+                        this.Log($"대기 저장 실행: {nextSaveFile}");
                         await SaveCoreAsync(nextSaveFile, nextSaveEntry);
                     }
                 }
@@ -226,6 +240,7 @@ namespace TH.SaveLoad
             });
         }
         
+        // 저장 파일 삭제 공개 API
         public async UniTask DeleteAsync(string saveFile)
         {
             await RunExclusive(async () =>
@@ -236,6 +251,7 @@ namespace TH.SaveLoad
             });
         }
 
+        // 저장 파일 기반 상태 복원 공개 API
         public async UniTask LoadAsync(string saveFile = null)
         {
             // 별도의 세이브 파일명을 지정하지 않은 경우 saveFileHandler로부터 받아옴
@@ -275,6 +291,7 @@ namespace TH.SaveLoad
             });
         }
         
+        // 병합 저장 요청 상태 초기화
         private void ResetSaveRequest()
         {
             saveRequested = false;
@@ -282,6 +299,7 @@ namespace TH.SaveLoad
             requestedSceneEntry = null;
         }
         
+        // 세마포어 기반 단일 I/O 실행 래퍼
         private async UniTask RunExclusive(Func<UniTask> func)
         {
             await ioSemaphore.WaitAsync();
@@ -289,6 +307,7 @@ namespace TH.SaveLoad
             finally { ioSemaphore.Release(); }
         }
         
+        // 다중 세이브 요청 발생 시 최신값 병합
         private void CoalesceSave(string saveFile, SceneEntry sceneEntry)
         {
             saveRequested = true;
@@ -297,6 +316,8 @@ namespace TH.SaveLoad
             Logg.Log("[SaveSystem] Save queued (coalesced to latest)", Logg.LoggingMode.Completed);
         }
 
+        // 병합 큐에 저장된 저장 요청 실행
+        // 저장 요청 실행 후 기존 저장 큐 초기화
         private bool TryDequeueCoalescedSave(out string file, out SceneEntry entry)
         {
             if (!saveRequested || string.IsNullOrEmpty(requestedSaveFile))
@@ -317,6 +338,7 @@ namespace TH.SaveLoad
 
         #region Save/Load/Delete (private Core)
         
+        // 씬/글로벌 엔티티 상태 수집 후 파일 저장 코어 루틴
         private async UniTask SaveCoreAsync(string saveFile, SceneEntry sceneEntry = null)
         {
             this.Log($"SaveCoreAsync() 시작 - saveFile: {saveFile}", Logg.LoggingMode.Completed);
@@ -356,6 +378,7 @@ namespace TH.SaveLoad
         }
         
         
+        // 파일 데이터 역직렬화 후 엔티티 상태 반영 코어 루틴
         private async UniTask LoadCoreAsync(string saveFile, SceneEntry currentSceneEntry = null)
         {
             this.Log($"LoadCoreAsync() 시작 - saveFile: {saveFile}");
@@ -378,6 +401,7 @@ namespace TH.SaveLoad
             this.Log($"LoadCoreAsync({saveFile}, {currentSceneEntry?.key}) 완료", Logg.LoggingMode.Completed);
         }
         
+        // 저장 파일 물리 삭제 내부 루틴
         private void Delete(string saveFile)
         {
             File.Delete(GetPathFromSaveFile(saveFile));
@@ -387,6 +411,7 @@ namespace TH.SaveLoad
 
         #region ISceneLoader Event handler
 
+        // 씬 전환 직전 자동 저장 이벤트 핸들러
         private async UniTask OnBeforeSceneChanged(CancellationToken externalToken)
         {
             if (string.IsNullOrEmpty(GetSaveFileName()))
@@ -403,6 +428,7 @@ namespace TH.SaveLoad
             }
             await SaveAsync(GetSaveFileName());
         }
+        // 씬 전환 직후 자동 로드 및 재저장 이벤트 핸들러
         private async UniTask OnAfterSceneChanged(CancellationToken externalToken)
         {
             if (string.IsNullOrEmpty(GetSaveFileName()))
@@ -483,13 +509,14 @@ namespace TH.SaveLoad
             this.Log($"LoadedStateCache 업데이트 시작", Logg.LoggingMode.Completed);
             foreach (var (id, stateDict) in grouped)
             {
-                // 기존 데이터가 있으면 덜어쓰기, 없으면 추가
+                // 기존 데이터 있으면 덮어쓰기, 없으면 신규 추가
                 entityRegistry.UpdateStateCache(id, stateDict);
             }
             this.Log($"RestoreState(SaveFileData) 완료", Logg.LoggingMode.Completed);
         }
 
 
+        // 씬/글로벌 저장 엔트리 병합 추출 유틸리티
         private static void GetEntryFromSave(SaveFileData data, List<SavableEntry> entries, SceneEntry currentSceneEntry)
         {
             var sceneEntries = data.sceneData;
@@ -515,6 +542,7 @@ namespace TH.SaveLoad
         }
         
 
+        // 엔티티별 복원 데이터 매칭 및 RestoreState 적용 루틴
         private void ApplyState(IEnumerable<ISavableEntity> entities,
             IReadOnlyDictionary<string, Dictionary<string, object>> stateGroup)
         {
@@ -540,10 +568,14 @@ namespace TH.SaveLoad
 
         #region Save File I/O (ISaveFileHandler)
 
+        // 저장 파일 로드 위임
         SaveFileData LoadFile(string saveFile) => saveFileHandler.LoadFile(saveFile);
+        // 저장 파일 쓰기 위임
         void SaveFile(string saveFile, SaveFileData data) => saveFileHandler.SaveFile(saveFile, data);
 
+        // 현재 저장 파일명 조회 위임
         string GetSaveFileName() => saveFileHandler.GetSaveFileName();
+        // 저장 파일 경로 변환 위임
         string GetPathFromSaveFile(string saveFile) => saveFileHandler.GetPathFromSaveFile(saveFile);
 
         #endregion

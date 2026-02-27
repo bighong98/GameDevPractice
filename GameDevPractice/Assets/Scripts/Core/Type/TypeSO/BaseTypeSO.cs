@@ -11,7 +11,7 @@ namespace TH.Resource
     // 모든 타입 데이터 SO의 공통 로직을 포함함
     public abstract class BaseTypeSO : ScriptableObject, ITypeSO
     {
-        [Header("Prefab Reference")] [Tooltip("TypeSO and TypeHolder must be pair")]
+        [Header("Prefab Reference")]
         public GameObject prefab;
         
         [Header("Basic")]

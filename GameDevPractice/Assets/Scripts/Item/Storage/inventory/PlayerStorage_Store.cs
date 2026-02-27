@@ -2,10 +2,12 @@
 
 namespace TH.Item
 {
+    // 아이템 저장 가능성 검증 및 저장 진입 partial
     public sealed partial class PlayerStorage
     {
         #region Store
 
+        // 지정 슬롯 즉시 저장 내부 루틴
         private bool TryStoreInternal(IGameItem item, int index)
         {
             if (!IsValidSlotIdx(index)) return false;
@@ -20,6 +22,7 @@ namespace TH.Item
             return result;
         } 
 
+        // 자동 슬롯 탐색 기반 저장 진입 메서드
         public bool TryStore(IGameItem item)
         {
             if (EnsureItemInstanceByType(item) is not { } modified) return false;
@@ -36,6 +39,7 @@ namespace TH.Item
             return TryStoreInternal(modified, found.Index);
         }
 
+        // 자동 슬롯 탐색 기반 저장 후 슬롯 반환
         public bool TryStore(IGameItem item, out IGameItemSlot storedSlot)
         {
             storedSlot = null;
@@ -50,6 +54,7 @@ namespace TH.Item
             return result;
         }
 
+        // 지정 슬롯 기반 저장 진입 메서드
         public bool TryStore(IGameItem item, int index)
         {
             if (EnsureItemInstanceByType(item) is not { } modified) return false;
@@ -66,6 +71,7 @@ namespace TH.Item
         }
 
         // Quick check for store eligibility
+        // 저장 가능 여부 빠른 검증
         public bool CanStore(IGameItem item)
         {
             // Validate item/type and empty slot
@@ -77,6 +83,7 @@ namespace TH.Item
             return true;
         }
         // Store eligibility for a specific slot
+        // 특정 슬롯 저장 가능 여부 빠른 검증
         public bool CanStore(IGameItem item, int index)
         {
             // Validate item and slot constraints

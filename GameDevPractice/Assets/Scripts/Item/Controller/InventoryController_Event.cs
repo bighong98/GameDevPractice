@@ -7,6 +7,7 @@ using UnityEngine.SceneManagement;
 
 namespace TH.Item
 {
+    // 인벤토리 컨트롤러 이벤트 구독/해제 partial
     public sealed partial class InventoryController
     {
         // EventHandlerRegistry<> 인스턴스 초기화
@@ -60,6 +61,7 @@ namespace TH.Item
                 SubscribeSubClickEvent(scStorageUI);
         }
 
+        // 상단 버튼 입력 이벤트 구독 연결
         private void BindButtonEvents()
         {
             pInvenUI.OnExitUICalled += OnExitCalled;
@@ -68,6 +70,7 @@ namespace TH.Item
             pInvenUI.OnTrimButtonPressed += OnInvenTrimRequested;
         }
 
+        // 드래그 시작/드롭 이벤트 구독 연결
         private void BindDragDropUIEvents()
         {
             pInvenUI.OnDragStarted += this.OnDragStarted;

@@ -3,10 +3,12 @@ using UnityEngine;
 
 namespace TH.Item
 {
+    // 수량형 아이템 분할 규칙 partial
     public sealed partial class PlayerStorage
     {
         #region IDividableStorage
 
+        // 슬롯 아이템 분할 및 잔여 수량 반영 진입 메서드
         public void TryDivide(int index, int expected)
         {
             Logg.Log($"[PlayerStorage] TryDivide({index}, {expected}) invoked", Logg.LoggingMode.Completed);
@@ -20,6 +22,7 @@ namespace TH.Item
                 return;
             }
 
+            // 수량형 인터페이스 보장 분기
             if (item is not ICountableItem cItem)
                 cItem = (ICountableItem)EnsureItemInstanceByType(item);
 

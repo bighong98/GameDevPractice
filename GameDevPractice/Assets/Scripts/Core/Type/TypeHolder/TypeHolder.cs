@@ -21,7 +21,7 @@ namespace TH.Resource
         [SerializeField] private AssetReferenceT<T> typeRef; // Addressable 에셋 참조 (런타임 로드용)
         [SerializeField] private bool addToPool; // 씬에 배치된 오브젝트 오브젝트 풀에 합류 여부
         
-        public GameObject Origin { get; set; } // 오브젝트 풀링 적용시 원본 프리팹 참조 저장 목적. setter가 있지만 PoolingManager 이외
+        public GameObject Origin { get; set; } // 오브젝트 풀링 적용시 원본 프리팹 참조 저장 목적
         public T Type => type;
 
         private bool isInit; // 최초 1회 초기화 여부 (OnCreateFromPool()에서 갱신)

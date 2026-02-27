@@ -6,6 +6,7 @@ using TH.Utils;
 
 namespace TH.Item
 {
+    // 인벤토리 컨트롤러 팝업 생성/취소 partial
     public sealed partial class InventoryController
     {
         // 상세 툴팁 팝업 구성 및 표시

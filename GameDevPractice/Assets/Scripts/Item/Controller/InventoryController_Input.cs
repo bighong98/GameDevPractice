@@ -6,6 +6,7 @@ using TH.Utils;
 
 namespace TH.Item
 {
+    // 인벤토리 컨트롤러 입력 반응 partial
     public sealed partial class InventoryController
     {
         // 슬롯 호버 처리(하이라이트/툴팁)
@@ -122,7 +123,7 @@ namespace TH.Item
             pInvenUI.AllowDrag(slot.GetItemInfo.sprite); // 드래그 허가 및 UI에게 필요한 시각적 효과 출력 명령
         }
 
-        // 드롭 처리(재배치 또는 전송)
+        // 드롭 처리(아이템 슬롯 재배치 또는 다른 스토리지로 이동)
         private void OnDragDrop(DragSlotInfo dragSlotInfo)
         {
             Logg.Log($"[InventoryController] DragDrop occured ({dragSlotInfo.From}, {dragSlotInfo.To})",

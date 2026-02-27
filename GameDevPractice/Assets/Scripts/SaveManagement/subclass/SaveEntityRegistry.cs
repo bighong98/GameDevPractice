@@ -54,25 +54,30 @@ namespace TH.SaveLoad
 
         public void RegisterEntity(ISavableEntity entity, bool saveImmediately = false, CancellationToken token = default)
         {
+            // 등록 대상 고유 식별자 추출
             var id = entity.UniqueIdentifier;
+            // 등록 요청 진단 로그 기록
             this.Log($"RegisterEntity({entity.GetType()}) - id: {id}, IsGlobal: {entity.IsGlobal}, IsRegistered: {entity.IsRegistered}"
                 + $"{(entity.IsNotNull() && entity is Component c ? ", from scene:" + c.gameObject.scene.name : string.Empty)}"
                 , Logg.LoggingMode.Completed);
 
+            // 글로벌 엔티티 전용 등록 분기
             if (entity.IsGlobal)
             {
                 RegisterGlobalEntity(entity, id);
                 return;
             }
 
+            // SceneCatalog 접근자 조회
             var sceneCatalog = getCatalog?.Invoke();
             if (sceneCatalog == null)
             {
-                // SceneCatalog 로드 전이면 대기 큐에 추가
+                // SceneCatalog 준비 전 등록 요청 대기 큐 적재
                 catalogPending.Enqueue(entry => RegisterSceneEntity(entry, entity, token));
                 return;
             }
 
+            // 대상 씬 엔트리 탐색 실패 시 현재 씬 엔트리 폴백
             if (!sceneCatalog.TryGetSceneEntry(entity.TargetScene, out var sceneEntry)
                 && !sceneCatalog.TryGetCurrentSceneEntry(out sceneEntry))
             {
@@ -85,8 +90,10 @@ namespace TH.SaveLoad
 
         public void UnRegisterEntity(ISavableEntity entity, CancellationToken token = default)
         {
+            // 등록 해제 대상 고유 식별자 추출
             var id = entity.UniqueIdentifier;
 
+            // 글로벌 엔티티 전용 해제 분기
             if (entity.IsGlobal)
             {
                 globalEntities.Remove(id);
@@ -95,6 +102,7 @@ namespace TH.SaveLoad
                 return;
             }
 
+            // 현재 씬 엔트리 조회 가드
             var sceneCatalog = getCatalog?.Invoke();
             if (!sceneCatalog.IsNotNull() || !sceneCatalog.TryGetCurrentSceneEntry(out var currSceneEntry))
             {
@@ -102,12 +110,14 @@ namespace TH.SaveLoad
                 return;
             }
 
+            // 현재 씬 엔티티 딕셔너리 조회 가드
             if (!sceneEntities.TryGetValue(currSceneEntry, out var dict))
             {
                 this.LogWarning($"UnRegisterEntity - failed to state dictionary for current scene entry: {currSceneEntry.key}");
                 return;
             }
 
+            // 등록 상태 플래그 해제 및 딕셔너리 제거
             entity.IsRegistered = false;
             dict.Remove(id);
             this.Log($"UnRegisterEntity - entity: ({entity.GetType()}/{id}), IsGlobal: {entity.IsGlobal}", Logg.LoggingMode.Completed);

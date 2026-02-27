@@ -14,6 +14,8 @@ using TH.Core;
 
 namespace TH.Item
 {
+    // 인벤토리 UI 입력/이벤트/팝업 상호작용(View) <-> 인벤토리 데이터 스토리지 (Model)
+    // View와 Model 간 상호작용 중계 역할
     public sealed partial class InventoryController: MonoBehaviour
     {
         // model
@@ -23,6 +25,7 @@ namespace TH.Item
         // view
         private IPlayerInventoryUI pInvenUI;
 
+        #region const strings
         private const string ItemTooltipPrefabKey = "UI_ItemTooltip.prefab";
         private const string ItemTooltipPopupKey = "ItemTooltipPopupUI";
         private const string DefaultRemoveText = "버리기";
@@ -31,8 +34,9 @@ namespace TH.Item
         private const string DefaultUnEquipText = "장착해제";
         private const string DefaultDivideText = "나누기";
         private const string DefaultRemoveConfirmText = "아이템을 정말 파괴하시겠습니까?";
+        #endregion
 
-        // 드래그 상태 추적
+        // 드래그 시작 원본 스토리지/슬롯 및 마지막 호버 슬롯 추적
         private bool isDragging = false;
         private IGameItemStorage dragSourceStorage = null;
         private IGameItemSlot dragSourceSlot = null;
@@ -46,12 +50,14 @@ namespace TH.Item
         private Health playerHealth;
 
         // Input Events (UI - View)
+        // 슬롯 호버/클릭/서브클릭 이벤트 핸들러 등록 관리
         private EventHandlerRegistry<IHoverableStorageUI, int> _hoverEnterRegistry;
         private EventHandlerRegistry<IHoverableStorageUI, int> _hoverExitRegistry;
         private EventHandlerRegistry<IClickableStorageUI, int> _clickRegistry;
         private EventHandlerRegistry<ISubClickableStorageUI, int> _subClickRegistry;
 
         // Storage Events (Model)
+        // 슬롯 변경/용량 변경/사용 시도 이벤트 핸들러 등록 관리
         private EventHandlerRegistry<IGameItemStorage, IGameItemSlot> _slotChangedRegistry = null;
         private EventHandlerRegistry<IUsableItemStorage, IGameItemSlot> _tryUsedRegistry = null;
         private EventHandlerRegistry<IMutableCapacity, int> _capacityRegistry = null;
@@ -90,10 +96,12 @@ namespace TH.Item
 
         private void OnEnable()
         {
+            // 씬 재진입 시 플레이어 참조 재동기화
             RenewPlayerReference(); // 플레이어의 EquipHolder 인스턴스 참조 및 이벤트 갱신
             UpdatePlayerStatusPanel();
         }
 
+        // 플레이어 상태 패널 대상 오브젝트 동기화
         private void UpdatePlayerStatusPanel()
         {
             if (pInvenUI is not InventoryUI inventoryUI) return;
@@ -104,6 +112,7 @@ namespace TH.Item
 
         private void OnSceneLoaded(Scene s, LoadSceneMode m)
         {
+            // 씬 로드 완료 시 참조/패널 동기화
             RenewPlayerReference();
             UpdatePlayerStatusPanel();
         }
@@ -139,6 +148,7 @@ namespace TH.Item
 
         private void OnDisable()
         {
+            // 비활성 전환 시 팝업/작업 상태 정리
             Refresh();
         }
 

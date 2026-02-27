@@ -12,6 +12,7 @@ using UnityEngine;
 
 namespace TH.Item
 {
+    // 인벤토리 컨트롤러 UI 반영/표시 계산 partial
     public sealed partial class InventoryController
     {
         // 인벤토리 SFX 로드
