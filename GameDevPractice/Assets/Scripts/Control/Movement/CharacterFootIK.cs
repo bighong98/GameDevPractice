@@ -16,6 +16,13 @@ namespace TH.Control.Movement
         [SerializeField, Min(0.01f)] private float raycastStartHeight = 0.6f;
         [SerializeField, Min(0.05f)] private float raycastDistance = 1.5f;
         [SerializeField, Layer] private int environmentLayer;
+        
+
+        [Header("Editor Gizmo")]
+        [SerializeField] private bool drawFootRaycastGizmo = true;
+        [SerializeField] private Color leftFootRaycastGizmoColor = new Color(0.2f, 0.8f, 1f, 0.9f);
+        [SerializeField] private Color rightFootRaycastGizmoColor = new Color(1f, 0.6f, 0.2f, 0.9f);
+        [SerializeField, Min(0.005f)] private float gizmoSphereRadius = 0.03f;
         [SerializeField] private QueryTriggerInteraction queryTriggerInteraction = QueryTriggerInteraction.Ignore;
 
         [Header("Foot Placement")]
@@ -39,6 +46,10 @@ namespace TH.Control.Movement
                 new Keyframe(0.6f, 1f),
                 new Keyframe(1f, 0.2f));
 
+        [Header("Idle IK")]
+        [SerializeField, Min(0f)] private float idleSpeedThreshold = 0.08f;
+        [SerializeField, Range(0f, 1f)] private float idleIkWeightFloor = 1f;
+
         [Header("Animation Clip Curve Weight")]
         [SerializeField] private bool useAnimationClipCurveWeight = true;
         [SerializeField] private string footIkCurveParameter = "FootIKWeight";
@@ -53,8 +64,8 @@ namespace TH.Control.Movement
         [SerializeField, Range(0f, 1f)] private float plantEnterThreshold = 0.65f;
         [SerializeField, Range(0f, 1f)] private float plantExitThreshold = 0.45f;
 
-        private Transform leftFootBone;
-        private Transform rightFootBone;
+        [Header("Foot Plant Lock")]
+        [SerializeField] private bool lockHorizontalWhenPlanted = true;
 
         private Vector3 leftFootTargetPosition;
         private Vector3 rightFootTargetPosition;
@@ -76,6 +87,11 @@ namespace TH.Control.Movement
 
         private bool isLeftFootPlanted;
         private bool isRightFootPlanted;
+        private bool isLeftFootXZLocked;
+        private bool isRightFootXZLocked;
+        private Vector2 leftFootLockedXZ;
+        private Vector2 rightFootLockedXZ;
+
 
         private void Awake()
         {
@@ -89,16 +105,16 @@ namespace TH.Control.Movement
                 TryGetComponent(out navMeshAgent);
             }
 
-            CacheFootBones();
             CacheAnimatorParameters();
         }
 
         private void OnEnable()
         {
-            CacheFootBones();
             CacheAnimatorParameters();
             isLeftFootPlanted = false;
             isRightFootPlanted = false;
+            isLeftFootXZLocked = false;
+            isRightFootXZLocked = false;
         }
 
         private void Reset()
@@ -126,24 +142,31 @@ namespace TH.Control.Movement
             float leftTargetWeight = baseTargetWeight * GetFootPlantWeight(AvatarIKGoal.LeftFoot);
             float rightTargetWeight = baseTargetWeight * GetFootPlantWeight(AvatarIKGoal.RightFoot);
 
+            bool leftPlantedNow = useFootPlantParameters && hasLeftFootPlantParameter && isLeftFootPlanted;
+            bool rightPlantedNow = useFootPlantParameters && hasRightFootPlantParameter && isRightFootPlanted;
+
             UpdateFootIK(
                 AvatarIKGoal.LeftFoot,
-                leftFootBone,
                 ref leftFootTargetPosition,
                 ref leftFootTargetRotation,
                 ref leftFootCurrentWeight,
                 ref leftFootInitialized,
                 leftTargetWeight,
+                leftPlantedNow,
+                ref isLeftFootXZLocked,
+                ref leftFootLockedXZ,
                 Time.deltaTime);
 
             UpdateFootIK(
                 AvatarIKGoal.RightFoot,
-                rightFootBone,
                 ref rightFootTargetPosition,
                 ref rightFootTargetRotation,
                 ref rightFootCurrentWeight,
                 ref rightFootInitialized,
                 rightTargetWeight,
+                rightPlantedNow,
+                ref isRightFootXZLocked,
+                ref rightFootLockedXZ,
                 Time.deltaTime);
         }
 
@@ -151,7 +174,6 @@ namespace TH.Control.Movement
         {
             if (animator == null) return false;
             if (!animator.isHuman) return false;
-            if (leftFootBone == null || rightFootBone == null) return false;
             return true;
         }
 
@@ -163,14 +185,23 @@ namespace TH.Control.Movement
                 return 0f;
             }
 
-            if (speedToIkWeight == null || speedToIkWeight.length == 0)
+            float speedWeight = 1f;
+            if (speedToIkWeight != null && speedToIkWeight.length > 0)
             {
-                return positionWeight;
+                float normalizedSpeed = maxReferenceSpeed > Mathf.Epsilon
+                    ? Mathf.Clamp01(speed / maxReferenceSpeed)
+                    : 0f;
+                speedWeight = Mathf.Clamp01(speedToIkWeight.Evaluate(normalizedSpeed));
             }
 
-            float normalizedSpeed = maxReferenceSpeed > Mathf.Epsilon ? Mathf.Clamp01(speed / maxReferenceSpeed) : 0f;
-            float speedWeight = Mathf.Clamp01(speedToIkWeight.Evaluate(normalizedSpeed));
-            return positionWeight * speedWeight;
+            float baseWeight = positionWeight * speedWeight;
+
+            if (speed <= idleSpeedThreshold)
+            {
+                baseWeight = Mathf.Max(baseWeight, positionWeight * idleIkWeightFloor);
+            }
+
+            return Mathf.Clamp01(baseWeight);
         }
 
         private float GetAnimationClipCurveWeight()
@@ -253,28 +284,30 @@ namespace TH.Control.Movement
 
         private void UpdateFootIK(
             AvatarIKGoal goal,
-            Transform footBone,
             ref Vector3 smoothedPosition,
             ref Quaternion smoothedRotation,
             ref float currentWeight,
             ref bool initialized,
             float targetWeight,
+            bool isPlantedNow,
+            ref bool isXZLocked,
+            ref Vector2 lockedXZ,
             float deltaTime)
         {
-            if (footBone == null)
-            {
-                SetGoalIK(goal, Vector3.zero, Quaternion.identity, 0f);
-                return;
-            }
+            Vector3 animIKPosition = animator.GetIKPosition(goal);
+            bool hasGround = TrySampleGround(animIKPosition, out var hit);
 
-            bool hasGround = TrySampleGround(footBone.position, out var hit);
+            if (!isPlantedNow)
+            {
+                isXZLocked = false;
+            }
 
             float nextWeight = hasGround ? targetWeight : 0f;
             currentWeight = Mathf.MoveTowards(currentWeight, nextWeight, weightBlendSpeed * deltaTime);
 
             if (!hasGround || currentWeight <= Mathf.Epsilon)
             {
-                SetGoalIK(goal, Vector3.zero, Quaternion.identity, currentWeight);
+                SetGoalIK(goal, animIKPosition, animator.GetIKRotation(goal), currentWeight);
                 if (!hasGround)
                 {
                     initialized = false;
@@ -283,7 +316,26 @@ namespace TH.Control.Movement
                 return;
             }
 
-            Vector3 targetPosition = hit.point + hit.normal * footHeightOffset;
+            Vector3 targetPosition = animIKPosition;
+            if (lockHorizontalWhenPlanted && isPlantedNow)
+            {
+                if (!isXZLocked)
+                {
+                    lockedXZ = new Vector2(animIKPosition.x, animIKPosition.z);
+                    isXZLocked = true;
+                }
+
+                targetPosition.x = lockedXZ.x;
+                targetPosition.z = lockedXZ.y;
+            }
+            else
+            {
+                isXZLocked = false;
+                targetPosition.x = animIKPosition.x;
+                targetPosition.z = animIKPosition.z;
+            }
+
+            targetPosition.y = hit.point.y + footHeightOffset;
             Quaternion targetRotation = ResolveFootRotation(goal, hit.normal);
 
             if (!initialized)
@@ -296,7 +348,10 @@ namespace TH.Control.Movement
             {
                 float positionT = 1f - Mathf.Exp(-positionLerpSpeed * deltaTime);
                 float rotationT = 1f - Mathf.Exp(-rotationLerpSpeed * deltaTime);
-                smoothedPosition = Vector3.Lerp(smoothedPosition, targetPosition, positionT);
+
+                smoothedPosition.x = targetPosition.x;
+                smoothedPosition.z = targetPosition.z;
+                smoothedPosition.y = Mathf.Lerp(smoothedPosition.y, targetPosition.y, positionT);
                 smoothedRotation = Quaternion.Slerp(smoothedRotation, targetRotation, rotationT);
             }
 
@@ -382,19 +437,9 @@ namespace TH.Control.Movement
 
         private Quaternion ResolveFootRotation(AvatarIKGoal goal, Vector3 groundNormal)
         {
-            Quaternion currentFootRotation = animator.GetIKRotation(goal);
-            Vector3 forward = Vector3.ProjectOnPlane(currentFootRotation * Vector3.forward, groundNormal);
-            if (forward.sqrMagnitude < 0.0001f)
-            {
-                forward = Vector3.ProjectOnPlane(transform.forward, groundNormal);
-            }
-
-            if (forward.sqrMagnitude < 0.0001f)
-            {
-                forward = Vector3.ProjectOnPlane(Vector3.forward, groundNormal);
-            }
-
-            return Quaternion.LookRotation(forward.normalized, groundNormal);
+            Quaternion animIKRotation = animator.GetIKRotation(goal);
+            Quaternion terrainRotation = Quaternion.FromToRotation(Vector3.up, groundNormal);
+            return terrainRotation * animIKRotation;
         }
 
         private void SetGoalIK(AvatarIKGoal goal, Vector3 position, Quaternion rotation, float weight)
@@ -420,17 +465,51 @@ namespace TH.Control.Movement
             SetGoalIK(AvatarIKGoal.RightFoot, Vector3.zero, Quaternion.identity, rightFootCurrentWeight);
         }
 
-        private void CacheFootBones()
+
+        private void OnDrawGizmosSelected()
         {
-            if (animator == null || !animator.isHuman)
+            if (!drawFootRaycastGizmo)
             {
-                leftFootBone = null;
-                rightFootBone = null;
                 return;
             }
 
-            leftFootBone = animator.GetBoneTransform(HumanBodyBones.LeftFoot);
-            rightFootBone = animator.GetBoneTransform(HumanBodyBones.RightFoot);
+            if (animator == null)
+            {
+                TryGetComponent(out animator);
+            }
+
+            if (animator == null || !animator.isHuman)
+            {
+                return;
+            }
+
+            Transform leftFoot = animator.GetBoneTransform(HumanBodyBones.LeftFoot);
+            Transform rightFoot = animator.GetBoneTransform(HumanBodyBones.RightFoot);
+
+            DrawFootRaycastGizmo(leftFoot, leftFootRaycastGizmoColor);
+            DrawFootRaycastGizmo(rightFoot, rightFootRaycastGizmoColor);
+        }
+
+        private void DrawFootRaycastGizmo(Transform footTransform, Color color)
+        {
+            if (footTransform == null)
+            {
+                return;
+            }
+
+            Vector3 origin = footTransform.position + Vector3.up * raycastStartHeight;
+            float castDistance = raycastStartHeight + raycastDistance;
+            Vector3 end = origin + Vector3.down * castDistance;
+
+            Gizmos.color = color;
+            Gizmos.DrawLine(origin, end);
+            Gizmos.DrawWireSphere(origin, gizmoSphereRadius);
+            Gizmos.DrawWireSphere(end, gizmoSphereRadius);
+
+            if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, castDistance, ResolveEnvironmentLayerMask(), queryTriggerInteraction))
+            {
+                Gizmos.DrawSphere(hit.point, gizmoSphereRadius * 0.8f);
+            }
         }
 
 #if UNITY_EDITOR
@@ -439,6 +518,8 @@ namespace TH.Control.Movement
             raycastStartHeight = Mathf.Max(0.01f, raycastStartHeight);
             raycastDistance = Mathf.Max(0.05f, raycastDistance);
             movingThreshold = Mathf.Max(0f, movingThreshold);
+            idleSpeedThreshold = Mathf.Max(0f, idleSpeedThreshold);
+            idleIkWeightFloor = Mathf.Clamp01(idleIkWeightFloor);
             maxReferenceSpeed = Mathf.Max(0.01f, maxReferenceSpeed);
             missingCurveWeightFallback = Mathf.Clamp01(missingCurveWeightFallback);
             plantEnterThreshold = Mathf.Clamp01(plantEnterThreshold);
@@ -453,6 +534,7 @@ namespace TH.Control.Movement
             weightBlendSpeed = Mathf.Max(0.01f, weightBlendSpeed);
             positionLerpSpeed = Mathf.Max(0.01f, positionLerpSpeed);
             rotationLerpSpeed = Mathf.Max(0.01f, rotationLerpSpeed);
+            gizmoSphereRadius = Mathf.Max(0.005f, gizmoSphereRadius);
 
             if (speedToIkWeight == null || speedToIkWeight.length == 0)
             {

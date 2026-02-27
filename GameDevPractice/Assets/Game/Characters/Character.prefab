@@ -358,9 +358,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TH.Control.Movement.NavMeshFootIK
   animator: {fileID: 216005970898446488}
   navMeshAgent: {fileID: 8849654639277009064}
-  sampleRadius: 0.75
-  probeStartHeight: 0.5
-  navMeshAreaMask: -1
+  raycastStartHeight: 0.6
+  raycastDistance: 1.5
+  environmentLayer: 7
+  queryTriggerInteraction: 1
   applyOnlyWhenMoving: 0
   movingThreshold: 0.05
   footHeightOffset: 0.02
@@ -369,3 +370,54 @@ MonoBehaviour:
   weightBlendSpeed: 12
   positionLerpSpeed: 18
   rotationLerpSpeed: 18
+  maxReferenceSpeed: 4
+  speedToIkWeight:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.15
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.6
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 0.2
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  useAnimationClipCurveWeight: 1
+  footIkCurveParameter: FootIKWeight
+  missingCurveWeightFallback: 1
+  useFootPlantParameters: 0
+  leftFootPlantParameter: LeftFootPlant
+  rightFootPlantParameter: RightFootPlant
+  plantEnterThreshold: 0.65
+  plantExitThreshold: 0.45
