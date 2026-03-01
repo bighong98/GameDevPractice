@@ -1,3 +1,4 @@
+// 지연 시간 기반 전이 조건 에셋 스크립트
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;

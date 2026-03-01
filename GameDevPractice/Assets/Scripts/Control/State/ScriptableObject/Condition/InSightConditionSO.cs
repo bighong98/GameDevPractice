@@ -1,3 +1,4 @@
+// 시야 내 진입 전이 조건 에셋 스크립트
 using UnityEngine;
 using TH.Combat;
 using TH.Control.State;

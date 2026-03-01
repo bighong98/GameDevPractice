@@ -1,3 +1,4 @@
+// 내비 경로 초기화 액션 에셋 스크립트
 using TH.Control.State;
 using UnityEngine;
 using UnityEngine.AI;

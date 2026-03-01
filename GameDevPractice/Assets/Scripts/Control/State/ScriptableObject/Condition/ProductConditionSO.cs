@@ -1,3 +1,4 @@
+// 복합 조건 AND 평가 전이 조건 에셋 스크립트
 using System;
 using System.Collections.Generic;
 using TH.Control.State;

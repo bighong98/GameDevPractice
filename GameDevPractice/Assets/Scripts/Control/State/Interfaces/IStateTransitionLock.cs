@@ -1,3 +1,4 @@
+// 상태 전이 잠금 계약 인터페이스 스크립트
 using UnityEngine;
 using System;
 

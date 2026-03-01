@@ -1,3 +1,4 @@
+// 상태 생명주기 계약 인터페이스 스크립트
 using System;
 
 namespace TH.Control.State

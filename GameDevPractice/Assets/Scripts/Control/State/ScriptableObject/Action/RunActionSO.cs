@@ -1,3 +1,4 @@
+// 달리기 이동 실행 액션 에셋 스크립트
 using TH.Control.Movement;
 using UnityEngine;
 using TH.Control.State;

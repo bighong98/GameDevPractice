@@ -1,3 +1,4 @@
+// 이동 정지 실행 액션 에셋 스크립트
 using TH.Control.Movement;
 using TH.Control.State;
 using UnityEngine;

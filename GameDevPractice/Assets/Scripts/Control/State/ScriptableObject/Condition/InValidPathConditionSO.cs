@@ -1,3 +1,4 @@
+// 유효하지 않은 경로 전이 조건 에셋 스크립트
 using UnityEngine;
 using TH.Control.State;
 using UnityEngine.AI;

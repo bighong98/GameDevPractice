@@ -1,3 +1,4 @@
+// 상태 액션 실행 계약 인터페이스 스크립트
 using UnityEngine;
 using TH.Control.State;
 

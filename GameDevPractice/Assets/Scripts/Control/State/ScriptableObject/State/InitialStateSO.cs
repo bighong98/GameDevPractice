@@ -1,3 +1,4 @@
+// 초기 상태 마커 에셋 보호 스크립트
 using System;
 using UnityEngine;
 using TH.Control.State;

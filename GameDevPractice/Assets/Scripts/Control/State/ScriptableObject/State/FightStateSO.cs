@@ -1,3 +1,4 @@
+// 전투 상태 식별 마커 에셋 스크립트
 
 using UnityEngine;
 

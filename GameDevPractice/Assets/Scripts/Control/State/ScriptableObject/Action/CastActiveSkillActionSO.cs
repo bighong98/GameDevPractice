@@ -1,3 +1,4 @@
+// 활성 스킬 시전 실행 액션 에셋 스크립트
 using TH.Combat;
 using TH.Control.State;
 using UnityEngine;

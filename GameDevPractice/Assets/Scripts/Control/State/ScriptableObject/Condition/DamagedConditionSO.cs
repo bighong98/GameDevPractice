@@ -1,3 +1,4 @@
+// 피격 이벤트 전이 조건 에셋 스크립트
 using System;
 using TH.Attribute;
 using TH.Combat;

@@ -1,3 +1,4 @@
+// 상태 액션/전이 베이스 에셋 스크립트
 using System;
 using System.Collections.Generic;
 using TH.Control.State;
@@ -24,25 +25,33 @@ namespace TH.Control.Data
         
         #region IActionState
         
+        // 용도: 동일 상태 재진입 허용 정책 노출 프로퍼티
         public bool AllowSelfTransition => allowSelfTransition;
+        // 용도: 상태 진입 직후 전이 잠금 요구 정책 노출 프로퍼티
         public bool TransitionLockRequired => transitionLockRequired;
         
+        // 상태 진입 시점 등록된 액션 일괄 실행
         public void EnterState(IActionStateController controller)
         {
             ExecuteActions(controller, onEnterActions);
         }
 
+        // 상태 유지 중 매 프레임마다 호출 필요한 액션 일괄 실행
+        // + 업데이트 액션 실행 후 Polling 전이 검사 책임
         public void UpdateState(IActionStateController controller)
         {
             ExecuteActions(controller, updateActions);
             CheckTransitions(controller);
         }
 
+        // 종료 시점 정리 액션 일괄 실행
         public void ExitState(IActionStateController controller)
         {
             ExecuteActions(controller, onExitActions);
         }
         
+        // EventDriven/Both 타입 상태 전이 조건(ConditionSO) 이벤트 구독
+        // -> 상태 이탈 시 ActionStateMachine 측에서 내부 이벤트 정리 핸들러 (disposableHandler) 정리함
         public void BindTransitions(IActionStateController controller, Action<IDisposable> register)
         {
             if (controller == null) throw new ArgumentNullException(nameof(controller));
@@ -62,7 +71,7 @@ namespace TH.Control.Data
                 
                 
                 // 이벤트 미지원인 경우 DisposableDelegate.Empty 반환
-                var token = condition.Bind(
+                var disposeHandler = condition.Bind(
                     controller: controller,
                     onTriggered: () => controller.HandleConditionTriggered(
                             condition: condition, 
@@ -70,12 +79,14 @@ namespace TH.Control.Data
                             isGlobal: false, ignoreForce: false)
                 );
                 
-                if (token != null)
-                    register(token);
+                if (disposeHandler != null)
+                    register(disposeHandler);
             }
         }
 
         
+        // 용도: 상태 진입 잠금 해제 조건 바인딩
+        // -> lock action 완료 집계 후 register 콜백 호출로 내부 객체 정리 핸들러 전달
         public virtual IDisposable BindTransitionUnlock(IActionStateController controller, Action register)
         {
             if (controller == null) throw new ArgumentNullException(nameof(controller));
@@ -147,6 +158,8 @@ namespace TH.Control.Data
 
         #endregion
         
+        // 용도: 액션 리스트 공통 실행 유틸리티
+        // -> null/빈 목록 가드 후 Execute 순차 호출 책임
         private void ExecuteActions(IActionStateController controller, List<CharacterActionSO> actionList)
         {
             if (actionList == null || actionList.Count == 0) return;
@@ -156,6 +169,8 @@ namespace TH.Control.Data
             }
         }
         
+        // 용도: Polling 기반 전이 평가 루프
+        // -> 최초 충족 조건 발견 시 즉시 전이 후 루프 중단 정책
         // Polling 타입 상태 전환 조건 체크
         // Update 주기로 실행
         private void CheckTransitions(IActionStateController controller)
@@ -178,6 +193,8 @@ namespace TH.Control.Data
             }
         }
         
+        // 용도: 전이 잠금 액션 추출 유틸리티
+        // -> IStateTransitionLock 구현 + 활성 플래그 조건 필터링
         private static void CollectMinimumActions(List<CharacterActionSO> actions, List<IStateTransitionLock> dst)
         {
             if (actions == null || actions.Count == 0) return;
@@ -195,6 +212,8 @@ namespace TH.Control.Data
 
 #if UNITY_EDITOR
 
+        // 용도: 에디터 설정 조합 사전 검증 훅
+        // -> transitionLockRequired 설정 누락 위험 조기 경고 목적
         protected virtual void OnValidate()
         {
             int lockActionCount =
@@ -211,6 +230,8 @@ namespace TH.Control.Data
             }
         }
 
+        // 용도: 액션 목록 잠금 구현 개수 집계 유틸리티
+        // -> OnValidate 검증 지표 산출 목적
         private int CountTransitionLockActions(List<CharacterActionSO> list)
         {
             if (list == null || list.Count == 0)

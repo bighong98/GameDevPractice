@@ -1,3 +1,4 @@
+// 사거리 이탈 전이 조건 에셋 스크립트
 using TH.Combat;
 using TH.Control.State;
 using UnityEngine;

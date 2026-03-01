@@ -1,3 +1,4 @@
+// 전투 타겟 탐지 전이 조건 에셋 스크립트
 using UnityEngine;
 using System;
 using TH.Control.Movement;

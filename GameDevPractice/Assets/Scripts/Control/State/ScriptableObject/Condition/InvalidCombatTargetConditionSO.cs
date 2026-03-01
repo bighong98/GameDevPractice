@@ -1,3 +1,4 @@
+// 전투 타겟 유효성 실패 조건 에셋 스크립트
 using TH.Control.State;
 using UnityEngine;
 

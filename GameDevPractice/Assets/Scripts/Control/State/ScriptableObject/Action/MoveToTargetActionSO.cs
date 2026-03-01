@@ -1,3 +1,4 @@
+// 타겟 접근 이동 실행 액션 에셋 스크립트
 using TH.Combat;
 using TH.Control.Movement;
 using TH.Control.State;

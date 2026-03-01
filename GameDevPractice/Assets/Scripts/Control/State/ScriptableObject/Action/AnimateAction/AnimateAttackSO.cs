@@ -1,3 +1,4 @@
+// 공격 애니메이션 제어 액션 에셋 스크립트
 using System;
 using System.Diagnostics;
 using System.Threading;

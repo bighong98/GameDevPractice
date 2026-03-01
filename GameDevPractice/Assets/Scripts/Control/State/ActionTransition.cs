@@ -1,3 +1,4 @@
+// 상태 전이 데이터 정의 스크립트
 using System;
 using TH.Control.Data;
 using UnityEngine;

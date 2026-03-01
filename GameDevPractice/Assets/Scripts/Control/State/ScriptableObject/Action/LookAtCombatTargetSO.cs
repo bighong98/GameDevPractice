@@ -1,3 +1,4 @@
+// 전투 타겟 바라보기 실행 액션 에셋 스크립트
 using TH.Attribute;
 using TH.Combat;
 using TH.Control.State;

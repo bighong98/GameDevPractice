@@ -1,3 +1,4 @@
+// 상태 액션 베이스 에셋 스크립트
 using TH.Control.State;
 using UnityEngine;
 

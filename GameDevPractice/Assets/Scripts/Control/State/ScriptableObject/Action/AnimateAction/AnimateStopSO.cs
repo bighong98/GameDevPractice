@@ -1,3 +1,4 @@
+// 정지 애니메이션 제어 액션 에셋 스크립트
 using TH.Control.State;
 using UnityEngine;
 

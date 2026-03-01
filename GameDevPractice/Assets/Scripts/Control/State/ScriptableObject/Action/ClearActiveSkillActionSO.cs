@@ -1,3 +1,4 @@
+// 활성 스킬 해제 실행 액션 에셋 스크립트
 using TH.Combat;
 using TH.Control;
 using TH.Control.Movement;

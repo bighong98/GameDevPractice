@@ -1,3 +1,4 @@
+// 상태 머신 전이 흐름 제어 구현 스크립트
 using System;
 using System.Collections.Generic;
 using System.Threading;

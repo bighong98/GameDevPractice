@@ -1,3 +1,4 @@
+// 주변 타겟 스캔 실행 액션 에셋 스크립트
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;

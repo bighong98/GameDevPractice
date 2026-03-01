@@ -1,3 +1,4 @@
+// 이동 명령 감지 전이 조건 에셋 스크립트
 using System;
 using TH.Control.Movement;
 using TH.Control.State;
