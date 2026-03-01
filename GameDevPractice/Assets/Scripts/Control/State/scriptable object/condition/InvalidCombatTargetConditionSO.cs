@@ -4,6 +4,7 @@ using UnityEngine;
 namespace TH.Control.Data
 {
     [CreateAssetMenu(fileName = "InvalidCombatTargetConditionSO", menuName = "Scriptable Objects/State Condition/InvalidCombatTargetConditionSO")]
+    // InvalidCombatTargetConditionSO 상태 전이 판단 조건 ScriptableObject
     public class InvalidCombatTargetConditionSO : ActionStateConditionSO
     {
         public override bool Decide(IActionStateController controller)

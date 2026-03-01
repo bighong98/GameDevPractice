@@ -5,6 +5,7 @@ using UnityEngine.AI;
 namespace TH.Control.Data
 {
     [CreateAssetMenu(fileName = "InValidPathConditionSO", menuName = "Scriptable Objects/State Condition/InValidPathConditionSO")]
+    // InValidPathConditionSO 상태 전이 판단 조건 ScriptableObject
     public class InValidPathConditionSO : ActionStateConditionSO
     {
         public override bool Decide(IActionStateController controller)

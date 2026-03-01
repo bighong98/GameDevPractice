@@ -6,6 +6,7 @@ using UnityEngine.AI;
 namespace TH.Control.Data
 {
     [CreateAssetMenu(fileName = "AnimateMoveVelocitySO", menuName = "Scriptable Objects/CharacterAction/AnimateAction/AnimateMoveVelocitySO")]
+    // AnimateMoveVelocitySO 애니메이션 제어 액션 ScriptableObject
     public class AnimateMoveVelocitySO : CharacterActionSO
     {
         private static readonly int ForwardSpeed = Animator.StringToHash("forwardSpeed");

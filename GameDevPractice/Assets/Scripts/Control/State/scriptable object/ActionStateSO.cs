@@ -7,6 +7,7 @@ using UnityEngine;
 namespace TH.Control.Data
 {
     [CreateAssetMenu(fileName = "ActionStateSO", menuName = "Scriptable Objects/CharacterState/ActionStateSO")]
+    // 상태 액션 목록과 전이 목록을 보유하는 상태 ScriptableObject 베이스
     public class ActionStateSO : ScriptableObject, IActionState
     {
         [Header("Actions")]

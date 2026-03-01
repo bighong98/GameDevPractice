@@ -5,6 +5,7 @@ using UnityEngine;
 namespace TH.Control.State
 {
     [Serializable]
+    // 상태 전이 조건과 목적 상태를 묶는 전이 데이터 구조체
     public struct ActionStateTransition
     {
         public IActionStateCondition Condition => condition; // 조건

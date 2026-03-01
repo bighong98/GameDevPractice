@@ -6,6 +6,7 @@ using System;
 
 namespace TH.Control.State
 {
+    // 상태 전이 실행과 컴포넌트 접근을 제공하는 컨트롤러 계약 인터페이스
     public interface IActionStateController
     {
         ComponentProvider Components { get; }

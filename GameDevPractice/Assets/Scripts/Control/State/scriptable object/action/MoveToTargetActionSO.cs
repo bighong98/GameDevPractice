@@ -6,6 +6,7 @@ using UnityEngine;
 namespace TH.Control.Data
 {
     [CreateAssetMenu(fileName = "MoveToTargetActionSO", menuName = "Scriptable Objects/CharacterAction/MoveToTargetActionSO")]
+    // MoveToTargetActionSO 상태 동작 실행 액션 ScriptableObject
     public class MoveToTargetActionSO : CharacterActionSO
     {
         public override void Execute(IActionStateController controller)

@@ -5,6 +5,7 @@ using TH.Control.State;
 namespace TH.Control.Data
 {
     [CreateAssetMenu(fileName = "WalkActionSO", menuName = "Scriptable Objects/CharacterAction/WalkActionSO")]
+    // WalkActionSO 상태 동작 실행 액션 ScriptableObject
     public class WalkActionSO : CharacterActionSO
     {
         public override void Execute(IActionStateController controller)

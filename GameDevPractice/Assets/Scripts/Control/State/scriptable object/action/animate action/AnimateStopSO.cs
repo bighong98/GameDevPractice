@@ -4,6 +4,7 @@ using UnityEngine;
 namespace TH.Control.Data
 {
     [CreateAssetMenu(fileName = "AnimateStopSO", menuName = "Scriptable Objects/CharacterAction/AnimateAction/AnimateStopSO")]
+    // AnimateStopSO 애니메이션 제어 액션 ScriptableObject
     public class AnimateStopSO : CharacterActionSO
     {
         private static readonly int StopAttack = Animator.StringToHash("stopAttack");

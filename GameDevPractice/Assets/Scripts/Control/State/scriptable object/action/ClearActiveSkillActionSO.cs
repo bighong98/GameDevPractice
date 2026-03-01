@@ -9,6 +9,7 @@ namespace TH.Control.Data
     [CreateAssetMenu(
         fileName = "ClearActiveSkillActionSO",
         menuName = "Scriptable Objects/CharacterAction/Skill/ClearActiveSkillActionSO")]
+    // ClearActiveSkillActionSO 상태 동작 실행 액션 ScriptableObject
     public class ClearActiveSkillActionSO : CharacterActionSO
     {
         [SerializeField] private bool skipWhenFollowingTarget = true;

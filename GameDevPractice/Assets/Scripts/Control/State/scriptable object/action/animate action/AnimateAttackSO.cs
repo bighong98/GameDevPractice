@@ -9,6 +9,7 @@ using UnityEngine;
 namespace TH.Control.Data
 {
     [CreateAssetMenu(fileName = "AnimateAttackSO", menuName = "Scriptable Objects/CharacterAction/AnimateAction/AnimateAttackSO")]
+    // AnimateAttackSO 애니메이션 제어 액션 ScriptableObject
     public class AnimateAttackSO : CharacterActionSO, IStateTransitionLock
     {
         [Header("Attack Feel")]

@@ -6,6 +6,7 @@ using UnityEngine.AI;
 namespace TH.Control.Data
 {
     [CreateAssetMenu(fileName = "AnimateMoveSO", menuName = "Scriptable Objects/CharacterAction/AnimateAction/AnimateMoveSO")]
+    // AnimateMoveSO 애니메이션 제어 액션 ScriptableObject
     public class AnimateMoveSO : CharacterActionSO
     {
         public override void Execute(IActionStateController controller)

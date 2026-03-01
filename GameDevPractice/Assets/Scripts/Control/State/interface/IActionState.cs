@@ -2,6 +2,7 @@ using System;
 
 namespace TH.Control.State
 {
+    // 상태 객체 생명주기와 전이 훅을 정의하는 상태 계약 인터페이스
     public interface IActionState
     {
         bool AllowSelfTransition { get; } // 자기 자신으로의 상태 전환 허용 여부 (Global Transition에만 적용 중)

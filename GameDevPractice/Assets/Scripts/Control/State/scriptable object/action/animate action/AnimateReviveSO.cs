@@ -4,6 +4,7 @@ using UnityEngine;
 namespace TH.Control.Data
 {
     [CreateAssetMenu(fileName = "AnimateReviveSO", menuName = "Scriptable Objects/CharacterAction/AnimateAction/AnimateReviveSO")]
+    // AnimateReviveSO 애니메이션 제어 액션 ScriptableObject
     public class AnimateReviveSO : CharacterActionSO
     {
         private static readonly int ReviveAnimHash = Animator.StringToHash("revive");

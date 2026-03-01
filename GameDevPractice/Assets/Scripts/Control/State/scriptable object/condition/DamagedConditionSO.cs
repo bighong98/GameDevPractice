@@ -8,6 +8,7 @@ using UnityEngine;
 namespace TH.Control.Data
 {
     [CreateAssetMenu(fileName = "DamagedConditionSO", menuName = "Scriptable Objects/State Condition/DamagedConditionSO")]
+    // DamagedConditionSO 상태 전이 판단 조건 ScriptableObject
     public sealed class DamagedConditionSO : ActionStateConditionSO
     {
         [Header("Damage Filter")]

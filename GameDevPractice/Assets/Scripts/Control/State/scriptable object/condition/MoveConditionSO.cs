@@ -7,6 +7,7 @@ using UnityEngine;
 namespace TH.Control.Data
 {
     [CreateAssetMenu(fileName = "MoveConditionSO", menuName = "Scriptable Objects/State Condition/MoveConditionSO")]
+    // MoveConditionSO 상태 전이 판단 조건 ScriptableObject
     public class MoveConditionSO : ActionStateConditionSO
     {
         public override IDisposable Bind(IActionStateController controller, Action onTriggered)

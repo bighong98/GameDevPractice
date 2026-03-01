@@ -6,6 +6,7 @@ using TH.Utils;
 
 namespace TH.Control.Data
 {
+    // 전이 조건 평가와 이벤트 바인딩을 제공하는 조건 ScriptableObject 베이스
     public abstract class ActionStateConditionSO : ScriptableObject, IActionStateCondition
     {
         // 상태 전환 조건 평가 기준

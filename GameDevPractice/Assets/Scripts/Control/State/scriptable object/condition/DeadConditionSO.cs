@@ -7,6 +7,7 @@ using UnityEngine;
 namespace TH.Control.Data
 {
     [CreateAssetMenu(fileName = "DeadConditionSO", menuName = "Scriptable Objects/State Condition/DeadConditionSO")]
+    // DeadConditionSO 상태 전이 판단 조건 ScriptableObject
     public class DeadConditionSO : ActionStateConditionSO
     {
         public override bool Decide(IActionStateController controller)

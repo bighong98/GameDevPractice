@@ -5,6 +5,7 @@ using TH.Control.State;
 namespace TH.Control.Data
 {
     [CreateAssetMenu(fileName = "InSightConditionSO", menuName = "Scriptable Objects/State Condition/InSightConditionSO")]
+    // InSightConditionSO 상태 전이 판단 조건 ScriptableObject
     public class InSightConditionSO : ActionStateConditionSO
     {
         public override bool Decide(IActionStateController controller)

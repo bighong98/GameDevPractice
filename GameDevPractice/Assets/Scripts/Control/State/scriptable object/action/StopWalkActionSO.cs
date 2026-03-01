@@ -5,6 +5,7 @@ using UnityEngine;
 namespace TH.Control.Data
 {
     [CreateAssetMenu(fileName = "StopWalkActionSO", menuName = "Scriptable Objects/CharacterAction/StopWalkActionSO")]
+    // StopWalkActionSO 상태 동작 실행 액션 ScriptableObject
     public class StopWalkActionSO : CharacterActionSO
     {
         public override void Execute(IActionStateController controller)

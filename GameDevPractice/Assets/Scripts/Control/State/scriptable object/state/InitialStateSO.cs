@@ -8,6 +8,7 @@ using TH.Utils;
 namespace TH.Control.Data
 {
     [CreateAssetMenu(fileName = "InitialStateSO", menuName = "Scriptable Objects/CharacterState/InitialStateSO")]
+    // InitialStateSO 캐릭터 상태 식별 ScriptableObject
     public class InitialStateSO : ActionStateSO, IActionState
     {
         private const string Msg =

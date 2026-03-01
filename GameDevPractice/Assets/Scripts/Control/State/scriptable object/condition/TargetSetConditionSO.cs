@@ -8,6 +8,7 @@ using UnityEngine;
 namespace TH.Control.Data
 {
     [CreateAssetMenu(fileName = "TargetSetConditionSO", menuName = "Scriptable Objects/State Condition/TargetSetConditionSO")]
+    // TargetSetConditionSO 상태 전이 판단 조건 ScriptableObject
     public class TargetSetConditionSO : ActionStateConditionSO
     {
         public override bool Decide(IActionStateController controller)

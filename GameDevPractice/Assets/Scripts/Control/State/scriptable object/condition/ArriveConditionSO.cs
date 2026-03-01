@@ -7,6 +7,7 @@ using TH.Utils;
 namespace TH.Control.Data
 {
     [CreateAssetMenu(fileName = "ArriveConditionSO", menuName = "Scriptable Objects/State Condition/ArriveConditionSO")]
+    // ArriveConditionSO 상태 전이 판단 조건 ScriptableObject
     public class ArriveConditionSO : ActionStateConditionSO
     {
         public override IDisposable Bind(IActionStateController controller, Action onTriggered)

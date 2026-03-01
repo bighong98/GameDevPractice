@@ -10,6 +10,7 @@ namespace TH.Control.Data
 {
     [CreateAssetMenu(fileName = "ScanActionSO", menuName = "Scriptable Objects/CharacterAction/ScanActionSO")]
 
+    // ScanActionSO 상태 동작 실행 액션 ScriptableObject
     public class ScanActionSO : CharacterActionSO
     {
         private const int ScanIntervalFrames = 30;

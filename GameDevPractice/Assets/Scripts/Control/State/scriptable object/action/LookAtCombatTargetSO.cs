@@ -6,6 +6,7 @@ using UnityEngine;
 namespace TH.Control.Data
 {
     [CreateAssetMenu(fileName = "LookAtCombatTargetSO", menuName = "Scriptable Objects/CharacterAction/LookAtCombatTargetSO")]
+    // LookAtCombatTargetSO 상태 동작 실행 액션 ScriptableObject
     public class LookAtCombatTargetSO : CharacterActionSO
     {
         public override void Execute(IActionStateController controller)

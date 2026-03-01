@@ -8,6 +8,7 @@ using TH.Utils;
 namespace TH.Control.Data
 {
     [CreateAssetMenu(fileName = "WaitForSecondsConditionSO", menuName = "Scriptable Objects/State Condition/WaitForSecondsConditionSO")]
+    // WaitForSecondsConditionSO 상태 전이 판단 조건 ScriptableObject
     public class WaitForSecondsConditionSO : ActionStateConditionSO
     {
         [SerializeField, Min(0f)] private float delaySeconds = 1f;

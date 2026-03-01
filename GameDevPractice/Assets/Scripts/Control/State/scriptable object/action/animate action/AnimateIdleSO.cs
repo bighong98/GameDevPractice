@@ -4,6 +4,7 @@ using UnityEngine;
 namespace TH.Control.Data
 {
     [CreateAssetMenu(fileName = "AnimateIdleSO", menuName = "Scriptable Objects/CharacterAction/AnimateAction/AnimateIdleSO")]
+    // AnimateIdleSO 애니메이션 제어 액션 ScriptableObject
     public class AnimateIdleSO : CharacterActionSO
     {
         private static readonly int ForwardSpeed = Animator.StringToHash("forwardSpeed");

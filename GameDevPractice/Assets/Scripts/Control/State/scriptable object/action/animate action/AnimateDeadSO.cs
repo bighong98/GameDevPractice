@@ -4,6 +4,7 @@ using UnityEngine;
 namespace TH.Control.Data
 {
     [CreateAssetMenu(fileName = "AnimateDeadSO", menuName = "Scriptable Objects/CharacterAction/AnimateAction/AnimateDeadSO")]
+    // AnimateDeadSO 애니메이션 제어 액션 ScriptableObject
     public class AnimateDeadSO : CharacterActionSO
     {
         private static readonly int DieAnimHash = Animator.StringToHash("die");

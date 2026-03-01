@@ -7,6 +7,7 @@ using UnityEngine;
 namespace TH.Control.Data
 {
     [CreateAssetMenu(fileName = "FollowingTargetSetConditionSO", menuName = "Scriptable Objects/State Condition/FollowingTargetSetConditionSO")]
+    // FollowingTargetSetConditionSO 상태 전이 판단 조건 ScriptableObject
     public class FollowingTargetSetConditionSO : ActionStateConditionSO
     {
         private void OnEnable()

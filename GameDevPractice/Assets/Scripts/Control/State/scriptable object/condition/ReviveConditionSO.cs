@@ -7,6 +7,7 @@ using UnityEngine;
 namespace TH.Control.Data
 {
     [CreateAssetMenu(fileName = "ReviveConditionSO", menuName = "Scriptable Objects/State Condition/ReviveConditionSO")]
+    // ReviveConditionSO 상태 전이 판단 조건 ScriptableObject
     public class ReviveConditionSO : ActionStateConditionSO
     {
         public override bool Decide(IActionStateController controller)

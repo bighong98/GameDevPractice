@@ -2,6 +2,7 @@ using System;
 
 namespace TH.Control.State
 {
+    // 상태 전이 조건 평가와 이벤트 바인딩 규약 계약 인터페이스
     public interface IActionStateCondition: IPollingStateCondition, IEventStateCondition
     {
         // 평가가 필요한 조건 (StateConditionMeasures 주석 참고)
