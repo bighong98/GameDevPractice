@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using Cysharp.Threading.Tasks;
-using TH.Resource;
+using TH.SceneManagement.Data;
 
 namespace TH.SaveLoad
 {

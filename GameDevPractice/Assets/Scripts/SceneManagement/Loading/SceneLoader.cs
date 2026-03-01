@@ -3,14 +3,17 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.ResourceManagement.ResourceProviders;
 using UnityEngine.SceneManagement;
-using TH.Resource;
-using TH.Utils;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
+
+using TH.SceneManagement.Data;
+using TH.Utils;
+using TH.Resource;
 
 namespace TH.SceneManagement
 {

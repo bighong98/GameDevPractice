@@ -5,6 +5,7 @@ using TH.Core.Service;
 using TH.SceneManagement;
 using UnityEngine;
 using TH.Resource;
+using TH.SceneManagement.Data;
 using TH.Utils;
 #if UNITY_EDITOR
 using TH.Core.Data;

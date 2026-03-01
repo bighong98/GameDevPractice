@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Linq;
 using Cysharp.Threading.Tasks;
-using TH.Resource;
+using TH.SceneManagement.Data;
 using UnityEngine;
 using TH.Utils;
 

@@ -4,6 +4,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using TH.Core.Pool;
 using TH.Resource;
+using TH.SceneManagement.Data;
 using TH.UI;
 using TH.UI.Service;
 using TH.Utils;

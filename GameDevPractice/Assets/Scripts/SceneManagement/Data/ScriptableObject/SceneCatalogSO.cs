@@ -10,7 +10,7 @@ using UnityEditor;
 using EditorSceneManager = UnityEditor.SceneManagement.EditorSceneManager;
 #endif
 
-namespace TH.Resource
+namespace TH.SceneManagement.Data
 {
 
     [CreateAssetMenu(fileName = "SceneCatalogSO", menuName = "Scriptable Objects/Catalog/SceneCatalogSO")]

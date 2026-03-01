@@ -8,6 +8,7 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 using TH.SceneManagement;
+using TH.SceneManagement.Data;
 using TH.Resource;
 using TH.Utils;
 

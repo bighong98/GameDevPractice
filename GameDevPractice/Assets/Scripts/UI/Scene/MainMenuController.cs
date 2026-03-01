@@ -6,6 +6,7 @@ using TH.Resource;
 
 using UnityEngine;
 using TH.Utils;
+using TH.SceneManagement.Data;
 
 namespace TH.UI
 {
