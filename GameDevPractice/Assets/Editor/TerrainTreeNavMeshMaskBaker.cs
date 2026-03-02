@@ -5,6 +5,7 @@ using Unity.AI.Navigation;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.AI;
+using TH.Utils;
 
 public static class TerrainTreeNavMeshMaskBaker
 {
