@@ -15,25 +15,38 @@ namespace TH.UI
         [SerializeField] private TMP_Text loadSlotEmptyLabel;
         [SerializeField] private Button loadSlotCloseButton;
 
-        private readonly List<LoadSlotUI> loadSlotEntries = new();
+        private LoadSlotListModule loadSlotListModule;
 
         public event Action<string> SlotSelected;
 
         protected override void Awake()
         {
             base.Awake();
+            InitLoadSlotListModule();
             HookLoadSlotEvents();
         }
 
-        public void ShowLoadSlots(IReadOnlyList<MainMenuUI.SaveSlotViewData> slots)
+        public override void OnReleaseFromPool()
         {
-            this.Log($"ShowLoadSlots() slots.Count: {slots.Count}", Logg.LoggingMode.Completed);
+            base.OnReleaseFromPool();
+            loadSlotListModule?.Clear();
+        }
 
-            if (loadSlotContent == null || loadSlotTemplate == null)
+        public void ShowLoadSlots(IReadOnlyList<SaveSlotViewData> slots)
+        {
+            int slotCount = slots?.Count ?? 0;
+            this.Log($"ShowLoadSlots() slots.Count: {slotCount}", Logg.LoggingMode.Completed);
+
+            if (loadSlotListModule == null || !loadSlotListModule.IsValid)
                 return;
 
-            PopulateLoadSlotList(slots);
+            loadSlotListModule.Populate(slots, HandleSlotSelected);
             gameObject.SetActive(true);
+        }
+
+        private void InitLoadSlotListModule()
+        {
+            loadSlotListModule = new LoadSlotListModule(loadSlotContent, loadSlotTemplate, loadSlotEmptyLabel);
         }
 
         private void HookLoadSlotEvents()
@@ -45,55 +58,10 @@ namespace TH.UI
             loadSlotCloseButton.onClick.AddListener(ClosePopupUI);
         }
 
-        private void PopulateLoadSlotList(IReadOnlyList<MainMenuUI.SaveSlotViewData> slots)
+        private void HandleSlotSelected(string saveFile)
         {
-            ClearLoadSlotEntries();
-
-            if (loadSlotEmptyLabel != null)
-                loadSlotEmptyLabel.gameObject.SetActive(slots == null || slots.Count == 0);
-
-            if (slots == null || slots.Count == 0)
-                return;
-
-            foreach (var saveInfo in slots)
-            {
-                string saveFile = saveInfo.SaveFileName;
-                var slotUI = PoolManager.Instance.GetFromPool<LoadSlotUI>(
-                    loadSlotTemplate,
-                    loadSlotContent,
-                    worldPositionStays: false);
-                if (slotUI == null)
-                    continue;
-
-                slotUI.gameObject.name = $"Slot_{saveFile}";
-
-                var button = slotUI.SlotBotton;
-                if (button != null)
-                {
-                    button.onClick.RemoveAllListeners();
-                    button.onClick.AddListener(() =>
-                    {
-                        ClosePopupUI();
-                        SlotSelected?.Invoke(saveFile);
-                    });
-                }
-
-                var label = slotUI.LabelText;
-                if (label != null)
-                    label.text = saveInfo.DisplayName;
-
-                loadSlotEntries.Add(slotUI);
-            }
-        }
-
-        private void ClearLoadSlotEntries()
-        {
-            foreach (var entry in loadSlotEntries)
-            {
-                if (entry != null)
-                    PoolManager.Instance.ReleaseFromPool(entry);
-            }
-            loadSlotEntries.Clear();
+            ClosePopupUI();
+            SlotSelected?.Invoke(saveFile);
         }
     }
 }

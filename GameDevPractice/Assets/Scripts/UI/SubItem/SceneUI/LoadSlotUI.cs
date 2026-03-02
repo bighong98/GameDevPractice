@@ -38,6 +38,12 @@ public sealed class LoadSlotUI : BaseUI, IPoolObject
     public void OnGetFromPool()
     {
         EnsureReferences();
+
+        if (transform is RectTransform rectTransform)
+        {
+            rectTransform.localScale = Vector3.one;
+            rectTransform.anchoredPosition3D = Vector3.zero;
+        }
     }
 
     public void OnReleaseFromPool()
@@ -47,6 +53,9 @@ public sealed class LoadSlotUI : BaseUI, IPoolObject
 
         if (labelText != null)
             labelText.text = string.Empty;
+
+        if (transform is RectTransform rectTransform)
+            rectTransform.localScale = Vector3.one;
     }
 
     public void OnDestroyFromPool()

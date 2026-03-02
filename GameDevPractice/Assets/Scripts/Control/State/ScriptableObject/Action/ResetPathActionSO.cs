@@ -12,7 +12,8 @@ namespace TH.Control.Data
         public override void Execute(IActionStateController controller)
         {
             if (!controller.Components.TryGet(out NavMeshAgent navMeshAgent)) return;
-            
+            if (!navMeshAgent.isActiveAndEnabled || !navMeshAgent.isOnNavMesh) return;
+
             navMeshAgent.ResetPath();
         }
     }

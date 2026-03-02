@@ -41,6 +41,7 @@ public static class Enums
         Sound,
         Blank,
         KeyBinding,
+        SaveLoad,
     }
     
     public enum UIEvent

@@ -22,18 +22,6 @@ namespace TH.UI
 
         #endregion
 
-        public readonly struct SaveSlotViewData
-        {
-            public string SaveFileName { get; }
-            public string DisplayName { get; }
-
-            public SaveSlotViewData(string saveFileName, string displayName)
-            {
-                SaveFileName = saveFileName;
-                DisplayName = displayName;
-            }
-        }
-
         public event Action NewGameRequested;
         public event Action ContinueRequested;
         public event Action LoadRequested;
@@ -112,9 +100,14 @@ namespace TH.UI
 
         public void ShowLoadSlots(IReadOnlyList<SaveSlotViewData> slots)
         {
-            this.Log($"ShowLoadSlots() slots.Count: {slots.Count}", Logg.LoggingMode.Completed);
+            int slotCount = slots?.Count ?? 0;
+            this.Log($"ShowLoadSlots() slots.Count: {slotCount}", Logg.LoggingMode.Completed);
 
             var panel = UIManager.Instance.ShowPopupUI<LoadSlotPanelUI>(loadSlotPanelKey);
+            if (panel == null)
+                return;
+
+            panel.SlotSelected -= HandleSlotSelected;
             panel.SlotSelected += HandleSlotSelected;
             panel.ShowLoadSlots(slots);
         }

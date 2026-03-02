@@ -36,6 +36,11 @@ public class OptionMenuUI : PopupUI
     private Enums.OptionCategory? activeCategory;
 
     private const string OptionCategoryPanelMapSOKey = "OptionCategoryPanelMapSO";
+    private const float CategoryButtonLabelMinFontSize = 12f;
+    private const float CategoryButtonLabelHorizontalPadding = 10f;
+    private const float CategoryButtonLabelVerticalPadding = 5f;
+    private const float CategoryButtonLabelShortMaxFontSize = 16f;
+    private const int CategoryButtonLabelShortTextThreshold = 3;
     private const string DefaultResetConfirmText = "옵션을 기본값으로 초기화하시겠습니까?";
     private const string ExitGameConfirmText = "게임을 저장하고 종료하시겠습니까?";
     private const string MainMenuConfirmText = "게임을 저장하고 메인 화면으로 이동하시겠습니까?";
@@ -77,6 +82,7 @@ public class OptionMenuUI : PopupUI
     {
         // 옵션 변경을 PlayerPrefs에 반영
         PlayerPrefs.Save();
+        base.OnPopupClosed();
     }
 
     public override void ClosePopupUI()
@@ -308,27 +314,69 @@ public class OptionMenuUI : PopupUI
     // 카테고리 버튼 라벨 설정
     private static void SetButtonLabel(OptionCategoryButton button, string label)
     {
-        if (button == null) return;
+        if (button == null)
+            return;
 
-        // 명시된 Label 필드가 있으면 우선 사용
         if (button.Label != null)
         {
             button.Label.text = label;
+            ConfigureCategoryButtonLabel(button.Label, label);
             return;
         }
 
-        // TMP를 우선 탐색하고, 없으면 레거시 Text로 폴백
         TMP_Text tmp = button.GetComponentInChildren<TMP_Text>(true);
         if (tmp != null)
         {
             tmp.text = label;
+            ConfigureCategoryButtonLabel(tmp, label);
             return;
         }
 
         Text text = button.GetComponentInChildren<Text>(true);
         if (text != null)
-        {
             text.text = label;
+    }
+
+
+    private static void ConfigureCategoryButtonLabel(TMP_Text label, string textValue)
+    {
+        if (label == null)
+            return;
+
+        EnsureCategoryButtonLabelRect(label.rectTransform);
+
+        label.enableAutoSizing = true;
+        label.textWrappingMode = TextWrappingModes.NoWrap;
+        label.overflowMode = TextOverflowModes.Ellipsis;
+
+        if (label.fontSizeMin <= 0f || label.fontSizeMin > CategoryButtonLabelMinFontSize)
+            label.fontSizeMin = CategoryButtonLabelMinFontSize;
+
+        string normalized = string.IsNullOrEmpty(textValue) ? string.Empty : textValue.Replace(" ", string.Empty);
+        if (normalized.Length <= CategoryButtonLabelShortTextThreshold)
+        {
+            if (label.fontSizeMax <= 0f || label.fontSizeMax > CategoryButtonLabelShortMaxFontSize)
+                label.fontSizeMax = CategoryButtonLabelShortMaxFontSize;
         }
     }
+
+
+    private static void EnsureCategoryButtonLabelRect(RectTransform rect)
+    {
+        if (rect == null)
+            return;
+
+        bool hasZeroArea = Mathf.Approximately(rect.rect.width, 0f) || Mathf.Approximately(rect.rect.height, 0f);
+        bool needsStretch = hasZeroArea || (rect.anchorMin == rect.anchorMax && rect.sizeDelta == Vector2.zero);
+        if (!needsStretch)
+            return;
+
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.offsetMin = new Vector2(CategoryButtonLabelHorizontalPadding, CategoryButtonLabelVerticalPadding);
+        rect.offsetMax = new Vector2(-CategoryButtonLabelHorizontalPadding, -CategoryButtonLabelVerticalPadding);
+    }
+
+
 }

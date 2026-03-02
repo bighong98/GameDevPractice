@@ -179,6 +179,19 @@ namespace TH.UI
             CancelAndRenewPopupCTS(); // 새로운 CTS 생성
             OwnerCTSRegistration = ownerToken.Register(CancelAndClose); // owner 토큰이 취소되면 현재 팝업도 취소되도록 등록
         }
+
+        public bool TryGetPopupToken(out CancellationToken token)
+        {
+            if (PopupCTS != null && !PopupCTS.IsCancellationRequested)
+            {
+                token = PopupCTS.Token;
+                return true;
+            }
+
+            token = default;
+            return false;
+        }
+
         
         // CancellationTokenSource 취소 및 정리
         protected void CancelPopupCTS()

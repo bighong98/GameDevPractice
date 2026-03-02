@@ -58,7 +58,13 @@ namespace TH.Control.Movement
         // 도착 판정 거리 임계값
         private const float distanceTolerance = 2.0f;
         // 거리 비교 안정화 버퍼값
+        
+        private static bool CanControlAgent(NavMeshAgent agent)
+        {
+            return agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh;
+        }
         private const float distanceCompareBuffer = 0.1f;
+
 
         // 필수 컴포넌트 캐시 및 스탯 SO 유효성 점검 단계
         private void Awake()
@@ -101,7 +107,6 @@ namespace TH.Control.Movement
         // 월드 좌표 목적지 설정 처리
         public void SetDestination(Vector3 destination, bool notify = true)
         {
-            // 영벡터 목적지 무효 입력 가드
             if (destination == Vector3.zero) return;
 
             currentDestination = destination;
@@ -125,7 +130,7 @@ namespace TH.Control.Movement
                 // 요구 거리 충족 시 이동 정지 상태 전환
                 currentDestination = Vector3.zero;
 
-                if (navMeshAgent != null)
+                if (CanControlAgent(navMeshAgent))
                 {
                     navMeshAgent.ResetPath();
                     navMeshAgent.isStopped = true;
@@ -188,7 +193,7 @@ namespace TH.Control.Movement
             currentDestination = Vector3.zero;
             SetFollowingTarget(null);
 
-            if (navMeshAgent == null) return;
+            if (!CanControlAgent(navMeshAgent)) return;
 
             navMeshAgent.ResetPath();
             navMeshAgent.isStopped = true;
@@ -260,16 +265,20 @@ namespace TH.Control.Movement
             Vector3 restoredPosition = data.position.ToVector();
             Vector3 restoredRotation = data.rotation.ToVector();
 
-            // 로드 직후 이전 이동 목표 재개 방지 초기화 
             currentDestination = Vector3.zero;
             SetFollowingTarget(null);
 
             bool wasAgentEnabled = navMeshAgent.enabled;
+            bool canControlAgent = CanControlAgent(navMeshAgent);
             if (wasAgentEnabled)
             {
-                navMeshAgent.ResetPath();
-                navMeshAgent.velocity = Vector3.zero;
-                navMeshAgent.isStopped = true;
+                if (canControlAgent)
+                {
+                    navMeshAgent.ResetPath();
+                    navMeshAgent.velocity = Vector3.zero;
+                    navMeshAgent.isStopped = true;
+                }
+
                 navMeshAgent.enabled = false;
             }
 
@@ -280,9 +289,13 @@ namespace TH.Control.Movement
             if (wasAgentEnabled)
             {
                 navMeshAgent.enabled = true;
-                navMeshAgent.ResetPath();
-                navMeshAgent.velocity = Vector3.zero;
-                navMeshAgent.isStopped = true;
+
+                if (CanControlAgent(navMeshAgent))
+                {
+                    navMeshAgent.ResetPath();
+                    navMeshAgent.velocity = Vector3.zero;
+                    navMeshAgent.isStopped = true;
+                }
             }
 
             return true;

@@ -19,6 +19,7 @@ namespace TH.UI
         // 외부 서비스 (ServiceLocator로 주입)
         private ISaveSystem saveSystem;
         private ISaveFileHandler saveFileHandler;
+        private readonly LoadSlotConfirmModule loadSlotConfirmModule = new();
         
         // SceneCatalog 비동기 로드 관리
         private const string SceneCatalogKey = "SceneCatalogSO";
@@ -72,6 +73,8 @@ namespace TH.UI
             view.OptionRequested -= HandleOptionRequested;
             view.QuitRequested -= HandleQuitRequested;
             view.LoadSlotSelected -= HandleLoadSlotSelected;
+
+            loadSlotConfirmModule.CancelActiveRequest();
         }
 
         #region Initialization
@@ -134,12 +137,11 @@ namespace TH.UI
 
         private void HandleLoadSlotSelected(string saveFile)
         {
-            if (string.IsNullOrEmpty(saveFile))
-                return;
-
-            LoadFromSlotAsync(saveFile).Forget();
+            loadSlotConfirmModule.Request(
+                saveFile,
+                confirmedSaveFile => LoadFromSlotAsync(confirmedSaveFile).Forget());
         }
-
+        
         private void HandleOptionRequested()
         {
             UIManager.Instance.ShowOptionMenu();
@@ -213,13 +215,13 @@ namespace TH.UI
             return recent.HasValue ? recent.Value.FileName : null;
         }
 
-        private static List<MainMenuUI.SaveSlotViewData> BuildSlotViewData(IReadOnlyList<SaveFileInfo> saveFiles)
+        private static List<SaveSlotViewData> BuildSlotViewData(IReadOnlyList<SaveFileInfo> saveFiles)
         {
-            var slots = new List<MainMenuUI.SaveSlotViewData>(saveFiles.Count);
+            var slots = new List<SaveSlotViewData>(saveFiles.Count);
             foreach (var saveInfo in saveFiles)
             {
                 string label = $"{saveInfo.FileName}  {saveInfo.SaveDate:yyyy/MM/dd HH:mm}";
-                slots.Add(new MainMenuUI.SaveSlotViewData(saveInfo.FileName, label));
+                slots.Add(new SaveSlotViewData(saveInfo.FileName, label));
                 Logg.Log($"[MainMenuController] BuildSlotViewData - slot({label})", Logg.LoggingMode.Completed);
             }
             return slots;

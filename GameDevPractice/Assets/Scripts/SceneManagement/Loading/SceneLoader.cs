@@ -181,7 +181,11 @@ namespace TH.SceneManagement
                 // 타겟 씬 활성화 (씬에 배치된 게임오브젝트이ㅡ Awake(), OnEnable() 실행됨)
                 await result.ActivateAsync().ToUniTask(cancellationToken: token);
                 // 씬 매니저에게 Active Scene 변동 전달 (멀티 씬 문제 대응)
-                SceneManager.SetActiveScene(result.Scene);
+                if (!result.Scene.IsValid() || !result.Scene.isLoaded)
+                    throw new InvalidOperationException("[" + nameof(SceneLoader) + "] activated scene is invalid or not loaded: " + key);
+
+                if (!SceneManager.SetActiveScene(result.Scene))
+                    throw new InvalidOperationException("[" + nameof(SceneLoader) + "] SceneManager.SetActiveScene failed: " + result.Scene.name);
                 // 1프레임 대기 (Start() 실행 보장 
                 // -> SceneManager.GetActiveScene()으로 현재 활성화 씬 정보가 필요한 작업의 경우 Start에서 실행 권장함)
                 await UniTask.Yield();
@@ -252,42 +256,42 @@ namespace TH.SceneManagement
             {
                 Logg.Log($"[SceneLoader] LoadSceneWithAddressablesAsync({key})", Logg.LoggingMode.Completed);
                 handle = Addressables.LoadSceneAsync(key, LoadSceneMode.Additive, activateOnLoad: false);
-                
-                var result = await handle;
+
+                await handle;
                 if (handle.Status == AsyncOperationStatus.Failed)
                     throw handle.OperationException ??
                           new Exception($"[{nameof(SceneLoader)}] load scene failed: {key}");
-                
-                // // 씬 활성화는 LoadSceneAsync()에서 씬 활성화 전 수행이 필요한 작업(정리 작업) 처리 후 실행
-                // await result.ActivateAsync().ToUniTask(cancellationToken: token);
-                
-                // 이전 씬, 현재 씬 갱신
+
                 if (currentSceneHandle.IsValid())
                     prevSceneHandle = currentSceneHandle;
                 currentSceneHandle = handle;
+
+                await UniTask.NextFrame(token);
+                return handle.Result;
             }
-            catch
+            catch (Exception e)
             {
-                Logg.Log($"[SceneLoader] exception occured while load scene with addressables '{handle.DebugName}'");
-                if (!handle.IsValid())
+                string debugName = handle.IsValid() ? handle.DebugName : key?.ToString() ?? "null";
+                Logg.LogError($"[SceneLoader] exception occured while load scene with addressables '{debugName}' - {e}");
+
+                if (handle.IsValid())
                 {
-                    Logg.LogError($"[{nameof(SceneLoader)}] scene handle is invalid: {key}");
-                    throw;
+                    try
+                    {
+                        if (handle.IsDone)
+                            await Addressables.UnloadSceneAsync(handle, autoReleaseHandle: true)
+                                .ToUniTask(cancellationToken: token);
+                        else
+                            Addressables.Release(handle);
+                    }
+                    catch (Exception cleanupException)
+                    {
+                        Logg.LogError($"[{nameof(SceneLoader)}] failed to cleanup scene handle '{debugName}' - {cleanupException}");
+                    }
                 }
-                
-                try
-                {
-                    if (handle.IsDone)
-                        await Addressables.UnloadSceneAsync(handle, autoReleaseHandle: true).
-                            ToUniTask(cancellationToken: token);
-                    else Addressables.Release(handle);
-                }
-                catch (Exception e) { throw new Exception($"[{nameof(SceneLoader)}] " 
-                                                          + $"failed to load scene - {e.Message}"); }
+
+                throw;
             }
-            
-            await UniTask.NextFrame(token); // 1 프레임 대기
-            return handle.Result;
         }
 
         private async UniTask UnloadPreviousSceneAsync(CancellationToken token)

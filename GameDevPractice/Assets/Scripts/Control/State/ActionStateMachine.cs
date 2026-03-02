@@ -1,7 +1,10 @@
 // 상태 머신 전이 흐름 제어 구현 스크립트
 using System;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using System.Threading;
+using TH.Core.Service;
+using TH.SceneManagement;
 using TH.Control.Data;
 using TH.Utils;
 using UnityEngine;
@@ -47,12 +50,15 @@ namespace TH.Control.State
         // 런타임 전이 락 식별자 발급 시퀀스
         private int _nextRuntimeLockId = 1;
         // 현재 활성 런타임 전이 락 식별자 집합
+        
+        private ISceneLoader sceneLoader;
         private readonly HashSet<int> _runtimeLockIds = new();
 
         // 컴포넌트 제공자 준비와 초기 상태 토큰 생성
         private void Awake()
         {
             Components = new ComponentProvider(gameObject);
+            sceneLoader = ServiceLocator.Get<ISceneLoader>();
             RenewStateToken();
         }
 
@@ -67,13 +73,17 @@ namespace TH.Control.State
         // 재활성화 시 초기 상태 재진입을 위한 토큰/전이 데이터 재정렬
         private void OnEnable()
         {
+            sceneLoader ??= ServiceLocator.Get<ISceneLoader>();
+            if (sceneLoader.IsNotNull())
+                sceneLoader.OnBeforeSceneChanged += HandleBeforeSceneChanged;
+
             if (_stateTokenSource == null)
                 RenewStateToken();
 
             if (initialState == null) return;
 
-            // 상태머신을 초기 상태로 재진입
-            // -> 풀 재사용 객체 이벤트 전이 정상화 목적
+            // 상태머신은 초기 상태로 재진입
+            // -> 풀 재사용 등 객체 재활성화 이벤트에서도 상태가 정상인 목적
             if (currentState != null)
             {
                 UnbindTransitions();
@@ -90,7 +100,10 @@ namespace TH.Control.State
         // 비활성화 시 전이 구독/락/토큰 정리
         private void OnDisable()
         {
-            // 씬 언로드/비활성화 시 유령 전환 방지
+            if (sceneLoader.IsNotNull())
+                sceneLoader.OnBeforeSceneChanged -= HandleBeforeSceneChanged;
+
+            // 씬 이동 경로 포함 비활성화 시점에 남은 구독/대기 토큰 정리
             UnbindTransitions();
             ResetTransitionLocksOnStateChange();
             TryCancelDisposeStateToken();
@@ -114,6 +127,27 @@ namespace TH.Control.State
             
             currentState.UpdateState(this);
             stateTime += Time.deltaTime;
+        }
+
+        private UniTask HandleBeforeSceneChanged(CancellationToken externalToken)
+        {
+            PrepareForSceneTransition();
+            return UniTask.CompletedTask;
+        }
+
+        private void PrepareForSceneTransition()
+        {
+            // 씬 전환 정리 단계에서는 상태 Exit 액션을 실행하지 않음
+            // (NavMesh/애니메이션 등 씬 종료 라이프사이클 의존 액션으로 인한 예외 방지)
+            currentState = null;
+            stateTime = 0f;
+            _pendingState = null;
+
+            _stateArmed.Clear();
+            _globalArmed.Clear();
+            UnbindTransitions();
+            ResetTransitionLocksOnStateChange();
+            TryCancelDisposeStateToken();
         }
 
         #region IActionStateController
