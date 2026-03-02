@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using TH.SceneManagement.Data;
+using TH.Resource;
 using TH.SceneManagement;
 
 using UnityEngine;
@@ -18,10 +20,15 @@ namespace TH.Core.Service
         private readonly Queue<Func<CancellationToken, UniTask>> afterSceneLoadTasks = new();
         
         private readonly ISceneLoader sceneLoader;
+        private readonly IResourceLoader resourceLoader;
+        private SceneCatalogSO sceneCatalog;
+
+        private const string SceneCatalogKey = "SceneCatalogSO";
         
         private GameSceneManager()
         {
             sceneLoader = ServiceLocator.Get<ISceneLoader>();
+            resourceLoader = ServiceLocator.Get<IResourceLoader>();
         }
         
         public async UniTask LoadSceneAsync(object key, bool reload = false)
@@ -73,6 +80,25 @@ namespace TH.Core.Service
 
         #endregion
         
+        public async UniTask LoadMainMenuSceneAsync(bool reload = false, CancellationToken token = default)
+        {
+            sceneCatalog ??= await resourceLoader.LoadAsync<SceneCatalogSO>(SceneCatalogKey, token);
+            if (sceneCatalog == null)
+            {
+                Logg.LogWarning($"[{nameof(GameSceneManager)}] failed to load {SceneCatalogKey}");
+                return;
+            }
+
+            var mainMenuEntry = sceneCatalog.GetMainMenuSceneEntry();
+            if (mainMenuEntry == null || mainMenuEntry.sceneRef == null)
+            {
+                Logg.LogWarning($"[{nameof(GameSceneManager)}] main menu scene is not configured");
+                return;
+            }
+
+            await LoadSceneAsync(mainMenuEntry.sceneRef, reload);
+        }
+
         public async UniTask QuitGame()
         {
             await BeforeSceneLoad(CancellationToken.None);

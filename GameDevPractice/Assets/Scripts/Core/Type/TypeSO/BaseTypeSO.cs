@@ -7,8 +7,8 @@ using TH.Core.Service;
 
 namespace TH.Resource
 {
-    // 게임오브젝트 타입별 데이터 스크립터블 오브젝트의 상위 클래스
-    // 모든 타입 데이터 SO의 공통 로직을 포함함
+    // 타입 데이터 저장 ScriptableObject 추상 클래스
+    // 모든 타입 데이터 SO의 공통 필드를 포함
     public abstract class BaseTypeSO : ScriptableObject, ITypeSO
     {
         [Header("Prefab Reference")]
@@ -18,7 +18,7 @@ namespace TH.Resource
         public string nameString;
         public Sprite sprite;
 
-        // 비동기 초기화가 필요한 필드가 있는 경우 override해서 사용
+        // 비동기 초기화가 필요한 필드가 있는 경우 IAsyncInitializer 인터페이스 구현 및 메서드 override해서 사용
         // 해당 필드가 AssetReference 타입이라면 ResourceManager.Instance.ExtractAssetFromRef() 사용
         public virtual UniTask InitializeAsync(CancellationToken token = default)
         {

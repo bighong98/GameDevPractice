@@ -112,8 +112,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: '?'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 6a92fd3b8fe6188468ddd7d978c2ee91, type: 2}
-  m_sharedMaterial: {fileID: 4118353011660254800, guid: 6a92fd3b8fe6188468ddd7d978c2ee91, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: f6d6b904a4f1f3d43b31e22f66f65bbf, type: 2}
+  m_sharedMaterial: {fileID: 2686309706199086286, guid: f6d6b904a4f1f3d43b31e22f66f65bbf, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -148,6 +148,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -248,8 +249,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\uC544\uB2C8\uC624"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 6a92fd3b8fe6188468ddd7d978c2ee91, type: 2}
-  m_sharedMaterial: {fileID: 4118353011660254800, guid: 6a92fd3b8fe6188468ddd7d978c2ee91, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: f6d6b904a4f1f3d43b31e22f66f65bbf, type: 2}
+  m_sharedMaterial: {fileID: 2686309706199086286, guid: f6d6b904a4f1f3d43b31e22f66f65bbf, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -284,6 +285,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -552,7 +554,6 @@ MonoBehaviour:
   contentArea: {fileID: 2427810281985035747}
   placePointerPosition: 0
   duplicatedPopupHandle: 2
-  blurBackground: 0
   anchorWorldObject: 0
   playEnterAnimation: 1
   enterAnimation: 0
@@ -625,8 +626,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\uC608"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 6a92fd3b8fe6188468ddd7d978c2ee91, type: 2}
-  m_sharedMaterial: {fileID: 4118353011660254800, guid: 6a92fd3b8fe6188468ddd7d978c2ee91, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: f6d6b904a4f1f3d43b31e22f66f65bbf, type: 2}
+  m_sharedMaterial: {fileID: 2686309706199086286, guid: f6d6b904a4f1f3d43b31e22f66f65bbf, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -661,6 +662,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0

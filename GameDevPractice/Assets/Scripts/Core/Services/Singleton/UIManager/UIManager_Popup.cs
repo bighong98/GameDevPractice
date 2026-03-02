@@ -18,6 +18,7 @@ namespace TH.Core.Service
 
         /// <summary>팝업 중복 오픈 체크용 딕셔너리</summary>
         private readonly Dictionary<Type, bool> popupDuplicateCheck = new();
+        private bool questionPopupGlyphPrewarmed;
         
         #region Popup UI Method
 
@@ -302,15 +303,38 @@ namespace TH.Core.Service
 
         private const string OptionMenuUIKey = "OptionMenuUI";
         private const string InventoryUIKey = "InventoryUI.prefab";
+        private const string QuestionPopupUIKey = "QuestionPopupUI.prefab";
         private const string ToastMessageUIKey = "";
+
+        private const string QuestionPopupWarmCharacters = "\uC885\uB8CC \uC804 \uAC8C\uC784\uC744 \uC800\uC7A5\uD558\uC2DC\uACA0\uC2B5\uB2C8\uAE4C?\uBA54\uC778 \uD654\uBA74\uC73C\uB85C \uC774\uB3D9\uD558\uC2DC\uACA0\uC2B5\uB2C8\uAE4C?\uC608\uC544\uB2C8\uC624";
 
         private void PrepareFrequentlyUsedUIs()
         {
             PrepareFrequentlyUsedUI<OptionMenuUI>(OptionMenuUIKey, UICanvas.Popup);
             PrepareFrequentlyUsedUI<InventoryUI>(InventoryUIKey, UICanvas.Popup);
+            PrepareFrequentlyUsedUI<QuestionPopupUI>(QuestionPopupUIKey, UICanvas.Popup);
             PrepareFrequentlyUsedUI<ToastMessageUI>(ToastMessageUIKey, UICanvas.FeedbackOverlay);
         }
+        private void PrewarmQuestionPopupUI()
+        {
+            if (questionPopupGlyphPrewarmed)
+                return;
 
+            if (!TryGetOrCreateUIPool(QuestionPopupUIKey, UICanvas.Popup, out var pool))
+                return;
+
+            var ui = pool.Get();
+            if (ui is QuestionPopupUI questionPopup)
+            {
+                questionPopup.PrewarmGlyphs(QuestionPopupWarmCharacters);
+                questionPopupGlyphPrewarmed = true;
+            }
+
+            if (ui is Component comp)
+                comp.gameObject.SetActive(false);
+
+            pool.Release(ui);
+        }
         private void PrewarmInventoryUI()
         {
             if (!TryGetOrCreateUIPool(InventoryUIKey, UICanvas.Popup, out var pool))
@@ -319,6 +343,7 @@ namespace TH.Core.Service
             var ui = pool.Get();
             if (ui is Component comp)
                 comp.gameObject.SetActive(false);
+
             pool.Release(ui);
         }
 

@@ -77,6 +77,33 @@ namespace TH.UI
             return true;
         }
 
+        public void PrewarmGlyphs(string warmCharacters)
+        {
+            if (string.IsNullOrEmpty(warmCharacters))
+                return;
+
+            var warmedFontIds = new HashSet<int>(3);
+            TryPrewarmGlyphs(GetTMPText((int)TMPTexts.QuestionText), warmCharacters, warmedFontIds);
+            TryPrewarmGlyphs(GetTMPText((int)TMPTexts.YesText), warmCharacters, warmedFontIds);
+            TryPrewarmGlyphs(GetTMPText((int)TMPTexts.NoText), warmCharacters, warmedFontIds);
+        }
+
+        private static void TryPrewarmGlyphs(TMPro.TMP_Text text, string warmCharacters, HashSet<int> warmedFontIds)
+        {
+            var font = text?.font;
+            if (font == null)
+                return;
+
+            int fontId = font.GetInstanceID();
+            if (!warmedFontIds.Add(fontId))
+                return;
+
+            if (font.atlasPopulationMode != TMPro.AtlasPopulationMode.Dynamic)
+                return;
+
+            // Glyph prewarm is best-effort. Missing characters are handled by font/fallback setup.
+            font.TryAddCharacters(warmCharacters, out _);
+        }
         private void OnYesButtonPressed()
         {
             DecideAndClose(yesAction);

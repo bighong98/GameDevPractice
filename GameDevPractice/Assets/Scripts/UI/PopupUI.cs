@@ -266,7 +266,7 @@ namespace TH.UI
         // IPoolObject.OnCreateFromPool() 구현
         // 오브젝트 풀에서 처음 생성될 때 호출 (초기화)
         // Canvas 설정 및 컴포넌트 캐싱
-        public void OnCreateFromPool()
+        public virtual void OnCreateFromPool()
         {
             IsPooledObject = true;
             // UIManager를 통해 Canvas 설정 (render mode, sorting 등)

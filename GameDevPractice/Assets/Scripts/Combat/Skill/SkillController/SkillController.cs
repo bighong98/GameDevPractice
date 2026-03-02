@@ -13,10 +13,15 @@ namespace TH.Combat
     // 전투 스킬 상태 통합 제어 컴포넌트
     public sealed partial class SkillController : MonoBehaviour, ISkillController, ISkillExecutionServices
     {
+        #region static fields
         // 빈 스킬 목록 반환용 정적 캐시
         private static readonly SkillTypeSO[] EmptySkills = Array.Empty<SkillTypeSO>();
         // 전역 공격 시퀀스 번호
         private static int attackSequence;
+
+        #endregion
+
+        #region Serialized Fields
 
         [Header("Initial Skills")]
         // 시작 시 자동 등록 대상 스킬 목록
@@ -30,28 +35,34 @@ namespace TH.Combat
         // 스킬 대상 레이어 매핑 자원
         [SerializeField] private SkillTargetLayerMapSO skillTargetLayerMap;
 
-        // 공격력 계산용 스탯 참조
-        private IStatHolder statHolder;
-        // 장비 보유자 참조
-        private EquipmentHolder equipHolder;
-        // 리소스 로더 참조
-        private IResourceLoader resourceLoader;
-        // 전투 시스템 참조 캐시
-        private ICombatSystem combatSystem;
-        // 투사체 실행기 참조
-        private ISkillProjectileExecutor projectileExecutor;
-        // 타겟 평가기 캐시
-        private SkillTargetingEvaluator targetingEvaluator;
-        // 슬롯 정렬 프로파일 캐시
-        private SkillCategorySortProfileSO categorySortProfile;
+        #endregion
 
-        // 등록 스킬 저장소
-        private SkillBook skillBook;
-        // 현재 장착 무기 스킬 목록 캐시
+        #region Character Components 
+
+        private IStatHolder statHolder; // 캐릭터 능력치 참조
+        private EquipmentHolder equipHolder; // 캐릭터 장착 장비 목록 참조
+        
+        #endregion
+
+        #region Outer Services
+        
+        private IResourceLoader resourceLoader; // 리소스 로더 참조 (SO 에셋 로드 등에 사용)
+        private ICombatSystem combatSystem; // 전투 시스템 참조 (대미지 처리)
+        
+        #endregion
+
+        #region Internal Modules & Data (ScriptableObject)
+        private ISkillProjectileExecutor projectileExecutor; // 투사체 발사 (+오브젝트 풀링 적용)
+        private SkillTargetingEvaluator targetingEvaluator; // 스킬 타겟팅 레이어 구분 
+        private SkillCategorySortProfileSO categorySortProfile; // 스킬 슬롯 정렬 프로필 데이터 SO
+
+        private SkillBook skillBook; // 등록 스킬 캐시
+        private SkillCaster skillCaster; // 스킬 사용 및 쿨다운 관리
+
+        #endregion
+
+        // 현재 장착 무기 스킬 목록
         private readonly List<SkillTypeSO> equippedWeaponSkills = new();
-        // 카테고리별 무기 스킬 선택 캐시
-        // 쿨다운 추적기
-        private SkillCaster skillCaster;
 
         // 스킬별 콤보 진행 컨텍스트 맵
         private readonly Dictionary<SkillTypeSO, ComboContext> comboContexts = new();

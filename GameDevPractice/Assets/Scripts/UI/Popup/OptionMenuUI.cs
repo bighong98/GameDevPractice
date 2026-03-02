@@ -1,4 +1,6 @@
+using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
+using TH.SaveLoad;
 using TH.Core.Service;
 using TH.UI;
 using TH.Utils;
@@ -12,8 +14,10 @@ public class OptionMenuUI : PopupUI
     
     enum Buttons
     {
-        exitButton,
-        defaultButton,
+        closeOptionUIButton,
+        mainMenuButton,
+        exitGameButton,
+        optionResetButton,
     }
 
     enum GameObjects
@@ -33,6 +37,8 @@ public class OptionMenuUI : PopupUI
 
     private const string OptionCategoryPanelMapSOKey = "OptionCategoryPanelMapSO";
     private const string DefaultResetConfirmText = "옵션을 기본값으로 초기화하시겠습니까?";
+    private const string ExitGameConfirmText = "게임을 저장하고 종료하시겠습니까?";
+    private const string MainMenuConfirmText = "게임을 저장하고 메인 화면으로 이동하시겠습니까?";
 
     protected override void Awake()
     {
@@ -49,8 +55,10 @@ public class OptionMenuUI : PopupUI
         BindButton(typeof(Buttons));
         
         // 버튼 이벤트를 연결하고 카테고리 UI 구성
-        GetButton((int)Buttons.defaultButton).onClick.AddListener(ShowResetConfirmPopup);
-        GetButton((int)Buttons.exitButton).onClick.AddListener(ClosePopupUI);
+        GetButton((int)Buttons.optionResetButton).onClick.AddListener(ShowResetConfirmPopup);
+        GetButton((int)Buttons.closeOptionUIButton).onClick.AddListener(ClosePopupUI);
+        GetButton((int)Buttons.mainMenuButton).onClick.AddListener(OnMainMenuButtonClicked);
+        GetButton((int)Buttons.exitGameButton).onClick.AddListener(OnExitGameButtonClicked);
         BuildCategoryUI();
         
         return true;
@@ -76,6 +84,85 @@ public class OptionMenuUI : PopupUI
         // 닫히기 전에 활성 패널이 진행 중인 변경 정리 기회 제공
         NotifyActivePanelClosed();
         base.ClosePopupUI(); // 반드시 호출
+    }
+
+    private void OnMainMenuButtonClicked()
+    {
+        ShowMainMenuConfirmPopup();
+    }
+
+    private void OnExitGameButtonClicked()
+    {
+        ShowExitGameConfirmPopup();
+    }
+
+    private async UniTask MoveToMainMenuAsync()
+    {
+        ClosePopupUI();
+        await GameSceneManager.Instance.LoadMainMenuSceneAsync();
+    }
+
+    private async UniTask ExitGameAsync()
+    {
+        await GameSceneManager.Instance.QuitGame();
+    }
+
+    private void ShowMainMenuConfirmPopup()
+    {
+        if (UIManager.Instance.ShowPopupUI<QuestionPopupUI>() is not { } popup) return;
+
+        if (PopupCTS == null || PopupCTS.IsCancellationRequested)
+            CancelAndRenewPopupCTS();
+
+        popup.ChainPopupCTS(PopupCTS.Token);
+
+        popup.SetQuestion(
+            questionString: MainMenuConfirmText,
+            YesAction: () =>
+            {
+                popup.ClosePopupUI();
+                MoveToMainMenuAsync().Forget();
+            },
+            NoAction: () =>
+            {
+                popup.ClosePopupUI();
+            });
+    }
+
+    private void ShowExitGameConfirmPopup()
+    {
+        if (UIManager.Instance.ShowPopupUI<QuestionPopupUI>() is not { } popup) return;
+
+        if (PopupCTS == null || PopupCTS.IsCancellationRequested)
+            CancelAndRenewPopupCTS();
+
+        popup.ChainPopupCTS(PopupCTS.Token);
+
+        popup.SetQuestion(
+            questionString: ExitGameConfirmText,
+            YesAction: () =>
+            {
+                popup.ClosePopupUI();
+                SaveAndExitGameAsync().Forget();
+            },
+            NoAction: () =>
+            {
+                popup.ClosePopupUI();
+            });
+    }
+
+    private async UniTask SaveAndExitGameAsync()
+    {
+        var saveSystem = ServiceLocator.Get<ISaveSystem>();
+        if (saveSystem == null)
+        {
+            Logg.LogWarning("[OptionMenuUI] ISaveSystem is not available. Quit without save.");
+            await ExitGameAsync();
+            return;
+        }
+
+        await saveSystem.SaveAsync();
+        await ExitGameAsync();
     }
 
     private void BuildCategoryUI()

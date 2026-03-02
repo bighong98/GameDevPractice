@@ -20,15 +20,17 @@ namespace TH.Resource
         private readonly Dictionary<string, AsyncOperationHandle> resourceKeys = new();
         // Addressables.LoadAssetAsync 결과 핸들 캐시 (AssetReference 기반)
         private readonly Dictionary<string, AsyncOperationHandle> resourceGuids = new ();
-        // 라벨별 에셋 번들 로드 상태 추적
+        // 라벨별 에셋 번들 로드 상태 추적용 캐시
         private readonly Dictionary<string, LoadStatus> loadStatus = new Dictionary<string, LoadStatus>();
         // 라벨 단위로 일괄 리소스 로드 완료 알림 이벤트
         public event Action<string> OnLabelResourcesLoadedAll; 
+        // 라벨별 프리로드 완료 대기 후속 작업 큐 목록 캐시
+        // -> 라벨 완료 시점 순차 실행함
         private readonly Dictionary<string, Queue<Action>> reservedPreLoadTasks = new();
         
         #region Enums
         // 어드레서블 프리로드 라벨
-        // 반드시 동일한 이름의 어드레서블 라벨이 존재해야함
+        // 동일 이름 어드레서블 라벨이 존재해야함
         enum PreLoadLabels
         {
             PreLoad_First, // 구분 무시하고 가장 처음에 로드해야할 리소스
@@ -49,6 +51,7 @@ namespace TH.Resource
 
         #endregion
 
+        // 생성 직후 라벨 상태/진행도 초기화 진입점
         public ResourceLoader()
         {
             Init();  
@@ -58,6 +61,7 @@ namespace TH.Resource
 
         private void Init()
         {
+            // 선언된 프리로드 라벨 전체 초기 상태 등록
             foreach (var label in Enum.GetNames(typeof(PreLoadLabels)))
             {
                 InitForLabel(label);
@@ -66,9 +70,12 @@ namespace TH.Resource
         
         private void InitForLabel(string label)
         {
+            // 라벨 로드 상태 초기값 설정
             loadStatus[label] = LoadStatus.NotInitialized;
+            // 라벨 완료 전 보류 콜백 큐 준비
             reservedPreLoadTasks[label] = new Queue<Action>();
 
+            // 라벨 진행도 broadcaster/cached progress 초기화
             InitLabelProcess(label);
         }
 
@@ -83,6 +90,7 @@ namespace TH.Resource
         {
             foreach (var label in Enum.GetNames(typeof(PreLoadLabels)))
             {
+                // 프리로드 라벨 순차 처리 정책
                 Logg.Log($"[ResourceLoader] start to load label '{label}' assets", Logg.LoggingMode.Completed);
                 await LoadAllAsync<UnityEngine.Object>(label);
             }
@@ -92,29 +100,34 @@ namespace TH.Resource
         // 이미 완료된 리소스 라벨인 경우 즉시 콜백 실행
         public void WaitForPreLoad(string label, Action callback)
         {
+            // 이미 완료된 라벨 즉시 콜백 실행 정책
             if (IsLoadedAll(label))
             {
                 callback?.Invoke();
                 return;
             }
             
+            // 등록되지 않은 라벨 방어 가드
             if (!reservedPreLoadTasks.TryGetValue(label, out var queue))
             {
                 Logg.LogWarning($"[ResourceLoader] invalid preload label accepted");
                 return;
             }
             
+            // 라벨 완료 시점 실행용 큐 적재
             queue.Enqueue(callback);
         }
 
         private void NotifyPreLoadDone(string label)
         {
+            // 내부 대기 작업 실행 + 외부 구독자에게 해당 라벨 리소스 로드 완료 알림
             RunReserved(label);
             OnLabelResourcesLoadedAll?.Invoke(label);
         }
         // 특정 어드레서블 라벨에 소속된 리소스 일괄 로드가 끝난 경우 대기 중인 작업들 실행
         private void RunReserved(string label)
         {
+            // 대기중인 작업이 없을 경우 즉시 리턴
             if (!reservedPreLoadTasks.TryGetValue(label, out var queue) || queue.Count <= 0) return;
             while (queue.TryDequeue(out var task))
             {
@@ -131,6 +144,7 @@ namespace TH.Resource
         private async UniTask LoadAllAsync<T>(string label, Action<string, int, int> callback = null, CancellationToken token = default)
             where T : UnityEngine.Object
         {
+            // 라벨에 연결된 로케이션 메타 조회
             var locationHandles = Addressables.LoadResourceLocationsAsync(label, typeof(T));
             var locations = await locationHandles.ToUniTask(cancellationToken: token);
 
@@ -138,19 +152,21 @@ namespace TH.Resource
             int loadCount = 0;
 
             try {
-                // 리소스가 없는 라벨은 즉시 100% 완료 처리
+                // 내부 리소스가 없는 라벨은 즉시 100% 완료 처리
                 if (totalCount <= 0) return;
                 
                 var tasks = new List<UniTask>(totalCount);
                 foreach (var loc in locations)
                 {
                     string key = loc.PrimaryKey;
+                    // 동일 키 중복 로드 방지
                     if (resourceKeys.ContainsKey(key))
                     {
                         Interlocked.Increment(ref loadCount);
                         continue;
                     }
 
+                    // 키 기반 핸들 캐시 선등록
                     var handle = Addressables.LoadAssetAsync<T>(loc);
                     resourceKeys[key] = handle;
                     
@@ -158,10 +174,12 @@ namespace TH.Resource
                         onSucceedAsync: async (asset) => await DoAsyncInitialize(asset, token),
                         onComplete: () =>
                         {
+                            // 완료 카운트 + 외부 진행도 콜백 보고
                             Interlocked.Increment(ref loadCount);
                             callback?.Invoke(key, loadCount, totalCount);
                             Logg.Log($"[ResourceLoader] finished loading: ({label} - {key}:{handle.Result})" +
                                 $"({loadCount}/{totalCount}, {loadCount / (float)totalCount})", Logg.LoggingMode.Completed);
+                            // 라벨 단위 진행도 캐시/브로드캐스트 반영
                             ReportPreLoadProgress(label, (totalCount <= 0) ? 1f : (loadCount / (float)totalCount));
                         },
                         token: token));
@@ -174,6 +192,7 @@ namespace TH.Resource
                 Logg.Log($"[ResourceLoader] finished loading label '{label}' assets", 
                 Logg.LoggingMode.Completed);
 
+                // finally 경로에서 라벨 완료 상태로 강제 반영
                 ReportPreLoadProgress(label, 1f);
                 loadStatus[label] = LoadStatus.Done; //todo: 예외 발생 시 LoadStatus 다르게 설정할지 고려
                 NotifyPreLoadDone(label);// 리소스 로딩 대기중인 클래스들에게 로딩 완료 이벤트 전달
@@ -182,6 +201,7 @@ namespace TH.Resource
             }
         }
 
+        // 단일 핸들 로드 + 성공 시 초기화 훅 + 완료 콜백 통합
         private static async UniTask LoadAndInitAsync<T>(
             AsyncOperationHandle<T> handle, 
             Func<T, UniTask> onSucceedAsync, 
@@ -190,10 +210,12 @@ namespace TH.Resource
         {
             try
             {
+                // 취소 토큰 연동 핸들 완료 대기
                 await handle.ToUniTask(cancellationToken: token);
 
                 if (handle.Status == AsyncOperationStatus.Succeeded)
                 {
+                    // 성공 후처리 훅 존재 시에만 실행
                     if (onSucceedAsync == null) return;
                     await onSucceedAsync(handle.Result);
                 }
@@ -204,24 +226,31 @@ namespace TH.Resource
             finally { onComplete?.Invoke(); }
         }
 
+        // IAsyncInitializer 구현 객체에 대한 비동기 초기화 진입점
         private async UniTask DoAsyncInitialize(object obj, CancellationToken token)
         {
+            // 초기화 인터페이스 미구현 객체 조기 반환
             if (obj is not IAsyncInitializer asyncInitializer) return;
 
             await asyncInitializer.InitializeAsync(token);
             Logg.Log($"[{GetType().Name}.DoAsyncInitialize] {obj.GetType().Name}", Logg.LoggingMode.Completed);
         }
 
+        // key 기반 단일 리소스 비동기 로드 API
+        // -> 캐시 우선 반환 후 미존재 시 어드레서블 로드 정책
         public async UniTask<T> LoadAsync<T>(string key, CancellationToken token = default) where T : UnityEngine.Object
         {
+            // 캐시 히트 시 로드 생략
             if (resourceKeys.TryGetValue(key, out AsyncOperationHandle cachedHandle))
             {
                 return (T)cachedHandle.Result;
             }
 
+            // 캐시 미스 시 로드 핸들 생성/저장
             var op = Addressables.LoadAssetAsync<T>(key);
             resourceKeys[key] = op;
 
+            // 초기화 인터페이스 구현 리소스 후처리
             var result = await op.ToUniTask(cancellationToken: token);
             if (result is IAsyncInitializer asyncInitializer)
                 await asyncInitializer.InitializeAsync(token);
@@ -242,7 +271,9 @@ namespace TH.Resource
 
             if (!assetRef.RuntimeKeyIsValid())
             {
-                Logg.LogError($"[LoadAsync] Invalid RuntimeKey for AssetReference<{typeof(T).Name}>. Asset: (name:{assetRef.Asset?.name}, guid: {assetRef.AssetGUID})");
+                Logg.LogError($"[LoadAsync] Invalid RuntimeKey for AssetReference<{typeof(T).Name}>. \n" +
+                                "Asset: (name:{(assetRef.Asset.IsNotNull() ? assetRef.Asset.name : string.Empty)}, " +
+                                "guid: {assetRef.AssetGUID})");
                 return null;
             }
             
@@ -307,12 +338,13 @@ namespace TH.Resource
         // 특정 라벨 로드 상태 확인
         public bool IsLoadedAll(string label)
         {
+            // Done 상태 정수 비교 기반 완료 판정
             return loadStatus.TryGetValue(label, out var status) && (int)status == (int)LoadStatus.Done;
         }
 
         #region Progress
 
-        // 라벨별 가중치
+        // 라벨별 진행도 합산 가중치 테이블
         private static readonly Dictionary<string, float> LabelWeights = new()
         {
             { nameof(PreLoadLabels.PreLoad_First), 0.10f },
@@ -323,7 +355,7 @@ namespace TH.Resource
             { nameof(PreLoadLabels.PreLoad_Last), 0.20f },
         };
         
-        // 전체 진행도 broadcaster 및 캐시
+        // 전체 진행도 브로드캐스터 및 최신 캐시
         private readonly MessageBroadcaster<(float, string)> _globalProgressMessage = new();
         private float _globalProgressCache;
 
@@ -338,6 +370,7 @@ namespace TH.Resource
             if (string.IsNullOrEmpty(label)) throw new ArgumentNullException(nameof(label));
             if (onProgress == null) throw new ArgumentNullException(nameof(onProgress));
 
+            // 라벨 broadcaster 지연 생성
             if (!_preloadProgress.TryGetValue(label, out var broadcaster))
             {
                 broadcaster = new MessageBroadcaster<float>();
@@ -345,6 +378,7 @@ namespace TH.Resource
                 _preloadProgressCache[label] = 0f;
             }
 
+            // 구독 직후 현재값 1회 전달 옵션
             if (fireCurrent && _preloadProgressCache.TryGetValue(label, out var current))
                 onProgress.Invoke((current, label));
             // 타겟 라벨을 캡처한 람다 형식으로 구독
@@ -354,10 +388,13 @@ namespace TH.Resource
         private void ReportPreLoadProgress(string label, float p)
         {
             Logg.Log($"[{GetType().Name}] ReportPreLoadProgress label: {label}, progress: {p}", Logg.LoggingMode.Completed);
+            // 0~1 범위 정규화
             p = Mathf.Clamp01(p);
 
+            // 최신 라벨 진행도 캐시 갱신
             _preloadProgressCache[label] = p;
 
+            // 라벨 브로드캐스터 존재 시점에만 이벤트 전파
             if (_preloadProgress.TryGetValue(label, out var broadcaster))
                 broadcaster.Report(p);
             else Logg.LogWarning($"[{GetType().Name}] ReportPreLoadProgress label: {label}, progress: {p} is ignored");
@@ -368,8 +405,10 @@ namespace TH.Resource
         
         private void InitLabelProcess(string label)
         {
+            // 라벨 진행도 채널 미생성 시 초기 생성
             if (!_preloadProgress.ContainsKey(label))
                 _preloadProgress[label] = new MessageBroadcaster<float>();
+            // 라벨 진행도 초기값 고정 및 첫 보고
             _preloadProgressCache[label] = 0f;
             ReportPreLoadProgress(label, 0f);
         }
@@ -380,6 +419,7 @@ namespace TH.Resource
             float global = 0f;
             foreach (var kvp in LabelWeights)
             {
+                // 라벨별 진행도 * 가중치 누적 합산
                 if (_preloadProgressCache.TryGetValue(kvp.Key, out var labelProgress))
                     global += labelProgress * kvp.Value;
             }
@@ -395,6 +435,7 @@ namespace TH.Resource
         {
             if (onProgress == null) throw new ArgumentNullException(nameof(onProgress));
             
+            // 구독 시점 최신 전역 진행도 즉시 전달 옵션
             if (fireCurrent) // 구독 시점 진행도 반영 필요 시 임시로 빈 문자열로 반환
                 onProgress.Invoke((_globalProgressCache, ""));
             

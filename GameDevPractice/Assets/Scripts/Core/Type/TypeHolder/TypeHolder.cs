@@ -89,8 +89,8 @@ namespace TH.Resource
             try
             {
                 type = await ResourceManager.Instance.ExtractAssetRefAsync<T>(typeRef, token);
-                // Logg.Log($"[{gameObject.name}] InitializeTypeAsync - " +
-                //      $"type: {type}", Logg.LoggingMode.Completed);
+                Logg.Log($"[{gameObject.name}] InitializeTypeAsync - " +
+                     $"type: {(type.IsNotNull() ? type : default)}", Logg.LoggingMode.Completed);
                 return type != null;
             }
             catch (Exception e) 

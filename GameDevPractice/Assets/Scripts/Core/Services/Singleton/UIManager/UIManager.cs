@@ -93,6 +93,7 @@ namespace TH.Core.Service
             SetUIContainer();
             PrepareFrequentlyUsedUIs();
             PrewarmInventoryUI();
+            PrewarmQuestionPopupUI();
             // SetTooltip();
         }
 
