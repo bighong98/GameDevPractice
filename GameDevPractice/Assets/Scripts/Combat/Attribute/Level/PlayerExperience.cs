@@ -10,6 +10,7 @@ using TH.Attribute.Stat;
 using TH.Utils;
 using TH.Core.Service;
 using UnityEngine.Scripting;
+using System.Diagnostics;
 
 namespace TH.Attribute
 {
@@ -87,9 +88,9 @@ namespace TH.Attribute
         private void InitAfterLoad()
         {
             progression = ResourceManager.Instance.Load<ProgressionSO>("ProgressionSO.asset");
-            textSpawner.Register(this, FloatingTextEventType.GetXp);
+            textSpawner?.Register(this, FloatingTextEventType.GetXp);
 
-            LevelUpTestMethod().Forget();
+            RefreshLevelDerivedValues(notifyCallbacks: true);
         }
 
         #endregion
@@ -98,21 +99,21 @@ namespace TH.Attribute
         // 타입 정보 수신 기반 시작 레벨 및 이펙트 핸들러 설정 단계
         public void ReceiveType(ScriptableObject typeInfo)
         {
-            // 플레이어 타입 정보 미일치 조기 종료 가드
             if (typeInfo is not PlayerTypeSO playerInfo) return;
-            
+
             LevelUpEffectAction = () =>
             {
-                // 파괴된 트랜스폼 참조 방어 가드
                 if (transform == null) return;
                 PoolManager.Instance.GetFromPool<SimplePooledParticlePlayer>(playerInfo.levelUpEffect, transform, transform.position);
             };
 
-            // 타입 기본 시작 레벨과 현재 레벨 불일치 보정 분기
-            if (playerInfo.startingLevel is {} defaultStartLv and > 0 && this.currentLevel > defaultStartLv)
-            {
-                SetLevel(defaultStartLv, byForce: true);
-            }
+            if (playerInfo.startingLevel is not (int defaultStartLv and > 0)) return;
+
+            startingLevel = defaultStartLv;
+
+            if (currentXp > 0f || currentLevel >= defaultStartLv) return;
+
+            SetLevel(defaultStartLv, byForce: false, notifyCallbacks: true);
         }
         #endregion
 
@@ -150,8 +151,13 @@ namespace TH.Attribute
         // notifyCallbacks: 콜백 제어 확장 예약 파라미터
         public void SetLevel(int level, bool byForce = false, bool notifyCallbacks = true) 
         {
-            if (currentLevel == level) return; // 동일 레벨 설정 무시 가드
-            // 강제 레벨 지정 시 해당 레벨 기준 경험치로 동기화 분기
+            if (currentLevel == level)
+            {
+                if (notifyCallbacks)
+                    RefreshLevelDerivedValues(notifyCallbacks: true);
+                return;
+            }
+
             if (byForce && CalculateXpFromLevel(level, out float xp))
             {
                 SetXp(xp);
@@ -161,26 +167,16 @@ namespace TH.Attribute
             var prevLevel = currentLevel;
             currentLevel = level;
 
-            currentLevel = level;
             if (prevLevel < level)
             {
-                // 레벨 상승 시 이펙트 및 로그 처리 분기
                 LevelUpEffectAction?.Invoke();
                 Logg.Log($"Level up: ({level})", Logg.LoggingMode.Completed);
             }
 
-            OnLevelChanged?.Invoke(currentLevel);
-            if (CalculateXpFromLevel(currentLevel - 1, out var newBaselineXp))
-            {
-                currBaselineXp = newBaselineXp;
-                OnXpBaselineChanged?.Invoke(newBaselineXp);
-            }   
-            if (CalculateXpFromLevel(currentLevel, out var newXptoLevelUp))
-            {
-                currXpToLevelUp = newXptoLevelUp;
-                OnXpToLevelUpChanged?.Invoke(newXptoLevelUp);
-            }
-                
+            if (notifyCallbacks)
+                OnLevelChanged?.Invoke(currentLevel);
+
+            RefreshLevelDerivedValues(notifyCallbacks);
         }
 
         #endregion
@@ -220,6 +216,22 @@ namespace TH.Attribute
             xp = 0;
             return false;
         }
+
+        private void RefreshLevelDerivedValues(bool notifyCallbacks)
+        {
+            if (CalculateXpFromLevel(currentLevel - 1, out var newBaselineXp))
+            {
+                currBaselineXp = newBaselineXp;
+                if (notifyCallbacks) OnXpBaselineChanged?.Invoke(newBaselineXp);
+            }
+
+            if (CalculateXpFromLevel(currentLevel, out var newXptoLevelUp))
+            {
+                currXpToLevelUp = newXptoLevelUp;
+                if (notifyCallbacks) OnXpToLevelUpChanged?.Invoke(newXptoLevelUp);
+            }
+        }
+
 
         #region ISavable (Save/Load)
 
@@ -261,8 +273,10 @@ namespace TH.Attribute
             if (state is PlayerLevelXpData { } data)
             {
                 this.Log($"- ({gameObject.name}) RestoreState invoked - SetLevel({data.level}), SetXp({data.xp})", Logg.LoggingMode.Completed);
-                // 경험치 설정 기반 레벨 자동 동기화 경로 사용
-                SetXp(data.xp, updateLevel: true);
+
+                SetXp(data.xp, updateLevel: false);
+                SetLevel(data.level, byForce: false, notifyCallbacks: true);
+
                 return true;
             }
 
@@ -282,9 +296,18 @@ namespace TH.Attribute
 #if UNITY_EDITOR
         // 에디터 전용 레벨업 테스트 지연 상수
         private readonly TimeSpan oneSecond = TimeSpan.FromSeconds(1);
+#endif
         // 에디터 환경 레벨업 반복 테스트 루틴
+        [Conditional("UNITY_EDITOR")]
+        [Conditional("DEVELOPMENT_MODE")]
+        private void DoTestLevelup()
+        {
+            LevelUpTestMethod().Forget();
+        }
+
         private async UniTaskVoid LevelUpTestMethod()
         {
+#if UNITY_EDITOR
             Logg.Log($"[{nameof(PlayerExperience)}] '{nameof(LevelUpTestMethod)}' started", Logg.LoggingMode.Completed);
             int count = 0;
             while (count < 10)
@@ -295,8 +318,9 @@ namespace TH.Attribute
                 count++;
                 GainXp(50);
             }
-        } 
 #endif
+        } 
+
         #endregion
 
     }

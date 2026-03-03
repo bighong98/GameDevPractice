@@ -7,6 +7,7 @@ using UnityEngine;
 using TH.Utils;
 using TH.Resource;
 using TH.Attribute.Service;
+using System.Diagnostics;
 
 
 namespace TH.Attribute.Stat
@@ -394,14 +395,18 @@ namespace TH.Attribute.Stat
         #endregion
         
         #region Editor Methods
-#if UNITY_EDITOR
-        [SerializeField] private List<SerializablePair<GameStatSO, GameStat>> editorStats;
 
+        [Conditional("UNITY_EDITOR")]
+        [Conditional("DEVELOPMENT_MODE")]
         private void AddEditorStatList(GameStatSO statSO, GameStat stat)
         {
+    #if UNITY_EDITOR
             editorStats.Add(new SerializablePair<GameStatSO, GameStat>(statSO, stat));
+    #endif
         }
 
+#if UNITY_EDITOR
+        [SerializeField] private List<SerializablePair<GameStatSO, GameStat>> editorStats;
 #endif
         #endregion
         

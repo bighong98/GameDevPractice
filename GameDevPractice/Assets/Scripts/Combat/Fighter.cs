@@ -175,12 +175,11 @@ public class Fighter : MonoBehaviour, IFighter
 #if UNITY_EDITOR
     [SerializeField] private bool logAttackFlow = false;
 #endif
-    
-
     [Conditional("UNITY_EDITOR")]
     [Conditional("DEVELOPMENT_BUILD")]
     private void LogAttackReadyBlocked(string stage)
     {
+#if UNITY_EDITOR
         if (!logAttackFlow) return;
         if (Time.time < nextAttackReadyBlockedLogTime)
         {
@@ -197,12 +196,14 @@ public class Fighter : MonoBehaviour, IFighter
             $"targetValid={IsTargetValid}, inRange={IsTargetInRange}, distance={distance:0.###}, range={range:0.###}, " +
             $"activeReady={(skillController != null && skillController.IsActiveSkillReady)}",
             Logg.LoggingMode.InProgress, context: this);
+#endif
     }
 
     [Conditional("UNITY_EDITOR")]
     [Conditional("DEVELOPMENT_BUILD")]
     private void LogAttackFlow(string stage, bool result)
     {
+#if UNITY_EDITOR
         if (!logAttackFlow) return;
         string targetName = target.IsNotNull() ? target.name : "null";
         string snapshotTargetName = pendingExecutionTarget.IsNotNull() ? pendingExecutionTarget.name : "null";
@@ -220,8 +221,8 @@ public class Fighter : MonoBehaviour, IFighter
             $"[{nameof(Fighter)}.{stage}] owner={name}, frame={Time.frameCount}, time={Time.time:0.000}, result={result}, " +
             $"target={targetName}, snapshotTarget={snapshotTargetName}, active={activeName}, resolved={resolvedName}, executing={executingName}",
             Logg.LoggingMode.InProgress, context: this);
+#endif
     }
-
     #endregion
 
     private void CacheExecutionTargetSnapshot()

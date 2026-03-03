@@ -90,37 +90,47 @@ namespace TH.SaveLoad
 
         public void UnRegisterEntity(ISavableEntity entity, CancellationToken token = default)
         {
+            if (!entity.IsNotNull())
+            {
+                this.LogWarning("UnRegisterEntity - invalid entity");
+                return;
+            }
+
             // 등록 해제 대상 고유 식별자 추출
             var id = entity.UniqueIdentifier;
+            var removed = false;
 
             // 글로벌 엔티티 전용 해제 분기
             if (entity.IsGlobal)
             {
-                globalEntities.Remove(id);
-                entity.IsRegistered = false;
-                this.Log($"UnRegisterEntity - entity: ({entity.GetType()}/{id}), IsGlobal: {entity.IsGlobal}", Logg.LoggingMode.Completed);
-                return;
+                removed = globalEntities.Remove(id);
             }
-
-            // 현재 씬 엔트리 조회 가드
-            var sceneCatalog = getCatalog?.Invoke();
-            if (!sceneCatalog.IsNotNull() || !sceneCatalog.TryGetCurrentSceneEntry(out var currSceneEntry))
+            else
             {
-                this.LogWarning($"UnRegisterEntity - failed to  get current scene entry (sceneCatalog: {sceneCatalog})");
-                return;
+                // 현재 씬 엔트리 기준 제거 시도
+                var sceneCatalog = getCatalog?.Invoke();
+                if (sceneCatalog.IsNotNull()
+                    && sceneCatalog.TryGetCurrentSceneEntry(out var currSceneEntry)
+                    && sceneEntities.TryGetValue(currSceneEntry, out var dict))
+                {
+                    removed = dict.Remove(id);
+                }
+
+                // 씬 키 미일치 대비: 모든 씬 딕셔너리에서 fallback 제거
+                if (!removed)
+                {
+                    removed = RemoveEntityByIdFromAllScenes(id);
+                }
+
+                // 잘못 분류되어 글로벌에 남아있는 경우까지 정리
+                if (globalEntities.Remove(id))
+                {
+                    removed = true;
+                }
             }
 
-            // 현재 씬 엔티티 딕셔너리 조회 가드
-            if (!sceneEntities.TryGetValue(currSceneEntry, out var dict))
-            {
-                this.LogWarning($"UnRegisterEntity - failed to state dictionary for current scene entry: {currSceneEntry.key}");
-                return;
-            }
-
-            // 등록 상태 플래그 해제 및 딕셔너리 제거
             entity.IsRegistered = false;
-            dict.Remove(id);
-            this.Log($"UnRegisterEntity - entity: ({entity.GetType()}/{id}), IsGlobal: {entity.IsGlobal}", Logg.LoggingMode.Completed);
+            this.Log($"UnRegisterEntity - entity: ({entity.GetType()}/{id}), IsGlobal: {entity.IsGlobal}, removed: {removed}", Logg.LoggingMode.Completed);
         }
 
         #endregion
@@ -130,8 +140,10 @@ namespace TH.SaveLoad
         /// <summary>
         /// 특정 씬의 등록된 엔티티 컬렉션 조회.
         /// </summary>
-public bool TryGetSceneSavableEntries(SceneEntry targetSceneEntry, out ICollection<ISavableEntity> entityCollection)
+        public bool TryGetSceneSavableEntries(SceneEntry targetSceneEntry, out ICollection<ISavableEntity> entityCollection)
         {
+            PruneDestroyedEntities();
+
             this.Log($"TryGetSceneSavableEntries - targetSceneEntry: {targetSceneEntry?.key} (sceneId: {targetSceneEntry?.sceneId})", Logg.LoggingMode.Completed);
             this.Log($"TryGetSceneSavableEntries - sceneEntities.Keys: [{string.Join(", ", sceneEntities.Keys.Select(k => $"{k?.key}(hash:{k?.GetHashCode()})"))}]", Logg.LoggingMode.Completed);
             this.Log($"TryGetSceneSavableEntries - targetEntry hash: {targetSceneEntry?.GetHashCode()}", Logg.LoggingMode.Completed);
@@ -152,7 +164,11 @@ public bool TryGetSceneSavableEntries(SceneEntry targetSceneEntry, out ICollecti
         /// <summary>
         /// 글로벌 엔티티 컬렉션 조회.
         /// </summary>
-        public ICollection<ISavableEntity> GetGlobalEntities() => globalEntities.Values;
+        public ICollection<ISavableEntity> GetGlobalEntities()
+        {
+            PruneDestroyedEntities();
+            return globalEntities.Values;
+        }
 
         #endregion
 
@@ -176,6 +192,49 @@ public bool TryGetSceneSavableEntries(SceneEntry targetSceneEntry, out ICollecti
 
         #endregion
 
+        
+        private void PruneDestroyedEntities()
+        {
+            PruneDestroyedFromDict(globalEntities);
+
+            foreach (var dict in sceneEntities.Values)
+            {
+                PruneDestroyedFromDict(dict);
+            }
+        }
+
+        private static void PruneDestroyedFromDict(IDictionary<string, ISavableEntity> dict)
+        {
+            if (dict == null || dict.Count == 0) return;
+
+            List<string> staleIds = null;
+            foreach (var (id, entity) in dict)
+            {
+                if (entity.IsNotNull()) continue;
+
+                staleIds ??= new List<string>();
+                staleIds.Add(id);
+            }
+
+            if (staleIds == null) return;
+            foreach (var staleId in staleIds)
+            {
+                dict.Remove(staleId);
+            }
+        }
+
+        private bool RemoveEntityByIdFromAllScenes(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return false;
+
+            var removed = false;
+            foreach (var dict in sceneEntities.Values)
+            {
+                removed |= dict.Remove(id);
+            }
+
+            return removed;
+        }
         #region Private Helpers
 
         private void RegisterGlobalEntity(ISavableEntity entity, string id)

@@ -8,6 +8,7 @@ using UnityEngine.SceneManagement;
 
 namespace TH.Utils
 {
+    #if UNITY_EDITOR
     // Runs a deterministic floating text performance capture and writes summary files.
     public sealed class FloatingTextPerfRecorder : MonoBehaviour
     {
@@ -310,4 +311,6 @@ namespace TH.Utils
             public int gcCollectionDeltaGen2;
         }
     }
+
+    #endif
 }

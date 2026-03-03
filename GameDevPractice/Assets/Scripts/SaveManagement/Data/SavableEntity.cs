@@ -108,6 +108,15 @@ namespace TH.SaveLoad
         // 파괴 시 캐시 목록 정리 단계
         private void OnDestroy()
         {
+            UnregisterFromRegistry();
+
+            if (!string.IsNullOrEmpty(uniqueIdentifier)
+                && GlobalLookup.TryGetValue(uniqueIdentifier, out var current)
+                && current == this)
+            {
+                GlobalLookup.Remove(uniqueIdentifier);
+            }
+
             savables.Clear();
         }
         
