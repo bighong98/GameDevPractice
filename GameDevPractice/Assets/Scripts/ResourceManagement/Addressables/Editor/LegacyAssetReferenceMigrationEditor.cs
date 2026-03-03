@@ -3,6 +3,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+
+using TH.Control.Data;
+using TH.Control.State;
 using TH.Combat;
 using TH.Resource;
 using TH.UI;
@@ -49,6 +52,28 @@ namespace TH.Resource.Editor
             RunMigration(applyChanges: true, clearLegacyFields: true);
         }
 
+        
+        [MenuItem(MenuRoot + "Register Missing StateMachine Assets To Shared")]
+        private static void RegisterMissingStateMachineAssetsToShared()
+        {
+            var stats = new MigrationStats();
+
+            ProcessAssets(LoadAssetsOfType<ActionStateSO>(), "ActionStateSO", asset =>
+                MigrateActionState(asset, applyChanges: false, clearLegacyFields: false, stats));
+
+            ProcessObjects(LoadPrefabComponentsOfType<ActionStateMachine>(), "ActionStateMachine(prefab)", asset =>
+                MigrateActionStateMachine(asset, applyChanges: false, clearLegacyFields: false, stats));
+
+            RegisterNonAddressableAssetsToGroup(stats, "Shared");
+        }
+
+        [MenuItem(MenuRoot + "Apply (Clear Legacy Fields - Force)")]
+        private static void ApplyAndClearLegacyForce()
+        {
+            RunMigration(applyChanges: true, clearLegacyFields: true);
+        }
+
+        
         private static void RunMigration(bool applyChanges, bool clearLegacyFields)
         {
             var stats = new MigrationStats();
@@ -73,6 +98,12 @@ namespace TH.Resource.Editor
 
             ProcessAssets(LoadAssetsOfType<PlayerTypeSO>(), "PlayerTypeSO", asset =>
                 MigratePlayerType(asset, applyChanges, clearLegacyFields, stats));
+
+            ProcessAssets(LoadAssetsOfType<ActionStateSO>(), "ActionStateSO", asset =>
+                MigrateActionState(asset, applyChanges, clearLegacyFields, stats));
+
+            ProcessObjects(LoadPrefabComponentsOfType<ActionStateMachine>(), "ActionStateMachine(prefab)", asset =>
+                MigrateActionStateMachine(asset, applyChanges, clearLegacyFields, stats));
 
             ProcessObjects(LoadPrefabComponentsOfType<LoadSlotPanelUI>(), "LoadSlotPanelUI(prefab)", asset =>
                 MigrateLoadSlotPanel(asset, applyChanges, clearLegacyFields, stats));
@@ -115,8 +146,81 @@ namespace TH.Resource.Editor
                 Debug.LogWarning("[" + nameof(LegacyAssetReferenceMigrationEditor) + "] NonAddressable: " + item.Key, item.Value);
             }
 
+                }
+
+        private static void RegisterNonAddressableAssetsToGroup(MigrationStats stats, string groupName)
+        {
+            if (stats == null)
+            {
+                return;
+            }
+
+            AddressableAssetSettings settings = AddressableAssetSettingsDefaultObject.Settings;
+            if (settings == null)
+            {
+                Debug.LogError($"[{nameof(LegacyAssetReferenceMigrationEditor)}] Addressable settings not found");
+                return;
+            }
+
+            AddressableAssetGroup group = settings.FindGroup(groupName);
+            if (group == null)
+            {
+                Debug.LogError($"[{nameof(LegacyAssetReferenceMigrationEditor)}] Group not found: {groupName}");
+                return;
+            }
+
+            int added = 0;
+            int skipped = 0;
+
+            foreach (var item in stats.NonAddressableAssets)
+            {
+                Object asset = item.Value;
+                if (asset == null)
+                {
+                    skipped++;
+                    continue;
+                }
+
+                string assetPath = AssetDatabase.GetAssetPath(asset);
+                if (string.IsNullOrEmpty(assetPath) || !assetPath.StartsWith("Assets/", StringComparison.Ordinal))
+                {
+                    skipped++;
+                    Debug.LogWarning($"[{nameof(LegacyAssetReferenceMigrationEditor)}] Skip non-project asset: {assetPath} <= {item.Key}", asset);
+                    continue;
+                }
+
+                string guid = AssetDatabase.AssetPathToGUID(assetPath);
+                if (string.IsNullOrEmpty(guid))
+                {
+                    skipped++;
+                    continue;
+                }
+
+                AddressableAssetEntry existingEntry = settings.FindAssetEntry(guid);
+                if (existingEntry != null)
+                {
+                    continue;
+                }
+
+                AddressableAssetEntry entry = settings.CreateOrMoveEntry(guid, group);
+                if (entry == null)
+                {
+                    skipped++;
+                    continue;
+                }
+
+                added++;
+            }
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+
+            Debug.Log(
+                $"[{nameof(LegacyAssetReferenceMigrationEditor)}] RegisterMissingStateMachineAssetsToShared finished. " +
+                $"targetGroup={groupName}, added={added}, skipped={skipped}");
         }
 
+        
         private static void RegisterNonAddressableAssetIfNeeded(MigrationStats stats, string assetGuid, Object source, string context)
         {
             if (string.IsNullOrEmpty(assetGuid) || source == null)
@@ -499,6 +603,139 @@ namespace TH.Resource.Editor
             return changed;
         }
 
+        private static bool MigrateActionState(
+            ActionStateSO asset,
+            bool applyChanges,
+            bool clearLegacyFields,
+            MigrationStats stats)
+        {
+            stats.ScannedAssets++;
+            bool changed = false;
+
+            if (applyChanges)
+            {
+                Undo.RecordObject(asset, "Migrate ActionStateSO");
+            }
+
+            changed |= CopyObjectListToAssetReferenceList(
+                owner: asset,
+                legacyListFieldName: "onEnterActions",
+                assetReferenceListFieldName: "onEnterActionReferences",
+                applyChanges: applyChanges,
+                clearLegacyList: clearLegacyFields,
+                stats: stats);
+
+            changed |= CopyObjectListToAssetReferenceList(
+                owner: asset,
+                legacyListFieldName: "updateActions",
+                assetReferenceListFieldName: "updateActionReferences",
+                applyChanges: applyChanges,
+                clearLegacyList: clearLegacyFields,
+                stats: stats);
+
+            changed |= CopyObjectListToAssetReferenceList(
+                owner: asset,
+                legacyListFieldName: "onExitActions",
+                assetReferenceListFieldName: "onExitActionReferences",
+                applyChanges: applyChanges,
+                clearLegacyList: clearLegacyFields,
+                stats: stats);
+
+            IList transitions = GetFieldValue<IList>(asset, "transitions");
+            changed |= MigrateTransitionEntries(transitions, applyChanges, clearLegacyFields, stats);
+
+            if (applyChanges && changed)
+            {
+                EditorUtility.SetDirty(asset);
+                stats.ChangedAssets++;
+            }
+
+            return changed;
+        }
+
+        private static bool MigrateActionStateMachine(
+            ActionStateMachine asset,
+            bool applyChanges,
+            bool clearLegacyFields,
+            MigrationStats stats)
+        {
+            stats.ScannedAssets++;
+            bool changed = false;
+
+            if (applyChanges)
+            {
+                Undo.RecordObject(asset, "Migrate ActionStateMachine");
+            }
+
+            changed |= CopyObjectFieldToAssetReference(
+                owner: asset,
+                legacyFieldName: "initialState",
+                assetReferenceFieldName: "initialStateReference",
+                applyChanges: applyChanges,
+                clearLegacyField: clearLegacyFields,
+                stats: stats);
+
+            IList globalTransitions = GetFieldValue<IList>(asset, "globalTransitions");
+            changed |= MigrateTransitionEntries(globalTransitions, applyChanges, clearLegacyFields, stats);
+
+            if (applyChanges && changed)
+            {
+                EditorUtility.SetDirty(asset);
+                stats.ChangedAssets++;
+            }
+
+            return changed;
+        }
+
+        private static bool MigrateTransitionEntries(
+            IList transitions,
+            bool applyChanges,
+            bool clearLegacyFields,
+            MigrationStats stats)
+        {
+            if (transitions == null || transitions.Count == 0)
+            {
+                return false;
+            }
+
+            bool changed = false;
+            for (int i = 0; i < transitions.Count; i++)
+            {
+                object transition = transitions[i];
+                if (transition == null)
+                {
+                    continue;
+                }
+
+                bool transitionChanged = false;
+                transitionChanged |= CopyObjectFieldToAssetReference(
+                    owner: transition,
+                    legacyFieldName: "condition",
+                    assetReferenceFieldName: "conditionReference",
+                    applyChanges: applyChanges,
+                    clearLegacyField: clearLegacyFields,
+                    stats: stats);
+
+                transitionChanged |= CopyObjectFieldToAssetReference(
+                    owner: transition,
+                    legacyFieldName: "destinationState",
+                    assetReferenceFieldName: "destinationStateReference",
+                    applyChanges: applyChanges,
+                    clearLegacyField: clearLegacyFields,
+                    stats: stats);
+
+                if (transitionChanged && applyChanges)
+                {
+                    transitions[i] = transition;
+                }
+
+                changed |= transitionChanged;
+            }
+
+            return changed;
+        }
+
+        
         private static bool MigrateLoadSlotPanel(
             LoadSlotPanelUI asset,
             bool applyChanges,

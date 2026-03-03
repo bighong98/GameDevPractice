@@ -122,19 +122,43 @@ PrefabInstance:
     - target: {fileID: 5373889179622131043, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
       propertyPath: initialState
       value: 
-      objectReference: {fileID: 11400000, guid: 4ff036bbf49db2f49b1127ba662aa634, type: 2}
+      objectReference: {fileID: 0}
     - target: {fileID: 5373889179622131043, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
       propertyPath: globalTransitions.Array.size
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5373889179622131043, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
+      propertyPath: initialStateReference.m_AssetGUID
+      value: 4ff036bbf49db2f49b1127ba662aa634
+      objectReference: {fileID: 0}
+    - target: {fileID: 5373889179622131043, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
       propertyPath: globalTransitions.Array.data[0].condition
       value: 
-      objectReference: {fileID: 11400000, guid: 6ee183327986dab4184ec78b9b8dab3e, type: 2}
+      objectReference: {fileID: 0}
+    - target: {fileID: 5373889179622131043, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
+      propertyPath: initialStateReference.m_EditorAssetChanged
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5373889179622131043, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
       propertyPath: globalTransitions.Array.data[0].destinationState
       value: 
-      objectReference: {fileID: 11400000, guid: dc33e8789b0525041b251428d1cd4b50, type: 2}
+      objectReference: {fileID: 0}
+    - target: {fileID: 5373889179622131043, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
+      propertyPath: globalTransitions.Array.data[0].conditionReference.m_AssetGUID
+      value: 6ee183327986dab4184ec78b9b8dab3e
+      objectReference: {fileID: 0}
+    - target: {fileID: 5373889179622131043, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
+      propertyPath: globalTransitions.Array.data[0].destinationStateReference.m_AssetGUID
+      value: dc33e8789b0525041b251428d1cd4b50
+      objectReference: {fileID: 0}
+    - target: {fileID: 5373889179622131043, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
+      propertyPath: globalTransitions.Array.data[0].conditionReference.m_EditorAssetChanged
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5373889179622131043, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
+      propertyPath: globalTransitions.Array.data[0].destinationStateReference.m_EditorAssetChanged
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6061633697407881761, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
       propertyPath: m_Name
       value: Enemy
@@ -280,7 +304,8 @@ MonoBehaviour:
   includeChildrenLayerChange: 1
   dissolveLayer: 8
   legacyDissolveLayerName: DissolveOnly
-  dissolveRenderingLayerMask: 8
+  skinnedDissolveRenderingLayerMask: 8
+  meshDissolveRenderingLayerMask: 16
   dissolveStartDelay: 0.3
   dissolveDuration: 1.2
   dissolveStartValue: 0

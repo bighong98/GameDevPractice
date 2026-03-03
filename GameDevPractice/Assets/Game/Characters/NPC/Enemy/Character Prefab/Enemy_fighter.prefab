@@ -88,11 +88,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2668761516131985997, guid: 49872753c2cd0684fac2ccb5f73fa004, type: 3}
   m_PrefabInstance: {fileID: 5066446505700420260}
   m_PrefabAsset: {fileID: 0}
---- !u!4 &8584212900341929953 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 3562033283766041925, guid: 49872753c2cd0684fac2ccb5f73fa004, type: 3}
-  m_PrefabInstance: {fileID: 5066446505700420260}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &7486948930589419456
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -103,7 +98,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 431537241663738169, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}
       propertyPath: m_Name
-      value: Enemy_fighter_mm
+      value: Enemy_fighter
       objectReference: {fileID: 0}
     - target: {fileID: 873599889185342099, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}
       propertyPath: typeRef.m_AssetGUID
@@ -223,8 +218,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TH.Item.EquipmentOutfitController
   equipHolder: {fileID: 553047880044110004}
-  bodySegmentsRoot: {fileID: 8584212900341929953}
   autoCollectPartsOnAwake: 1
-  bodySegmentsFallbackSlots: 02000000
   outfitParts: []
   slotDefaultKeys: []
+  autoCollectActiveDefaultKeysInEditor: 0
+  trackRuntimeOutfitRendererChanges: 0
+  alwaysIncludeRenderers: []
+  autoCollectActiveAlwaysIncludeRenderersInEditor: 0
+  autoCollectSkipContainedRenderersInEditor: 1
+  autoCollectContainedVolumeRatioThreshold: 0.9
+  requiredPartTypes: []

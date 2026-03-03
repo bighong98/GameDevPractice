@@ -1,7 +1,11 @@
 // 상태 액션/전이 베이스 에셋 스크립트
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using TH.Control.State;
+using TH.Core.Service;
+using TH.Resource;
 using TH.Utils;
 using UnityEngine;
 
@@ -9,12 +13,15 @@ namespace TH.Control.Data
 {
     [CreateAssetMenu(fileName = "ActionStateSO", menuName = "Scriptable Objects/CharacterState/ActionStateSO")]
     // 상태 액션 목록과 전이 목록을 보유하는 상태 ScriptableObject 베이스
-    public class ActionStateSO : ScriptableObject, IActionState
+    public class ActionStateSO : ScriptableObject, IActionState, IAsyncInitializer
     {
         [Header("Actions")]
-        [SerializeField] private List<CharacterActionSO> onEnterActions; // 진입 시 1회
-        [SerializeField] private List<CharacterActionSO> updateActions;  // 매 프레임
-        [SerializeField] private List<CharacterActionSO> onExitActions;  // 퇴장 시 1회
+        [SerializeField] private List<CharacterActionSO> onEnterActions = new(); // 진입 시 1회
+        [SerializeField] private List<AssetReferenceCharacterActionSO> onEnterActionReferences = new();
+        [SerializeField] private List<CharacterActionSO> updateActions = new();  // 매 프레임
+        [SerializeField] private List<AssetReferenceCharacterActionSO> updateActionReferences = new();
+        [SerializeField] private List<CharacterActionSO> onExitActions = new();  // 퇴장 시 1회
+        [SerializeField] private List<AssetReferenceCharacterActionSO> onExitActionReferences = new();
 
         [Header("Transitions")]
         [SerializeField] private List<ActionStateTransition> transitions;
@@ -22,6 +29,8 @@ namespace TH.Control.Data
         [Header("Transition Settings")]
         [SerializeField] private bool allowSelfTransition = false;
         [SerializeField] private bool transitionLockRequired = false;
+
+        [NonSerialized] private bool initialized;
         
         #region IActionState
         
@@ -29,6 +38,30 @@ namespace TH.Control.Data
         public bool AllowSelfTransition => allowSelfTransition;
         // 용도: 상태 진입 직후 전이 잠금 요구 정책 노출 프로퍼티
         public bool TransitionLockRequired => transitionLockRequired;
+
+        public async UniTask InitializeAsync(CancellationToken token)
+        {
+            if (initialized)
+            {
+                return;
+            }
+
+            await PopulateActionsFromReferences(onEnterActions, onEnterActionReferences, token);
+            await PopulateActionsFromReferences(updateActions, updateActionReferences, token);
+            await PopulateActionsFromReferences(onExitActions, onExitActionReferences, token);
+
+            if (transitions != null)
+            {
+                for (int i = 0; i < transitions.Count; i++)
+                {
+                    var transition = transitions[i];
+                    await transition.InitializeAsync(token);
+                    transitions[i] = transition;
+                }
+            }
+
+            initialized = true;
+        }
         
         // 상태 진입 시점 등록된 액션 일괄 실행
         public void EnterState(IActionStateController controller)
@@ -151,7 +184,7 @@ namespace TH.Control.Data
             {
                 if (fired) return;
                 fired = true;
-                this.Log($"transition unlocked", Logg.LoggingMode.Completed);
+                this.Log("transition unlocked", Logg.LoggingMode.Completed);
                 register.Invoke();
             }
         }
@@ -166,6 +199,39 @@ namespace TH.Control.Data
             foreach (var action in actionList)
             {
                 action.Execute(controller);
+            }
+        }
+
+        private static async UniTask PopulateActionsFromReferences(
+            List<CharacterActionSO> actionList,
+            List<AssetReferenceCharacterActionSO> actionReferences,
+            CancellationToken token)
+        {
+            if (actionList == null || actionReferences == null || actionReferences.Count == 0)
+            {
+                return;
+            }
+
+            for (int i = 0; i < actionReferences.Count; i++)
+            {
+                var actionReference = actionReferences[i];
+                if (actionReference == null || !actionReference.RuntimeKeyIsValid())
+                {
+                    continue;
+                }
+
+                var loadedAction = await ResourceManager.Instance.ExtractAssetRefAsync<CharacterActionSO>(actionReference, token);
+                if (loadedAction == null || actionList.Contains(loadedAction))
+                {
+                    continue;
+                }
+
+                if (loadedAction is IAsyncInitializer asyncInitializer)
+                {
+                    await asyncInitializer.InitializeAsync(token);
+                }
+
+                actionList.Add(loadedAction);
             }
         }
         
@@ -208,6 +274,32 @@ namespace TH.Control.Data
             }
         }
 
+#if UNITY_EDITOR
+        private static bool HasAssignedReference(List<AssetReferenceCharacterActionSO> references)
+        {
+            if (references == null || references.Count == 0)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < references.Count; i++)
+            {
+                var reference = references[i];
+                if (reference == null)
+                {
+                    continue;
+                }
+
+                if (!string.IsNullOrEmpty(reference.AssetGUID) || reference.RuntimeKeyIsValid())
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+#endif
+
         #region Debug (Editor Only)
 
 #if UNITY_EDITOR
@@ -221,9 +313,14 @@ namespace TH.Control.Data
                 CountTransitionLockActions(updateActions) +
                 CountTransitionLockActions(onExitActions);
 
+            bool hasActionReferences =
+                HasAssignedReference(onEnterActionReferences) ||
+                HasAssignedReference(updateActionReferences) ||
+                HasAssignedReference(onExitActionReferences);
+
             // lockRequired == true 인데 상태 전환 지연이 필요한 행동이 없는 경우
             // 무한 대기가 발생할 수 있으므로 예외 호출
-            if (transitionLockRequired && lockActionCount == 0)
+            if (transitionLockRequired && lockActionCount == 0 && !hasActionReferences)
             {
                 Logg.LogError($"[ActionStateSO] '{name}' has transitionLockRequired:true " +
                               $"but no action implements {nameof(IStateTransitionLock)})");

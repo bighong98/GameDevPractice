@@ -12,22 +12,97 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 856e2d3a5c9d0b34da515cdd74a384c0, type: 3}
   m_Name: FightStateSO
   m_EditorClassIdentifier: Assembly-CSharp::TH.Control.Data.CombatStateSO
-  onEnterActions:
-  - {fileID: 11400000, guid: f74d07e8a295fb9499c63066d465bdb9, type: 2}
-  - {fileID: 11400000, guid: a68038a294969554a9c9b536c112d164, type: 2}
-  - {fileID: 11400000, guid: 1ae8a8d9e54a66749944c4318d7c5b1a, type: 2}
+  onEnterActions: []
+  onEnterActionReferences:
+  - m_AssetGUID: f74d07e8a295fb9499c63066d465bdb9
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1
+  - m_AssetGUID: a68038a294969554a9c9b536c112d164
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1
+  - m_AssetGUID: 1ae8a8d9e54a66749944c4318d7c5b1a
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1
   updateActions: []
+  updateActionReferences: []
   onExitActions: []
+  onExitActionReferences: []
   transitions:
-  - condition: {fileID: 11400000, guid: 4cf2e9d6bf42a18449c08ab688bb405a, type: 2}
-    destinationState: {fileID: 11400000}
-  - condition: {fileID: 11400000, guid: 99915f28cdf03fb44b522e2c3679638e, type: 2}
-    destinationState: {fileID: 11400000, guid: 7e7e93bfb3dfa8f40a30639a63aefa01, type: 2}
-  - condition: {fileID: 11400000, guid: 046f474f308a4b240b63b32a81bc314a, type: 2}
-    destinationState: {fileID: 11400000, guid: aebd0b6c5f806a346a562df8927ab54d, type: 2}
-  - condition: {fileID: 11400000, guid: 7a37636c8cf8c1948bd7cf28d2256d31, type: 2}
-    destinationState: {fileID: 11400000, guid: aebd0b6c5f806a346a562df8927ab54d, type: 2}
-  - condition: {fileID: 11400000, guid: 5d08da84b4f664c4890db4f51a1d5086, type: 2}
-    destinationState: {fileID: 11400000, guid: 16deb90229b9bec408b94b3510134c35, type: 2}
+  - condition: {fileID: 0}
+    conditionReference:
+      m_AssetGUID: 4cf2e9d6bf42a18449c08ab688bb405a
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 1
+    destinationState: {fileID: 0}
+    destinationStateReference:
+      m_AssetGUID: a6399e600cad3064d8bb74e9a62dd747
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 1
+  - condition: {fileID: 0}
+    conditionReference:
+      m_AssetGUID: 99915f28cdf03fb44b522e2c3679638e
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 1
+    destinationState: {fileID: 0}
+    destinationStateReference:
+      m_AssetGUID: 7e7e93bfb3dfa8f40a30639a63aefa01
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 1
+  - condition: {fileID: 0}
+    conditionReference:
+      m_AssetGUID: 046f474f308a4b240b63b32a81bc314a
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 1
+    destinationState: {fileID: 0}
+    destinationStateReference:
+      m_AssetGUID: aebd0b6c5f806a346a562df8927ab54d
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 1
+  - condition: {fileID: 0}
+    conditionReference:
+      m_AssetGUID: 7a37636c8cf8c1948bd7cf28d2256d31
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 1
+    destinationState: {fileID: 0}
+    destinationStateReference:
+      m_AssetGUID: aebd0b6c5f806a346a562df8927ab54d
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 1
+  - condition: {fileID: 0}
+    conditionReference:
+      m_AssetGUID: 5d08da84b4f664c4890db4f51a1d5086
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 1
+    destinationState: {fileID: 0}
+    destinationStateReference:
+      m_AssetGUID: 16deb90229b9bec408b94b3510134c35
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 1
   allowSelfTransition: 1
   transitionLockRequired: 1

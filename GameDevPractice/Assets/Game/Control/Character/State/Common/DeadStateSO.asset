@@ -12,10 +12,31 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b529509f968fd2d49b2aba38630f9280, type: 3}
   m_Name: DeadStateSO
   m_EditorClassIdentifier: Assembly-CSharp::TH.Control.Data.DeadStateSO
-  onEnterActions:
-  - {fileID: 11400000, guid: 4910c4789b0b014429a11cae8301ced0, type: 2}
+  onEnterActions: []
+  onEnterActionReferences:
+  - m_AssetGUID: 4910c4789b0b014429a11cae8301ced0
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1
   updateActions: []
+  updateActionReferences: []
   onExitActions: []
+  onExitActionReferences: []
   transitions:
-  - condition: {fileID: 11400000, guid: cebf38c8f05b4d14288eee55a183ac5b, type: 2}
-    destinationState: {fileID: 11400000, guid: d401f76a9eb6b2f4a9f81da58494f6a9, type: 2}
+  - condition: {fileID: 0}
+    conditionReference:
+      m_AssetGUID: cebf38c8f05b4d14288eee55a183ac5b
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 1
+    destinationState: {fileID: 0}
+    destinationStateReference:
+      m_AssetGUID: d401f76a9eb6b2f4a9f81da58494f6a9
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 1
+  allowSelfTransition: 0
+  transitionLockRequired: 0

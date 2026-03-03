@@ -140,11 +140,11 @@ namespace TH.Resource
         #region Load (Async)
         
         // 라벨에 매칭되는 모든 리소스 로케이션을 조회한 뒤, 각 항목을 비동기 로드
-        // 개별 리소스 로드가 완료될 때마다 콜백(진행도 확인 목적)
+        // 개별 리소스 로드가 완료될 때마다 callback(진행도 확인 목적) 전달
         private async UniTask LoadAllAsync<T>(string label, Action<string, int, int> callback = null, CancellationToken token = default)
             where T : UnityEngine.Object
         {
-            // 라벨에 연결된 로케이션 메타 조회
+            // 라벨에 연결된 로케이션 메타 데이터 조회
             var locationHandles = Addressables.LoadResourceLocationsAsync(label, typeof(T));
             var locations = await locationHandles.ToUniTask(cancellationToken: token);
 
@@ -171,6 +171,7 @@ namespace TH.Resource
                     resourceKeys[key] = handle;
                     
                     tasks.Add(LoadAndInitAsync(handle, 
+                        // 필요한 경우 IAsyncInitializer 기반 추가 비동기 초기화 실행
                         onSucceedAsync: async (asset) => await DoAsyncInitialize(asset, token),
                         onComplete: () =>
                         {

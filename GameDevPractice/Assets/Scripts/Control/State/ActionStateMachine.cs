@@ -1,11 +1,12 @@
 // 상태 머신 전이 흐름 제어 구현 스크립트
 using System;
 using System.Collections.Generic;
-using Cysharp.Threading.Tasks;
 using System.Threading;
-using TH.Core.Service;
-using TH.SceneManagement;
+using Cysharp.Threading.Tasks;
 using TH.Control.Data;
+using TH.Core.Service;
+using TH.Resource;
+using TH.SceneManagement;
 using TH.Utils;
 using UnityEngine;
 
@@ -17,6 +18,7 @@ namespace TH.Control.State
     {
         // 상태머신 시작 시 최초 진입 기준 상태 에셋 참조
         [SerializeField] private ActionStateSO initialState;
+        [SerializeField] private AssetReferenceActionStateSO initialStateReference;
         // 모든 상태에서 공통으로 평가하는 전역 전이 목록
         [SerializeField] private List<ActionStateTransition> globalTransitions = new();
 #if UNITY_EDITOR
@@ -24,6 +26,8 @@ namespace TH.Control.State
         // 상태 전이 로그 출력 여부 제어 플래그
         [SerializeField] private bool logStateTransition;
 #endif
+
+        [NonSerialized] private bool stateGraphInitialized;
         
         // 현재 활성 상태 인스턴스 참조
         private IActionState currentState;
@@ -50,7 +54,7 @@ namespace TH.Control.State
         // 런타임 전이 락 식별자 발급 시퀀스
         private int _nextRuntimeLockId = 1;
         // 현재 활성 런타임 전이 락 식별자 집합
-        
+
         private ISceneLoader sceneLoader;
         private readonly HashSet<int> _runtimeLockIds = new();
 
@@ -65,11 +69,9 @@ namespace TH.Control.State
         // 초기 상태 지정 시 첫 상태 전이 실행
         private void Start()
         {
-            if (initialState == null) return;
-            
-            TransitionToState(initialState);
+            EnterInitialStateAsync(ignoreLock: false).Forget();
         }
-        
+
         // 재활성화 시 초기 상태 재진입을 위한 토큰/전이 데이터 재정렬
         private void OnEnable()
         {
@@ -80,7 +82,10 @@ namespace TH.Control.State
             if (_stateTokenSource == null)
                 RenewStateToken();
 
-            if (initialState == null) return;
+            if (initialState == null && (initialStateReference == null || !initialStateReference.RuntimeKeyIsValid()))
+            {
+                return;
+            }
 
             // 상태머신은 초기 상태로 재진입
             // -> 풀 재사용 등 객체 재활성화 이벤트에서도 상태가 정상인 목적
@@ -94,7 +99,7 @@ namespace TH.Control.State
                 currentState = null;
             }
 
-            TransitionToState(initialState, ignoreLock: true);
+            EnterInitialStateAsync(ignoreLock: true).Forget();
         }
 
         // 비활성화 시 전이 구독/락/토큰 정리
@@ -124,9 +129,70 @@ namespace TH.Control.State
             if (CheckGlobalPollingConditions()) return;
             // 이벤트에 의해 추가 확인이 필요한 조건 검사
             if (CheckArmedTransitionsPolling()) return;
-            
+
             currentState.UpdateState(this);
             stateTime += Time.deltaTime;
+        }
+
+        private async UniTaskVoid EnterInitialStateAsync(bool ignoreLock)
+        {
+            if (initialState == null && (initialStateReference == null || !initialStateReference.RuntimeKeyIsValid()))
+            {
+                return;
+            }
+
+            var token = this.GetCancellationTokenOnDestroy();
+
+            try
+            {
+                await InitializeStateGraphAsync(token);
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
+            catch (Exception e)
+            {
+                Logg.LogError($"[{gameObject.name}] ActionStateMachine initialization failed - {e}");
+                return;
+            }
+
+            if (token.IsCancellationRequested || !isActiveAndEnabled || initialState == null)
+            {
+                return;
+            }
+
+            TransitionToState(initialState, ignoreLock);
+        }
+
+        private async UniTask InitializeStateGraphAsync(CancellationToken token)
+        {
+            if (stateGraphInitialized)
+            {
+                return;
+            }
+
+            if (initialState == null && initialStateReference != null && initialStateReference.RuntimeKeyIsValid())
+            {
+                initialState = await ResourceManager.Instance.ExtractAssetRefAsync<ActionStateSO>(initialStateReference, token);
+            }
+
+            if (initialState is IAsyncInitializer initialStateInitializer)
+            {
+                await initialStateInitializer.InitializeAsync(token);
+            }
+
+            if (globalTransitions != null)
+            {
+                for (int i = 0; i < globalTransitions.Count; i++)
+                {
+                    var transition = globalTransitions[i];
+                    await transition.InitializeAsync(token);
+                    globalTransitions[i] = transition;
+                }
+            }
+
+            stateGraphInitialized = true;
         }
 
         private UniTask HandleBeforeSceneChanged(CancellationToken externalToken)
@@ -165,13 +231,13 @@ namespace TH.Control.State
 
             if (nextState is InitialStateSO)
             {
-                if (initialState == null)
+                if (initialState == null && (initialStateReference == null || !initialStateReference.RuntimeKeyIsValid()))
                 {
                     Logg.LogError($"[{gameObject.name}] TransitionToState - initialState and nextState is invalid", this);
                     return;
                 }
 
-                TransitionToState(initialState, ignoreLock);
+                EnterInitialStateAsync(ignoreLock).Forget();
                 return;
             }
 
@@ -206,7 +272,7 @@ namespace TH.Control.State
 #if UNITY_EDITOR
             if (logStateTransition)
             {
-                this.Log($"[{gameObject.name}] TransitionToState({prevState?.GetType().Name} " + 
+                this.Log($"[{gameObject.name}] TransitionToState({prevState?.GetType().Name} " +
                         $"-> {nextState.GetType().Name})", Logg.LoggingMode.InProgress);
             }
 #endif
@@ -236,16 +302,16 @@ namespace TH.Control.State
         // 상태 전환 조건 감지 이벤트 구독 해제용(or 내부 클로저 정리) 핸들러 목록
         // -> event-driven 상태 전환 구현 목적
         // -> 상태 전환 시 기존 이벤트의 핸들러는 .Dispose()로 이벤트 구독해제 및 핸들러 정리
-        // 현시점 구현상 구독할 이벤트가 없으면 빈 객체 (StateConditionHandler.Empty) 반환함 
+        // 현시점 구현상 구독할 이벤트가 없으면 빈 객체 (StateConditionHandler.Empty) 반환함
         private readonly List<IDisposable> _transitionHandlers = new();
         // 현재 상태 + 전역 전이의 이벤트 기반 조건 구독 등록
         private void BindTransitions()
         {
             if (currentState is not {} state || !state.IsNotNull()) return;
-            
+
             // 글로벌 전환 조건 감지 이벤트 구독
             BindTransitionList(globalTransitions);
-            
+
             // 현재 상태 객체에 전환 조건 감지 이벤트 구독
             state.BindTransitions(
                 controller: this,
@@ -268,7 +334,7 @@ namespace TH.Control.State
 
             _transitionHandlers.Clear();
         }
-        
+
         // 글로벌 상태 전환 대응용
         private void BindTransitionList(List<ActionStateTransition> list)
         {
@@ -283,7 +349,7 @@ namespace TH.Control.State
                 if (!condition.IsNotNull()) continue;
                 // Polling 타입은 이벤트 미지원이므로 스킵
                 if (condition.Measure == StateConditionMeasures.Polling) continue;
-                
+
                 var token = condition.Bind(
                     controller: this,
                     onTriggered: () => HandleConditionTriggered(
@@ -311,20 +377,20 @@ namespace TH.Control.State
             foreach (var t in globalTransitions)
             {
                 // ActionStateTransition 구조체 내부 참조 유효성 검사
-                if (t is not { DestinationState: { } dest, 
+                if (t is not { DestinationState: { } dest,
                                 Condition: { } cond } ) continue;
                 if (!dest.IsNotNull() || !cond.IsNotNull()) continue;
                 // Polling 타입 외에는 프레임 단위 검사x
                 if (cond.Measure != StateConditionMeasures.Polling) continue;
-                // 조건 평가 
+                // 조건 평가
                 if (!cond.Decide(this)) continue;
                 // 동일한 상태로의 전환인지 확인 + 동일 상태로의 전환 허락 여부 확인
                 if (currentState == dest && !dest.AllowSelfTransition) continue;
-                
+
                 // 상태 전환 및 루프 종료
                 // force: true -> 글로벌 상태 전환 조건은 lock 무시
                 TransitionToState(dest, ignoreLock: true);
-                return true; 
+                return true;
             }
 
             return false;
@@ -382,10 +448,10 @@ namespace TH.Control.State
             _pendingState = null;
             TransitionToState(nextState);
         }
-        
+
 
         #endregion
-        
+
         private struct ArmedTransition
         {
             // 트리거 발생 조건 참조
@@ -401,7 +467,7 @@ namespace TH.Control.State
 
         // 글로벌 전이용
         private readonly List<ArmedTransition> _globalArmed = new();
-        
+
         // 조건 트리거 측 이벤트 수신 시 전이 전략 분기 실행
         // -> 조건 측정 방식(EventDriven/Polling/Both)에 맞춰 즉시 전이 또는 armed 큐 적재
         public void HandleConditionTriggered(
@@ -461,14 +527,14 @@ namespace TH.Control.State
                     break;
             }
         }
-        
+
         // armed 큐 Polling 평가 진입점
         // -> 전역 armed를 먼저 소비해 우선순위 보장
         private bool CheckArmedTransitionsPolling()
         {
             // 글로벌 우선
             // 같은 분류 안에서도 하위 상태 전환 조건(StateConditionSO.conditions) 목록 내부 순서에 의해 우선순위 적용됨
-            return TryConsumeGlobalArmed(_globalArmed) || 
+            return TryConsumeGlobalArmed(_globalArmed) ||
                    TryConsumeArmed(_stateArmed);
         }
 
@@ -489,7 +555,7 @@ namespace TH.Control.State
 
             return false;
         }
-        
+
         // 전역 armed 목록 순회 후 만족 조건 1건 소비
         // -> self transition 불가 정책을 먼저 검증
         private bool TryConsumeGlobalArmed(List<ArmedTransition> list)
@@ -501,9 +567,9 @@ namespace TH.Control.State
                 if (t.Condition is not { } condition || !condition.IsNotNull()) continue;
                 if (t.Destination is not { } dest|| !dest.IsNotNull()) continue;
                 if (dest == currentState && !currentState.AllowSelfTransition) continue;
-                
+
                 if (!t.Condition.Decide(this)) continue;
-                
+
                 // 조건 만족 시 상태 전환 및 루프 종료
                 TransitionToState(t.Destination, t.IgnoreLock);
                 return true;
@@ -513,7 +579,7 @@ namespace TH.Control.State
         }
 
         #region Handle State CTS
-        
+
         // 현재 상태 토큰 소스 보관 필드
         private CancellationTokenSource _stateTokenSource;
 

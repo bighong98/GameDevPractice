@@ -15,6 +15,11 @@ MonoBehaviour:
   m_GroupName: Character Data
   m_GUID: ae3812f07b177484cbc394c6beec7393
   m_SerializeEntries:
+  - m_GUID: 846c10040e9c6eb4c9a3a41c999b7a9c
+    m_Address: Tough Enemy.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 9475cc137199d7f4290a14c8b92ac824
     m_Address: Enemy
     m_ReadOnly: 0

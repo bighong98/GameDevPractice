@@ -12,16 +12,59 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 98f314f6290b70940861b0c19b925b34, type: 3}
   m_Name: IdleStateSO
   m_EditorClassIdentifier: Assembly-CSharp::TH.Control.Data.IdleStateSO
-  onEnterActions:
-  - {fileID: 11400000, guid: dbddf25b9bd57034fb6d099ff589c863, type: 2}
+  onEnterActions: []
+  onEnterActionReferences:
+  - m_AssetGUID: dbddf25b9bd57034fb6d099ff589c863
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1
   updateActions: []
+  updateActionReferences: []
   onExitActions: []
+  onExitActionReferences: []
   transitions:
-  - condition: {fileID: 11400000, guid: 5d08da84b4f664c4890db4f51a1d5086, type: 2}
-    destinationState: {fileID: 11400000, guid: 16deb90229b9bec408b94b3510134c35, type: 2}
-  - condition: {fileID: 11400000, guid: 7a37636c8cf8c1948bd7cf28d2256d31, type: 2}
-    destinationState: {fileID: 11400000, guid: aebd0b6c5f806a346a562df8927ab54d, type: 2}
-  - condition: {fileID: 11400000, guid: 4cf2e9d6bf42a18449c08ab688bb405a, type: 2}
-    destinationState: {fileID: 11400000, guid: a6399e600cad3064d8bb74e9a62dd747, type: 2}
+  - condition: {fileID: 0}
+    conditionReference:
+      m_AssetGUID: 5d08da84b4f664c4890db4f51a1d5086
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 1
+    destinationState: {fileID: 0}
+    destinationStateReference:
+      m_AssetGUID: 16deb90229b9bec408b94b3510134c35
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 1
+  - condition: {fileID: 0}
+    conditionReference:
+      m_AssetGUID: 7a37636c8cf8c1948bd7cf28d2256d31
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 1
+    destinationState: {fileID: 0}
+    destinationStateReference:
+      m_AssetGUID: aebd0b6c5f806a346a562df8927ab54d
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 1
+  - condition: {fileID: 0}
+    conditionReference:
+      m_AssetGUID: 4cf2e9d6bf42a18449c08ab688bb405a
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 1
+    destinationState: {fileID: 0}
+    destinationStateReference:
+      m_AssetGUID: a6399e600cad3064d8bb74e9a62dd747
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 1
   allowSelfTransition: 0
   transitionLockRequired: 0
