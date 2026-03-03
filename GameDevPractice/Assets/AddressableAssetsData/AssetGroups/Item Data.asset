@@ -15,6 +15,13 @@ MonoBehaviour:
   m_GroupName: Item Data
   m_GUID: a25171184736bb8458128c85cac69efa
   m_SerializeEntries:
+  - m_GUID: 02ee32bc747de2a4e90254719b6ebf88
+    m_Address: Sword_complex.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 036de0a3f8e42d0438cabffcf9ce5701
     m_Address: Armor_F_Mage_Bottom
     m_ReadOnly: 0
@@ -24,6 +31,20 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 0463cbb3d4b9df34e9334b3b9c277912
     m_Address: Armor_M_Mage_Bottom
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 082c55684a630da47a4fc9ab541f96bc
+    m_Address: Fireball_Explosion.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0a600904131b2d64994bee447b8efe39
+    m_Address: Unarmed.asset
     m_ReadOnly: 0
     m_SerializedLabels:
     - PreLoad_DataSO
@@ -57,6 +78,13 @@ MonoBehaviour:
     - PreLoad_DataSO
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 24a647810f57bb345a370aa349b7758c
+    m_Address: Sword.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 2a7f83aaa96747a4db9e5a3c0f7ae546
     m_Address: Armor_M_Swordsman_Bottom
     m_ReadOnly: 0
@@ -80,6 +108,13 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 2b77f4c864e133743bba4b34a2d8e924
     m_Address: Armor_F_Mage_Top
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2fb8efb1b192ee345b6e53c7761aa529
+    m_Address: Bow.asset
     m_ReadOnly: 0
     m_SerializedLabels:
     - PreLoad_DataSO
@@ -162,6 +197,13 @@ MonoBehaviour:
     - PreLoad_DataSO
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5c4c02cf2b475b241a45617c4616396b
+    m_Address: Sword_ShootBlade.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5ff48650d897ad849a6ebde329e16e15
     m_Address: Armor_F_Sorcerer_Bottom
     m_ReadOnly: 0
@@ -185,6 +227,13 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 6a1d98e681787c6488733dcec1768613
     m_Address: ManaPotion
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6b7af030474e11c47a6955ef88e5837e
+    m_Address: Fireball.asset
     m_ReadOnly: 0
     m_SerializedLabels:
     - PreLoad_DataSO
@@ -260,6 +309,13 @@ MonoBehaviour:
     - PreLoad_DataSO
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9c28bcdec3e86fb4dbee350fb3cc7f89
+    m_Address: Long Sword
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b4d4399f8d1345443b50ef4588b422af
     m_Address: Armor_F_Sorcerer_Top
     m_ReadOnly: 0
@@ -290,6 +346,13 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: c450206705f10e44aa9ff7a6065c7894
     m_Address: Armor_F_Witch_Bottom
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c525b71ddfe92b340bcf857aaeb20ef1
+    m_Address: Sword_sequence.asset
     m_ReadOnly: 0
     m_SerializedLabels:
     - PreLoad_DataSO
