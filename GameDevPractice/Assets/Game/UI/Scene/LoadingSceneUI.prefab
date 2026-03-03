@@ -67,8 +67,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 0%
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 3226a6fb1c1d7bd4295b53a675f0bf5b, type: 2}
-  m_sharedMaterial: {fileID: 2686309706199086286, guid: 3226a6fb1c1d7bd4295b53a675f0bf5b, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 6189fbdd6136d1545b519443dcb89632, type: 2}
+  m_sharedMaterial: {fileID: 2686309706199086286, guid: 6189fbdd6136d1545b519443dcb89632, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -203,7 +203,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 5596485a8a28d434d9b0fe4a9b1f1b05, type: 3}
+  m_Sprite: {fileID: 21300000, guid: b7536f0591ff6e74c9ef3391b32588db, type: 3}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -280,8 +280,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\uB85C\uB529 \uC911..."
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: f6d6b904a4f1f3d43b31e22f66f65bbf, type: 2}
-  m_sharedMaterial: {fileID: 2686309706199086286, guid: f6d6b904a4f1f3d43b31e22f66f65bbf, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 27dadba91500d274588d02982034f215, type: 2}
+  m_sharedMaterial: {fileID: 2686309706199086286, guid: 27dadba91500d274588d02982034f215, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -697,7 +697,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 5596485a8a28d434d9b0fe4a9b1f1b05, type: 3}
+  m_Sprite: {fileID: 21300000, guid: b7536f0591ff6e74c9ef3391b32588db, type: 3}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1

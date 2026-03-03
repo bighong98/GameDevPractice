@@ -119,6 +119,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 12b636546b323754db575b3a9a5257b7
+    m_Address: Assets/Game/TMP/AddressableSplit/LiberationSans SDF - Fallback.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 1315bcd7509173f44bc6655b2673dd4d
     m_Address: Assets/Asset Packs/Animations/Unarmed/RPG-Character@Unarmed-Attack-L3.FBX
     m_ReadOnly: 0
@@ -274,6 +279,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 477a18961cf79b847ae764e3f18f0b4d
+    m_Address: Assets/Game/TMP/AddressableSplit/TMP_SDF-Mobile.shader
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 4910c4789b0b014429a11cae8301ced0
     m_Address: Assets/Game/Control/Character/Action/AnimateAction/AnimateDeadSO.asset
     m_ReadOnly: 0
@@ -409,6 +419,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 768da6377bc9fcd489ad3aeeb33f2209
+    m_Address: Assets/Game/TMP/AddressableSplit/LiberationSans SDF - Outline.mat
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 78be5954566d2d848918e51832341fa3
     m_Address: Characters_Texture_Orange.mat
     m_ReadOnly: 0
@@ -461,6 +476,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 829e6fcc12b43aa489f42177cc0bb52b
     m_Address: Simple Bow.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 850d4832070bd784583d39ed3ec38d7a
+    m_Address: Assets/Game/TMP/AddressableSplit/LiberationSans SDF.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -866,6 +886,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: da5cccc619df7dd44bf0814648498ccc
+    m_Address: Assets/Game/TMP/AddressableSplit/LiberationSans.ttf
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: dbddf25b9bd57034fb6d099ff589c863
     m_Address: Assets/Game/Control/Character/Action/AnimateAction/AnimateIdleSO.asset
     m_ReadOnly: 0
@@ -956,6 +981,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f28bfa039f10c77488917a7a36a55ba2
+    m_Address: Assets/Game/TMP/AddressableSplit/TMP_SDF SSD.shader
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f2ee7d2ed1f424a47a67bd0dbe5ceb84
     m_Address: Assets/Asset Packs/PolysplitGames/LowPolyMedievalFantasyHeroes/Materials_Shaders_Textures/RGBRecolor_Objects.mat
     m_ReadOnly: 0
@@ -1002,11 +1032,6 @@ MonoBehaviour:
     m_SerializedLabels:
     - PreLoad_DataSO
     - Scriptable Object
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: fe393ace9b354375a9cb14cdbbc28be4
-    m_Address: TMP_SDF-Mobile.shader
-    m_ReadOnly: 0
-    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: fe8ca5dc14569ec46a3b50aa5cb4c876
     m_Address: F_Swordsman_Bottom.png

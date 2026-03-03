@@ -118,6 +118,11 @@ MonoBehaviour:
     - PreLoad_Prefab
     - UI
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f8bcd29e5e9e4ec429f513dd24ec2bfb
+    m_Address: Assets/Resources/Audio/extenz - Endless Summer.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: ba2aeaf5da86ad943b7448d84aa19f98, type: 2}
   m_SchemaSet:

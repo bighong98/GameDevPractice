@@ -26,32 +26,6 @@ namespace TH.Resource.Editor
     {
         private const string MenuRoot = "Tools/Addressables/Migration/Legacy To AssetReference/";
 
-        private static readonly string[] AfterFourthProcessSharedCandidateAssetPaths =
-        {
-            "Assets/Asset Packs/PolysplitGames/LowPolyMedievalFantasyHeroes/BasicHeroes/All-in-One_SeparateGenders/BasicHero_M.fbx",
-            "Assets/Asset Packs/Synty - Polygon Student Sample/Models/Characters_POLYGON_Knights.fbx",
-            "Assets/Asset Packs/Animations/Animations by Explosive/Armed/RPG-Character@Armed-Death1.FBX",
-            "Assets/Asset Packs/Animations/Unarmed/HumanoidIdle.fbx",
-            "Assets/Asset Packs/Animations/Unarmed/HumanoidRun.fbx",
-            "Assets/Asset Packs/Animations/Unarmed/HumanoidWalk.fbx",
-            "Assets/Asset Packs/Animations/Unarmed/RPG-Character@Unarmed-Attack-L3.FBX",
-            "Assets/Game/Characters/Character.controller",
-            "Assets/Asset Packs/PolysplitGames/LowPolyMedievalFantasyHeroes/BaseCharacters/BaseMale.fbx",
-            "Assets/Asset Packs/PolysplitGames/LowPolyMedievalFantasyHeroes/Materials_Shaders_Textures/genericRGB_medievalTexture.png",
-            "Assets/Asset Packs/PolysplitGames/LowPolyMedievalFantasyHeroes/Materials_Shaders_Textures/RGBRecolor.shadergraph",
-            "Assets/Asset Packs/PolysplitGames/LowPolyMedievalFantasyHeroes/Materials_Shaders_Textures/RGBRecolor_Body.mat",
-            "Assets/Asset Packs/PolysplitGames/LowPolyMedievalFantasyHeroes/Materials_Shaders_Textures/RGBRecolor_Objects.mat",
-            "Assets/Asset Packs/Synty - Polygon Student Sample/Materials/PolyKnights_Object_Mat_Black.mat",
-            "Assets/Asset Packs/Synty - Polygon Student Sample/Textures/Characters_Texture_Orange.png",
-            "Assets/Asset Packs/VFX/Hovl Studio/Magic effects pack/Materials/Circle.mat",
-            "Assets/Asset Packs/VFX/Hovl Studio/Magic effects pack/Materials/Point.mat",
-            "Assets/Asset Packs/VFX/Hovl Studio/Magic effects pack/Materials/Smoke26.mat",
-            "Assets/Asset Packs/VFX/Hovl Studio/Magic effects pack/Textures/Circle.png",
-            "Assets/Asset Packs/VFX/Hovl Studio/Magic effects pack/Textures/Point1.png",
-            "Assets/Asset Packs/VFX/Hovl Studio/Magic effects pack/Textures/Smoke26.png"
-        };
-
-
         [MenuItem(MenuRoot + "Preview")]
         private static void Preview()
         {
@@ -83,13 +57,7 @@ namespace TH.Resource.Editor
 
         
         [MenuItem(MenuRoot + "Register Missing StateMachine Assets To Shared")]
-                [MenuItem(MenuRoot + "Register afterFourthProcess Duplicates To Shared")]
-        private static void RegisterAfterFourthProcessDuplicatesToShared()
-        {
-            RegisterAssetPathsToGroup(AfterFourthProcessSharedCandidateAssetPaths, "Shared", "afterFourthProcess");
-        }
-
-private static void RegisterMissingStateMachineAssetsToShared()
+        private static void RegisterMissingStateMachineAssetsToShared()
         {
             var stats = new MigrationStats();
 
@@ -294,90 +262,7 @@ private static void RegisterMissingStateMachineAssetsToShared()
             }
         }
 
-                private static void RegisterAssetPathsToGroup(IReadOnlyList<string> assetPaths, string groupName, string label)
-        {
-            if (assetPaths == null || assetPaths.Count == 0)
-            {
-                Debug.LogWarning($"[{nameof(LegacyAssetReferenceMigrationEditor)}] RegisterAssetPathsToGroup skipped: empty assetPaths");
-                return;
-            }
-
-            AddressableAssetSettings settings = AddressableAssetSettingsDefaultObject.Settings;
-            if (settings == null)
-            {
-                Debug.LogError($"[{nameof(LegacyAssetReferenceMigrationEditor)}] Addressable settings not found");
-                return;
-            }
-
-            AddressableAssetGroup group = settings.FindGroup(groupName);
-            if (group == null)
-            {
-                Debug.LogError($"[{nameof(LegacyAssetReferenceMigrationEditor)}] Group not found: {groupName}");
-                return;
-            }
-
-            int added = 0;
-            int moved = 0;
-            int skipped = 0;
-
-            foreach (string assetPath in assetPaths)
-            {
-                if (string.IsNullOrWhiteSpace(assetPath) || !assetPath.StartsWith("Assets/", StringComparison.Ordinal))
-                {
-                    skipped++;
-                    Debug.LogWarning($"[{nameof(LegacyAssetReferenceMigrationEditor)}] Skip invalid project asset path: {assetPath}");
-                    continue;
-                }
-
-                Object asset = AssetDatabase.LoadMainAssetAtPath(assetPath);
-                if (asset == null)
-                {
-                    skipped++;
-                    Debug.LogWarning($"[{nameof(LegacyAssetReferenceMigrationEditor)}] Skip missing asset: {assetPath}");
-                    continue;
-                }
-
-                string guid = AssetDatabase.AssetPathToGUID(assetPath);
-                if (string.IsNullOrEmpty(guid))
-                {
-                    skipped++;
-                    Debug.LogWarning($"[{nameof(LegacyAssetReferenceMigrationEditor)}] Skip guid resolve failed: {assetPath}", asset);
-                    continue;
-                }
-
-                AddressableAssetEntry existingEntry = settings.FindAssetEntry(guid);
-                if (existingEntry != null && existingEntry.parentGroup == group)
-                {
-                    continue;
-                }
-
-                AddressableAssetEntry entry = settings.CreateOrMoveEntry(guid, group);
-                if (entry == null)
-                {
-                    skipped++;
-                    Debug.LogWarning($"[{nameof(LegacyAssetReferenceMigrationEditor)}] Failed to create/move entry: {assetPath}", asset);
-                    continue;
-                }
-
-                if (existingEntry != null && existingEntry.parentGroup != group)
-                {
-                    moved++;
-                }
-                else
-                {
-                    added++;
-                }
-            }
-
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-
-            Debug.Log(
-                $"[{nameof(LegacyAssetReferenceMigrationEditor)}] RegisterAssetPathsToGroup finished. " +
-                $"label={label}, targetGroup={groupName}, added={added}, moved={moved}, skipped={skipped}");
-        }
-
-private static bool IsAddressableAsset(string assetGuid)
+        private static bool IsAddressableAsset(string assetGuid)
         {
             AddressableAssetSettings settings = AddressableAssetSettingsDefaultObject.Settings;
             if (settings == null)

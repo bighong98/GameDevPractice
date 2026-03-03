@@ -723,6 +723,9 @@ MonoBehaviour:
   enterAnimation: 0
   playExitAnimation: 0
   exitAnimation: 0
+  descParent: {fileID: 0}
+  bodyRect: {fileID: 0}
+  descPanelTemplate: {fileID: 0}
 --- !u!1 &7340535425392293351
 GameObject:
   m_ObjectHideFlags: 0
@@ -1428,6 +1431,14 @@ PrefabInstance:
       propertyPath: m_AnchorMin.x
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7618428933098079010, guid: e275b60dcdf80b94c99ecd7e39a3ed19, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 850d4832070bd784583d39ed3ec38d7a, type: 2}
+    - target: {fileID: 7618428933098079010, guid: e275b60dcdf80b94c99ecd7e39a3ed19, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 2180264, guid: 850d4832070bd784583d39ed3ec38d7a, type: 2}
     - target: {fileID: 7956514276771459904, guid: e275b60dcdf80b94c99ecd7e39a3ed19, type: 3}
       propertyPath: m_AnchorMax.x
       value: 0

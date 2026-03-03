@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using TH.Core.Service;
 using TH.SaveLoad;
@@ -14,7 +16,9 @@ namespace TH.UI
     public class MainMenuController : MonoBehaviour
     {
         [SerializeField] private MainMenuUI view;
-        [SerializeField] private AudioClip testBgm;
+        [SerializeField] private AssetReferenceAudioClip testBgmReference;
+
+        [field: NonSerialized] public AudioClip TestBgm { get; private set; }
 
         // 외부 서비스 (ServiceLocator로 주입)
         private ISaveSystem saveSystem;
@@ -40,12 +44,39 @@ namespace TH.UI
         {
             catalogResolved = catalogResolveTCS.Task.Preserve();
             LoadSceneCatalogAsync().Forget();
+            EnsureTestBgmAsync().Forget();
+        }
 
-            if (testBgm != null)
+        private async UniTask EnsureTestBgmAsync()
+        {
+            if (testBgmReference == null || !testBgmReference.RuntimeKeyIsValid())
             {
-                SoundManager.Instance.Play(Enums.AudioType.Bgm, testBgm);
+                return;
+            }
+
+            try
+            {
+                AudioClip loadedBgm = await ResourceManager.Instance.ExtractAssetRefAsync<AudioClip>(
+                    testBgmReference,
+                    destroyCancellationToken);
+
+                if (loadedBgm == null)
+                {
+                    return;
+                }
+
+                TestBgm = loadedBgm;
+                SoundManager.Instance.Play(Enums.AudioType.Bgm, loadedBgm);
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[MainMenuController] testBgm load failed: {e.Message}");
             }
         }
+
 
         private void OnEnable()
         {
