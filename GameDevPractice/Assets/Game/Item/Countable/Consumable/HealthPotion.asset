@@ -13,11 +13,26 @@ MonoBehaviour:
   m_Name: HealthPotion
   m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.ItemTypeSO
   prefab: {fileID: 0}
+  prefabReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
   nameString: "\uCCB4\uB825 \uBB3C\uC57D"
-  sprite: {fileID: 21300000, guid: 44dc65116207f4b46aa85443dae5ad96, type: 3}
+  sprite: {fileID: 0}
+  spriteReference:
+    m_AssetGUID: 44dc65116207f4b46aa85443dae5ad96
+    m_SubObjectName: Red Potion 2
+    m_SubObjectType: UnityEngine.Sprite, UnityEngine.CoreModule, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1
   itemType: 2
   maxAmount: 10
-  desc: "상처를 치료하는 체력 회복용 물약이다. 사용하면 HP를 {effect.heal.amount} 회복한다."
+  desc: "\uC0C1\uCC98\uB97C \uCE58\uB8CC\uD558\uB294 \uCCB4\uB825 \uD68C\uBCF5\uC6A9
+    \uBB3C\uC57D\uC774\uB2E4. \uC0AC\uC6A9\uD558\uBA74 HP\uB97C {effect.heal.amount}
+    \uD68C\uBCF5\uD55C\uB2E4."
   itemUseEffects:
   - {fileID: 11400000, guid: 389108454022f9a45b3516705342d06c, type: 2}
   itemUseSFXReference:

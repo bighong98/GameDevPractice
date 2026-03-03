@@ -12,7 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c65bb35c1bb31da4db14e828c8e47a1d, type: 3}
   m_Name: OptionCategoryPanelMapSO
   m_EditorClassIdentifier: Assembly-CSharp::OptionCategoryPanelMapSO
-  categoryButtonTemplate: {fileID: 0}
   categoryButtonTemplateReference:
     m_AssetGUID: f09a265d62bb6d248bc0f6cf6407ab3f
     m_SubObjectName: 
@@ -22,7 +21,6 @@ MonoBehaviour:
   entries:
   - category: 0
     label: "\uC74C\uB7C9"
-    panelPrefab: {fileID: 0}
     panelPrefabReference:
       m_AssetGUID: 0c2e11e1fb2ffea4ba2429abaa296e49
       m_SubObjectName: 
@@ -31,7 +29,6 @@ MonoBehaviour:
       m_EditorAssetChanged: 1
   - category: 2
     label: "\uB2E8\uCD95\uD0A4"
-    panelPrefab: {fileID: 0}
     panelPrefabReference:
       m_AssetGUID: 7edec613b7148f04d992f53ad026b1b5
       m_SubObjectName: 
@@ -40,7 +37,6 @@ MonoBehaviour:
       m_EditorAssetChanged: 1
   - category: 3
     label: "\uC800\uC7A5/\uBD88\uB7EC\uC624\uAE30"
-    panelPrefab: {fileID: 0}
     panelPrefabReference:
       m_AssetGUID: 27d218dc4fcb49348a1052b96a949bd2
       m_SubObjectName: 

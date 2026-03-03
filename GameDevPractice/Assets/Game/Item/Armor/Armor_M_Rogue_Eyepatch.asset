@@ -13,8 +13,21 @@ MonoBehaviour:
   m_Name: Armor_M_Rogue_Eyepatch
   m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.ArmorTypeSO
   prefab: {fileID: 0}
+  prefabReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
   nameString: "\uB3C4\uC801\uC758 \uB8EC\uBB38\uC790 \uC548\uB300"
-  sprite: {fileID: 21300000, guid: f7d074cf705002f4da8e216d98cb2693, type: 3}
+  sprite: {fileID: 0}
+  spriteReference:
+    m_AssetGUID: f7d074cf705002f4da8e216d98cb2693
+    m_SubObjectName: M_Rogue_Eyepatch
+    m_SubObjectType: UnityEngine.Sprite, UnityEngine.CoreModule, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1
   itemType: 1
   maxAmount: 1
   desc: "\uB3C4\uC801\uB97C \uC704\uD55C \uB8EC\uBB38\uC790 \uC548\uB300\uC774\uB2E4.

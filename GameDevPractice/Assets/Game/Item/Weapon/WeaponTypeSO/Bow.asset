@@ -12,9 +12,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 361e7764f46e225498b2d9903851f06d, type: 3}
   m_Name: Bow
   m_EditorClassIdentifier: Assembly-CSharp::WeaponTypeSO
-  prefab: {fileID: 485934382282723969, guid: d65c897b8507b1d499688c554148fe1e, type: 3}
+  prefab: {fileID: 0}
+  prefabReference:
+    m_AssetGUID: d65c897b8507b1d499688c554148fe1e
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1
   nameString: "\uAE30\uBCF8 \uD65C"
-  sprite: {fileID: 21300000, guid: bbf8638a8a75d9c42b93639213c92c9b, type: 3}
+  sprite: {fileID: 0}
+  spriteReference:
+    m_AssetGUID: bbf8638a8a75d9c42b93639213c92c9b
+    m_SubObjectName: Bow
+    m_SubObjectType: UnityEngine.Sprite, UnityEngine.CoreModule, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1
   itemType: 1
   maxAmount: 1
   desc: "\uAE30\uBCF8 \uC0AC\uAC70\uB9AC \uC804\uD22C\uC5D0 \uC4F0\uC774\uB294 \uD65C\uC774\uB2E4.
@@ -34,14 +47,12 @@ MonoBehaviour:
     calculation: 0
     value: 15
   weaponType: 0
-  EquippedPrefab: {fileID: 0}
   equippedPrefabReference:
     m_AssetGUID: 6dd5bc81c7e17b74c8c5782a5824dd91
     m_SubObjectName: 
     m_SubObjectType: 
     m_SubObjectGUID: 
     m_EditorAssetChanged: 1
-  equippedPrefabLeft: {fileID: 0}
   equippedPrefabLeftReference:
     m_AssetGUID: 
     m_SubObjectName: 
@@ -49,7 +60,6 @@ MonoBehaviour:
     m_SubObjectGUID: 
     m_EditorAssetChanged: 0
   hand: 1
-  defaultSkills: []
   defaultSkillReferences:
   - m_AssetGUID: 5cd53c555bc830b41b96b4405ec81bb6
     m_SubObjectName: 

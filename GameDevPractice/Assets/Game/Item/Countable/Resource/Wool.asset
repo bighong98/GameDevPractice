@@ -13,8 +13,21 @@ MonoBehaviour:
   m_Name: Wool
   m_EditorClassIdentifier: Assembly-CSharp::ItemTypeSO
   prefab: {fileID: 0}
+  prefabReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
   nameString: "\uC2DC\uD5D8\uD56D\uBAA9 \uC591\uBAA8"
-  sprite: {fileID: 21300000, guid: 046f821c76a004e4c91b9f27ee906194, type: 3}
+  sprite: {fileID: 0}
+  spriteReference:
+    m_AssetGUID: 046f821c76a004e4c91b9f27ee906194
+    m_SubObjectName: Wool
+    m_SubObjectType: UnityEngine.Sprite, UnityEngine.CoreModule, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1
   itemType: 2
   maxAmount: 20
   desc: "\uBCF4\uC628\uC131\uC774 \uC88B\uC740 \uC591\uBAA8 \uC18C\uC7AC\uC774\uB2E4.

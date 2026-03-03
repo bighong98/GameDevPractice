@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using TH.Combat;
 using TH.Resource;
+using TH.UI;
 using UnityEditor;
 using UnityEditor.AddressableAssets;
 using UnityEditor.AddressableAssets.Settings;
@@ -55,6 +56,9 @@ namespace TH.Resource.Editor
             ProcessAssets(LoadAssetsOfType<OptionCategoryPanelMapSO>(), "OptionCategoryPanelMapSO", asset =>
                 MigrateOptionCategoryPanelMap(asset, applyChanges, clearLegacyFields, stats));
 
+            ProcessAssets(LoadBaseTypeAssets(), "BaseTypeSO", asset =>
+                MigrateBaseType(asset, applyChanges, clearLegacyFields, stats));
+
             ProcessAssets(LoadAssetsOfType<WeaponTypeSO>(), "WeaponTypeSO", asset =>
                 MigrateWeaponType(asset, applyChanges, clearLegacyFields, stats));
 
@@ -69,6 +73,12 @@ namespace TH.Resource.Editor
 
             ProcessAssets(LoadAssetsOfType<PlayerTypeSO>(), "PlayerTypeSO", asset =>
                 MigratePlayerType(asset, applyChanges, clearLegacyFields, stats));
+
+            ProcessObjects(LoadPrefabComponentsOfType<LoadSlotPanelUI>(), "LoadSlotPanelUI(prefab)", asset =>
+                MigrateLoadSlotPanel(asset, applyChanges, clearLegacyFields, stats));
+
+            ProcessObjects(LoadPrefabComponentsOfType<LoadSlotPanelEmbeddedUI>(), "LoadSlotPanelEmbeddedUI(prefab)", asset =>
+                MigrateLoadSlotPanelEmbedded(asset, applyChanges, clearLegacyFields, stats));
 
             if (applyChanges)
             {
@@ -163,6 +173,26 @@ namespace TH.Resource.Editor
             }
         }
 
+        private static void ProcessObjects<T>(IReadOnlyList<T> assets, string label, Func<T, bool> migrator)
+            where T : UnityEngine.Object
+        {
+            if (assets == null || assets.Count == 0)
+            {
+                Debug.Log($"[{nameof(LegacyAssetReferenceMigrationEditor)}] No assets found for {label}");
+                return;
+            }
+
+            foreach (var asset in assets)
+            {
+                if (asset == null)
+                {
+                    continue;
+                }
+
+                migrator(asset);
+            }
+        }
+
         private static bool MigrateOptionCategoryPanelMap(
             OptionCategoryPanelMapSO asset,
             bool applyChanges,
@@ -206,6 +236,46 @@ namespace TH.Resource.Editor
                         stats: stats);
                 }
             }
+
+            if (applyChanges && changed)
+            {
+                EditorUtility.SetDirty(asset);
+                stats.ChangedAssets++;
+            }
+
+            return changed;
+        }
+
+        private static bool MigrateBaseType(
+            BaseTypeSO asset,
+            bool applyChanges,
+            bool clearLegacyFields,
+            MigrationStats stats)
+        {
+            stats.ScannedAssets++;
+            bool changed = false;
+
+            if (applyChanges)
+            {
+                Undo.RecordObject(asset, "Migrate BaseTypeSO");
+            }
+
+            changed |= CopyObjectFieldToAssetReference(
+                owner: asset,
+                legacyFieldName: "prefab",
+                assetReferenceFieldName: "prefabReference",
+                applyChanges: applyChanges,
+                clearLegacyField: clearLegacyFields,
+                stats: stats,
+                normalizeSource: obj => obj is Component component ? component.gameObject : obj);
+
+            changed |= CopyObjectFieldToAssetReference(
+                owner: asset,
+                legacyFieldName: "sprite",
+                assetReferenceFieldName: "spriteReference",
+                applyChanges: applyChanges,
+                clearLegacyField: clearLegacyFields,
+                stats: stats);
 
             if (applyChanges && changed)
             {
@@ -289,6 +359,14 @@ namespace TH.Resource.Editor
                 owner: asset,
                 legacyFieldName: "projectilePrefab",
                 assetReferenceFieldName: "projectilePrefabReference",
+                applyChanges: applyChanges,
+                clearLegacyField: clearLegacyFields,
+                stats: stats);
+
+            changed |= CopyObjectFieldToAssetReference(
+                owner: asset,
+                legacyFieldName: "skillSlotImage",
+                assetReferenceFieldName: "skillSlotImageReference",
                 applyChanges: applyChanges,
                 clearLegacyField: clearLegacyFields,
                 stats: stats);
@@ -411,6 +489,68 @@ namespace TH.Resource.Editor
                 applyChanges: applyChanges,
                 clearLegacyField: clearLegacyFields,
                 stats: stats);
+
+            if (applyChanges && changed)
+            {
+                EditorUtility.SetDirty(asset);
+                stats.ChangedAssets++;
+            }
+
+            return changed;
+        }
+
+        private static bool MigrateLoadSlotPanel(
+            LoadSlotPanelUI asset,
+            bool applyChanges,
+            bool clearLegacyFields,
+            MigrationStats stats)
+        {
+            stats.ScannedAssets++;
+
+            if (applyChanges)
+            {
+                Undo.RecordObject(asset, "Migrate LoadSlotPanelUI");
+            }
+
+            bool changed = CopyObjectFieldToAssetReference(
+                owner: asset,
+                legacyFieldName: "loadSlotTemplate",
+                assetReferenceFieldName: "loadSlotTemplateReference",
+                applyChanges: applyChanges,
+                clearLegacyField: clearLegacyFields,
+                stats: stats,
+                normalizeSource: obj => obj is Component component ? component.gameObject : obj);
+
+            if (applyChanges && changed)
+            {
+                EditorUtility.SetDirty(asset);
+                stats.ChangedAssets++;
+            }
+
+            return changed;
+        }
+
+        private static bool MigrateLoadSlotPanelEmbedded(
+            LoadSlotPanelEmbeddedUI asset,
+            bool applyChanges,
+            bool clearLegacyFields,
+            MigrationStats stats)
+        {
+            stats.ScannedAssets++;
+
+            if (applyChanges)
+            {
+                Undo.RecordObject(asset, "Migrate LoadSlotPanelEmbeddedUI");
+            }
+
+            bool changed = CopyObjectFieldToAssetReference(
+                owner: asset,
+                legacyFieldName: "loadSlotTemplate",
+                assetReferenceFieldName: "loadSlotTemplateReference",
+                applyChanges: applyChanges,
+                clearLegacyField: clearLegacyFields,
+                stats: stats,
+                normalizeSource: obj => obj is Component component ? component.gameObject : obj);
 
             if (applyChanges && changed)
             {
@@ -691,6 +831,61 @@ namespace TH.Resource.Editor
             }
 
             return assets;
+        }
+
+        private static List<BaseTypeSO> LoadBaseTypeAssets()
+        {
+            var assets = LoadAssetsOfType<BaseTypeSO>();
+            if (assets.Count > 0)
+            {
+                return assets;
+            }
+
+            var fallback = new List<BaseTypeSO>();
+            string[] guids = AssetDatabase.FindAssets("t:ScriptableObject");
+            for (int i = 0; i < guids.Length; i++)
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guids[i]);
+                ScriptableObject loaded = AssetDatabase.LoadAssetAtPath<ScriptableObject>(path);
+                if (loaded is BaseTypeSO baseType)
+                {
+                    fallback.Add(baseType);
+                }
+            }
+
+            return fallback;
+        }
+
+        private static List<T> LoadPrefabComponentsOfType<T>() where T : Component
+        {
+            string[] guids = AssetDatabase.FindAssets("t:Prefab");
+            var results = new List<T>();
+
+            for (int i = 0; i < guids.Length; i++)
+            {
+                string assetPath = AssetDatabase.GUIDToAssetPath(guids[i]);
+                GameObject prefabRoot = AssetDatabase.LoadAssetAtPath<GameObject>(assetPath);
+                if (prefabRoot == null)
+                {
+                    continue;
+                }
+
+                T[] components = prefabRoot.GetComponentsInChildren<T>(true);
+                if (components == null || components.Length == 0)
+                {
+                    continue;
+                }
+
+                for (int componentIndex = 0; componentIndex < components.Length; componentIndex++)
+                {
+                    if (components[componentIndex] != null)
+                    {
+                        results.Add(components[componentIndex]);
+                    }
+                }
+            }
+
+            return results;
         }
 
         private static List<CharacterTypeSO> LoadCharacterTypeAssets()

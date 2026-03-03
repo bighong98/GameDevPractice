@@ -14,7 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
   m_GroupName: Default Local Group
   m_GUID: 3b559008265abd04ba68b9cac872e7db
-  m_SerializeEntries: []
+  m_SerializeEntries:
+  - m_GUID: 846c10040e9c6eb4c9a3a41c999b7a9c
+    m_Address: Assets/Game/Characters/NPC/Enemy/Character Prefab/Tough Enemy.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: ba2aeaf5da86ad943b7448d84aa19f98, type: 2}
   m_SchemaSet:

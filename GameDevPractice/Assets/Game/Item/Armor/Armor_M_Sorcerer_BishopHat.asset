@@ -13,8 +13,21 @@ MonoBehaviour:
   m_Name: Armor_M_Sorcerer_BishopHat
   m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.ArmorTypeSO
   prefab: {fileID: 0}
+  prefabReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
   nameString: "\uB9C8\uBC95\uC0AC\uC758 \uAC15\uCCA0 \uBAA8\uC790"
-  sprite: {fileID: 21300000, guid: 68a2b59f294673948aac901ec51a9eb5, type: 3}
+  sprite: {fileID: 0}
+  spriteReference:
+    m_AssetGUID: 68a2b59f294673948aac901ec51a9eb5
+    m_SubObjectName: M_Sorcerer_BishopHat
+    m_SubObjectType: UnityEngine.Sprite, UnityEngine.CoreModule, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1
   itemType: 1
   maxAmount: 1
   desc: "\uC18C\uC11C\uB7EC\uB97C \uC704\uD55C \uAC15\uCCA0 \uBAA8\uC790\uC774\uB2E4.

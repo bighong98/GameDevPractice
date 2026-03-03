@@ -13,8 +13,21 @@ MonoBehaviour:
   m_Name: Skull
   m_EditorClassIdentifier: Assembly-CSharp::ItemTypeSO
   prefab: {fileID: 0}
+  prefabReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
   nameString: "\uD14C\uC2A4\uD2B8 \uC544\uC774\uD15C \uD574\uACE8"
-  sprite: {fileID: 21300000, guid: 587503b6015abc741ad5147fff8f4a06, type: 3}
+  sprite: {fileID: 0}
+  spriteReference:
+    m_AssetGUID: 587503b6015abc741ad5147fff8f4a06
+    m_SubObjectName: Skull
+    m_SubObjectType: UnityEngine.Sprite, UnityEngine.CoreModule, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1
   itemType: 2
   maxAmount: 10
   desc: "\uC624\uB798\uB41C \uC720\uC801\uC5D0\uC11C \uBC1C\uACAC\uB41C \uD574\uACE8

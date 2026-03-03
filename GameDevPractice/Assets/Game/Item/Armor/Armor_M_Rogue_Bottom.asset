@@ -13,8 +13,21 @@ MonoBehaviour:
   m_Name: Armor_M_Rogue_Bottom
   m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.ArmorTypeSO
   prefab: {fileID: 0}
+  prefabReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
   nameString: "\uB3C4\uC801\uC758 \uC5EC\uD589\uC790 \uACBD\uAC11"
-  sprite: {fileID: 21300000, guid: fa8731a719b30394c83d045123947ee8, type: 3}
+  sprite: {fileID: 0}
+  spriteReference:
+    m_AssetGUID: fa8731a719b30394c83d045123947ee8
+    m_SubObjectName: M_Rogue_Bottom
+    m_SubObjectType: UnityEngine.Sprite, UnityEngine.CoreModule, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1
   itemType: 1
   maxAmount: 1
   desc: "\uB3C4\uC801\uB97C \uC704\uD55C \uC5EC\uD589\uC790 \uACBD\uAC11\uC774\uB2E4.

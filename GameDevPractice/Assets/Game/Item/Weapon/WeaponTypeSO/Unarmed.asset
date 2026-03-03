@@ -12,9 +12,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 361e7764f46e225498b2d9903851f06d, type: 3}
   m_Name: Unarmed
   m_EditorClassIdentifier: Assembly-CSharp::WeaponTypeSO
-  prefab: {fileID: 6979306519834674752, guid: 85f54ae1cb4911b49b5770895d6d70a9, type: 3}
+  prefab: {fileID: 0}
+  prefabReference:
+    m_AssetGUID: 85f54ae1cb4911b49b5770895d6d70a9
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1
   nameString: "\uB9E8\uC190"
   sprite: {fileID: 10917, guid: 0000000000000000f000000000000000, type: 0}
+  spriteReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
   itemType: 1
   maxAmount: 1
   desc: "\uB9E8\uC190\uC774\uB2E4."
@@ -32,14 +44,12 @@ MonoBehaviour:
     calculation: 0
     value: 5
   weaponType: 0
-  EquippedPrefab: {fileID: 0}
   equippedPrefabReference:
     m_AssetGUID: 85f54ae1cb4911b49b5770895d6d70a9
     m_SubObjectName: 
     m_SubObjectType: 
     m_SubObjectGUID: 
     m_EditorAssetChanged: 1
-  equippedPrefabLeft: {fileID: 0}
   equippedPrefabLeftReference:
     m_AssetGUID: 
     m_SubObjectName: 
@@ -47,7 +57,6 @@ MonoBehaviour:
     m_SubObjectGUID: 
     m_EditorAssetChanged: 0
   hand: 0
-  defaultSkills: []
   defaultSkillReferences:
   - m_AssetGUID: caa9c92c06bbef340a4bca8c6a52f62a
     m_SubObjectName: 

@@ -39,14 +39,12 @@ MonoBehaviour:
     includeDeadTargets: 0
   animationSpeedMultiplier: 1
   affectedByAttackSpeed: 1
-  animatorOverride: {fileID: 0}
   animatorOverrideReference:
     m_AssetGUID: bad3b4482a681fb4bb377898a52a866d
     m_SubObjectName: 
     m_SubObjectType: 
     m_SubObjectGUID: 
     m_EditorAssetChanged: 1
-  projectilePrefab: {fileID: 0}
   projectilePrefabReference:
     m_AssetGUID: 
     m_SubObjectName: 
@@ -60,14 +58,12 @@ MonoBehaviour:
   - cueId: legacy.onhit
     trigger: 1
     markerName: 
-    effectPrefab: {fileID: 0}
     effectPrefabReference:
       m_AssetGUID: 20b27818abf007b4c91e694a1931a851
       m_SubObjectName: 
       m_SubObjectType: 
       m_SubObjectGUID: 
       m_EditorAssetChanged: 1
-    sfxClip: {fileID: 0}
     sfxClipReference:
       m_AssetGUID: 
       m_SubObjectName: 
@@ -87,14 +83,12 @@ MonoBehaviour:
   - cueId: legacy_castsfx
     trigger: 0
     markerName: 
-    effectPrefab: {fileID: 0}
     effectPrefabReference:
       m_AssetGUID: 
       m_SubObjectName: 
       m_SubObjectType: 
       m_SubObjectGUID: 
       m_EditorAssetChanged: 0
-    sfxClip: {fileID: 0}
     sfxClipReference:
       m_AssetGUID: 4e7a9f408abdba8459fdccbeaea95215
       m_SubObjectName: 
@@ -114,4 +108,11 @@ MonoBehaviour:
   skillEffectProfile: {fileID: 0}
   lastImportedSkillVfxProfileSignature: 0
   skillCategory: 0
-  skillSlotImage: {fileID: 21300000, guid: 2ddf0348701148a4d8a7c6a0f7f146b3, type: 3}
+  skillSlotImage: {fileID: 0}
+  skillSlotImageReference:
+    m_AssetGUID: 2ddf0348701148a4d8a7c6a0f7f146b3
+    m_SubObjectName: Wooden Sword
+    m_SubObjectType: UnityEngine.Sprite, UnityEngine.CoreModule, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1

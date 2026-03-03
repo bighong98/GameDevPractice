@@ -29,6 +29,11 @@ MonoBehaviour:
     - PreLoad_DataSO
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d3ab42f9d33a8bf4cbebcbc94f5b10ab
+    m_Address: Assets/Game/Characters/NPC/Enemy/Character Prefab/Enemy.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f99a9c8d0583cc04d9cb6f82405b6c9e
     m_Address: PlayerTypeSO
     m_ReadOnly: 0

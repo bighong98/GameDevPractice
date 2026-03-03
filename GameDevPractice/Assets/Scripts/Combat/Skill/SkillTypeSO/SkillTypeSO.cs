@@ -89,6 +89,7 @@ public partial class SkillTypeSO : ScriptableObject, IAsyncInitializer
     [Header("UI")]
     [SerializeField] private SkillCategory skillCategory = SkillCategory.AdditiveSkill;
     [SerializeField] private Sprite skillSlotImage;
+    [SerializeField] private AssetReferenceSprite skillSlotImageReference;
 
     [NonSerialized] private bool initialized;
 
@@ -150,6 +151,15 @@ public partial class SkillTypeSO : ScriptableObject, IAsyncInitializer
             if (loadedProjectilePrefab != null)
             {
                 projectilePrefab = loadedProjectilePrefab;
+            }
+        }
+
+        if (skillSlotImageReference != null && skillSlotImageReference.RuntimeKeyIsValid())
+        {
+            var loadedSkillSlotImage = await ResourceManager.Instance.ExtractAssetRefAsync<Sprite>(skillSlotImageReference, token);
+            if (loadedSkillSlotImage != null)
+            {
+                skillSlotImage = loadedSkillSlotImage;
             }
         }
 

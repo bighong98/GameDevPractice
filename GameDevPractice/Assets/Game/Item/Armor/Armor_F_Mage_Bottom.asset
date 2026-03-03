@@ -13,8 +13,21 @@ MonoBehaviour:
   m_Name: Armor_F_Mage_Bottom
   m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.ArmorTypeSO
   prefab: {fileID: 0}
+  prefabReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
   nameString: "\uB9C8\uBC95\uC0AC\uC758 \uAC15\uD654 \uACBD\uAC11"
-  sprite: {fileID: 21300000, guid: e031e902966dac345b0f16aafcc1439f, type: 3}
+  sprite: {fileID: 0}
+  spriteReference:
+    m_AssetGUID: e031e902966dac345b0f16aafcc1439f
+    m_SubObjectName: F_Mage_Bottom
+    m_SubObjectType: UnityEngine.Sprite, UnityEngine.CoreModule, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1
   itemType: 1
   maxAmount: 1
   desc: "\uB9C8\uBC95\uC0AC\uB97C \uC704\uD55C \uAC15\uD654 \uACBD\uAC11\uC774\uB2E4.

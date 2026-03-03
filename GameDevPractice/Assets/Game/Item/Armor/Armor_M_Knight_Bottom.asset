@@ -13,8 +13,21 @@ MonoBehaviour:
   m_Name: Armor_M_Knight_Bottom
   m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.ArmorTypeSO
   prefab: {fileID: 0}
+  prefabReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
   nameString: "\uAE30\uC0AC\uC758 \uAC15\uD654 \uACBD\uAC11"
-  sprite: {fileID: 21300000, guid: 99b5705d28a2ae541bb9f8e9175b47c6, type: 3}
+  sprite: {fileID: 0}
+  spriteReference:
+    m_AssetGUID: 99b5705d28a2ae541bb9f8e9175b47c6
+    m_SubObjectName: M_Knight_Bottom
+    m_SubObjectType: UnityEngine.Sprite, UnityEngine.CoreModule, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1
   itemType: 1
   maxAmount: 1
   desc: "\uAE30\uC0AC\uB97C \uC704\uD55C \uAC15\uD654 \uACBD\uAC11\uC774\uB2E4. \uD558\uCCB4\uB97C

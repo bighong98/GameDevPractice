@@ -13,8 +13,21 @@ MonoBehaviour:
   m_Name: Armor_F_Fighter_Top
   m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.ArmorTypeSO
   prefab: {fileID: 0}
+  prefabReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
   nameString: "\uC804\uC0AC\uC758 \uAC15\uCCA0 \uD749\uAC11"
-  sprite: {fileID: 21300000, guid: ff067b3d4b3a6034da5132ee245af2cc, type: 3}
+  sprite: {fileID: 0}
+  spriteReference:
+    m_AssetGUID: ff067b3d4b3a6034da5132ee245af2cc
+    m_SubObjectName: F_Fighter_Top
+    m_SubObjectType: UnityEngine.Sprite, UnityEngine.CoreModule, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1
   itemType: 1
   maxAmount: 1
   desc: "\uC804\uC0AC\uB97C \uC704\uD55C \uAC15\uCCA0 \uD749\uAC11\uC774\uB2E4. \uC0C1\uCCB4\uB97C

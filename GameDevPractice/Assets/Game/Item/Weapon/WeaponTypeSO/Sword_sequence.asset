@@ -12,9 +12,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 361e7764f46e225498b2d9903851f06d, type: 3}
   m_Name: Sword_sequence
   m_EditorClassIdentifier: Assembly-CSharp::WeaponTypeSO
-  prefab: {fileID: 7059132959080541948, guid: d4c092d9dca59304fba951cae1d05868, type: 3}
+  prefab: {fileID: 0}
+  prefabReference:
+    m_AssetGUID: d4c092d9dca59304fba951cae1d05868
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1
   nameString: "\uC804\uBB38\uAC00\uC6A9 \uAC80"
-  sprite: {fileID: 21300000, guid: 95052c6b62fb3de4695beaa99f842ac2, type: 3}
+  sprite: {fileID: 0}
+  spriteReference:
+    m_AssetGUID: 95052c6b62fb3de4695beaa99f842ac2
+    m_SubObjectName: Silver Sword
+    m_SubObjectType: UnityEngine.Sprite, UnityEngine.CoreModule, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1
   itemType: 1
   maxAmount: 1
   desc: "\uADE0\uD615 \uC7A1\uD78C \uADFC\uC811 \uC804\uD22C\uC6A9 \uAC80\uC774\uB2E4.
@@ -36,14 +49,12 @@ MonoBehaviour:
     calculation: 0
     value: 5
   weaponType: 0
-  EquippedPrefab: {fileID: 0}
   equippedPrefabReference:
     m_AssetGUID: f88d5b41db4f06b4e8240c80f2f734db
     m_SubObjectName: 
     m_SubObjectType: 
     m_SubObjectGUID: 
     m_EditorAssetChanged: 1
-  equippedPrefabLeft: {fileID: 0}
   equippedPrefabLeftReference:
     m_AssetGUID: 11cda9c8e3d9d034f8df6480f16d820b
     m_SubObjectName: 
@@ -51,7 +62,6 @@ MonoBehaviour:
     m_SubObjectGUID: 
     m_EditorAssetChanged: 1
   hand: 2
-  defaultSkills: []
   defaultSkillReferences:
   - m_AssetGUID: 265746d0fd0a1cc468b00352e243cf4d
     m_SubObjectName: 

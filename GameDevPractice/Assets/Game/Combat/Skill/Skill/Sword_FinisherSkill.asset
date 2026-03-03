@@ -37,14 +37,12 @@ MonoBehaviour:
     includeDeadTargets: 0
   animationSpeedMultiplier: 1
   affectedByAttackSpeed: 1
-  animatorOverride: {fileID: 0}
   animatorOverrideReference:
     m_AssetGUID: bb775ed55d1346646a899626d7d4b3bf
     m_SubObjectName: 
     m_SubObjectType: 
     m_SubObjectGUID: 
     m_EditorAssetChanged: 1
-  projectilePrefab: {fileID: 0}
   projectilePrefabReference:
     m_AssetGUID: 
     m_SubObjectName: 
@@ -55,50 +53,46 @@ MonoBehaviour:
   projectileMaxPierceTargets: 0
   projectileMaxTravelDistance: 0
   skillVfxCues:
-  - cueId: OnHit_Ground_LongSword_Finisher
-    trigger: 1
+  - cueId: OnConsume_Grund_LongSword
+    trigger: 0
     markerName: 
-    effectPrefab: {fileID: 0}
     effectPrefabReference:
-      m_AssetGUID: b81f27256b9d6904b864940a7e0e222e
+      m_AssetGUID: 
       m_SubObjectName: 
       m_SubObjectType: 
       m_SubObjectGUID: 
-      m_EditorAssetChanged: 1
-    sfxClip: {fileID: 0}
+      m_EditorAssetChanged: 0
     sfxClipReference:
-      m_AssetGUID: c01bbab8442e45146be860df82582360
+      m_AssetGUID: 
       m_SubObjectName: 
       m_SubObjectType: 
       m_SubObjectGUID: 
-      m_EditorAssetChanged: 1
+      m_EditorAssetChanged: 0
     anchorType: 2
     anchorName: 
     follow: 0
-    oncePerAttackInstance: 1
+    oncePerAttackInstance: 0
     positionOffset: {x: 0, y: 0, z: 0}
     groundLayerMask:
       serializedVersion: 2
       m_Bits: 128
     groundRayStartHeight: 1.5
     groundRayDistance: 6
-  - cueId: OnHit_HitPoint_LongSword_Finisher
+  - cueId: OnConsume_Grund_LongSword
     trigger: 1
     markerName: 
-    effectPrefab: {fileID: 0}
     effectPrefabReference:
-      m_AssetGUID: 20b27818abf007b4c91e694a1931a851
+      m_AssetGUID: 
       m_SubObjectName: 
       m_SubObjectType: 
       m_SubObjectGUID: 
-      m_EditorAssetChanged: 1
-    sfxClip: {fileID: 0}
+      m_EditorAssetChanged: 0
     sfxClipReference:
-      m_AssetGUID: c01bbab8442e45146be860df82582360
+      m_AssetGUID: 
       m_SubObjectName: 
       m_SubObjectType: 
       m_SubObjectGUID: 
-      m_EditorAssetChanged: 1
+      m_EditorAssetChanged: 0
     anchorType: 3
     anchorName: 
     follow: 0
@@ -110,6 +104,13 @@ MonoBehaviour:
     groundRayStartHeight: 1.5
     groundRayDistance: 6
   skillEffectProfile: {fileID: 11400000, guid: 3d7ede2244ae16c44842918749054689, type: 2}
-  lastImportedSkillVfxProfileSignature: -174916439
+  lastImportedSkillVfxProfileSignature: 0
   skillCategory: 0
-  skillSlotImage: {fileID: 21300000, guid: 95052c6b62fb3de4695beaa99f842ac2, type: 3}
+  skillSlotImage: {fileID: 0}
+  skillSlotImageReference:
+    m_AssetGUID: 95052c6b62fb3de4695beaa99f842ac2
+    m_SubObjectName: Silver Sword
+    m_SubObjectType: UnityEngine.Sprite, UnityEngine.CoreModule, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1

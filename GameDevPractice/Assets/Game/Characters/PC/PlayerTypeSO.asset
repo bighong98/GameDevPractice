@@ -12,23 +12,33 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d2a09f1913331f64d9f41bc7fc5344e3, type: 3}
   m_Name: PlayerTypeSO
   m_EditorClassIdentifier: Assembly-CSharp::PlayerTypeSO
-  prefab: {fileID: 4641656488832625914, guid: 7d316606e40584a4fbf760ebdbd62c6d, type: 3}
+  prefab: {fileID: 0}
+  prefabReference:
+    m_AssetGUID: ea81141bec111d44b9f0d6851b8c5c22
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
   nameString: player
   sprite: {fileID: 0}
+  spriteReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
   characterType: 1
   characterBaseStats: {fileID: 11400000, guid: c46e71df86a1f764c87b6be0160beae4, type: 2}
   height: 0
   startingLevel: 1
   defaultEquipments:
   - {fileID: 11400000, guid: c525b71ddfe92b340bcf857aaeb20ef1, type: 2}
-  hpBarPrefab: {fileID: 0}
   hpBarPrefabReference:
     m_AssetGUID: 23d1f639e15c7f74cb905caf3aef5bed
     m_SubObjectName: 
     m_SubObjectType: 
     m_SubObjectGUID: 
     m_EditorAssetChanged: 1
-  levelUpEffect: {fileID: 0}
   levelUpEffectReference:
     m_AssetGUID: 94089ecaec66ba248b810e3bfaf74600
     m_SubObjectName: 

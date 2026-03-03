@@ -13,8 +13,21 @@ MonoBehaviour:
   m_Name: Wood Log
   m_EditorClassIdentifier: Assembly-CSharp::ItemTypeSO
   prefab: {fileID: 0}
+  prefabReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
   nameString: "\uC2DC\uD5D8\uD56D\uBAA9 \uBAA9\uC7AC"
-  sprite: {fileID: 21300000, guid: 0e1ccb64303778e4081913a6d9cca677, type: 3}
+  sprite: {fileID: 0}
+  spriteReference:
+    m_AssetGUID: 0e1ccb64303778e4081913a6d9cca677
+    m_SubObjectName: Wood Log
+    m_SubObjectType: UnityEngine.Sprite, UnityEngine.CoreModule, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1
   itemType: 2
   maxAmount: 20
   desc: "\uC81C\uC791\uACFC \uAC74\uCD95\uC5D0 \uC4F0\uC774\uB294 \uBAA9\uC7AC\uC774\uB2E4.

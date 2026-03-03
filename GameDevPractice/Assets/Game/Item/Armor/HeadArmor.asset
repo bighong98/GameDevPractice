@@ -13,8 +13,21 @@ MonoBehaviour:
   m_Name: HeadArmor
   m_EditorClassIdentifier: Assembly-CSharp::ArmorTypeSO
   prefab: {fileID: 0}
+  prefabReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
   nameString: "\uD14C\uC2A4\uD2B8 \uBA38\uB9AC \uBC29\uC5B4\uAD6C"
-  sprite: {fileID: 21300000, guid: 5ff9b869a12e70b4db7a137f84ed920b, type: 3}
+  sprite: {fileID: 0}
+  spriteReference:
+    m_AssetGUID: 5ff9b869a12e70b4db7a137f84ed920b
+    m_SubObjectName: Leather Helmet
+    m_SubObjectType: UnityEngine.Sprite, UnityEngine.CoreModule, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1
   itemType: 1
   maxAmount: 1
   desc: "\uBA38\uB9AC\uB97C \uBCF4\uD638\uD558\uB294 \uAE30\uBCF8\uD615 \uBC29\uC5B4\uAD6C\uC774\uB2E4.

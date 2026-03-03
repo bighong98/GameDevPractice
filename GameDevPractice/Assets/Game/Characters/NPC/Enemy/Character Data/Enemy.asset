@@ -12,16 +12,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2476518239c701645bee3cfe621016e6, type: 3}
   m_Name: Enemy
   m_EditorClassIdentifier: Assembly-CSharp::NpcTypeSO
-  prefab: {fileID: 431537241663738169, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}
+  prefab: {fileID: 0}
+  prefabReference:
+    m_AssetGUID: d3ab42f9d33a8bf4cbebcbc94f5b10ab
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1
   nameString: Enemy
   sprite: {fileID: 0}
+  spriteReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
   characterType: 2
   characterBaseStats: {fileID: 11400000, guid: 7e507f31a56583d42923f7e4b8a1f0d8, type: 2}
   height: 0
   startingLevel: 1
   defaultEquipments:
   - {fileID: 11400000, guid: 24a647810f57bb345a370aa349b7758c, type: 2}
-  hpBarPrefab: {fileID: 0}
   hpBarPrefabReference:
     m_AssetGUID: 23d1f639e15c7f74cb905caf3aef5bed
     m_SubObjectName: 

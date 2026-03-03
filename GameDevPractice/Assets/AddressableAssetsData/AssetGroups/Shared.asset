@@ -22,13 +22,33 @@ MonoBehaviour:
     - PreLoad_DataSO
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 026093bc509450d458d56b557a43a7f6
+    m_Address: M_Mage_Headwear.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 02612d1855855bf40972d636cba04f13
     m_Address: Firball Animator Override.overrideController
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 02ff976d39577774bb44b83610e61dec
+    m_Address: Wooden Staff.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 03e50783bddcb2a4a8191cb4dac7ae5d
     m_Address: Sword_Slash Projectile VFX Earth.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 046f821c76a004e4c91b9f27ee906194
+    m_Address: Wool.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 04d354a54c5c5854bb4e37d918c89936
+    m_Address: M_Archer_TyroleanHat.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -49,6 +69,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0b671898cbc3a49419ca7a6b7bc9a0f2
+    m_Address: M_Fighter_Bottom.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 0c2e11e1fb2ffea4ba2429abaa296e49
     m_Address: SoundVolumePanelUI.prefab
     m_ReadOnly: 0
@@ -59,6 +84,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0e1ccb64303778e4081913a6d9cca677
+    m_Address: Wood Log.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 0ed9004fb430f6a4a9c87da6061553bc
     m_Address: Arrow Projectile Blue.prefab
     m_ReadOnly: 0
@@ -66,6 +96,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 11cda9c8e3d9d034f8df6480f16d820b
     m_Address: Equipped Shield.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 15e20e86d3dd7964cad7ef99dcf8256f
+    m_Address: M_Hunter_FeltedHat.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -84,8 +119,18 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 221e983a09a33b64391f0cf2b40b7857
+    m_Address: F_Archer_Bottom.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 265746d0fd0a1cc468b00352e243cf4d
     m_Address: Sword_ComboSkillTest
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 272caf2c346b5e04ea0b11b49067dc0a
+    m_Address: Dropped Fireball.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -94,8 +139,28 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2aeb302ac13579f4789542d4d83f4040
+    m_Address: SlotItemTemplate.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2ddf0348701148a4d8a7c6a0f7f146b3
+    m_Address: Wooden Sword.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 34186fab1480ebb4c824eb27374d1bef
+    m_Address: M_Archer_Top.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 347289ade72adaf4e91172386d9fab9a
     m_Address: Equipped Bow.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 35f6e121e39d61a40902d16545f4b041
+    m_Address: M_Warlock_Top.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -106,6 +171,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 38703959b00cc0145ba1149ca77cac13
     m_Address: SM_Wep_Sword_01.fbx
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3a481bc5b3972b54ab4918d5226622af
+    m_Address: Water Bottle.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -121,6 +191,26 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 4013b219d744b69459630b3798c316dd
     m_Address: Eff_OnHit_ApplyAdditionalSkill_Default.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 40beaa04cd8fcc446be88567f4455a55
+    m_Address: F_Sorcerer_Top.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4408269a96438e84796304f4ac0ed623
+    m_Address: Candle.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 44dc65116207f4b46aa85443dae5ad96
+    m_Address: Red Potion 2.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 462d475d49c8aaa46b7bed10c7146907
+    m_Address: F_Fighter_Bottom.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -159,6 +249,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 587503b6015abc741ad5147fff8f4a06
+    m_Address: Skull.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5c7039ae908815140967aa18fab57f0f
     m_Address: Unarmed Animator Override.overrideController
     m_ReadOnly: 0
@@ -174,8 +269,23 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5ff9b869a12e70b4db7a137f84ed920b
+    m_Address: Leather Helmet.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 68a2b59f294673948aac901ec51a9eb5
+    m_Address: M_Sorcerer_BishopHat.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 68e6db2ebdc24f95958faec2be5558d6
     m_Address: TMP_SDF.shader
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 699997e35f117f643a7baebfc165c830
+    m_Address: M_Mage_Bottom.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -199,6 +309,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 76287316036346944b1568f532dbfe6b
+    m_Address: M_Archer_Bottom.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 78be5954566d2d848918e51832341fa3
     m_Address: Characters_Texture_Orange.mat
     m_ReadOnly: 0
@@ -214,8 +329,23 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7b13ae12be9a76a4a81aebb387dfe770
+    m_Address: F_Witch_Top.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7cd2549c61a3c384baff0fa0c459c2fc
+    m_Address: F_Hunter_Bottom.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 7edec613b7148f04d992f53ad026b1b5
     m_Address: KeyRebindingPanelUI.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 809a9311c2ad44e41b1d38c0ed1de5c9
+    m_Address: M_Sorcerer_Top.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -244,6 +374,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8c253e5ad9d4d4c498923ed325743b6e
+    m_Address: M_Swordsman_Top.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 8d0abf9e8c434e44bbfa79ef7ce6693f
     m_Address: Equipped Staff_Fire.prefab
     m_ReadOnly: 0
@@ -254,8 +389,23 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8f28955d92038974a9b04aafaeea79b0
+    m_Address: Iron Sword.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 8f79b74127da75d42b7b7db7ca5534fb
     m_Address: Fireball_BasicSkill
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 90153b1cdc8211d4d9ce0c85573202b6
+    m_Address: M_Sorcerer_Bottom.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 90e99a7fde056a4418b9fe16084adb5c
+    m_Address: Golden Sword.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -274,13 +424,48 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 94514f0554d4d974b87738e71740eff0
+    m_Address: F_Hunter_Top.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 95052c6b62fb3de4695beaa99f842ac2
+    m_Address: Silver Sword.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 95bb921568dca684da943d0e2ec85053
+    m_Address: M_Hunter_Bottom.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 9660cea02b887474dacad91a4207c38a
     m_Address: Sword_SequenceTest2.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 983d499dd078b8444879f51a7fd8a312
+    m_Address: M_Fighter_Top.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 99b5705d28a2ae541bb9f8e9175b47c6
+    m_Address: M_Knight_Bottom.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9b0cfc7a80abc4d429c57b5ddb32a65e
+    m_Address: F_Swordsman_Top.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 9b314ff0f32b1e440b4626b01bbbb750
     m_Address: Long Sword_BasicSkill
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9cded432c69a21341b24ee185a10ad79
+    m_Address: M_Mage_Top.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -294,8 +479,23 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a07020233b320254ca9bacbc0c78ea05
+    m_Address: M_Swordsman_SkullCap.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a2d394081d456074fab4de79623f219e
+    m_Address: M_Knight_GreatHelm.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a3bdec409badf0c4db04d28ac30e4e69
     m_Address: Cond_OnHit_Chance100.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a5ff4e3ef58700b4e98393651df60533
+    m_Address: M_Warlock_Hood.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -304,13 +504,43 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a84a3b3472827744eaf7e1301efd02ce
+    m_Address: M_Warlock_Bottom.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ace8a02646afeda4880fc3cb14cad705
+    m_Address: Blue Potion 3.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: acf7c2f2013d2294ea0503048079cc17
+    m_Address: F_Rogue_Bottom.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b1323a3d53ef57e4baa47343488781f0
     m_Address: SkillTargetLayerMapSO.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b17850e7e7347a949a90b8c22d8cc8a4
+    m_Address: F_Witch_Bottom.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b27a8f794ecb1e143b1893f3780b229b
+    m_Address: F_Sorcerer_Bottom.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b491a1dc83be9f04caa92344671f34aa
     m_Address: AreaHit_ExcludeParimary.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b57b88d0a672d59468f69984bcfd093e
+    m_Address: M_Hunter_Top.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -334,6 +564,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bbf8638a8a75d9c42b93639213c92c9b
+    m_Address: Bow.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: bca5c2b8c5bf03e4287a36131b02af67
     m_Address: AreaHit_Default.asset
     m_ReadOnly: 0
@@ -341,6 +576,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: bfbe2e8b331e2cc42be1591f949c0e41
     m_Address: Characters_Texture_Red.mat
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c0efead9e294efc43bea95a20641bf65
+    m_Address: F_Archer_Top.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -371,8 +611,33 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ce23b7253d99ec54f9ee304d16ec9a05
+    m_Address: M_Rogue_Top.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: ce6fbdc6baa4d3b468d9f9e66afc7869
     m_Address: SM_Env_Flower_01.fbx
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d1f94eb541d98c94c9e0a776707e9c7c
+    m_Address: Slime Gel.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d4c092d9dca59304fba951cae1d05868
+    m_Address: Dropped Sword.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d51f5bb5b757db44cad74ac476bb31ad
+    m_Address: M_Knight_Top.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d65c897b8507b1d499688c554148fe1e
+    m_Address: Dropped Bow.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -381,8 +646,38 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e031e902966dac345b0f16aafcc1439f
+    m_Address: F_Mage_Bottom.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e0f95177ef2415244bb62385883a6c3a
+    m_Address: M_Swordsman_Bottom.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e1c637a337d952d4eb438a72be1b848d
     m_Address: Equipped Long Sword.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e2ed1a36cfb32ac4bbe4816f64aed20d
+    m_Address: F_Knight_Top.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e33002379110b9c45938cba18bf3f5a1
+    m_Address: F_Knight_Bottom.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e35012f72a9d01341bba40b6ce786a51
+    m_Address: F_Mage_Top.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e5d2ab5e01f3aa045bd855ee0c6c1dca
+    m_Address: Dropped Long Sword.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -396,8 +691,18 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ea81141bec111d44b9f0d6851b8c5c22
+    m_Address: Player_customizable.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f09a265d62bb6d248bc0f6cf6407ab3f
     m_Address: optionCategoryButtonTemplate.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f18acc3421d80db49a7ba4c72302f64d
+    m_Address: F_Rogue_Top.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -406,8 +711,18 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f7d074cf705002f4da8e216d98cb2693
+    m_Address: M_Rogue_Eyepatch.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f88d5b41db4f06b4e8240c80f2f734db
     m_Address: Equipped Sword.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fa8731a719b30394c83d045123947ee8
+    m_Address: M_Rogue_Bottom.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -425,6 +740,21 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: fe393ace9b354375a9cb14cdbbc28be4
     m_Address: TMP_SDF-Mobile.shader
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fe8ca5dc14569ec46a3b50aa5cb4c876
+    m_Address: F_Swordsman_Bottom.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ff067b3d4b3a6034da5132ee245af2cc
+    m_Address: F_Fighter_Top.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ff1beafda6a9fcd43a911d32b51ac36e
+    m_Address: M_Fighter_Headband.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

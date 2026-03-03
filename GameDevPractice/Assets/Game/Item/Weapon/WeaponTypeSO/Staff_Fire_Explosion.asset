@@ -12,9 +12,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 361e7764f46e225498b2d9903851f06d, type: 3}
   m_Name: Staff_Fire_Explosion
   m_EditorClassIdentifier: Assembly-CSharp::WeaponTypeSO
-  prefab: {fileID: 1181656062549879669, guid: 272caf2c346b5e04ea0b11b49067dc0a, type: 3}
+  prefab: {fileID: 0}
+  prefabReference:
+    m_AssetGUID: 272caf2c346b5e04ea0b11b49067dc0a
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1
   nameString: "\uD3ED\uBC1C\uD558\uB294 \uD654\uC5FC \uC9C0\uD321\uC774"
-  sprite: {fileID: 21300000, guid: 02ff976d39577774bb44b83610e61dec, type: 3}
+  sprite: {fileID: 0}
+  spriteReference:
+    m_AssetGUID: 02ff976d39577774bb44b83610e61dec
+    m_SubObjectName: Wooden Staff
+    m_SubObjectType: UnityEngine.Sprite, UnityEngine.CoreModule, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1
   itemType: 1
   maxAmount: 1
   desc: "\uD654\uC5FC \uAD6C\uCCB4\uB97C \uBC1C\uC0AC\uD558\uB294 \uB9C8\uBC95 \uBB34\uAE30\uC774\uB2E4.
@@ -34,14 +47,12 @@ MonoBehaviour:
     calculation: 0
     value: 20
   weaponType: 0
-  EquippedPrefab: {fileID: 0}
   equippedPrefabReference:
     m_AssetGUID: 74417920b738e4e489a177630b5f0dd3
     m_SubObjectName: 
     m_SubObjectType: 
     m_SubObjectGUID: 
     m_EditorAssetChanged: 1
-  equippedPrefabLeft: {fileID: 0}
   equippedPrefabLeftReference:
     m_AssetGUID: 
     m_SubObjectName: 
@@ -49,7 +60,6 @@ MonoBehaviour:
     m_SubObjectGUID: 
     m_EditorAssetChanged: 0
   hand: 1
-  defaultSkills: []
   defaultSkillReferences:
   - m_AssetGUID: 7976ecc76c6201b499c941859953fd9a
     m_SubObjectName: 

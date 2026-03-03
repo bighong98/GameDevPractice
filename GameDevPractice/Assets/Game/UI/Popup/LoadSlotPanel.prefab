@@ -408,7 +408,13 @@ MonoBehaviour:
   playExitAnimation: 0
   exitAnimation: 0
   loadSlotContent: {fileID: 7440666308665412553}
-  loadSlotTemplate: {fileID: 1510741992892734138, guid: 2aeb302ac13579f4789542d4d83f4040, type: 3}
+  loadSlotTemplate: {fileID: 0}
+  loadSlotTemplateReference:
+    m_AssetGUID: 2aeb302ac13579f4789542d4d83f4040
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1
   loadSlotEmptyLabel: {fileID: 8037892543571636080}
   loadSlotCloseButton: {fileID: 4124085076252787217}
 --- !u!1 &2340460608593024275

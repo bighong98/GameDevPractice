@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using TH.Core.Service;
+using TH.Resource;
 using TH.Utils;
 using TMPro;
 using UnityEngine;
@@ -12,6 +14,7 @@ namespace TH.UI
     {
         [SerializeField] private RectTransform loadSlotContent;
         [SerializeField] private GameObject loadSlotTemplate;
+        [SerializeField] private AssetReferenceGameObject loadSlotTemplateReference;
         [SerializeField] private TMP_Text loadSlotEmptyLabel;
         [SerializeField] private Button loadSlotCloseButton;
 
@@ -24,6 +27,7 @@ namespace TH.UI
             base.Awake();
             InitLoadSlotListModule();
             HookLoadSlotEvents();
+            EnsureLoadSlotTemplateAsync().Forget();
         }
 
         public override void OnReleaseFromPool()
@@ -34,11 +38,27 @@ namespace TH.UI
 
         public void ShowLoadSlots(IReadOnlyList<SaveSlotViewData> slots)
         {
+            ShowLoadSlotsAsync(slots).Forget();
+        }
+
+        private async UniTaskVoid ShowLoadSlotsAsync(IReadOnlyList<SaveSlotViewData> slots)
+        {
             int slotCount = slots?.Count ?? 0;
             this.Log($"ShowLoadSlots() slots.Count: {slotCount}", Logg.LoggingMode.Completed);
 
+            if (loadSlotTemplate == null)
+            {
+                await EnsureLoadSlotTemplateAsync();
+            }
+
             if (loadSlotListModule == null || !loadSlotListModule.IsValid)
-                return;
+            {
+                InitLoadSlotListModule();
+                if (loadSlotListModule == null || !loadSlotListModule.IsValid)
+                {
+                    return;
+                }
+            }
 
             loadSlotListModule.Populate(slots, HandleSlotSelected);
             gameObject.SetActive(true);
@@ -62,6 +82,29 @@ namespace TH.UI
         {
             ClosePopupUI();
             SlotSelected?.Invoke(saveFile);
+        }
+
+        private async UniTask<bool> EnsureLoadSlotTemplateAsync()
+        {
+            if (loadSlotTemplate != null)
+            {
+                return true;
+            }
+
+            if (loadSlotTemplateReference == null || !loadSlotTemplateReference.RuntimeKeyIsValid())
+            {
+                return false;
+            }
+
+            var loadedTemplate = await ResourceManager.Instance.ExtractAssetRefAsync<GameObject>(loadSlotTemplateReference, destroyCancellationToken);
+            if (loadedTemplate == null)
+            {
+                return false;
+            }
+
+            loadSlotTemplate = loadedTemplate;
+            InitLoadSlotListModule();
+            return true;
         }
     }
 }

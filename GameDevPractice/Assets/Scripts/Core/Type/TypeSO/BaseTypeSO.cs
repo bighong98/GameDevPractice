@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using TH.Utils;
@@ -13,18 +14,46 @@ namespace TH.Resource
     {
         [Header("Prefab Reference")]
         public GameObject prefab;
-        
+        [SerializeField] private AssetReferenceGameObject prefabReference;
+
         [Header("Basic")]
         public string nameString;
         public Sprite sprite;
+        [SerializeField] private AssetReferenceSprite spriteReference;
+
+        [NonSerialized] private bool initialized;
 
         // 비동기 초기화가 필요한 필드가 있는 경우 IAsyncInitializer 인터페이스 구현 및 메서드 override해서 사용
         // 해당 필드가 AssetReference 타입이라면 ResourceManager.Instance.ExtractAssetFromRef() 사용
-        public virtual UniTask InitializeAsync(CancellationToken token = default)
+        public virtual async UniTask InitializeAsync(CancellationToken token = default)
         {
+            if (initialized)
+            {
+                return;
+            }
+
+            if (prefabReference != null && prefabReference.RuntimeKeyIsValid())
+            {
+                var loadedPrefab = await GetStateFromAssetReference<GameObject>(prefabReference, token);
+                if (loadedPrefab != null)
+                {
+                    prefab = loadedPrefab;
+                }
+            }
+
+            if (spriteReference != null && spriteReference.RuntimeKeyIsValid())
+            {
+                var loadedSprite = await GetStateFromAssetReference<Sprite>(spriteReference, token);
+                if (loadedSprite != null)
+                {
+                    sprite = loadedSprite;
+                }
+            }
+
+            initialized = true;
             Logg.Log($"[{GetType().Name}, {nameString}] InitializeAsync() invoked", Logg.LoggingMode.Completed);
-            return UniTask.CompletedTask;
         }
+
         // 상태 초기화가 필요한 경우 사용 (HasItemUseSfx, etc)
         // 에디터 환경에서 내부적으로 OnValidate() 타이밍에 자동 호출됨
         public virtual void RefreshStates()
@@ -39,7 +68,10 @@ namespace TH.Resource
 
         protected static async UniTask<T> GetStateFromAssetReference<T>(AssetReference assetReference, CancellationToken token = default) where T : UnityEngine.Object
         {
-            if (!IsAssetRefAssigned(assetReference)) return null;
+            if (!IsAssetRefAssigned(assetReference))
+            {
+                return null;
+            }
 
             return await ResourceManager.Instance.ExtractAssetRefAsync<T>(assetReference, token);
         }

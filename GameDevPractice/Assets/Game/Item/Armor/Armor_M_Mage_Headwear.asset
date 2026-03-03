@@ -13,8 +13,21 @@ MonoBehaviour:
   m_Name: Armor_M_Mage_Headwear
   m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.ArmorTypeSO
   prefab: {fileID: 0}
+  prefabReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
   nameString: "\uB9C8\uBC95\uC0AC\uC758 \uAC15\uCCA0 \uBA38\uB9AC\uBCF4\uD638\uAD6C"
-  sprite: {fileID: 21300000, guid: 026093bc509450d458d56b557a43a7f6, type: 3}
+  sprite: {fileID: 0}
+  spriteReference:
+    m_AssetGUID: 026093bc509450d458d56b557a43a7f6
+    m_SubObjectName: M_Mage_Headwear
+    m_SubObjectType: UnityEngine.Sprite, UnityEngine.CoreModule, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1
   itemType: 1
   maxAmount: 1
   desc: "\uB9C8\uBC95\uC0AC\uB97C \uC704\uD55C \uAC15\uCCA0 \uBA38\uB9AC\uBCF4\uD638\uAD6C\uC774\uB2E4.
