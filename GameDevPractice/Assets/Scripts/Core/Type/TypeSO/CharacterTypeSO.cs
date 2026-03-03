@@ -1,3 +1,7 @@
+using System;
+using System.Threading;
+using Cysharp.Threading.Tasks;
+using TH.Core.Service;
 using System.Collections.Generic;
 using UnityEngine;
 using TH.Stats;
@@ -15,9 +19,32 @@ namespace TH.Resource
         public int startingLevel;
 
         [SerializeField] public List<EquipmentTypeSO> defaultEquipments;
-        [SerializeField] private GameObject hpBarPrefab;
+        [NonSerialized] private GameObject hpBarPrefab;
+        [SerializeField] private AssetReferenceGameObject hpBarPrefabReference;
+        [NonSerialized] private bool initialized;
 
         public GameObject HpBarPrefab => hpBarPrefab;
+
+        public override async UniTask InitializeAsync(CancellationToken token = default)
+        {
+            await base.InitializeAsync(token);
+
+            if (initialized)
+            {
+                return;
+            }
+
+            if (hpBarPrefabReference != null && hpBarPrefabReference.RuntimeKeyIsValid())
+            {
+                var loadedHpBarPrefab = await ResourceManager.Instance.ExtractAssetRefAsync<GameObject>(hpBarPrefabReference, token);
+                if (loadedHpBarPrefab != null)
+                {
+                    hpBarPrefab = loadedHpBarPrefab;
+                }
+            }
+
+            initialized = true;
+        }
     }
 }
 

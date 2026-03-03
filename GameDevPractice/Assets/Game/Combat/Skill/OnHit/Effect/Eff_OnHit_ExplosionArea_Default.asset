@@ -21,4 +21,10 @@ MonoBehaviour:
   useSourceSkillDamageType: 1
   damageType: 2
   forwardSourceSkillToSecondaryHits: 0
-  explosionVfxPrefab: {fileID: 4392015020884566884, guid: 5ff9b20571c4b744bac922167d0a068b, type: 3}
+  explosionVfxPrefab: {fileID: 0}
+  explosionVfxPrefabReference:
+    m_AssetGUID: 5ff9b20571c4b744bac922167d0a068b
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1

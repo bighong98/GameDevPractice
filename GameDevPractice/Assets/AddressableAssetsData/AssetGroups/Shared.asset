@@ -22,6 +22,21 @@ MonoBehaviour:
     - PreLoad_DataSO
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 02612d1855855bf40972d636cba04f13
+    m_Address: Firball Animator Override.overrideController
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 03e50783bddcb2a4a8191cb4dac7ae5d
+    m_Address: Sword_Slash Projectile VFX Earth.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 04e85b49e0c68284faa1df1e9de339f1
+    m_Address: Equipped Weapon.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 05d90a2556c9ce0478d30f3d943def18
     m_Address: Outfit_HeadGear
     m_ReadOnly: 0
@@ -34,8 +49,23 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0c2e11e1fb2ffea4ba2429abaa296e49
+    m_Address: SoundVolumePanelUI.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 0d3c487e8b931674196325ae2cb7c2d0
     m_Address: Sword_ComplexSkill.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0ed9004fb430f6a4a9c87da6061553bc
+    m_Address: Arrow Projectile Blue.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 11cda9c8e3d9d034f8df6480f16d820b
+    m_Address: Equipped Shield.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -56,6 +86,16 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 265746d0fd0a1cc468b00352e243cf4d
     m_Address: Sword_ComboSkillTest
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 27d218dc4fcb49348a1052b96a949bd2
+    m_Address: SaveLoadPanelUI.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 347289ade72adaf4e91172386d9fab9a
+    m_Address: Equipped Bow.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -89,6 +129,16 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4d654d0ea2ce7e44aa38d9e4596715f7
+    m_Address: Fireball Projectile.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4f0813776eff15c4ea6dffecc161aa7e
+    m_Address: Slash Impact VFX.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 4f18c80df16a4ae4194559bba2f3ab9b
     m_Address: Simple Bow.fbx
     m_ReadOnly: 0
@@ -109,8 +159,18 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5c7039ae908815140967aa18fab57f0f
+    m_Address: Unarmed Animator Override.overrideController
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5cd53c555bc830b41b96b4405ec81bb6
     m_Address: Bow_BasicSkill
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5ff9b20571c4b744bac922167d0a068b
+    m_Address: Explosion big_.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -129,8 +189,23 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6dd5bc81c7e17b74c8c5782a5824dd91
+    m_Address: Equipped Bow 1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 74417920b738e4e489a177630b5f0dd3
+    m_Address: Equipped Staff_Fire_Explosion.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 78be5954566d2d848918e51832341fa3
     m_Address: Characters_Texture_Orange.mat
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7976ecc76c6201b499c941859953fd9a
+    m_Address: Fireball_OnHitExplosionSkill.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -139,8 +214,18 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7edec613b7148f04d992f53ad026b1b5
+    m_Address: KeyRebindingPanelUI.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 829e6fcc12b43aa489f42177cc0bb52b
     m_Address: Simple Bow.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 85f54ae1cb4911b49b5770895d6d70a9
+    m_Address: Equipped Unarmed.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -156,6 +241,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 8bbf2395722bb634b8b12850b626049b
     m_Address: Maplestory Light.ttf
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8d0abf9e8c434e44bbfa79ef7ce6693f
+    m_Address: Equipped Staff_Fire.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -176,6 +266,16 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 917b62a0c0e7bdc4a8669116f5c98233
     m_Address: Icons.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 94089ecaec66ba248b810e3bfaf74600
+    m_Address: LevelUpEffect.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9660cea02b887474dacad91a4207c38a
+    m_Address: Sword_SequenceTest2.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -214,8 +314,23 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b81f27256b9d6904b864940a7e0e222e
+    m_Address: LongSword Ground AOE explosion.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b8f889a91be35174bbbb38d1057b6493
     m_Address: PolyAdventureTexture_01.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bad3b4482a681fb4bb377898a52a866d
+    m_Address: Sword Animator Override.overrideController
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bb775ed55d1346646a899626d7d4b3bf
+    m_Address: Long Sword Animator Override.overrideController
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -261,6 +376,16 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d790194a637262f45a1ea9df7bf7fdad
+    m_Address: Bow Animator Override.overrideController
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e1c637a337d952d4eb438a72be1b848d
+    m_Address: Equipped Long Sword.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e6969e6a3fc702b4ca4e7564bb1bdde7
     m_Address: Simple Bow.mat
     m_ReadOnly: 0
@@ -271,8 +396,18 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f09a265d62bb6d248bc0f6cf6407ab3f
+    m_Address: optionCategoryButtonTemplate.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f6d6b904a4f1f3d43b31e22f66f65bbf
     m_Address: Maplestory Light SDF.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f88d5b41db4f06b4e8240c80f2f734db
+    m_Address: Equipped Sword.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

@@ -25,6 +25,8 @@ MonoBehaviour:
   onHitTriggeredSkills: []
   onHitEffects: []
   lastImportedOnHitEffectsSignature: 0
+  activeSkillPostExecutionPolicy: 0
+  preserveStepWithInterfere: 0
   comboTimeout: 0.75
   comboSteps: []
   comboSequence: {fileID: 0}
@@ -35,14 +37,41 @@ MonoBehaviour:
     includeDeadTargets: 0
   animationSpeedMultiplier: 1
   affectedByAttackSpeed: 1
-  animatorOverride: {fileID: 22100000, guid: bb775ed55d1346646a899626d7d4b3bf, type: 2}
+  animatorOverride: {fileID: 0}
+  animatorOverrideReference:
+    m_AssetGUID: bb775ed55d1346646a899626d7d4b3bf
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1
   projectilePrefab: {fileID: 0}
+  projectilePrefabReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
+  projectilePierceTargets: 0
+  projectileMaxPierceTargets: 0
+  projectileMaxTravelDistance: 0
   skillVfxCues:
   - cueId: OnHit_Ground_LongSword_Finisher
     trigger: 1
     markerName: 
-    effectPrefab: {fileID: 4204685358974784452, guid: b81f27256b9d6904b864940a7e0e222e, type: 3}
-    sfxClip: {fileID: 8300000, guid: c01bbab8442e45146be860df82582360, type: 3}
+    effectPrefab: {fileID: 0}
+    effectPrefabReference:
+      m_AssetGUID: b81f27256b9d6904b864940a7e0e222e
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 1
+    sfxClip: {fileID: 0}
+    sfxClipReference:
+      m_AssetGUID: c01bbab8442e45146be860df82582360
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 1
     anchorType: 2
     anchorName: 
     follow: 0
@@ -56,8 +85,20 @@ MonoBehaviour:
   - cueId: OnHit_HitPoint_LongSword_Finisher
     trigger: 1
     markerName: 
-    effectPrefab: {fileID: 5602590985138988741, guid: 20b27818abf007b4c91e694a1931a851, type: 3}
-    sfxClip: {fileID: 8300000, guid: c01bbab8442e45146be860df82582360, type: 3}
+    effectPrefab: {fileID: 0}
+    effectPrefabReference:
+      m_AssetGUID: 20b27818abf007b4c91e694a1931a851
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 1
+    sfxClip: {fileID: 0}
+    sfxClipReference:
+      m_AssetGUID: c01bbab8442e45146be860df82582360
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 1
     anchorType: 3
     anchorName: 
     follow: 0
@@ -69,6 +110,6 @@ MonoBehaviour:
     groundRayStartHeight: 1.5
     groundRayDistance: 6
   skillEffectProfile: {fileID: 11400000, guid: 3d7ede2244ae16c44842918749054689, type: 2}
-  lastImportedSkillVfxProfileSignature: 110734985
+  lastImportedSkillVfxProfileSignature: -174916439
   skillCategory: 0
   skillSlotImage: {fileID: 21300000, guid: 95052c6b62fb3de4695beaa99f842ac2, type: 3}

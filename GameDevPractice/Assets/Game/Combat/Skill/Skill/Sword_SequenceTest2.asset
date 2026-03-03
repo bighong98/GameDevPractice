@@ -39,8 +39,20 @@ MonoBehaviour:
     includeDeadTargets: 0
   animationSpeedMultiplier: 1
   affectedByAttackSpeed: 1
-  animatorOverride: {fileID: 22100000, guid: bad3b4482a681fb4bb377898a52a866d, type: 2}
+  animatorOverride: {fileID: 0}
+  animatorOverrideReference:
+    m_AssetGUID: bad3b4482a681fb4bb377898a52a866d
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1
   projectilePrefab: {fileID: 0}
+  projectilePrefabReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
   projectilePierceTargets: 0
   projectileMaxPierceTargets: 0
   projectileMaxTravelDistance: 0

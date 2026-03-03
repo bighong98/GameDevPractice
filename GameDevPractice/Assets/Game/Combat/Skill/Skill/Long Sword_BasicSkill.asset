@@ -25,6 +25,8 @@ MonoBehaviour:
   onHitTriggeredSkills: []
   onHitEffects: []
   lastImportedOnHitEffectsSignature: 0
+  activeSkillPostExecutionPolicy: 0
+  preserveStepWithInterfere: 0
   comboTimeout: 0.75
   comboSteps: []
   comboSequence: {fileID: 0}
@@ -35,14 +37,41 @@ MonoBehaviour:
     includeDeadTargets: 0
   animationSpeedMultiplier: 1
   affectedByAttackSpeed: 1
-  animatorOverride: {fileID: 22100000, guid: bb775ed55d1346646a899626d7d4b3bf, type: 2}
+  animatorOverride: {fileID: 0}
+  animatorOverrideReference:
+    m_AssetGUID: bb775ed55d1346646a899626d7d4b3bf
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1
   projectilePrefab: {fileID: 0}
+  projectilePrefabReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
+  projectilePierceTargets: 0
+  projectileMaxPierceTargets: 0
+  projectileMaxTravelDistance: 0
   skillVfxCues:
   - cueId: legacy.onhit
     trigger: 1
     markerName: 
-    effectPrefab: {fileID: 5602590985138988741, guid: 20b27818abf007b4c91e694a1931a851, type: 3}
+    effectPrefab: {fileID: 0}
+    effectPrefabReference:
+      m_AssetGUID: 20b27818abf007b4c91e694a1931a851
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 1
     sfxClip: {fileID: 0}
+    sfxClipReference:
+      m_AssetGUID: 
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
     anchorType: 3
     anchorName: 
     follow: 0
@@ -57,7 +86,19 @@ MonoBehaviour:
     trigger: 0
     markerName: 
     effectPrefab: {fileID: 0}
-    sfxClip: {fileID: 8300000, guid: 4e7a9f408abdba8459fdccbeaea95215, type: 3}
+    effectPrefabReference:
+      m_AssetGUID: 
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    sfxClip: {fileID: 0}
+    sfxClipReference:
+      m_AssetGUID: 4e7a9f408abdba8459fdccbeaea95215
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 1
     anchorType: 0
     anchorName: 
     follow: 0
@@ -70,6 +111,5 @@ MonoBehaviour:
     groundRayDistance: 6
   skillEffectProfile: {fileID: 0}
   lastImportedSkillVfxProfileSignature: 0
-  castSfx: {fileID: 8300000, guid: 4e7a9f408abdba8459fdccbeaea95215, type: 3}
   skillCategory: 0
   skillSlotImage: {fileID: 21300000, guid: 8f28955d92038974a9b04aafaeea79b0, type: 3}

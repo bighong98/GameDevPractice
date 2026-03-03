@@ -34,9 +34,25 @@ MonoBehaviour:
     calculation: 0
     value: 20
   weaponType: 0
-  EquippedPrefab: {fileID: 8466340430826345119, guid: e1c637a337d952d4eb438a72be1b848d, type: 3}
+  EquippedPrefab: {fileID: 0}
+  equippedPrefabReference:
+    m_AssetGUID: e1c637a337d952d4eb438a72be1b848d
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1
   equippedPrefabLeft: {fileID: 0}
+  equippedPrefabLeftReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
   hand: 0
-  defaultSkill: {fileID: 0}
-  defaultSkills:
-  - {fileID: 11400000, guid: 9b314ff0f32b1e440b4626b01bbbb750, type: 2}
+  defaultSkills: []
+  defaultSkillReferences:
+  - m_AssetGUID: 9b314ff0f32b1e440b4626b01bbbb750
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1

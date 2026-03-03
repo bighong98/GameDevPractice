@@ -1,3 +1,6 @@
+using System;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using TH.Attribute;
 using TH.Combat.Service;
@@ -8,7 +11,7 @@ using UnityEngine;
 namespace TH.Combat
 {
     [CreateAssetMenu(fileName = "SkillOnHitExplosionAreaDamageEffectSO", menuName = "Scriptable Objects/Combat/Skill/OnHit/Effect/ExplosionAreaDamage")]
-    public sealed class SkillOnHitExplosionAreaDamageEffectSO : SkillOnHitEffectSO
+    public sealed class SkillOnHitExplosionAreaDamageEffectSO : SkillOnHitEffectSO, IAsyncInitializer
     {
         [Header("Area")]
         [SerializeField, Min(0.1f)] private float radius = 2f;
@@ -24,8 +27,29 @@ namespace TH.Combat
         [SerializeField] private bool forwardSourceSkillToSecondaryHits;
 
         [Header("VFX")]
-        [SerializeField] private GameObject explosionVfxPrefab;
+        [NonSerialized] private GameObject explosionVfxPrefab;
+        [SerializeField] private AssetReferenceGameObject explosionVfxPrefabReference;
+        [NonSerialized] private bool initialized;
 
+
+        public async UniTask InitializeAsync(CancellationToken token)
+        {
+            if (initialized)
+            {
+                return;
+            }
+
+            if (explosionVfxPrefabReference != null && explosionVfxPrefabReference.RuntimeKeyIsValid())
+            {
+                var loadedExplosionVfxPrefab = await ResourceManager.Instance.ExtractAssetRefAsync<GameObject>(explosionVfxPrefabReference, token);
+                if (loadedExplosionVfxPrefab != null)
+                {
+                    explosionVfxPrefab = loadedExplosionVfxPrefab;
+                }
+            }
+
+            initialized = true;
+        }
         public override void Execute(in SkillOnHitContext context, ICombatSystem combatSystem)
         {
             if (combatSystem == null || context.Attacker.IsNull() || context.PrimaryTarget.IsNull())

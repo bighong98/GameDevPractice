@@ -23,6 +23,11 @@ MonoBehaviour:
     - SFX
     - Sound
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3005c2aee967e624ea1e0101b4b37f32
+    m_Address: SWORD_16.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 333946845ce249d458dc4662051fba24
     m_Address: potionDrinkSFX
     m_ReadOnly: 0

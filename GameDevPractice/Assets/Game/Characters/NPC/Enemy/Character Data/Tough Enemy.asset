@@ -21,4 +21,10 @@ MonoBehaviour:
   startingLevel: 1
   defaultEquipments:
   - {fileID: 11400000, guid: 0a600904131b2d64994bee447b8efe39, type: 2}
-  hpBarPrefab: {fileID: 2676722583102593113, guid: 23d1f639e15c7f74cb905caf3aef5bed, type: 3}
+  hpBarPrefab: {fileID: 0}
+  hpBarPrefabReference:
+    m_AssetGUID: 23d1f639e15c7f74cb905caf3aef5bed
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1

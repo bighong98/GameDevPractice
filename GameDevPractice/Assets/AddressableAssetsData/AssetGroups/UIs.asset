@@ -22,15 +22,15 @@ MonoBehaviour:
     - PreLoad_Prefab
     - UI
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: e5dd94e856534ffc88bbdd06bcb0d0b5
-    m_Address: UI_SkillTooltip.prefab
+  - m_GUID: 1bfea1188da51f44e9a32ec6be370c0a
+    m_Address: TooltipUI.prefab
     m_ReadOnly: 0
     m_SerializedLabels:
     - PreLoad_Prefab
     - UI
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 1bfea1188da51f44e9a32ec6be370c0a
-    m_Address: TooltipUI.prefab
+  - m_GUID: 23d1f639e15c7f74cb905caf3aef5bed
+    m_Address: HP Bar.prefab
     m_ReadOnly: 0
     m_SerializedLabels:
     - PreLoad_Prefab
@@ -73,6 +73,13 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: c931fcd4c65b32043a65a7cf05728d7a
     m_Address: ItemTooltipPopupUI
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_Prefab
+    - UI
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e5dd94e856534ffc88bbdd06bcb0d0b5
+    m_Address: UI_SkillTooltip.prefab
     m_ReadOnly: 0
     m_SerializedLabels:
     - PreLoad_Prefab

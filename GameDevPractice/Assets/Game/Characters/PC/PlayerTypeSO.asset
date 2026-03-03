@@ -21,5 +21,17 @@ MonoBehaviour:
   startingLevel: 1
   defaultEquipments:
   - {fileID: 11400000, guid: c525b71ddfe92b340bcf857aaeb20ef1, type: 2}
-  hpBarPrefab: {fileID: 2676722583102593113, guid: 23d1f639e15c7f74cb905caf3aef5bed, type: 3}
-  levelUpEffect: {fileID: 672893909101835284, guid: 94089ecaec66ba248b810e3bfaf74600, type: 3}
+  hpBarPrefab: {fileID: 0}
+  hpBarPrefabReference:
+    m_AssetGUID: 23d1f639e15c7f74cb905caf3aef5bed
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1
+  levelUpEffect: {fileID: 0}
+  levelUpEffectReference:
+    m_AssetGUID: 94089ecaec66ba248b810e3bfaf74600
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1

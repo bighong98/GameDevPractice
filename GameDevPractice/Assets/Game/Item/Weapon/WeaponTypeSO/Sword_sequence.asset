@@ -36,10 +36,35 @@ MonoBehaviour:
     calculation: 0
     value: 5
   weaponType: 0
-  EquippedPrefab: {fileID: 8466340430826345119, guid: f88d5b41db4f06b4e8240c80f2f734db, type: 3}
-  equippedPrefabLeft: {fileID: 8466340430826345119, guid: 11cda9c8e3d9d034f8df6480f16d820b, type: 3}
+  EquippedPrefab: {fileID: 0}
+  equippedPrefabReference:
+    m_AssetGUID: f88d5b41db4f06b4e8240c80f2f734db
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1
+  equippedPrefabLeft: {fileID: 0}
+  equippedPrefabLeftReference:
+    m_AssetGUID: 11cda9c8e3d9d034f8df6480f16d820b
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1
   hand: 2
-  defaultSkills:
-  - {fileID: 11400000, guid: 265746d0fd0a1cc468b00352e243cf4d, type: 2}
-  - {fileID: 11400000, guid: 5c4c02cf2b475b241a45617c4616396b, type: 2}
-  - {fileID: 11400000, guid: 9660cea02b887474dacad91a4207c38a, type: 2}
+  defaultSkills: []
+  defaultSkillReferences:
+  - m_AssetGUID: 265746d0fd0a1cc468b00352e243cf4d
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1
+  - m_AssetGUID: 5c4c02cf2b475b241a45617c4616396b
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1
+  - m_AssetGUID: 9660cea02b887474dacad91a4207c38a
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1
