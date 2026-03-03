@@ -74,6 +74,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 08b3912bdc0a5ed4d9a27125425a97f4
+    m_Address: Assets/Asset Packs/VFX/Hovl Studio/Magic effects pack/Textures/Smoke26.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 0a629967280d91a488415f2b26458eee
     m_Address: Assets/Game/Control/Character/Action/ClearActiveSkillActionSO.asset
     m_ReadOnly: 0
@@ -114,6 +119,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1315bcd7509173f44bc6655b2673dd4d
+    m_Address: Assets/Asset Packs/Animations/Unarmed/RPG-Character@Unarmed-Attack-L3.FBX
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 15e20e86d3dd7964cad7ef99dcf8256f
     m_Address: M_Hunter_FeltedHat.png
     m_ReadOnly: 0
@@ -134,8 +144,18 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1cb8ed3cbba15f0479fbae54e0a963df
+    m_Address: Assets/Asset Packs/Animations/Unarmed/HumanoidRun.fbx
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 1ccb1a8a5e190bd41a17d5b1656b118e
     m_Address: Sword_ComboFinisherSkill
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1eea6b6600e42c84dbc3133eb45c4c03
+    m_Address: Assets/Asset Packs/Synty - Polygon Student Sample/Materials/PolyKnights_Object_Mat_Black.mat
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -156,11 +176,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 272caf2c346b5e04ea0b11b49067dc0a
     m_Address: Dropped Fireball.prefab
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 27d218dc4fcb49348a1052b96a949bd2
-    m_Address: SaveLoadPanelUI.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -244,13 +259,28 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 45b2c1cdfa01be147bb172856196fc17
+    m_Address: Assets/Asset Packs/PolysplitGames/LowPolyMedievalFantasyHeroes/Materials_Shaders_Textures/RGBRecolor.shadergraph
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 462d475d49c8aaa46b7bed10c7146907
     m_Address: F_Fighter_Bottom.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4652f58ad33f83a4ebe38b1dafa4f148
+    m_Address: Assets/Asset Packs/PolysplitGames/LowPolyMedievalFantasyHeroes/Materials_Shaders_Textures/genericRGB_medievalTexture.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 4910c4789b0b014429a11cae8301ced0
     m_Address: Assets/Game/Control/Character/Action/AnimateAction/AnimateDeadSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4bab0f95134663b4c9c3dd73939c0ff1
+    m_Address: Assets/Asset Packs/VFX/Hovl Studio/Magic effects pack/Materials/Circle.mat
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -316,6 +346,16 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5ff9b869a12e70b4db7a137f84ed920b
     m_Address: Leather Helmet.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 616a777eb757ff14c82a79feeb35d9b1
+    m_Address: Assets/Asset Packs/VFX/Hovl Studio/Magic effects pack/Materials/Smoke26.mat
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 640e93060c8b460449dc5d4f16193387
+    m_Address: Assets/Asset Packs/VFX/Hovl Studio/Magic effects pack/Textures/Point1.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -539,6 +579,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9a26352c93a81e947b73b8e47cc931bb
+    m_Address: Assets/Asset Packs/Animations/Animations by Explosive/Armed/RPG-Character@Armed-Death1.FBX
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 9b0cfc7a80abc4d429c57b5ddb32a65e
     m_Address: F_Swordsman_Top.png
     m_ReadOnly: 0
@@ -556,6 +601,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 9d5a2f2f814813946b4d0b26aa737201
     m_Address: Profile_Melee_AreaSplash.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9faee9631d9c9dd4db58de6fbe9435f3
+    m_Address: Assets/Game/Characters/Character.controller
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -629,8 +679,18 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b1a5e04ae51004842aba06704a6c2903
+    m_Address: Assets/Asset Packs/Animations/Unarmed/HumanoidWalk.fbx
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b27a8f794ecb1e143b1893f3780b229b
     m_Address: F_Sorcerer_Bottom.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b3b55707c080031498b4a73507227e0c
+    m_Address: Assets/Asset Packs/Animations/Unarmed/HumanoidIdle.fbx
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -674,8 +734,18 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bfb0835dcb5653d40956a4576b667f2d
+    m_Address: Assets/Asset Packs/PolysplitGames/LowPolyMedievalFantasyHeroes/Materials_Shaders_Textures/RGBRecolor_Body.mat
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: bfbe2e8b331e2cc42be1591f949c0e41
     m_Address: Characters_Texture_Red.mat
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c06f0ba9a0ae64b4bb08c2c2b91de09a
+    m_Address: Assets/Asset Packs/PolysplitGames/LowPolyMedievalFantasyHeroes/BasicHeroes/All-in-One_SeparateGenders/BasicHero_M.fbx
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -691,6 +761,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: c343b627e5f2bf44185be8e9d60672f4
     m_Address: DamageTextSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c4cf9c9f7cf52f6409ef75a08a4357ac
+    m_Address: Assets/Asset Packs/VFX/Hovl Studio/Magic effects pack/Textures/Circle.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -741,8 +816,18 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d288a0e4a2d923b46898986e979da643
+    m_Address: Assets/Asset Packs/Synty - Polygon Student Sample/Models/Characters_POLYGON_Knights.fbx
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: d401f76a9eb6b2f4a9f81da58494f6a9
     m_Address: Assets/Game/Control/Character/State/Common/ReviveStateSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d49c65de9fce66146b5d0e164b1f9d2d
+    m_Address: Assets/Asset Packs/PolysplitGames/LowPolyMedievalFantasyHeroes/BaseCharacters/BaseMale.fbx
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -763,6 +848,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: d790194a637262f45a1ea9df7bf7fdad
     m_Address: Bow Animator Override.overrideController
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d7eabf4cd0cdfe448be3b905cd731d4f
+    m_Address: Assets/Asset Packs/Synty - Polygon Student Sample/Textures/Characters_Texture_Orange.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -821,6 +911,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e546d2d7171981b468cf29388d902e99
+    m_Address: Assets/Asset Packs/VFX/Hovl Studio/Magic effects pack/Materials/Point.mat
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e5d2ab5e01f3aa045bd855ee0c6c1dca
     m_Address: Dropped Long Sword.prefab
     m_ReadOnly: 0
@@ -841,6 +936,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: eba659075ef9d114aacad8a89f18acc6
+    m_Address: Assets/Game/Attributes/ChracterStat/StatType/Attack/AttackSpeed.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f09a265d62bb6d248bc0f6cf6407ab3f
     m_Address: optionCategoryButtonTemplate.prefab
     m_ReadOnly: 0
@@ -848,6 +948,16 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f18acc3421d80db49a7ba4c72302f64d
     m_Address: F_Rogue_Top.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f1e5c30f9cdf16849b1138083aad69d2
+    m_Address: Assets/Game/Attributes/ChracterStat/StatType/MoveSpeed.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f2ee7d2ed1f424a47a67bd0dbe5ceb84
+    m_Address: Assets/Asset Packs/PolysplitGames/LowPolyMedievalFantasyHeroes/Materials_Shaders_Textures/RGBRecolor_Objects.mat
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

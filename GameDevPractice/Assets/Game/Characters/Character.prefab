@@ -236,7 +236,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bdd2503e2fe5ee0408f24be7b7c958cc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TH.Control.Movement.MoverRefactoring
-  moveSpeedStatSO: {fileID: 11400000, guid: f1e5c30f9cdf16849b1138083aad69d2, type: 2}
+  moveSpeedStatReference:
+    m_AssetGUID: f1e5c30f9cdf16849b1138083aad69d2
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
+  moveSpeedStatSO: {fileID: 0}
   walkSpeed: 2
   runSpeed: 6
   speedFraction: 1
@@ -253,6 +259,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TH.Control.State.ActionStateMachine
   initialState: {fileID: 0}
+  initialStateReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
   globalTransitions: []
   logStateTransition: 0
   stateTime: 0
@@ -292,7 +304,13 @@ MonoBehaviour:
   defaultAnimatorController: {fileID: 0}
   animator: {fileID: 0}
   attackSpeedMultiplierParameter: AttackSpeedMultiplier
-  attackSpeedStat: {fileID: 11400000, guid: eba659075ef9d114aacad8a89f18acc6, type: 2}
+  attackSpeedStatReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
+  attackSpeedStat: {fileID: 0}
   baseAttackSpeedStatValue: 100
   attackSpeedToAnimationCurve:
     serializedVersion: 2
@@ -361,6 +379,10 @@ MonoBehaviour:
   raycastStartHeight: 0.6
   raycastDistance: 1.5
   environmentLayer: 7
+  drawFootRaycastGizmo: 1
+  leftFootRaycastGizmoColor: {r: 0.2, g: 0.8, b: 1, a: 0.9}
+  rightFootRaycastGizmoColor: {r: 1, g: 0.6, b: 0.2, a: 0.9}
+  gizmoSphereRadius: 0.03
   queryTriggerInteraction: 1
   applyOnlyWhenMoving: 0
   movingThreshold: 0.05
@@ -413,6 +435,8 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  idleSpeedThreshold: 0.08
+  idleIkWeightFloor: 1
   useAnimationClipCurveWeight: 1
   footIkCurveParameter: FootIKWeight
   missingCurveWeightFallback: 1
@@ -421,3 +445,4 @@ MonoBehaviour:
   rightFootPlantParameter: RightFootPlant
   plantEnterThreshold: 0.65
   plantExitThreshold: 0.45
+  lockHorizontalWhenPlanted: 1

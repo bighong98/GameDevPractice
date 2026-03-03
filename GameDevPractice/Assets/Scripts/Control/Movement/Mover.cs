@@ -1,6 +1,9 @@
 using System;
+using Cysharp.Threading.Tasks;
 using TH.Attribute;
+using TH.Attribute.Data;
 using TH.Attribute.Stat;
+using TH.Core.Service;
 using TH.SaveLoad;
 using TH.Utils;
 using UnityEngine;
@@ -23,7 +26,9 @@ namespace TH.Control.Movement
     public class Mover : MonoBehaviour, ISavable, IMover
     {
         // 이동속도 스탯 참조 SO
-        [SerializeField] private GameStatSO moveSpeedStatSO;
+
+        [SerializeField] private AssetReferenceGameStatSO moveSpeedStatReference;
+        [NonSerialized] private GameStatSO moveSpeedStatSO;
         // 기본 걷기 속도 값
         [SerializeField] private float walkSpeed = 2f;
         // 기본 달리기 속도 값
@@ -38,6 +43,8 @@ namespace TH.Control.Movement
         // 스탯 바인딩 제공자 참조
         private IStatHolder statHolder;
         // 이동속도 스탯 런타임 캐시
+
+        private bool isResolvingMoveSpeedStatReference;
         private IGameStat moveSpeedStat;
         
         // 목적지 설정 알림 이벤트
@@ -73,13 +80,20 @@ namespace TH.Control.Movement
             TryGetComponent(out health);
             TryGetComponent(out statHolder);
 
-            if (moveSpeedStatSO.IsNull() || moveSpeedStatSO.LegacyId == default)
-                this.LogWarning($"[{gameObject.name}.{GetType().Name}] invalid moveSpeedStatSO", context: this);
+            if ((moveSpeedStatSO.IsNull() || moveSpeedStatSO.LegacyId == default) &&
+                (moveSpeedStatReference == null || !moveSpeedStatReference.RuntimeKeyIsValid()))
+            {
+                this.LogWarning($"[{gameObject.name}.{GetType().Name}] invalid moveSpeedStatSO and moveSpeedStatReference", context: this);
+            }
+
+            EnsureMoveSpeedStatAsync().Forget();
         }
 
         // 이동속도 스탯 바인딩 활성화 단계
         private void OnEnable()
         {
+
+            EnsureMoveSpeedStatAsync().Forget();
             SyncMoveSpeedStat();
         }
 
@@ -95,6 +109,12 @@ namespace TH.Control.Movement
             // 사망 상태 조기 종료 가드
             if (health.IsDead) return;
             // 목적지 미설정 상태 조기 종료 가드
+
+            if (moveSpeedStat == null)
+            {
+                SyncMoveSpeedStat();
+                EnsureMoveSpeedStatAsync().Forget();
+            }
             if (currentDestination == Vector3.zero) return;
             
             float distanceToWaypoint = Vector3.SqrMagnitude(transform.position - currentDestination);
@@ -206,9 +226,54 @@ namespace TH.Control.Movement
             Move(moveType);
         }
         
+        private async UniTaskVoid EnsureMoveSpeedStatAsync()
+        {
+            if (moveSpeedStatSO.IsNotNull() && moveSpeedStatSO.LegacyId != default)
+            {
+                return;
+            }
+
+            if (isResolvingMoveSpeedStatReference)
+            {
+                return;
+            }
+
+            if (moveSpeedStatReference == null || !moveSpeedStatReference.RuntimeKeyIsValid())
+            {
+                return;
+            }
+
+            isResolvingMoveSpeedStatReference = true;
+            try
+            {
+                var loadedStat = await ResourceManager.Instance.ExtractAssetRefAsync<GameStatSO>(
+                    moveSpeedStatReference,
+                    this.GetCancellationTokenOnDestroy());
+
+                if (loadedStat.IsNull())
+                {
+                    return;
+                }
+
+                moveSpeedStatSO = loadedStat;
+                if (isActiveAndEnabled)
+                {
+                    SyncMoveSpeedStat();
+                }
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            finally
+            {
+                isResolvingMoveSpeedStatReference = false;
+            }
+        }
+
         // 이동속도 스탯 바인딩 및 초기 반영 처리
         private void SyncMoveSpeedStat()
         {
+            if (moveSpeedStat != null) return;
             if (statHolder.IsNull()) return;
             if (moveSpeedStatSO.IsNull() || moveSpeedStatSO.LegacyId == default) return;
 

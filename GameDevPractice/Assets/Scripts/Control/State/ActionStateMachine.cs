@@ -17,7 +17,7 @@ namespace TH.Control.State
     public class ActionStateMachine : MonoBehaviour, IActionStateController
     {
         // 상태머신 시작 시 최초 진입 기준 상태 에셋 참조
-        [SerializeField] private ActionStateSO initialState;
+        [NonSerialized] private ActionStateSO initialState;
         [SerializeField] private AssetReferenceActionStateSO initialStateReference;
         // 모든 상태에서 공통으로 평가하는 전역 전이 목록
         [SerializeField] private List<ActionStateTransition> globalTransitions = new();

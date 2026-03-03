@@ -1,6 +1,10 @@
+using System;
 using System.Diagnostics;
+using Cysharp.Threading.Tasks;
+using TH.Attribute.Data;
 using TH.Attribute.Stat;
 using TH.Combat;
+using TH.Core.Service;
 using TH.Resource;
 using TH.Utils;
 using UnityEngine;
@@ -24,6 +28,8 @@ namespace TH.Control
 
         [Header("Attack Animation Speed")]
         [SerializeField] private string attackSpeedMultiplierParameter = DefaultAttackSpeedMultiplierParameter;
+
+        [SerializeField] private AssetReferenceGameStatSO attackSpeedStatReference;
         [SerializeField] private GameStatSO attackSpeedStat;
         [SerializeField, Min(0.01f)] private float baseAttackSpeedStatValue = DefaultBaseAttackSpeedStatValue;
         [SerializeField] private AnimationCurve attackSpeedToAnimationCurve =
@@ -49,6 +55,8 @@ namespace TH.Control
         private float currentAttackSpeedStatValue = 100f;
         private int attackSpeedMultiplierParameterHash;
         private bool hasAttackSpeedMultiplierParameter;
+
+        private bool isResolvingAttackSpeedStatReference;
         private bool isAttackSpeedBound;
         private SkillTypeSO lastEffectiveSkill;
         public float SkillTimingScale { get; private set; } = 1f;
@@ -63,6 +71,8 @@ namespace TH.Control
 
             currentAttackSpeedStatValue = ResolveBaseAttackSpeedStatValue();
             CacheBaseAnimatorController();
+
+            EnsureAttackSpeedStatAsync().Forget();
             CacheAttackSpeedParameter();
         }
 
@@ -79,6 +89,8 @@ namespace TH.Control
                 skillController.OnResolvedSkillChanged += HandleResolvedSkillChanged;
             }
 
+
+            EnsureAttackSpeedStatAsync().Forget();
             BindAttackSpeedStat();
             RefreshAttackAnimationSpeed();
         }
@@ -100,6 +112,7 @@ namespace TH.Control
             if (!isAttackSpeedBound)
             {
                 BindAttackSpeedStat();
+                EnsureAttackSpeedStatAsync().Forget();
             }
 
             // Ensure runtime skill/override changes are reflected even if an event is missed.
@@ -180,6 +193,50 @@ namespace TH.Control
 
             resolvedAttackSpeedStat = null;
             isAttackSpeedBound = false;
+        }
+
+        private async UniTaskVoid EnsureAttackSpeedStatAsync()
+        {
+            if (attackSpeedStat.IsNotNull())
+            {
+                return;
+            }
+
+            if (isResolvingAttackSpeedStatReference)
+            {
+                return;
+            }
+
+            if (attackSpeedStatReference == null || !attackSpeedStatReference.RuntimeKeyIsValid())
+            {
+                return;
+            }
+
+            isResolvingAttackSpeedStatReference = true;
+            try
+            {
+                var loadedStat = await ResourceManager.Instance.ExtractAssetRefAsync<GameStatSO>(
+                    attackSpeedStatReference,
+                    this.GetCancellationTokenOnDestroy());
+
+                if (loadedStat.IsNull())
+                {
+                    return;
+                }
+
+                attackSpeedStat = loadedStat;
+                if (isActiveAndEnabled && !isAttackSpeedBound)
+                {
+                    BindAttackSpeedStat();
+                }
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            finally
+            {
+                isResolvingAttackSpeedStatReference = false;
+            }
         }
 
         private GameStatSO ResolveAttackSpeedStat()

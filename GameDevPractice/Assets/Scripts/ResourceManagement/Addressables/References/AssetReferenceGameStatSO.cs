@@ -5,9 +5,11 @@ using Cysharp.Threading.Tasks;
 using System.Threading;
 using TH.Core.Service;
 using TH.Utils;
+using System;
 
 namespace TH.Attribute.Data
 {
+    [Serializable]
     public class AssetReferenceGameStatSO : AssetReferenceGeneric<GameStatSO>, IAsyncInitializer
     {
         public async UniTask InitializeAsync(CancellationToken token)
