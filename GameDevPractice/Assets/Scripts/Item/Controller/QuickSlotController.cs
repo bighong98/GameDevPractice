@@ -385,7 +385,7 @@ UnBindStorageEvents(playerStorage);
             }
 
             slotUI.Clear(); // 아이템 개수 텍스트 숨기기
-            slotUI.SetIcon(itemInfo.sprite);
+            slotUI.SetIcon(itemInfo.Sprite);
             
             // 장착 중인 장비 표시
             if (TryFindSlot(equipmentHolder, itemInfo, out _))
@@ -403,7 +403,7 @@ UnBindStorageEvents(playerStorage);
         }
 
         Logg.Log($"[{GetType().Name}.DrawSlot({quickIndex})] SetAmount({totalAmount})", Logg.LoggingMode.Completed);
-        slotUI.SetIcon(itemInfo.sprite);
+        slotUI.SetIcon(itemInfo.Sprite);
         slotUI.SetAmount(totalAmount);
         panelUI.UnHighlightEquippingSlot(quickIndex);
     }

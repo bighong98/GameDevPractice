@@ -67,6 +67,8 @@ public class EnemySpawner : Spawner<CharacterTypeHolder>, ISavable
     private readonly Collider[] overlapBuffer = new Collider[32];
     private static readonly SaveTypeResolver SaveTypeResolver = new();
 
+    private bool isSpawnStartPending;
+    private EnemySpawnerSaveData pendingRestoreData;
     private CancellationTokenSource spawnLoopCts;
     private int nextSpawnSequence;
     private bool hasStarted;
@@ -85,12 +87,26 @@ public class EnemySpawner : Spawner<CharacterTypeHolder>, ISavable
         TryInitializeSpawnerKeyPrefix();
     }
 
-    protected override void Start()
+    protected override async void Start()
     {
         TryInitializeSpawnerKeyPrefix();
-        InitializePool();
+
+        try
+        {
+            await EnsurePoolInitializedAsync(destroyCancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception e)
+        {
+            Logg.LogError($"[{nameof(EnemySpawner)}.{nameof(Start)}] failed to initialize pool. {e.Message}");
+        }
+
         UpdateSpawnIntervalCache(force: true);
         hasStarted = true;
+
+        TryApplyPendingRestoreState();
 
         if (spawnOnStart)
             StartSpawning();
@@ -115,16 +131,42 @@ public class EnemySpawner : Spawner<CharacterTypeHolder>, ISavable
         if (!Application.isPlaying)
             return;
 
-        if (!HasPool)
-            InitializePool();
+        StartSpawningAsync(destroyCancellationToken).Forget();
+    }
 
-        if (!HasPool || spawnLoopCts != null)
+    private async UniTaskVoid StartSpawningAsync(CancellationToken token)
+    {
+        if (spawnLoopCts != null || isSpawnStartPending)
             return;
 
-        UpdateSpawnIntervalCache();
+        isSpawnStartPending = true;
 
-        spawnLoopCts = new CancellationTokenSource();
-        SpawnLoopAsync(spawnLoopCts.Token).Forget();
+        try
+        {
+            if (!await EnsurePoolInitializedAsync(token))
+                return;
+
+            TryApplyPendingRestoreState();
+
+            if (!HasPool || spawnLoopCts != null)
+                return;
+
+            UpdateSpawnIntervalCache();
+
+            spawnLoopCts = new CancellationTokenSource();
+            SpawnLoopAsync(spawnLoopCts.Token).Forget();
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception e)
+        {
+            Logg.LogError($"[{nameof(EnemySpawner)}.{nameof(StartSpawningAsync)}] failed to start spawning. {e.Message}");
+        }
+        finally
+        {
+            isSpawnStartPending = false;
+        }
     }
 
     public void StopSpawning()
@@ -138,6 +180,24 @@ public class EnemySpawner : Spawner<CharacterTypeHolder>, ISavable
         spawnLoopCts.Dispose();
         spawnLoopCts = null;
     }
+
+    private async UniTask<bool> EnsurePoolInitializedAsync(CancellationToken token = default)
+    {
+        if (HasPool)
+            return true;
+
+        if (!await EnsurePrefabResolvedAsync(token))
+        {
+            if (prefab == null)
+                Logg.LogError($"[{nameof(EnemySpawner)}.{nameof(EnsurePoolInitializedAsync)}] prefab is null");
+
+            return false;
+        }
+
+        InitializePool();
+        return HasPool;
+    }
+
 
     public GameObject SpawnEnemyNow()
     {
@@ -338,6 +398,21 @@ public class EnemySpawner : Spawner<CharacterTypeHolder>, ISavable
         if (state is not EnemySpawnerSaveData data)
             return false;
 
+        if (!HasPool)
+        {
+            pendingRestoreData = data;
+
+            if (Application.isPlaying)
+                TryApplyPendingRestoreStateAsync().Forget();
+
+            return true;
+        }
+
+        return ApplyRestoreState(data);
+    }
+
+    private bool ApplyRestoreState(EnemySpawnerSaveData data)
+    {
         var wasSpawning = spawnLoopCts != null;
 
         StopSpawning();
@@ -370,12 +445,37 @@ public class EnemySpawner : Spawner<CharacterTypeHolder>, ISavable
         return true;
     }
 
+    private void TryApplyPendingRestoreState()
+    {
+        if (pendingRestoreData == null || !HasPool)
+            return;
+
+        var restoreData = pendingRestoreData;
+        pendingRestoreData = null;
+
+        if (!ApplyRestoreState(restoreData))
+            pendingRestoreData = restoreData;
+    }
+
+    private async UniTaskVoid TryApplyPendingRestoreStateAsync()
+    {
+        if (pendingRestoreData == null)
+            return;
+
+        if (!await EnsurePoolInitializedAsync(destroyCancellationToken))
+            return;
+
+        TryApplyPendingRestoreState();
+    }
+
+
     public void ResetToDefaultState()
     {
         var wasSpawning = spawnLoopCts != null;
 
         StopSpawning();
         ReleaseAllActiveEnemies();
+        pendingRestoreData = null;
         nextSpawnSequence = 0;
 
         if (wasSpawning && enabled && spawnOnStart)

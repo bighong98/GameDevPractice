@@ -16220,7 +16220,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3116b4bd6728e6f4b9224754b6ce9955, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemySpawner
-  prefab: {fileID: 7373756343874736690, guid: 99461bc11c43c1f44b328755d4450939, type: 3}
+  prefabReference:
+    m_AssetGUID: 99461bc11c43c1f44b328755d4450939
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
   resetToDefaultOnGetFromPool: 1
   capacity: 10
   max: 20
@@ -29552,7 +29557,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4845309916841849827, guid: 4f9ef5c6d5e2fef4180a42a9095f1ff2, type: 3}
       propertyPath: logStateTransition
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5595159945293851076, guid: 4f9ef5c6d5e2fef4180a42a9095f1ff2, type: 3}
       propertyPath: m_Material

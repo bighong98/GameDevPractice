@@ -28,6 +28,8 @@ namespace TH.Control.State
 #endif
 
         [NonSerialized] private bool stateGraphInitialized;
+        [NonSerialized] private bool stateGraphInitializing;
+        [NonSerialized] private float nextStateInitRetryTime;
         
         // 현재 활성 상태 인스턴스 참조
         private IActionState currentState;
@@ -69,7 +71,7 @@ namespace TH.Control.State
         // 초기 상태 지정 시 첫 상태 전이 실행
         private void Start()
         {
-            EnterInitialStateAsync(ignoreLock: false).Forget();
+            // OnEnable에서 초기 상태 진입을 처리하므로 중복 비동기 초기화 진입 방지
         }
 
         // 재활성화 시 초기 상태 재진입을 위한 토큰/전이 데이터 재정렬
@@ -84,11 +86,10 @@ namespace TH.Control.State
 
             if (initialState == null && (initialStateReference == null || !initialStateReference.RuntimeKeyIsValid()))
             {
+                Logg.LogWarning($"[{gameObject.name}] OnEnable - initialStateReference is not ready. initialState={initialState}");
                 return;
             }
 
-            // 상태머신은 초기 상태로 재진입
-            // -> 풀 재사용 등 객체 재활성화 이벤트에서도 상태가 정상인 목적
             if (currentState != null)
             {
                 UnbindTransitions();
@@ -123,7 +124,18 @@ namespace TH.Control.State
         // 프레임 단위 전이 검사와 현재 상태 업데이트 실행
         private void Update()
         {
-            if (currentState == null) return;
+            if (currentState == null)
+            {
+                bool hasInitialReference = initialState != null
+                                           || (initialStateReference != null && initialStateReference.RuntimeKeyIsValid());
+                if (hasInitialReference && !stateGraphInitializing && Time.unscaledTime >= nextStateInitRetryTime)
+                {
+                    nextStateInitRetryTime = Time.unscaledTime + 1f;
+                    EnterInitialStateAsync(ignoreLock: true).Forget();
+                }
+
+                return;
+            }
             // 전역 상태 전환 조건 우선 검사
             // -> 만족하는 전환 조건이 있다면 CheckGlobalTransitionsPolling() 내부에서 즉시 상태 전환 실행
             if (CheckGlobalPollingConditions()) return;
@@ -136,8 +148,11 @@ namespace TH.Control.State
 
         private async UniTaskVoid EnterInitialStateAsync(bool ignoreLock)
         {
+            string ownerName = this == null ? "(destroyed)" : gameObject.name;
+
             if (initialState == null && (initialStateReference == null || !initialStateReference.RuntimeKeyIsValid()))
             {
+                Logg.LogWarning($"[{ownerName}] EnterInitialStateAsync skipped - initialState and initialStateReference are invalid");
                 return;
             }
 
@@ -153,12 +168,18 @@ namespace TH.Control.State
             }
             catch (Exception e)
             {
-                Logg.LogError($"[{gameObject.name}] ActionStateMachine initialization failed - {e}");
+                Logg.LogError($"[{ownerName}] ActionStateMachine initialization failed - {e}");
                 return;
             }
 
-            if (token.IsCancellationRequested || !isActiveAndEnabled || initialState == null)
+            if (token.IsCancellationRequested || this == null || !isActiveAndEnabled)
             {
+                return;
+            }
+
+            if (initialState == null)
+            {
+                Logg.LogWarning($"[{ownerName}] EnterInitialStateAsync aborted - initialState is null after graph initialization");
                 return;
             }
 
@@ -167,32 +188,112 @@ namespace TH.Control.State
 
         private async UniTask InitializeStateGraphAsync(CancellationToken token)
         {
+            string ownerName = this == null ? "(destroyed)" : gameObject.name;
+
             if (stateGraphInitialized)
             {
                 return;
             }
 
-            if (initialState == null && initialStateReference != null && initialStateReference.RuntimeKeyIsValid())
+            if (stateGraphInitializing)
             {
-                initialState = await ResourceManager.Instance.ExtractAssetRefAsync<ActionStateSO>(initialStateReference, token);
-            }
+                Logg.Log($"[{ownerName}] InitializeStateGraphAsync waiting - graph is already initializing", Logg.LoggingMode.Completed);
 
-            if (initialState is IAsyncInitializer initialStateInitializer)
-            {
-                await initialStateInitializer.InitializeAsync(token);
-            }
-
-            if (globalTransitions != null)
-            {
-                for (int i = 0; i < globalTransitions.Count; i++)
+                int waitedMs = 0;
+                const int stepMs = 500;
+                while (stateGraphInitializing)
                 {
-                    var transition = globalTransitions[i];
-                    await transition.InitializeAsync(token);
-                    globalTransitions[i] = transition;
+                    token.ThrowIfCancellationRequested();
+                    await UniTask.Delay(stepMs, cancellationToken: token);
+
+                    waitedMs += stepMs;
+                    if (waitedMs % 5000 == 0)
+                    {
+                        Logg.Log($"[{ownerName}] InitializeStateGraphAsync still waiting ({waitedMs}ms)", Logg.LoggingMode.Completed);
+                    }
+                }
+
+                Logg.Log($"[{ownerName}] InitializeStateGraphAsync wait ended. stateGraphInitialized={stateGraphInitialized}", Logg.LoggingMode.Completed);
+                return;
+            }
+
+            stateGraphInitializing = true;
+            try
+            {
+                Logg.Log($"[{ownerName}] InitializeStateGraphAsync start. hasInitialRef={initialStateReference != null && initialStateReference.RuntimeKeyIsValid()}, globalTransitions={globalTransitions?.Count ?? 0}", Logg.LoggingMode.Completed);
+
+                if (initialState == null)
+                {
+                    if (initialStateReference == null)
+                    {
+                        Logg.LogWarning($"[{ownerName}] initialStateReference is null");
+                    }
+                    else if (!initialStateReference.RuntimeKeyIsValid())
+                    {
+                        Logg.LogWarning($"[{ownerName}] initialStateReference has invalid RuntimeKey. guid={initialStateReference.AssetGUID}");
+                    }
+                    else
+                    {
+                        initialState = await ResourceManager.Instance.ExtractAssetRefAsync<ActionStateSO>(initialStateReference, token);
+                        if (initialState == null)
+                        {
+                            Logg.LogWarning($"[{ownerName}] failed to load initialState. guid={initialStateReference.AssetGUID}");
+                        }
+                    }
+                }
+
+                if (initialState is IAsyncInitializer initialStateInitializer)
+                {
+                    await initialStateInitializer.InitializeAsync(token);
+                }
+                else if (initialState == null)
+                {
+                    Logg.LogWarning($"[{ownerName}] initialState is still null before global transition init");
+                }
+
+                if (globalTransitions == null)
+                {
+                    Logg.LogWarning($"[{ownerName}] globalTransitions list is null");
+                }
+                else
+                {
+                    for (int i = 0; i < globalTransitions.Count; i++)
+                    {
+                        var transition = globalTransitions[i];
+                        await transition.InitializeAsync(token);
+                        globalTransitions[i] = transition;
+
+                        if (transition.Condition == null || transition.DestinationState == null)
+                        {
+                            Logg.LogWarning($"[{ownerName}] globalTransition[{i}] unresolved after initialize. condition={(transition.Condition == null ? "null" : transition.Condition.GetType().Name)}, destination={(transition.DestinationState == null ? "null" : transition.DestinationState.GetType().Name)}");
+                        }
+                    }
+                }
+
+                stateGraphInitialized = initialState != null;
+                if (!stateGraphInitialized)
+                {
+                    Logg.LogWarning($"[{ownerName}] InitializeStateGraphAsync finished but initialState is null");
+                }
+                else
+                {
+                    Logg.Log($"[{ownerName}] InitializeStateGraphAsync complete. initialState={initialState.name}", Logg.LoggingMode.Completed);
                 }
             }
-
-            stateGraphInitialized = true;
+            catch (OperationCanceledException)
+            {
+                Logg.Log($"[{ownerName}] InitializeStateGraphAsync canceled", Logg.LoggingMode.Completed);
+                throw;
+            }
+            catch (Exception e)
+            {
+                Logg.LogWarning($"[{ownerName}] InitializeStateGraphAsync failed - {e}");
+                throw;
+            }
+            finally
+            {
+                stateGraphInitializing = false;
+            }
         }
 
         private UniTask HandleBeforeSceneChanged(CancellationToken externalToken)
@@ -214,6 +315,10 @@ namespace TH.Control.State
             UnbindTransitions();
             ResetTransitionLocksOnStateChange();
             TryCancelDisposeStateToken();
+            stateGraphInitializing = false;
+            stateGraphInitialized = false;
+            nextStateInitRetryTime = 0f;
+            initialState = null;
         }
 
         #region IActionStateController
@@ -307,18 +412,26 @@ namespace TH.Control.State
         // 현재 상태 + 전역 전이의 이벤트 기반 조건 구독 등록
         private void BindTransitions()
         {
-            if (currentState is not {} state || !state.IsNotNull()) return;
+            if (currentState is not { } state || !state.IsNotNull())
+            {
+                Logg.LogWarning($"[{gameObject.name}] BindTransitions skipped - currentState is null");
+                return;
+            }
 
-            // 글로벌 전환 조건 감지 이벤트 구독
             BindTransitionList(globalTransitions);
 
-            // 현재 상태 객체에 전환 조건 감지 이벤트 구독
             state.BindTransitions(
                 controller: this,
                 register: sub =>
                 {
-                    // 구독할 이벤트가 있다면 이벤트 해제용 핸들러 캐싱
-                    if (sub != null) _transitionHandlers.Add(sub);
+                    if (sub != null)
+                    {
+                        _transitionHandlers.Add(sub);
+                    }
+                    else
+                    {
+                        Logg.LogWarning($"[{gameObject.name}] BindTransitions register callback received null disposable from state={state.GetType().Name}");
+                    }
                 }
             );
         }
@@ -338,17 +451,31 @@ namespace TH.Control.State
         // 글로벌 상태 전환 대응용
         private void BindTransitionList(List<ActionStateTransition> list)
         {
-            if (list == null || list.Count == 0) return;
-
-            foreach (var t in list)
+            if (list == null || list.Count == 0)
             {
-                var destination = t.DestinationState;
-                if (destination == null) continue;
-                // condition null-check
-                if (t.Condition is not {} condition) continue;
-                if (!condition.IsNotNull()) continue;
-                // Polling 타입은 이벤트 미지원이므로 스킵
-                if (condition.Measure == StateConditionMeasures.Polling) continue;
+                return;
+            }
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                var transition = list[i];
+                var destination = transition.DestinationState;
+                if (destination == null)
+                {
+                    Logg.LogWarning($"[{gameObject.name}] BindTransitionList transition[{i}] skipped - destination is null");
+                    continue;
+                }
+
+                if (transition.Condition is not { } condition || !condition.IsNotNull())
+                {
+                    Logg.LogWarning($"[{gameObject.name}] BindTransitionList transition[{i}] skipped - condition is null");
+                    continue;
+                }
+
+                if (condition.Measure == StateConditionMeasures.Polling)
+                {
+                    continue;
+                }
 
                 var token = condition.Bind(
                     controller: this,
@@ -356,11 +483,17 @@ namespace TH.Control.State
                         condition: condition,
                         destination: destination,
                         isGlobal: true,
-                        ignoreForce: true) // 글로벌은 항상 lock 무시
+                        ignoreForce: true)
                 );
 
                 if (token != null)
+                {
                     _transitionHandlers.Add(token);
+                }
+                else
+                {
+                    Logg.LogWarning($"[{gameObject.name}] BindTransitionList transition[{i}] returned null disposable from {condition.GetType().Name}");
+                }
             }
         }
 

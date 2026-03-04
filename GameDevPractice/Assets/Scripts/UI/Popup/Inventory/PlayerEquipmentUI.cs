@@ -55,7 +55,7 @@ namespace TH.UI
                 slotUI.Clear();
                 return;
             }
-            slotUI.SetIcon(itemInfo.sprite);
+            slotUI.SetIcon(itemInfo.Sprite);
         }
         
         // 슬롯 표시 내용 클리어

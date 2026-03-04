@@ -120,7 +120,7 @@ namespace TH.Item
                 HighlightEquipmentSlots(slot.GetItemInfo);
             }
 
-            pInvenUI.AllowDrag(slot.GetItemInfo.sprite); // 드래그 허가 및 UI에게 필요한 시각적 효과 출력 명령
+            pInvenUI.AllowDrag(slot.GetItemInfo.Sprite); // 드래그 허가 및 UI에게 필요한 시각적 효과 출력 명령
         }
 
         // 드롭 처리(아이템 슬롯 재배치 또는 다른 스토리지로 이동)

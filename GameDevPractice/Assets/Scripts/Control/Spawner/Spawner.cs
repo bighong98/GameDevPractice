@@ -5,17 +5,23 @@ using System.Collections.Generic;
 using TH.Core.Pool;
 using TH.Utils;
 using TH.Core.Service;
+using System.Threading;
+using Cysharp.Threading.Tasks;
+using TH.Resource;
 using TH.SaveLoad;
 
 public class Spawner<T> : MonoBehaviour where T : UnityEngine.Component, IPoolObject
 {
-    [SerializeField] protected GameObject prefab;
+    [SerializeField] protected AssetReferenceGameObject prefabReference;
     [SerializeField] private bool resetToDefaultOnGetFromPool = false;
-    protected ObjectPool<IPoolObject> pool;
+    
+    [NonSerialized] protected GameObject prefab;
 
+    protected ObjectPool<IPoolObject> pool;
     protected Action<IPoolObject> onCreate;
     protected Action<IPoolObject> onGet;
     protected Action<IPoolObject> onRelease;
+    protected int ActiveObjectCount => activeObjects.Count;
 
     private bool isInit;
     private int configuredCapacity;
@@ -25,16 +31,51 @@ public class Spawner<T> : MonoBehaviour where T : UnityEngine.Component, IPoolOb
 
     public bool HasPool => isInit && pool != null;
     public ObjectPool<IPoolObject> Pool => pool;
+    public AssetReferenceGameObject PrefabReference => prefabReference;
     public GameObject Prefab => prefab;
     public bool ResetToDefaultOnGetFromPool { get => resetToDefaultOnGetFromPool; set => resetToDefaultOnGetFromPool = value; }
-    protected int ActiveObjectCount => activeObjects.Count;
-    
-    protected virtual void Start()
+
+    protected virtual async void Start()
     {
-        if (prefab == null) return;
-        
-        SetPool(prefab, onCreate, onGet, onRelease, configuredCapacity, configuredMax);
+        try
+        {
+            if (!await EnsurePrefabResolvedAsync(destroyCancellationToken))
+                return;
+
+            SetPool(prefab, onCreate, onGet, onRelease, configuredCapacity, configuredMax);
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception e)
+        {
+            Logg.LogError($"[{gameObject.name}.{nameof(Spawner<T>)}.{nameof(Start)}] failed to resolve prefab. {e.Message}");
+        }
     }
+
+    protected async UniTask<bool> EnsurePrefabResolvedAsync(CancellationToken token = default)
+    {
+        if (prefabReference != null && prefabReference.RuntimeKeyIsValid())
+        {
+            if (ResourceManager.Instance == null)
+            {
+                Logg.LogError($"[{gameObject.name}.{nameof(Spawner<T>)}.{nameof(EnsurePrefabResolvedAsync)}] ResourceManager is null");
+                return prefab != null;
+            }
+
+            var loadedPrefab = await ResourceManager.Instance.ExtractAssetRefAsync<GameObject>(prefabReference, token);
+            if (loadedPrefab != null)
+            {
+                prefab = loadedPrefab;
+                return true;
+            }
+
+            Logg.LogError($"[{gameObject.name}.{nameof(Spawner<T>)}.{nameof(EnsurePrefabResolvedAsync)}] failed to load prefab from AssetReference");
+        }
+
+        return prefab != null;
+    }
+
     
     public virtual void SetPool(GameObject prefab, Action<IPoolObject> createAction = null, Action<IPoolObject> getAction = null, Action<IPoolObject> releaseAction = null, int capacity = 0, int max = 0)
     {

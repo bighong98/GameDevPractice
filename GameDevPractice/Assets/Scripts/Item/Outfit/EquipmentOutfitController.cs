@@ -210,6 +210,8 @@ namespace TH.Item
             if (!trackRuntimeOutfitRendererChanges && !hasLoggedFixedCacheSlotChangeWarning)
             {
                 hasLoggedFixedCacheSlotChangeWarning = true;
+                if (gameObject.name.Contains("Player")) return; // 플레이어 캐릭터는 아웃라인 대상이 아니므로 경고 로그 출력x
+
                 string characterName = gameObject != null ? gameObject.name : "<unknown>";
                 string slotIndexText = slot != null ? slot.Index.ToString() : "<null>";
                 Debug.LogWarning(

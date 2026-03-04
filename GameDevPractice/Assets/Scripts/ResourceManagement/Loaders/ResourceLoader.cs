@@ -238,24 +238,21 @@ namespace TH.Resource
         }
 
         // key 기반 단일 리소스 비동기 로드 API
-        // -> 캐시 우선 반환 후 미존재 시 어드레서블 로드 정책
+        // -> 캐시 우선 반환, 미존재 시 주소기반 로드 수행
         public async UniTask<T> LoadAsync<T>(string key, CancellationToken token = default) where T : UnityEngine.Object
         {
-            // 캐시 히트 시 로드 생략
             if (resourceKeys.TryGetValue(key, out AsyncOperationHandle cachedHandle))
             {
                 return (T)cachedHandle.Result;
             }
 
-            // 캐시 미스 시 로드 핸들 생성/저장
             var op = Addressables.LoadAssetAsync<T>(key);
             resourceKeys[key] = op;
 
-            // 초기화 인터페이스 구현 리소스 후처리
             var result = await op.ToUniTask(cancellationToken: token);
             if (result is IAsyncInitializer asyncInitializer)
                 await asyncInitializer.InitializeAsync(token);
-            
+
             return result;
         }
 
@@ -277,29 +274,40 @@ namespace TH.Resource
                                 "guid: {assetRef.AssetGUID})");
                 return null;
             }
-            
-            // case: AssetReference에 대응하는 핸들이 딕셔너리에 존재하고, 유효한 핸들인 경우
+
             if (resourceGuids.TryGetValue(assetRef.AssetGUID, out var cachedHandle) && cachedHandle.IsValid())
-            { 
-                return cachedHandle.Result as T; // 즉시 핸들과 연결된 리소스를 반환
+            {
+                var cachedResult = cachedHandle.Result as T;
+                if (cachedResult is IAsyncInitializer cachedInitializer)
+                {
+                    await cachedInitializer.InitializeAsync(token);
+                }
+
+                return cachedResult;
             }
 
-            // case: 캐싱된 핸들이 없는 경우
-            var handle = assetRef.OperationHandle.IsValid() // 핸들을 추가로 생성 및 유효성 검사
+            var handle = assetRef.OperationHandle.IsValid()
                 ? assetRef.OperationHandle
                 : assetRef.LoadAssetAsync<T>();
 
-            await handle.ToUniTask(cancellationToken: token); // 핸들로부터 리소스 로드
-            // 리소스 로드에 실패했다면 null 반환
+            await handle.ToUniTask(cancellationToken: token);
             if (handle.Status != AsyncOperationStatus.Succeeded)
             {
                 Logg.LogError($"[LoadAsync] Load failed for AssetReference<{typeof(T).Name}> with key: {assetRef.RuntimeKey}");
                 return null;
             }
-            // AssetReference로부터 리소스 로드에 성공했다면 핸들을 캐싱 및 리소스 반환
+
             resourceGuids[assetRef.AssetGUID] = handle;
-            return handle.Result as T;
+
+            var loadedResult = handle.Result as T;
+            if (loadedResult is IAsyncInitializer loadedInitializer)
+            {
+                await loadedInitializer.InitializeAsync(token);
+            }
+
+            return loadedResult;
         }
+
 
         #endregion
 

@@ -131,8 +131,7 @@ public static class ArmorTypeTestDataGenerator
         armor.equipmentStats = BuildStatModifiers(slot, seededValue, statLookup);
 
         var iconSprite = LoadOutfitIconSprite(outputIconsFolderPath, outfitKey.id);
-        if (iconSprite != null)
-            armor.sprite = iconSprite;
+        armor.SetSprite(iconSprite);
 
         AssignPrivateArmorFields(armor, outfitKey);
     }

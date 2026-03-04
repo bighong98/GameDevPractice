@@ -88,8 +88,8 @@ public partial class SkillTypeSO : ScriptableObject, IAsyncInitializer
 
     [Header("UI")]
     [SerializeField] private SkillCategory skillCategory = SkillCategory.AdditiveSkill;
-    [SerializeField] private Sprite skillSlotImage;
     [SerializeField] private AssetReferenceSprite skillSlotImageReference;
+    [NonSerialized] private Sprite skillSlotImage;
 
     [NonSerialized] private bool initialized;
 
@@ -154,12 +154,19 @@ public partial class SkillTypeSO : ScriptableObject, IAsyncInitializer
             }
         }
 
-        if (skillSlotImageReference != null && skillSlotImageReference.RuntimeKeyIsValid())
+        await EnsureSkillSlotImageLoadedAsync(token);
+
+        if (comboSteps != null)
         {
-            var loadedSkillSlotImage = await ResourceManager.Instance.ExtractAssetRefAsync<Sprite>(skillSlotImageReference, token);
-            if (loadedSkillSlotImage != null)
+            for (int i = 0; i < comboSteps.Count; i++)
             {
-                skillSlotImage = loadedSkillSlotImage;
+                var comboStep = comboSteps[i];
+                if (comboStep == null || comboStep == this)
+                {
+                    continue;
+                }
+
+                await comboStep.EnsureSkillSlotImageLoadedAsync(token);
             }
         }
 
@@ -193,6 +200,26 @@ public partial class SkillTypeSO : ScriptableObject, IAsyncInitializer
         }
 
         return comboSteps[index] != null ? comboSteps[index] : fallback;
+    }
+
+
+    private async UniTask EnsureSkillSlotImageLoadedAsync(CancellationToken token)
+    {
+        if (skillSlotImage != null)
+        {
+            return;
+        }
+
+        if (skillSlotImageReference == null || !skillSlotImageReference.RuntimeKeyIsValid())
+        {
+            return;
+        }
+
+        var loadedSkillSlotImage = await ResourceManager.Instance.ExtractAssetRefAsync<Sprite>(skillSlotImageReference, token);
+        if (loadedSkillSlotImage != null)
+        {
+            skillSlotImage = loadedSkillSlotImage;
+        }
     }
 }
 }

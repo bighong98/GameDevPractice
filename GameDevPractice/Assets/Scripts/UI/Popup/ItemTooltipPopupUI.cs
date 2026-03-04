@@ -221,7 +221,7 @@ public class ItemTooltipPopupUI : PopupUI
         if (item is not { GetAmount: > 0, GetItemInfo: { } itemInfo }) return;
 
         if (GetImage((int)Images.ItemIconImage) is { } iconImage)
-            iconImage.sprite = itemInfo.sprite;
+            iconImage.sprite = itemInfo.Sprite;
 
         UpdateTooltipContent(itemInfo, TooltipDetailLevel.Detailed, item);
 

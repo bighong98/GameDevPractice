@@ -153,7 +153,7 @@ namespace TH.Resource
                 || !gameObject.IsNotNull() 
                 || gameObject is not { activeSelf: true }) return;
             // typeSO에 프리팹 데이터가 존재하는지 확인
-            if (type is not { prefab: {} prefabData } ) return; 
+            if (type is not { Prefab: {} prefabData } ) return; 
             
             // 오브젝트 풀 생성 시도
             if (Origin == null) Origin = prefabData;

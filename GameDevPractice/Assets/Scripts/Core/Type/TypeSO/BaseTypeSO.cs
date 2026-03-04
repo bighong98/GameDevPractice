@@ -13,15 +13,26 @@ namespace TH.Resource
     public abstract class BaseTypeSO : ScriptableObject, ITypeSO
     {
         [Header("Prefab Reference")]
-        public GameObject prefab;
         [SerializeField] private AssetReferenceGameObject prefabReference;
 
         [Header("Basic")]
         public string nameString;
-        public Sprite sprite;
         [SerializeField] private AssetReferenceSprite spriteReference;
 
+        #region Runtime Cached Data
+
+        [NonSerialized] private GameObject prefab;
+        [NonSerialized] private Sprite sprite;
         [NonSerialized] private bool initialized;
+
+        #endregion
+
+        #region Property
+
+        public GameObject Prefab => prefab;
+        public Sprite Sprite => sprite;
+
+        #endregion
 
         // 비동기 초기화가 필요한 필드가 있는 경우 IAsyncInitializer 인터페이스 구현 및 메서드 override해서 사용
         // 해당 필드가 AssetReference 타입이라면 ResourceManager.Instance.ExtractAssetFromRef() 사용
@@ -91,6 +102,26 @@ namespace TH.Resource
         void OnValidate()
         {
             RefreshStates();
+        }
+
+        public void SetSprite(Sprite newSprite)
+        {
+            sprite = newSprite;
+
+            if (newSprite == null)
+            {
+                spriteReference = null;
+                return;
+            }
+
+            if (!AssetReferenceGeneric<Sprite>.TryCreateEditorReference<AssetReferenceSprite>(newSprite, out var createdReference))
+            {
+                spriteReference = null;
+                Debug.LogWarning($"[{GetType().Name}, {nameString}] Failed to create Sprite AssetReference for '{newSprite.name}'", this);
+                return;
+            }
+
+            spriteReference = createdReference;
         }
 
 #endif

@@ -16,12 +16,14 @@ namespace TH.Control.Data
     public class ActionStateSO : ScriptableObject, IActionState, IAsyncInitializer
     {
         [Header("Actions")]
-        [SerializeField] private List<CharacterActionSO> onEnterActions = new(); // 진입 시 1회
+        
         [SerializeField] private List<AssetReferenceCharacterActionSO> onEnterActionReferences = new();
-        [SerializeField] private List<CharacterActionSO> updateActions = new();  // 매 프레임
         [SerializeField] private List<AssetReferenceCharacterActionSO> updateActionReferences = new();
-        [SerializeField] private List<CharacterActionSO> onExitActions = new();  // 퇴장 시 1회
         [SerializeField] private List<AssetReferenceCharacterActionSO> onExitActionReferences = new();
+
+        [NonSerialized] private List<CharacterActionSO> updateActions = new();  // 매 프레임
+        [NonSerialized] private List<CharacterActionSO> onEnterActions = new(); // 진입 시 1회
+        [NonSerialized] private List<CharacterActionSO> onExitActions = new();  // 퇴장 시 1회
 
         [Header("Transitions")]
         [SerializeField] private List<ActionStateTransition> transitions;
@@ -30,7 +32,8 @@ namespace TH.Control.Data
         [SerializeField] private bool allowSelfTransition = false;
         [SerializeField] private bool transitionLockRequired = false;
 
-        [NonSerialized] private bool initialized;
+        [NonSerialized] private bool initialized = false;
+        [NonSerialized] private bool initializing = false;
         
         #region IActionState
         
@@ -38,6 +41,7 @@ namespace TH.Control.Data
         public bool AllowSelfTransition => allowSelfTransition;
         // 용도: 상태 진입 직후 전이 잠금 요구 정책 노출 프로퍼티
         public bool TransitionLockRequired => transitionLockRequired;
+        internal bool IsInitializing => initializing;
 
         public async UniTask InitializeAsync(CancellationToken token)
         {
@@ -46,21 +50,76 @@ namespace TH.Control.Data
                 return;
             }
 
-            await PopulateActionsFromReferences(onEnterActions, onEnterActionReferences, token);
-            await PopulateActionsFromReferences(updateActions, updateActionReferences, token);
-            await PopulateActionsFromReferences(onExitActions, onExitActionReferences, token);
-
-            if (transitions != null)
+            if (initializing)
             {
-                for (int i = 0; i < transitions.Count; i++)
+                Logg.Log($"[ActionStateSO:{name}] InitializeAsync waiting because another initialization is already in progress", Logg.LoggingMode.Completed);
+
+                int waitedMs = 0;
+                const int stepMs = 500;
+                while (initializing)
                 {
-                    var transition = transitions[i];
-                    await transition.InitializeAsync(token);
-                    transitions[i] = transition;
+                    token.ThrowIfCancellationRequested();
+                    await UniTask.Delay(stepMs, cancellationToken: token);
+
+                    waitedMs += stepMs;
+                    if (waitedMs % 5000 == 0)
+                    {
+                        Logg.Log($"[ActionStateSO:{name}] still waiting for initialize lock ({waitedMs}ms)", Logg.LoggingMode.Completed);
+                    }
+                }
+
+                Logg.Log($"[ActionStateSO:{name}] wait ended. initialized={initialized}, waitedMs={waitedMs}", Logg.LoggingMode.Completed);
+                if (initialized)
+                {
+                    return;
                 }
             }
 
-            initialized = true;
+            initializing = true;
+            try
+            {
+                Logg.Log($"[ActionStateSO:{name}] InitializeAsync start. enterRefs={onEnterActionReferences?.Count ?? 0}, updateRefs={updateActionReferences?.Count ?? 0}, exitRefs={onExitActionReferences?.Count ?? 0}, transitions={transitions?.Count ?? 0}", Logg.LoggingMode.Completed);
+
+                await PopulateActionsFromReferences(onEnterActions, onEnterActionReferences, token);
+                await PopulateActionsFromReferences(updateActions, updateActionReferences, token);
+                await PopulateActionsFromReferences(onExitActions, onExitActionReferences, token);
+
+                if (transitions == null)
+                {
+                    Logg.LogWarning($"[ActionStateSO:{name}] transitions list is null");
+                }
+                else
+                {
+                    for (int i = 0; i < transitions.Count; i++)
+                    {
+                        var transition = transitions[i];
+                        await transition.InitializeAsync(token);
+                        transitions[i] = transition;
+
+                        if (transition.Condition == null || transition.DestinationState == null)
+                        {
+                            Logg.LogWarning($"[ActionStateSO:{name}] transition[{i}] unresolved after initialize. condition={(transition.Condition == null ? "null" : transition.Condition.GetType().Name)}, destination={(transition.DestinationState == null ? "null" : transition.DestinationState.GetType().Name)}");
+                        }
+                    }
+                }
+
+                initialized = true;
+                Logg.Log($"[ActionStateSO:{name}] InitializeAsync complete", Logg.LoggingMode.Completed);
+            }
+            catch (OperationCanceledException)
+            {
+                Logg.Log($"[ActionStateSO:{name}] InitializeAsync canceled", Logg.LoggingMode.Completed);
+                throw;
+            }
+            catch (Exception e)
+            {
+                Logg.LogWarning($"[ActionStateSO:{name}] InitializeAsync failed - {e}");
+                throw;
+            }
+            finally
+            {
+                initializing = false;
+            }
         }
         
         // 상태 진입 시점 등록된 액션 일괄 실행
@@ -89,31 +148,50 @@ namespace TH.Control.Data
         {
             if (controller == null) throw new ArgumentNullException(nameof(controller));
             if (register == null) throw new ArgumentNullException(nameof(register));
-            if (transitions == null || transitions.Count == 0) return;
-
-            foreach (var t in transitions)
+            if (transitions == null || transitions.Count == 0)
             {
-                // 클로저 생성 (destination 캡처)
-                var destination = t.DestinationState;
-                if (destination == null) continue;
-                // 상태 전환 조건 유효성 검사
-                // Polling은 이벤트 지원x -> 스킵
-                if (t.Condition is not {} condition
-                    || !condition.IsNotNull()
-                    || condition.Measure == StateConditionMeasures.Polling) continue;
-                
-                
-                // 이벤트 미지원인 경우 DisposableDelegate.Empty 반환
+                Logg.LogWarning($"[ActionStateSO:{name}] BindTransitions skipped - transitions is null or empty");
+                return;
+            }
+
+            for (int i = 0; i < transitions.Count; i++)
+            {
+                var transition = transitions[i];
+                var destination = transition.DestinationState;
+                if (destination == null)
+                {
+                    Logg.LogWarning($"[ActionStateSO:{name}] BindTransitions transition[{i}] skipped - destination is null");
+                    continue;
+                }
+
+                if (transition.Condition is not { } condition || !condition.IsNotNull())
+                {
+                    Logg.LogWarning($"[ActionStateSO:{name}] BindTransitions transition[{i}] skipped - condition is null");
+                    continue;
+                }
+
+                if (condition.Measure == StateConditionMeasures.Polling)
+                {
+                    continue;
+                }
+
                 var disposeHandler = condition.Bind(
                     controller: controller,
                     onTriggered: () => controller.HandleConditionTriggered(
-                            condition: condition, 
-                            destination: destination,
-                            isGlobal: false, ignoreForce: false)
+                        condition: condition,
+                        destination: destination,
+                        isGlobal: false,
+                        ignoreForce: false)
                 );
-                
+
                 if (disposeHandler != null)
+                {
                     register(disposeHandler);
+                }
+                else
+                {
+                    Logg.LogWarning($"[ActionStateSO:{name}] BindTransitions transition[{i}] returned null disposable from {condition.GetType().Name}");
+                }
             }
         }
 
@@ -207,7 +285,13 @@ namespace TH.Control.Data
             List<AssetReferenceCharacterActionSO> actionReferences,
             CancellationToken token)
         {
-            if (actionList == null || actionReferences == null || actionReferences.Count == 0)
+            if (actionList == null)
+            {
+                Logg.LogWarning("[ActionStateSO] PopulateActionsFromReferences skipped - actionList is null");
+                return;
+            }
+
+            if (actionReferences == null || actionReferences.Count == 0)
             {
                 return;
             }
@@ -215,13 +299,26 @@ namespace TH.Control.Data
             for (int i = 0; i < actionReferences.Count; i++)
             {
                 var actionReference = actionReferences[i];
-                if (actionReference == null || !actionReference.RuntimeKeyIsValid())
+                if (actionReference == null)
                 {
+                    Logg.LogWarning($"[ActionStateSO] actionReference[{i}] is null");
+                    continue;
+                }
+
+                if (!actionReference.RuntimeKeyIsValid())
+                {
+                    Logg.LogWarning($"[ActionStateSO] actionReference[{i}] has invalid RuntimeKey. guid={actionReference.AssetGUID}");
                     continue;
                 }
 
                 var loadedAction = await ResourceManager.Instance.ExtractAssetRefAsync<CharacterActionSO>(actionReference, token);
-                if (loadedAction == null || actionList.Contains(loadedAction))
+                if (loadedAction == null)
+                {
+                    Logg.LogWarning($"[ActionStateSO] failed to load actionReference[{i}]. guid={actionReference.AssetGUID}");
+                    continue;
+                }
+
+                if (actionList.Contains(loadedAction))
                 {
                     continue;
                 }

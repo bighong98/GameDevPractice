@@ -1,0 +1,275 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: State Machine Data
+  m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
+  m_GroupName: State Machine Data
+  m_GUID: 087a9575ac6ceaa4291e3867b574330d
+  m_SerializeEntries:
+  - m_GUID: 046f474f308a4b240b63b32a81bc314a
+    m_Address: FollowingTargetSetConditionSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0a629967280d91a488415f2b26458eee
+    m_Address: ClearActiveSkillActionSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0eac0195a140710469b7ed270094357a
+    m_Address: WaitForSecondConditionSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 16deb90229b9bec408b94b3510134c35
+    m_Address: MoveStateSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1ae8a8d9e54a66749944c4318d7c5b1a
+    m_Address: AnimateAttackSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2f3006aa2383a1a4da945f469742075f
+    m_Address: ClearFollowTargetActionSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 36f3e6bc2976551408b1cf79527feca9
+    m_Address: WalkActionSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 43554658d5d70f4489ad260e29a3ccb5
+    m_Address: AnimateReviveSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4910c4789b0b014429a11cae8301ced0
+    m_Address: AnimateDeadSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4cf2e9d6bf42a18449c08ab688bb405a
+    m_Address: CanAttackConditionSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4ff036bbf49db2f49b1127ba662aa634
+    m_Address: PatrolStateSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5d08da84b4f664c4890db4f51a1d5086
+    m_Address: MoveConditionSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6ad8b0b46e757f64d9dbb76b4f89d062
+    m_Address: IdleStateSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6ee183327986dab4184ec78b9b8dab3e
+    m_Address: DeadConditionSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7a37636c8cf8c1948bd7cf28d2256d31
+    m_Address: ApproachConditionSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7e7e93bfb3dfa8f40a30639a63aefa01
+    m_Address: InitialStateSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 800710661b6edd34aa8e50a4ac48fa2f
+    m_Address: WaitFor2SecondsConditionSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 81c49f06e0fa7ed4dbfad3d52bfcb47f
+    m_Address: AnimateMoveSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 894816fddf9585a4bb93d74746650a64
+    m_Address: LostTargetConditionSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 92f8f20c4fb3116489b5ac4f47414aaf
+    m_Address: StrayStateSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 938e2b725bd3348459aa6c156b1cfffb
+    m_Address: StopWalkActionSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 99915f28cdf03fb44b522e2c3679638e
+    m_Address: InvalidCombatTargetConditionSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a6399e600cad3064d8bb74e9a62dd747
+    m_Address: FightStateSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a68038a294969554a9c9b536c112d164
+    m_Address: CastActiveSkillActionSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: aebd0b6c5f806a346a562df8927ab54d
+    m_Address: ApproachStateSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c81a42815fff3c9498b7fb7f247e88a5
+    m_Address: RunActionSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c9502975d051df14aa8f8419e1e08784
+    m_Address: ResetPathActionSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: cebf38c8f05b4d14288eee55a183ac5b
+    m_Address: ReviveConditionSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d401f76a9eb6b2f4a9f81da58494f6a9
+    m_Address: ReviveStateSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d8a51050e6bf8ae47873aac1d15d0d99
+    m_Address: AnimateStopSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d8e340ceb9b1c9d4eb247af14f303293
+    m_Address: MoveToTargetActionSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: dbddf25b9bd57034fb6d099ff589c863
+    m_Address: AnimateIdleSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: dc33e8789b0525041b251428d1cd4b50
+    m_Address: DeadStateSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e3b2979e803480a45976113e73009e7f
+    m_Address: StopConditionSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f74d07e8a295fb9499c63066d465bdb9
+    m_Address: LookAtCombatTargetSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fa6c49b098404cc449013816ddd04dcf
+    m_Address: AnimateMoveVelocitySO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: ba2aeaf5da86ad943b7448d84aa19f98, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 2b3b9e8bafe36b049a0bc84d85c3ee4c, type: 2}
+    - {fileID: 11400000, guid: d478a9f93620fde4ab49352ddc3e2c24, type: 2}

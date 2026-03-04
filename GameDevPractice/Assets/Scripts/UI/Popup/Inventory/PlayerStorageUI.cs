@@ -98,7 +98,7 @@ namespace TH.UI
                 return;
             }
             // 슬롯UI 그리기
-            slotUI.SetIcon(itemInfo.sprite);
+            slotUI.SetIcon(itemInfo.Sprite);
             slotUI.SetAmount(instance.GetAmount);
         }
 

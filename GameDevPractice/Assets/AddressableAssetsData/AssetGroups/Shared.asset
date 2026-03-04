@@ -42,11 +42,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 046f474f308a4b240b63b32a81bc314a
-    m_Address: Assets/Game/Control/Character/Condition/FollowingTargetSetConditionSO.asset
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 046f821c76a004e4c91b9f27ee906194
     m_Address: Wool.png
     m_ReadOnly: 0
@@ -79,11 +74,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 0a629967280d91a488415f2b26458eee
-    m_Address: Assets/Game/Control/Character/Action/ClearActiveSkillActionSO.asset
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 0b671898cbc3a49419ca7a6b7bc9a0f2
     m_Address: M_Fighter_Bottom.png
     m_ReadOnly: 0
@@ -101,11 +91,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 0e1ccb64303778e4081913a6d9cca677
     m_Address: Wood Log.png
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 0eac0195a140710469b7ed270094357a
-    m_Address: Assets/Game/Control/Character/Condition/WaitForSeconds/WaitForSecondConditionSO.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -134,18 +119,8 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 16deb90229b9bec408b94b3510134c35
-    m_Address: Assets/Game/Control/Character/State/PC/MoveStateSO.asset
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 191c39a59b71a9d4a86e0366198e604f
     m_Address: Profile_Melee_Default.asset
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 1ae8a8d9e54a66749944c4318d7c5b1a
-    m_Address: Assets/Game/Control/Character/Action/AnimateAction/AnimateAttackSO.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -194,11 +169,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 2f3006aa2383a1a4da945f469742075f
-    m_Address: Assets/Game/Control/Character/Action/ClearFollowTargetActionSO.asset
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 34186fab1480ebb4c824eb27374d1bef
     m_Address: M_Archer_Top.png
     m_ReadOnly: 0
@@ -211,11 +181,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 35f6e121e39d61a40902d16545f4b041
     m_Address: M_Warlock_Top.png
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 36f3e6bc2976551408b1cf79527feca9
-    m_Address: WalkActionSO.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -249,11 +214,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 43554658d5d70f4489ad260e29a3ccb5
-    m_Address: Assets/Game/Control/Character/Action/AnimateAction/AnimateReviveSO.asset
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 4408269a96438e84796304f4ac0ed623
     m_Address: Candle.png
     m_ReadOnly: 0
@@ -284,18 +244,8 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 4910c4789b0b014429a11cae8301ced0
-    m_Address: Assets/Game/Control/Character/Action/AnimateAction/AnimateDeadSO.asset
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 4bab0f95134663b4c9c3dd73939c0ff1
     m_Address: Assets/Asset Packs/VFX/Hovl Studio/Magic effects pack/Materials/Circle.mat
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 4cf2e9d6bf42a18449c08ab688bb405a
-    m_Address: CanAttackConditionSO.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -311,11 +261,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 4f18c80df16a4ae4194559bba2f3ab9b
     m_Address: Simple Bow.fbx
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 4ff036bbf49db2f49b1127ba662aa634
-    m_Address: PatrolStateSO.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -341,11 +286,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5cd53c555bc830b41b96b4405ec81bb6
     m_Address: Bow_BasicSkill
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 5d08da84b4f664c4890db4f51a1d5086
-    m_Address: Assets/Game/Control/Character/Condition/MoveConditionSO.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -389,11 +329,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 6ad8b0b46e757f64d9dbb76b4f89d062
-    m_Address: Assets/Game/Control/Character/State/Common/IdleStateSO.asset
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 6bdf234ca6b34e14a84ce36d0838db17
     m_Address: ProjectileBurst_Default.asset
     m_ReadOnly: 0
@@ -401,11 +336,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 6dd5bc81c7e17b74c8c5782a5824dd91
     m_Address: Equipped Bow 1.prefab
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 6ee183327986dab4184ec78b9b8dab3e
-    m_Address: Assets/Game/Control/Character/Condition/DeadConditionSO.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -434,11 +364,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 7a37636c8cf8c1948bd7cf28d2256d31
-    m_Address: ApproachConditionSO.asset
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 7b13ae12be9a76a4a81aebb387dfe770
     m_Address: F_Witch_Top.png
     m_ReadOnly: 0
@@ -449,28 +374,13 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 7e7e93bfb3dfa8f40a30639a63aefa01
-    m_Address: Assets/Game/Control/Character/State/InitialStateSO.asset
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 7edec613b7148f04d992f53ad026b1b5
     m_Address: KeyRebindingPanelUI.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 800710661b6edd34aa8e50a4ac48fa2f
-    m_Address: Assets/Game/Control/Character/Condition/WaitForSeconds/WaitFor2SecondsConditionSO.asset
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 809a9311c2ad44e41b1d38c0ed1de5c9
     m_Address: M_Sorcerer_Top.png
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 81c49f06e0fa7ed4dbfad3d52bfcb47f
-    m_Address: Assets/Game/Control/Character/Action/AnimateAction/AnimateMoveSO.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -491,11 +401,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 881cde1dc105a5744b78cf3bf14f25cc
     m_Address: Characters_Texture_Red.png
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 894816fddf9585a4bb93d74746650a64
-    m_Address: LostTargetConditionSO.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -549,16 +454,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 92f8f20c4fb3116489b5ac4f47414aaf
-    m_Address: Assets/Game/Control/Character/State/Common/StrayStateSO.asset
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 938e2b725bd3348459aa6c156b1cfffb
-    m_Address: Assets/Game/Control/Character/Action/StopWalkActionSO.asset
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 94089ecaec66ba248b810e3bfaf74600
     m_Address: LevelUpEffect.prefab
     m_ReadOnly: 0
@@ -586,11 +481,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 983d499dd078b8444879f51a7fd8a312
     m_Address: M_Fighter_Top.png
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 99915f28cdf03fb44b522e2c3679638e
-    m_Address: Assets/Game/Control/Character/Condition/InvalidCombatTargetConditionSO.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -654,16 +544,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: a6399e600cad3064d8bb74e9a62dd747
-    m_Address: Assets/Game/Control/Character/State/Common/FightStateSO.asset
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: a68038a294969554a9c9b536c112d164
-    m_Address: Assets/Game/Control/Character/Action/CastActiveSkillActionSO.asset
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a73ecc94afab3c446b6b4668596140e5
     m_Address: UserInput.inputactions
     m_ReadOnly: 0
@@ -681,11 +561,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: acf7c2f2013d2294ea0503048079cc17
     m_Address: F_Rogue_Bottom.png
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: aebd0b6c5f806a346a562df8927ab54d
-    m_Address: Assets/Game/Control/Character/State/Common/ApproachStateSO.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -789,16 +664,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: c81a42815fff3c9498b7fb7f247e88a5
-    m_Address: Assets/Game/Control/Character/Action/RunActionSO.asset
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: c9502975d051df14aa8f8419e1e08784
-    m_Address: Assets/Game/Control/Character/Action/ResetPathActionSO.asset
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: caa9c92c06bbef340a4bca8c6a52f62a
     m_Address: Unarmed_BasicSkill
     m_ReadOnly: 0
@@ -826,11 +691,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: cebf38c8f05b4d14288eee55a183ac5b
-    m_Address: Assets/Game/Control/Character/Condition/ReviveConditionSO.asset
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: d1f94eb541d98c94c9e0a776707e9c7c
     m_Address: Slime Gel.png
     m_ReadOnly: 0
@@ -838,11 +698,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: d288a0e4a2d923b46898986e979da643
     m_Address: Assets/Asset Packs/Synty - Polygon Student Sample/Models/Characters_POLYGON_Knights.fbx
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: d401f76a9eb6b2f4a9f81da58494f6a9
-    m_Address: Assets/Game/Control/Character/State/Common/ReviveStateSO.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -876,28 +731,8 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: d8a51050e6bf8ae47873aac1d15d0d99
-    m_Address: Assets/Game/Control/Character/Action/AnimateAction/AnimateStopSO.asset
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: d8e340ceb9b1c9d4eb247af14f303293
-    m_Address: Assets/Game/Control/Character/Action/MoveToTargetActionSO.asset
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: da5cccc619df7dd44bf0814648498ccc
     m_Address: Assets/Game/TMP/AddressableSplit/LiberationSans.ttf
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: dbddf25b9bd57034fb6d099ff589c863
-    m_Address: Assets/Game/Control/Character/Action/AnimateAction/AnimateIdleSO.asset
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: dc33e8789b0525041b251428d1cd4b50
-    m_Address: Assets/Game/Control/Character/State/Common/DeadStateSO.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -928,11 +763,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e35012f72a9d01341bba40b6ce786a51
     m_Address: F_Mage_Top.png
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: e3b2979e803480a45976113e73009e7f
-    m_Address: Assets/Game/Control/Character/Condition/StopConditionSO.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -996,11 +826,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: f74d07e8a295fb9499c63066d465bdb9
-    m_Address: Assets/Game/Control/Character/Action/LookAtCombatTargetSO.asset
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f7d074cf705002f4da8e216d98cb2693
     m_Address: M_Rogue_Eyepatch.png
     m_ReadOnly: 0
@@ -1008,11 +833,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f88d5b41db4f06b4e8240c80f2f734db
     m_Address: Equipped Sword.prefab
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: fa6c49b098404cc449013816ddd04dcf
-    m_Address: Assets/Game/Control/Character/Action/AnimateAction/AnimateMoveVelocitySO.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

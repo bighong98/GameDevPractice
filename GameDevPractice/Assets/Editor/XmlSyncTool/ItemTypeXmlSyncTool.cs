@@ -623,8 +623,8 @@ private static ItemTypeXmlRow BuildRow(ItemTypeSO item, string assetPath, bool i
             assetPath = assetPath,
             dataTypeName = item.GetType().AssemblyQualifiedName,
 
-            prefabName = item.prefab != null ? item.prefab.name : string.Empty,
-            spriteName = item.sprite != null ? item.sprite.name : string.Empty,
+            prefabName = item.Prefab != null ? item.Prefab.name : string.Empty,
+            spriteName = item.Sprite != null ? item.Sprite.name : string.Empty,
             useEffectName = SerializeItemUseEffectNames(item.itemUseEffects),
             itemTypeValue = (int)item.itemType,
             serializedJson = includeSerializedJson ? EditorJsonUtility.ToJson(item, false) : string.Empty
