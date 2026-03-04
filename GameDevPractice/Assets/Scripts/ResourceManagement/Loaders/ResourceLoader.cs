@@ -19,13 +19,17 @@ namespace TH.Resource
         // Addressables.LoadAssetAsync 결과 핸들 캐시 (키 기반)
         private readonly Dictionary<string, AsyncOperationHandle> resourceKeys = new();
         // Addressables.LoadAssetAsync 결과 핸들 캐시 (AssetReference 기반)
-        private readonly Dictionary<string, AsyncOperationHandle> resourceGuids = new ();
+        // Addressables.LoadAssetAsync 결과 핸들 캐시 (AssetReference 기반)
+        private readonly Dictionary<string, AsyncOperationHandle> resourceGuids = new(StringComparer.OrdinalIgnoreCase);
+        // 라벨 프리로드 키(PrimaryKey) -> Asset GUID 인덱스
+        private readonly Dictionary<string, HashSet<string>> primaryKeyToGuids = new(StringComparer.Ordinal);
+        [NonSerialized] private bool primaryKeyGuidIndexBuilt;
         // 라벨별 에셋 번들 로드 상태 추적용 캐시
         private readonly Dictionary<string, LoadStatus> loadStatus = new Dictionary<string, LoadStatus>();
-        // 라벨 단위로 일괄 리소스 로드 완료 알림 이벤트
+        // 라벨 단위로 전체 리소스 로드 완료 알림 이벤트
         public event Action<string> OnLabelResourcesLoadedAll; 
         // 라벨별 프리로드 완료 대기 후속 작업 큐 목록 캐시
-        // -> 라벨 완료 시점 순차 실행함
+        // -> 라벨 완료 시점 일괄 실행용
         private readonly Dictionary<string, Queue<Action>> reservedPreLoadTasks = new();
         
         #region Enums
@@ -92,16 +96,16 @@ namespace TH.Resource
             foreach (var label in Enum.GetNames(typeof(PreLoadLabels)))
             {
                 float labelStartedAt = Time.realtimeSinceStartup;
-                Logg.Log($"[ResourceLoader][PreLoad] label start: {label}", Logg.LoggingMode.Focussed);
+                Logg.Log($"[ResourceLoader][PreLoad] label start: {label}", Logg.LoggingMode.Completed);
 
                 await LoadAllAsync<UnityEngine.Object>(label);
 
                 float labelElapsed = Time.realtimeSinceStartup - labelStartedAt;
-                Logg.Log($"[ResourceLoader][PreLoad] label end: {label} ({labelElapsed:F2}s)", Logg.LoggingMode.Focussed);
+                Logg.Log($"[ResourceLoader][PreLoad] label end: {label} ({labelElapsed:F2}s)", Logg.LoggingMode.Completed);
             }
 
             float totalElapsed = Time.realtimeSinceStartup - totalStartedAt;
-            Logg.Log($"[ResourceLoader][PreLoad] all labels completed ({totalElapsed:F2}s)", Logg.LoggingMode.Focussed);
+            Logg.Log($"[ResourceLoader][PreLoad] all labels completed ({totalElapsed:F2}s)", Logg.LoggingMode.Completed);
         }
 
 
@@ -219,17 +223,17 @@ namespace TH.Resource
                     }
 
                     string pendingPreview = BuildPendingPreview();
-                    Logg.Log($"[ResourceLoader][{label}] waiting... {loadCount}/{totalCount}, pending: {pendingPreview}", Logg.LoggingMode.Focussed);
+                    Logg.Log($"[ResourceLoader][{label}] waiting... {loadCount}/{totalCount}, pending: {pendingPreview}", Logg.LoggingMode.Completed);
                 }
             }
 
             try
             {
-                Logg.Log($"[ResourceLoader][{label}] discovered assets: {totalCount}", Logg.LoggingMode.Focussed);
+                Logg.Log($"[ResourceLoader][{label}] discovered assets: {totalCount}", Logg.LoggingMode.Completed);
 
                 if (totalCount <= 0)
                 {
-                    Logg.Log($"[ResourceLoader][{label}] no assets matched. skipping", Logg.LoggingMode.Focussed);
+                    Logg.Log($"[ResourceLoader][{label}] no assets matched. skipping", Logg.LoggingMode.Completed);
                     return;
                 }
 
@@ -240,7 +244,7 @@ namespace TH.Resource
                     if (resourceKeys.ContainsKey(key))
                     {
                         Interlocked.Increment(ref loadCount);
-                        Logg.Log($"[ResourceLoader][{label}] skip cached: {key} ({loadCount}/{totalCount})", Logg.LoggingMode.Focussed);
+                        Logg.Log($"[ResourceLoader][{label}] skip cached: {key} ({loadCount}/{totalCount})", Logg.LoggingMode.Completed);
                         continue;
                     }
 
@@ -249,7 +253,7 @@ namespace TH.Resource
                         pendingStartedAt[key] = Time.realtimeSinceStartup;
                     }
 
-                    Logg.Log($"[ResourceLoader][{label}] begin: {key}", Logg.LoggingMode.Focussed);
+                    Logg.Log($"[ResourceLoader][{label}] begin: {key}", Logg.LoggingMode.Completed);
 
                     var handle = Addressables.LoadAssetAsync<T>(loc);
                     resourceKeys[key] = handle;
@@ -268,11 +272,16 @@ namespace TH.Resource
                                 }
                             }
 
+                            if (handle.IsValid() && handle.Status == AsyncOperationStatus.Succeeded)
+                            {
+                                CacheGuidHandlesByPrimaryKey(key, handle);
+                            }
+
                             Interlocked.Increment(ref loadCount);
                             callback?.Invoke(key, loadCount, totalCount);
 
                             float normalized = totalCount <= 0 ? 1f : (loadCount / (float)totalCount);
-                            Logg.Log($"[ResourceLoader][{label}] done: {key} ({loadCount}/{totalCount}, {normalized:P2}, elapsed: {(elapsed < 0f ? "n/a" : elapsed.ToString("F2"))}s)", Logg.LoggingMode.Focussed);
+                            Logg.Log($"[ResourceLoader][{label}] done: {key} ({loadCount}/{totalCount}, {normalized:P2}, elapsed: {(elapsed < 0f ? "n/a" : elapsed.ToString("F2"))}s)", Logg.LoggingMode.Completed);
 
                             ReportPreLoadProgress(label, normalized);
                         },
@@ -294,7 +303,7 @@ namespace TH.Resource
             finally
             {
                 float labelElapsed = Time.realtimeSinceStartup - labelStartedAt;
-                Logg.Log($"[ResourceLoader] finished loading label '{label}' assets ({labelElapsed:F2}s)", Logg.LoggingMode.Focussed);
+                Logg.Log($"[ResourceLoader] finished loading label '{label}' assets ({labelElapsed:F2}s)", Logg.LoggingMode.Completed);
 
                 ReportPreLoadProgress(label, 1f);
                 loadStatus[label] = LoadStatus.Done;
@@ -307,27 +316,30 @@ namespace TH.Resource
 
         // 단일 핸들 로드 + 성공 시 초기화 훅 + 완료 콜백 통합
         private static async UniTask LoadAndInitAsync<T>(
-            AsyncOperationHandle<T> handle, 
-            Func<T, UniTask> onSucceedAsync, 
+            AsyncOperationHandle<T> handle,
+            Func<T, UniTask> onSucceedAsync,
             Action onComplete,
             CancellationToken token)
         {
             try
             {
-                // 취소 토큰 연동 핸들 완료 대기
                 await handle.ToUniTask(cancellationToken: token);
 
                 if (handle.Status == AsyncOperationStatus.Succeeded)
                 {
-                    // 성공 후처리 훅 존재 시에만 실행
                     if (onSucceedAsync == null) return;
                     await onSucceedAsync(handle.Result);
                 }
                 else Logg.LogError($"{nameof(LoadAndInitAsync)} - Asset load failed: {handle.DebugName}");
             }
-            catch (Exception e) { 
-                Logg.LogError($"Exception occured while {nameof(LoadAndInitAsync)} loading asset: {handle.DebugName} - {e}");}
-            finally { onComplete?.Invoke(); }
+            catch (Exception e)
+            {
+                Logg.LogError($"Exception occured while {nameof(LoadAndInitAsync)} loading asset: {handle.DebugName} - {e}");
+            }
+            finally
+            {
+                onComplete?.Invoke();
+            }
         }
 
         // IAsyncInitializer 구현 객체에 대한 비동기 초기화 진입점
@@ -339,12 +351,12 @@ namespace TH.Resource
             string objectType = obj.GetType().Name;
             float startedAt = Time.realtimeSinceStartup;
 
-            Logg.Log($"[ResourceLoader] init start: {objectType} ({objectName})", Logg.LoggingMode.Focussed);
+            Logg.Log($"[ResourceLoader] init start: {objectType} ({objectName})", Logg.LoggingMode.Completed);
 
             await asyncInitializer.InitializeAsync(token);
 
             float elapsed = Mathf.Max(0f, Time.realtimeSinceStartup - startedAt);
-            Logg.Log($"[ResourceLoader] init end: {objectType} ({objectName}) ({elapsed:F2}s)", Logg.LoggingMode.Focussed);
+            Logg.Log($"[ResourceLoader] init end: {objectType} ({objectName}) ({elapsed:F2}s)", Logg.LoggingMode.Completed);
         }
 
 
@@ -354,6 +366,7 @@ namespace TH.Resource
         {
             if (resourceKeys.TryGetValue(key, out AsyncOperationHandle cachedHandle))
             {
+                CacheGuidHandlesByPrimaryKey(key, cachedHandle);
                 return (T)cachedHandle.Result;
             }
 
@@ -364,6 +377,7 @@ namespace TH.Resource
             if (result is IAsyncInitializer asyncInitializer)
                 await asyncInitializer.InitializeAsync(token);
 
+            CacheGuidHandlesByPrimaryKey(key, op);
             return result;
         }
 
@@ -414,6 +428,7 @@ namespace TH.Resource
             if (loadedResult is IAsyncInitializer loadedInitializer)
             {
                 await loadedInitializer.InitializeAsync(token);
+       await loadedInitializer.InitializeAsync(token);
             }
 
             return loadedResult;
@@ -442,14 +457,191 @@ namespace TH.Resource
         // 로딩 완료된 리소스 목록에 접근 (AssetReference 기반)
         public bool TryLoad<T>(AssetReference assetRef, out T resource) where T : UnityEngine.Object
         {
-            if (resourceGuids.TryGetValue(assetRef.AssetGUID, out var result)
-                && result.Result is T cachedResource)
+            if (assetRef == null)
             {
-                resource = cachedResource;
+                resource = null;
+                return false;
+            }
+
+            if (resourceGuids.TryGetValue(assetRef.AssetGUID, out var guidResult)
+                && guidResult.IsValid()
+                && guidResult.Result is T cachedByGuid)
+            {
+                resource = cachedByGuid;
                 return true;
             }
-            
+
+            if (TryResolveHandleFromRuntimeKey(assetRef.RuntimeKey, typeof(T), out var locatedHandle)
+                && locatedHandle.Result is T cachedByLocatedKey)
+            {
+                if (!string.IsNullOrEmpty(assetRef.AssetGUID))
+                {
+                    resourceGuids[assetRef.AssetGUID] = locatedHandle;
+                }
+
+                resource = cachedByLocatedKey;
+                return true;
+            }
+
+            if (assetRef.OperationHandle.IsValid() && assetRef.OperationHandle.Result is T cachedByOperation)
+            {
+                if (!string.IsNullOrEmpty(assetRef.AssetGUID))
+                {
+                    resourceGuids[assetRef.AssetGUID] = assetRef.OperationHandle;
+                }
+
+                resource = cachedByOperation;
+                return true;
+            }
+
             resource = null;
+            return false;
+        }
+
+        private void CacheGuidHandlesByPrimaryKey(string primaryKey, AsyncOperationHandle handle)
+        {
+            if (string.IsNullOrEmpty(primaryKey)
+                || !handle.IsValid()
+                || handle.Status != AsyncOperationStatus.Succeeded)
+            {
+                return;
+            }
+
+            EnsurePrimaryKeyGuidIndex();
+
+            if (!primaryKeyToGuids.TryGetValue(primaryKey, out var guidSet)
+                || guidSet == null
+                || guidSet.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var guid in guidSet)
+            {
+                resourceGuids[guid] = handle;
+            }
+        }
+
+        private void EnsurePrimaryKeyGuidIndex()
+        {
+            if (primaryKeyGuidIndexBuilt)
+            {
+                return;
+            }
+
+            primaryKeyToGuids.Clear();
+            if (Addressables.ResourceLocators == null)
+            {
+                return;
+            }
+
+            foreach (var locator in Addressables.ResourceLocators)
+            {
+                if (locator == null)
+                {
+                    continue;
+                }
+
+                foreach (var rawKey in locator.Keys)
+                {
+                    if (rawKey is not string keyString || !TryExtractGuidKey(keyString, out string guidKey))
+                    {
+                        continue;
+                    }
+
+                    if (!locator.Locate(rawKey, typeof(UnityEngine.Object), out var locations)
+                        || locations == null
+                        || locations.Count == 0)
+                    {
+                        continue;
+                    }
+
+                    for (int i = 0; i < locations.Count; i++)
+                    {
+                        var location = locations[i];
+                        if (location == null || string.IsNullOrEmpty(location.PrimaryKey))
+                        {
+                            continue;
+                        }
+
+                        if (!primaryKeyToGuids.TryGetValue(location.PrimaryKey, out var guidSet))
+                        {
+                            guidSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                            primaryKeyToGuids[location.PrimaryKey] = guidSet;
+                        }
+
+                        if (guidSet.Add(guidKey))
+                        {
+                            Logg.Log($"({location.PrimaryKey} - {guidKey})", Logg.LoggingMode.InProgress);
+                        }
+                    }
+                }
+            }
+
+            primaryKeyGuidIndexBuilt = true;
+        }
+
+        private static bool TryExtractGuidKey(string key, out string guid)
+        {
+            guid = null;
+            if (string.IsNullOrEmpty(key))
+            {
+                return false;
+            }
+
+            int subObjectStart = key.IndexOf('[');
+            string candidate = subObjectStart > 0 ? key.Substring(0, subObjectStart) : key;
+            if (candidate.Length != 32)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < candidate.Length; i++)
+            {
+                if (!Uri.IsHexDigit(candidate[i]))
+                {
+                    return false;
+                }
+            }
+
+            guid = candidate;
+            return true;
+        }
+
+        private bool TryResolveHandleFromRuntimeKey(object runtimeKey, Type type, out AsyncOperationHandle handle)
+        {
+            handle = default;
+            if (runtimeKey == null || Addressables.ResourceLocators == null)
+            {
+                return false;
+            }
+
+            foreach (var locator in Addressables.ResourceLocators)
+            {
+                if (locator == null
+                    || !locator.Locate(runtimeKey, type, out var locations)
+                    || locations == null
+                    || locations.Count == 0)
+                {
+                    continue;
+                }
+
+                for (int i = 0; i < locations.Count; i++)
+                {
+                    var location = locations[i];
+                    if (location == null || string.IsNullOrEmpty(location.PrimaryKey))
+                    {
+                        continue;
+                    }
+
+                    if (resourceKeys.TryGetValue(location.PrimaryKey, out var keyResult) && keyResult.IsValid())
+                    {
+                        handle = keyResult;
+                        return true;
+                    }
+                }
+            }
+
             return false;
         }
 

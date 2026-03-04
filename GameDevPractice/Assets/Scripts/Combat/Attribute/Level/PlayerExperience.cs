@@ -293,21 +293,22 @@ namespace TH.Attribute
         
         #region Test (Editor Only)
 
-#if UNITY_EDITOR
-        // 에디터 전용 레벨업 테스트 지연 상수
-        private readonly TimeSpan oneSecond = TimeSpan.FromSeconds(1);
-#endif
         // 에디터 환경 레벨업 반복 테스트 루틴
         [Conditional("UNITY_EDITOR")]
         [Conditional("DEVELOPMENT_MODE")]
         private void DoTestLevelup()
         {
+#if UNITY_EDITOR
             LevelUpTestMethod().Forget();
+#endif
         }
-
+        
+#if UNITY_EDITOR
+        // 에디터 전용 레벨업 테스트 지연 상수
+        private readonly TimeSpan oneSecond = TimeSpan.FromSeconds(1);
         private async UniTaskVoid LevelUpTestMethod()
         {
-#if UNITY_EDITOR
+
             Logg.Log($"[{nameof(PlayerExperience)}] '{nameof(LevelUpTestMethod)}' started", Logg.LoggingMode.Completed);
             int count = 0;
             while (count < 10)
@@ -318,9 +319,9 @@ namespace TH.Attribute
                 count++;
                 GainXp(50);
             }
-#endif
-        } 
 
+        } 
+#endif
         #endregion
 
     }

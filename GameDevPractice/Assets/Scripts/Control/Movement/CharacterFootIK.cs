@@ -295,7 +295,22 @@ namespace TH.Control.Movement
             float deltaTime)
         {
             Vector3 animIKPosition = animator.GetIKPosition(goal);
-            bool hasGround = TrySampleGround(animIKPosition, out var hit);
+
+            Transform footBoneTransform = null;
+            if (goal == AvatarIKGoal.LeftFoot)
+            {
+                footBoneTransform = animator.GetBoneTransform(HumanBodyBones.LeftFoot);
+            }
+            else if (goal == AvatarIKGoal.RightFoot)
+            {
+                footBoneTransform = animator.GetBoneTransform(HumanBodyBones.RightFoot);
+            }
+
+            Vector3 groundSamplePosition = footBoneTransform != null
+                ? footBoneTransform.position
+                : animIKPosition;
+
+            bool hasGround = TrySampleGround(groundSamplePosition, out var hit);
 
             if (!isPlantedNow)
             {

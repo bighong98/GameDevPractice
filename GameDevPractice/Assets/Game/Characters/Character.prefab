@@ -387,9 +387,9 @@ MonoBehaviour:
   footHeightOffset: 0.02
   positionWeight: 1
   rotationWeight: 1
-  weightBlendSpeed: 12
-  positionLerpSpeed: 18
-  rotationLerpSpeed: 18
+  weightBlendSpeed: 30
+  positionLerpSpeed: 50
+  rotationLerpSpeed: 38
   maxReferenceSpeed: 4
   speedToIkWeight:
     serializedVersion: 2
@@ -438,9 +438,9 @@ MonoBehaviour:
   useAnimationClipCurveWeight: 1
   footIkCurveParameter: FootIKWeight
   missingCurveWeightFallback: 1
-  useFootPlantParameters: 0
+  useFootPlantParameters: 1
   leftFootPlantParameter: LeftFootPlant
   rightFootPlantParameter: RightFootPlant
-  plantEnterThreshold: 0.65
-  plantExitThreshold: 0.45
+  plantEnterThreshold: 0.55
+  plantExitThreshold: 0.35
   lockHorizontalWhenPlanted: 1

@@ -52,7 +52,7 @@ namespace TH.Control.Data
 
             if (initializing)
             {
-                Logg.Log($"[ActionStateSO:{name}] InitializeAsync waiting because another initialization is already in progress", Logg.LoggingMode.Focussed);
+                Logg.Log($"[ActionStateSO:{name}] InitializeAsync waiting because another initialization is already in progress", Logg.LoggingMode.Completed);
 
                 int waitedMs = 0;
                 const int stepMs = 500;
@@ -64,11 +64,11 @@ namespace TH.Control.Data
                     waitedMs += stepMs;
                     if (waitedMs % 5000 == 0)
                     {
-                        Logg.Log($"[ActionStateSO:{name}] still waiting for initialize lock ({waitedMs}ms)", Logg.LoggingMode.Focussed);
+                        Logg.Log($"[ActionStateSO:{name}] still waiting for initialize lock ({waitedMs}ms)", Logg.LoggingMode.Completed);
                     }
                 }
 
-                Logg.Log($"[ActionStateSO:{name}] wait ended. initialized={initialized}, waitedMs={waitedMs}", Logg.LoggingMode.Focussed);
+                Logg.Log($"[ActionStateSO:{name}] wait ended. initialized={initialized}, waitedMs={waitedMs}", Logg.LoggingMode.Completed);
                 if (initialized)
                 {
                     return;
@@ -78,7 +78,7 @@ namespace TH.Control.Data
             initializing = true;
             try
             {
-                Logg.Log($"[ActionStateSO:{name}] InitializeAsync start. enterRefs={onEnterActionReferences?.Count ?? 0}, updateRefs={updateActionReferences?.Count ?? 0}, exitRefs={onExitActionReferences?.Count ?? 0}, transitions={transitions?.Count ?? 0}", Logg.LoggingMode.Focussed);
+                Logg.Log($"[ActionStateSO:{name}] InitializeAsync start. enterRefs={onEnterActionReferences?.Count ?? 0}, updateRefs={updateActionReferences?.Count ?? 0}, exitRefs={onExitActionReferences?.Count ?? 0}, transitions={transitions?.Count ?? 0}", Logg.LoggingMode.Completed);
 
                 await PopulateActionsFromReferences(onEnterActions, onEnterActionReferences, token);
                 await PopulateActionsFromReferences(updateActions, updateActionReferences, token);
@@ -90,11 +90,11 @@ namespace TH.Control.Data
                 }
 
                 initialized = true;
-                Logg.Log($"[ActionStateSO:{name}] InitializeAsync complete", Logg.LoggingMode.Focussed);
+                Logg.Log($"[ActionStateSO:{name}] InitializeAsync complete", Logg.LoggingMode.Completed);
             }
             catch (OperationCanceledException)
             {
-                Logg.Log($"[ActionStateSO:{name}] InitializeAsync canceled", Logg.LoggingMode.Focussed);
+                Logg.Log($"[ActionStateSO:{name}] InitializeAsync canceled", Logg.LoggingMode.Completed);
                 throw;
             }
             catch (Exception e)

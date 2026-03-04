@@ -39,8 +39,9 @@ namespace TH.Control.State
         [NonSerialized] private ActionStateConditionSO condition;
         [NonSerialized] private ActionStateSO destinationState;
         [NonSerialized] private bool initialized;
-        [NonSerialized] private bool initializeAttempted;
         [NonSerialized] private bool initializing;
+        [NonSerialized] private bool loggedConditionCacheMiss;
+        [NonSerialized] private bool loggedDestinationCacheMiss;
 
         public async UniTask InitializeAsync(CancellationToken token = default)
         {
@@ -50,7 +51,6 @@ namespace TH.Control.State
             }
 
             initializing = true;
-            initializeAttempted = true;
             try
             {
                 if (condition == null)
@@ -98,6 +98,11 @@ namespace TH.Control.State
                 {
                     Logg.LogWarning($"[ActionStateTransition] unresolved reference after InitializeAsync. condition={(condition == null ? "null" : condition.name)}, destination={(destinationState == null ? "null" : destinationState.name)}");
                 }
+                else
+                {
+                    loggedConditionCacheMiss = false;
+                    loggedDestinationCacheMiss = false;
+                }
             }
             finally
             {
@@ -112,12 +117,11 @@ namespace TH.Control.State
                 return true;
             }
 
-            if (initializeAttempted || initializing)
+            if (initializing)
             {
                 return false;
             }
 
-            initializeAttempted = true;
             initializing = true;
             try
             {
@@ -125,11 +129,6 @@ namespace TH.Control.State
                 TryResolveDestinationFromCache();
 
                 initialized = condition != null && destinationState != null;
-                if (!initialized)
-                {
-                    Logg.LogWarning($"[ActionStateTransition] unresolved reference in TryInitializeOnce. conditionGuid={conditionReference?.AssetGUID}, destinationGuid={destinationStateReference?.AssetGUID}");
-                }
-
                 return initialized;
             }
             finally
@@ -159,11 +158,17 @@ namespace TH.Control.State
 
             if (!ResourceManager.Instance.TryLoad(conditionReference, out ActionStateConditionSO loadedCondition) || loadedCondition == null)
             {
-                Logg.LogWarning($"[ActionStateTransition] cache miss for condition. guid={conditionReference.AssetGUID}");
+                if (!loggedConditionCacheMiss)
+                {
+                    Logg.Log($"[ActionStateTransition] cache miss for condition. guid={conditionReference.AssetGUID}", Logg.LoggingMode.Completed);
+                    loggedConditionCacheMiss = true;
+                }
+
                 return;
             }
 
             condition = loadedCondition;
+            loggedConditionCacheMiss = false;
         }
 
         private void TryResolveDestinationFromCache()
@@ -187,11 +192,17 @@ namespace TH.Control.State
 
             if (!ResourceManager.Instance.TryLoad(destinationStateReference, out ActionStateSO loadedDestination) || loadedDestination == null)
             {
-                Logg.LogWarning($"[ActionStateTransition] cache miss for destination. guid={destinationStateReference.AssetGUID}");
+                if (!loggedDestinationCacheMiss)
+                {
+                    Logg.Log($"[ActionStateTransition] cache miss for destination. guid={destinationStateReference.AssetGUID}", Logg.LoggingMode.Completed);
+                    loggedDestinationCacheMiss = true;
+                }
+
                 return;
             }
 
             destinationState = loadedDestination;
+            loggedDestinationCacheMiss = false;
         }
     }
 }

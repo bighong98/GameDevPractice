@@ -1,6 +1,7 @@
 {
     "version": "0.2.0",
     "configurations": [
+        
         {
             "name": "Attach to Unity (Editor only; use Attach Unity Debugger for Player)",
             "type": "vstuc",

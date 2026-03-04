@@ -92,6 +92,13 @@ MonoBehaviour:
     - PreLoad_DataSO
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 52fb27d837f4fb0499a958b5a49823a0
+    m_Address: TargetSetConditionSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5d08da84b4f664c4890db4f51a1d5086
     m_Address: MoveConditionSO.asset
     m_ReadOnly: 0
@@ -162,8 +169,22 @@ MonoBehaviour:
     - PreLoad_DataSO
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 973eeca1c59d2d2418433a975d696aa3
+    m_Address: DamagedConditionSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 99915f28cdf03fb44b522e2c3679638e
     m_Address: InvalidCombatTargetConditionSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a33ed81b398c1c64d9270f02ee06d2ef
+    m_Address: InRangeConditionSO.asset
     m_ReadOnly: 0
     m_SerializedLabels:
     - PreLoad_DataSO
@@ -190,6 +211,13 @@ MonoBehaviour:
     - PreLoad_DataSO
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bcd5edd69f5d53e4899203fc69b06a24
+    m_Address: OutOfInRangeConditionSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: c81a42815fff3c9498b7fb7f247e88a5
     m_Address: RunActionSO.asset
     m_ReadOnly: 0
@@ -204,8 +232,29 @@ MonoBehaviour:
     - PreLoad_DataSO
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c9c46fa8cd2a59144a907aaadea4d94b
+    m_Address: InSightConditionSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: cebf38c8f05b4d14288eee55a183ac5b
     m_Address: ReviveConditionSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: cf4af55c012a4f34195b8dffa5954ba7
+    m_Address: InValidPathConditionSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d2f40c91b850d4d4887737469e9c2202
+    m_Address: ArriveConditionSO.asset
     m_ReadOnly: 0
     m_SerializedLabels:
     - PreLoad_DataSO
@@ -262,6 +311,13 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: fa6c49b098404cc449013816ddd04dcf
     m_Address: AnimateMoveVelocitySO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fb8467ea25f0cb44bb79e9fde10c994b
+    m_Address: ActiveSkillReadyConditionSO.asset
     m_ReadOnly: 0
     m_SerializedLabels:
     - PreLoad_DataSO
