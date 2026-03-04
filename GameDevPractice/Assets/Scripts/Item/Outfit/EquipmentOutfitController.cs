@@ -29,9 +29,13 @@ namespace TH.Item
         [Header("Outline Cache")]
         [SerializeField] private bool trackRuntimeOutfitRendererChanges = false;
         [SerializeField] private List<Renderer> alwaysIncludeRenderers = new();
+        
+#if UNITY_EDITOR
+        [Header("Editor Only")]
         [SerializeField] private bool autoCollectActiveAlwaysIncludeRenderersInEditor;
         [SerializeField] private bool autoCollectSkipContainedRenderersInEditor = true;
         [SerializeField, Range(0.01f, 1f)] private float autoCollectContainedVolumeRatioThreshold = 0.9f;
+#endif
 
         private readonly Dictionary<OutfitPartTypeSO, List<OutfitPartKeyTag>> partsByPartType = new();
         private readonly Dictionary<OutfitPartTypeSO, OutfitKeySO> defaultKeyByPartType = new();

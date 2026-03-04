@@ -88,13 +88,22 @@ namespace TH.Resource
         // 개별 리소스 로드마다 콜백 실행 (로딩 프로그레스 바 등에 사용)
         public async UniTask PreLoadAsync()
         {
+            float totalStartedAt = Time.realtimeSinceStartup;
             foreach (var label in Enum.GetNames(typeof(PreLoadLabels)))
             {
-                // 프리로드 라벨 순차 처리 정책
-                Logg.Log($"[ResourceLoader] start to load label '{label}' assets", Logg.LoggingMode.Completed);
+                float labelStartedAt = Time.realtimeSinceStartup;
+                Logg.Log($"[ResourceLoader][PreLoad] label start: {label}", Logg.LoggingMode.Focussed);
+
                 await LoadAllAsync<UnityEngine.Object>(label);
+
+                float labelElapsed = Time.realtimeSinceStartup - labelStartedAt;
+                Logg.Log($"[ResourceLoader][PreLoad] label end: {label} ({labelElapsed:F2}s)", Logg.LoggingMode.Focussed);
             }
+
+            float totalElapsed = Time.realtimeSinceStartup - totalStartedAt;
+            Logg.Log($"[ResourceLoader][PreLoad] all labels completed ({totalElapsed:F2}s)", Logg.LoggingMode.Focussed);
         }
+
 
         // 특정 어드레서블 라벨 로드까지 대기 콜백 등록
         // 이미 완료된 리소스 라벨인 경우 즉시 콜백 실행
@@ -144,63 +153,157 @@ namespace TH.Resource
         private async UniTask LoadAllAsync<T>(string label, Action<string, int, int> callback = null, CancellationToken token = default)
             where T : UnityEngine.Object
         {
-            // 라벨에 연결된 로케이션 메타 데이터 조회
+            float labelStartedAt = Time.realtimeSinceStartup;
+
             var locationHandles = Addressables.LoadResourceLocationsAsync(label, typeof(T));
             var locations = await locationHandles.ToUniTask(cancellationToken: token);
 
             int totalCount = locations.Count;
             int loadCount = 0;
 
-            try {
-                // 내부 리소스가 없는 라벨은 즉시 100% 완료 처리
-                if (totalCount <= 0) return;
-                
+            var pendingStartedAt = new Dictionary<string, float>(totalCount > 0 ? totalCount : 4);
+            object pendingLock = new object();
+
+            string BuildPendingPreview()
+            {
+                const int maxPreviewCount = 4;
+                float now = Time.realtimeSinceStartup;
+                int appended = 0;
+
+                lock (pendingLock)
+                {
+                    if (pendingStartedAt.Count == 0)
+                    {
+                        return "none";
+                    }
+
+                    System.Text.StringBuilder sb = new System.Text.StringBuilder(128);
+                    foreach (var kvp in pendingStartedAt)
+                    {
+                        if (appended > 0)
+                        {
+                            sb.Append(", ");
+                        }
+
+                        float elapsed = Mathf.Max(0f, now - kvp.Value);
+                        sb.Append(kvp.Key);
+                        sb.Append(" (");
+                        sb.Append(elapsed.ToString("F1"));
+                        sb.Append("s)");
+
+                        appended++;
+                        if (appended >= maxPreviewCount)
+                        {
+                            break;
+                        }
+                    }
+
+                    if (pendingStartedAt.Count > maxPreviewCount)
+                    {
+                        sb.Append(", ...");
+                    }
+
+                    return sb.ToString();
+                }
+            }
+
+            async UniTask WatchPendingAsync(CancellationToken watchToken)
+            {
+                const int intervalMs = 5000;
+                while (!watchToken.IsCancellationRequested)
+                {
+                    await UniTask.Delay(intervalMs, cancellationToken: watchToken);
+                    if (Volatile.Read(ref loadCount) >= totalCount)
+                    {
+                        break;
+                    }
+
+                    string pendingPreview = BuildPendingPreview();
+                    Logg.Log($"[ResourceLoader][{label}] waiting... {loadCount}/{totalCount}, pending: {pendingPreview}", Logg.LoggingMode.Focussed);
+                }
+            }
+
+            try
+            {
+                Logg.Log($"[ResourceLoader][{label}] discovered assets: {totalCount}", Logg.LoggingMode.Focussed);
+
+                if (totalCount <= 0)
+                {
+                    Logg.Log($"[ResourceLoader][{label}] no assets matched. skipping", Logg.LoggingMode.Focussed);
+                    return;
+                }
+
                 var tasks = new List<UniTask>(totalCount);
                 foreach (var loc in locations)
                 {
                     string key = loc.PrimaryKey;
-                    // 동일 키 중복 로드 방지
                     if (resourceKeys.ContainsKey(key))
                     {
                         Interlocked.Increment(ref loadCount);
+                        Logg.Log($"[ResourceLoader][{label}] skip cached: {key} ({loadCount}/{totalCount})", Logg.LoggingMode.Focussed);
                         continue;
                     }
 
-                    // 키 기반 핸들 캐시 선등록
+                    lock (pendingLock)
+                    {
+                        pendingStartedAt[key] = Time.realtimeSinceStartup;
+                    }
+
+                    Logg.Log($"[ResourceLoader][{label}] begin: {key}", Logg.LoggingMode.Focussed);
+
                     var handle = Addressables.LoadAssetAsync<T>(loc);
                     resourceKeys[key] = handle;
-                    
-                    tasks.Add(LoadAndInitAsync(handle, 
-                        // 필요한 경우 IAsyncInitializer 기반 추가 비동기 초기화 실행
-                        onSucceedAsync: async (asset) => await DoAsyncInitialize(asset, token),
+
+                    tasks.Add(LoadAndInitAsync(handle,
+                        onSucceedAsync: async asset => await DoAsyncInitialize(asset, token),
                         onComplete: () =>
                         {
-                            // 완료 카운트 + 외부 진행도 콜백 보고
+                            float elapsed = -1f;
+                            lock (pendingLock)
+                            {
+                                if (pendingStartedAt.TryGetValue(key, out var startedAt))
+                                {
+                                    elapsed = Mathf.Max(0f, Time.realtimeSinceStartup - startedAt);
+                                    pendingStartedAt.Remove(key);
+                                }
+                            }
+
                             Interlocked.Increment(ref loadCount);
                             callback?.Invoke(key, loadCount, totalCount);
-                            Logg.Log($"[ResourceLoader] finished loading: ({label} - {key}:{handle.Result})" +
-                                $"({loadCount}/{totalCount}, {loadCount / (float)totalCount})", Logg.LoggingMode.Completed);
-                            // 라벨 단위 진행도 캐시/브로드캐스트 반영
-                            ReportPreLoadProgress(label, (totalCount <= 0) ? 1f : (loadCount / (float)totalCount));
+
+                            float normalized = totalCount <= 0 ? 1f : (loadCount / (float)totalCount);
+                            Logg.Log($"[ResourceLoader][{label}] done: {key} ({loadCount}/{totalCount}, {normalized:P2}, elapsed: {(elapsed < 0f ? "n/a" : elapsed.ToString("F2"))}s)", Logg.LoggingMode.Focussed);
+
+                            ReportPreLoadProgress(label, normalized);
                         },
                         token: token));
                 }
+
+                using var watchCts = CancellationTokenSource.CreateLinkedTokenSource(token);
+                var watchTask = WatchPendingAsync(watchCts.Token);
+
                 await UniTask.WhenAll(tasks);
+
+                watchCts.Cancel();
+                await watchTask.SuppressCancellationThrow();
             }
-            catch (Exception e) { Logg.LogError($"Exception occured while loading assets in label: {label} - {e}"); }
+            catch (Exception e)
+            {
+                Logg.LogError($"Exception occured while loading assets in label: {label} - {e}");
+            }
             finally
             {
-                Logg.Log($"[ResourceLoader] finished loading label '{label}' assets", 
-                Logg.LoggingMode.Completed);
+                float labelElapsed = Time.realtimeSinceStartup - labelStartedAt;
+                Logg.Log($"[ResourceLoader] finished loading label '{label}' assets ({labelElapsed:F2}s)", Logg.LoggingMode.Focussed);
 
-                // finally 경로에서 라벨 완료 상태로 강제 반영
                 ReportPreLoadProgress(label, 1f);
-                loadStatus[label] = LoadStatus.Done; //todo: 예외 발생 시 LoadStatus 다르게 설정할지 고려
-                NotifyPreLoadDone(label);// 리소스 로딩 대기중인 클래스들에게 로딩 완료 이벤트 전달
-                
+                loadStatus[label] = LoadStatus.Done;
+                NotifyPreLoadDone(label);
+
                 Addressables.Release(locationHandles);
             }
         }
+
 
         // 단일 핸들 로드 + 성공 시 초기화 훅 + 완료 콜백 통합
         private static async UniTask LoadAndInitAsync<T>(
@@ -230,12 +333,20 @@ namespace TH.Resource
         // IAsyncInitializer 구현 객체에 대한 비동기 초기화 진입점
         private async UniTask DoAsyncInitialize(object obj, CancellationToken token)
         {
-            // 초기화 인터페이스 미구현 객체 조기 반환
             if (obj is not IAsyncInitializer asyncInitializer) return;
 
+            string objectName = (obj as UnityEngine.Object)?.name ?? "no-unity-name";
+            string objectType = obj.GetType().Name;
+            float startedAt = Time.realtimeSinceStartup;
+
+            Logg.Log($"[ResourceLoader] init start: {objectType} ({objectName})", Logg.LoggingMode.Focussed);
+
             await asyncInitializer.InitializeAsync(token);
-            Logg.Log($"[{GetType().Name}.DoAsyncInitialize] {obj.GetType().Name}", Logg.LoggingMode.Completed);
+
+            float elapsed = Mathf.Max(0f, Time.realtimeSinceStartup - startedAt);
+            Logg.Log($"[ResourceLoader] init end: {objectType} ({objectName}) ({elapsed:F2}s)", Logg.LoggingMode.Focussed);
         }
+
 
         // key 기반 단일 리소스 비동기 로드 API
         // -> 캐시 우선 반환, 미존재 시 주소기반 로드 수행

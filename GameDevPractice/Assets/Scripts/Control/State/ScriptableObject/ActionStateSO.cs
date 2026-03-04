@@ -52,7 +52,7 @@ namespace TH.Control.Data
 
             if (initializing)
             {
-                Logg.Log($"[ActionStateSO:{name}] InitializeAsync waiting because another initialization is already in progress", Logg.LoggingMode.Completed);
+                Logg.Log($"[ActionStateSO:{name}] InitializeAsync waiting because another initialization is already in progress", Logg.LoggingMode.Focussed);
 
                 int waitedMs = 0;
                 const int stepMs = 500;
@@ -64,11 +64,11 @@ namespace TH.Control.Data
                     waitedMs += stepMs;
                     if (waitedMs % 5000 == 0)
                     {
-                        Logg.Log($"[ActionStateSO:{name}] still waiting for initialize lock ({waitedMs}ms)", Logg.LoggingMode.Completed);
+                        Logg.Log($"[ActionStateSO:{name}] still waiting for initialize lock ({waitedMs}ms)", Logg.LoggingMode.Focussed);
                     }
                 }
 
-                Logg.Log($"[ActionStateSO:{name}] wait ended. initialized={initialized}, waitedMs={waitedMs}", Logg.LoggingMode.Completed);
+                Logg.Log($"[ActionStateSO:{name}] wait ended. initialized={initialized}, waitedMs={waitedMs}", Logg.LoggingMode.Focussed);
                 if (initialized)
                 {
                     return;
@@ -78,7 +78,7 @@ namespace TH.Control.Data
             initializing = true;
             try
             {
-                Logg.Log($"[ActionStateSO:{name}] InitializeAsync start. enterRefs={onEnterActionReferences?.Count ?? 0}, updateRefs={updateActionReferences?.Count ?? 0}, exitRefs={onExitActionReferences?.Count ?? 0}, transitions={transitions?.Count ?? 0}", Logg.LoggingMode.Completed);
+                Logg.Log($"[ActionStateSO:{name}] InitializeAsync start. enterRefs={onEnterActionReferences?.Count ?? 0}, updateRefs={updateActionReferences?.Count ?? 0}, exitRefs={onExitActionReferences?.Count ?? 0}, transitions={transitions?.Count ?? 0}", Logg.LoggingMode.Focussed);
 
                 await PopulateActionsFromReferences(onEnterActions, onEnterActionReferences, token);
                 await PopulateActionsFromReferences(updateActions, updateActionReferences, token);
@@ -88,27 +88,13 @@ namespace TH.Control.Data
                 {
                     Logg.LogWarning($"[ActionStateSO:{name}] transitions list is null");
                 }
-                else
-                {
-                    for (int i = 0; i < transitions.Count; i++)
-                    {
-                        var transition = transitions[i];
-                        await transition.InitializeAsync(token);
-                        transitions[i] = transition;
-
-                        if (transition.Condition == null || transition.DestinationState == null)
-                        {
-                            Logg.LogWarning($"[ActionStateSO:{name}] transition[{i}] unresolved after initialize. condition={(transition.Condition == null ? "null" : transition.Condition.GetType().Name)}, destination={(transition.DestinationState == null ? "null" : transition.DestinationState.GetType().Name)}");
-                        }
-                    }
-                }
 
                 initialized = true;
-                Logg.Log($"[ActionStateSO:{name}] InitializeAsync complete", Logg.LoggingMode.Completed);
+                Logg.Log($"[ActionStateSO:{name}] InitializeAsync complete", Logg.LoggingMode.Focussed);
             }
             catch (OperationCanceledException)
             {
-                Logg.Log($"[ActionStateSO:{name}] InitializeAsync canceled", Logg.LoggingMode.Completed);
+                Logg.Log($"[ActionStateSO:{name}] InitializeAsync canceled", Logg.LoggingMode.Focussed);
                 throw;
             }
             catch (Exception e)
@@ -157,6 +143,8 @@ namespace TH.Control.Data
             for (int i = 0; i < transitions.Count; i++)
             {
                 var transition = transitions[i];
+                transition.TryInitializeOnce();
+
                 var destination = transition.DestinationState;
                 if (destination == null)
                 {
@@ -341,17 +329,19 @@ namespace TH.Control.Data
             if (transitions == null || transitions.Count == 0) return;
             foreach (var transition in transitions)
             {
-                // condition null 체크 (UnityEngine.Object 타입 널 체크 포함)
+                transition.TryInitializeOnce();
+
+                var destination = transition.DestinationState;
+                if (destination == null) continue;
+
                 if (transition.Condition is not { } condition) continue;
                 if (!condition.IsNotNull()) continue;
-                // Polling이 아니면 매 프레임 체크x
                 if (condition.Measure != StateConditionMeasures.Polling) continue;
                 if (!condition.Decide(controller)) continue;
-                
-                // 조건 충족 시 상태 전이 및 루프 종료
+
                 this.Log($"CheckTransitions - Trying to TransitionToState from" +
-                         $" condition: ({condition.GetType()}), state: {transition.DestinationState}", Logg.LoggingMode.Completed);
-                controller.TransitionToState(transition.DestinationState);
+                         $" condition: ({condition.GetType()}), state: {destination}", Logg.LoggingMode.Completed);
+                controller.TransitionToState(destination);
                 return; 
             }
         }

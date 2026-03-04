@@ -32,7 +32,7 @@ namespace TH.SaveLoad
         // 현재 오브젝트에 부착된 ISavable 컴포넌트 캐시 목록
         private readonly List<ISavable> savables = new();
         // 에디터 직렬화 프로퍼티 접근용 필드명 상수
-        private static readonly string UniqueIdentifierPropertyName = "uniqueIdentifier";
+
 
         // 외부 조회용 엔티티 식별자 프로퍼티
         public string UniqueIdentifier => uniqueIdentifier;
@@ -241,6 +241,8 @@ namespace TH.SaveLoad
         #region Unique Identifier
         
 #if UNITY_EDITOR
+        private static readonly string UniqueIdentifierPropertyName = "uniqueIdentifier";
+
         // 에디터 값 변경 시점 식별자 유효성 보정 진입점
         private void OnValidate()
         {

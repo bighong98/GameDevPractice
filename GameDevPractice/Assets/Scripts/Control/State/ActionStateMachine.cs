@@ -459,6 +459,8 @@ namespace TH.Control.State
             for (int i = 0; i < list.Count; i++)
             {
                 var transition = list[i];
+                transition.TryInitializeOnce();
+
                 var destination = transition.DestinationState;
                 if (destination == null)
                 {
@@ -507,21 +509,19 @@ namespace TH.Control.State
             if (globalTransitions == null || globalTransitions.Count == 0)
                 return false;
 
-            foreach (var t in globalTransitions)
+            foreach (var transition in globalTransitions)
             {
-                // ActionStateTransition 구조체 내부 참조 유효성 검사
-                if (t is not { DestinationState: { } dest,
-                                Condition: { } cond } ) continue;
+                transition.TryInitializeOnce();
+
+                var dest = transition.DestinationState;
+                var cond = transition.Condition;
+
+                if (dest == null || cond == null) continue;
                 if (!dest.IsNotNull() || !cond.IsNotNull()) continue;
-                // Polling 타입 외에는 프레임 단위 검사x
                 if (cond.Measure != StateConditionMeasures.Polling) continue;
-                // 조건 평가
                 if (!cond.Decide(this)) continue;
-                // 동일한 상태로의 전환인지 확인 + 동일 상태로의 전환 허락 여부 확인
                 if (currentState == dest && !dest.AllowSelfTransition) continue;
 
-                // 상태 전환 및 루프 종료
-                // force: true -> 글로벌 상태 전환 조건은 lock 무시
                 TransitionToState(dest, ignoreLock: true);
                 return true;
             }

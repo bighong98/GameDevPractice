@@ -41,6 +41,7 @@ namespace TH.Utils
         }
 
         [System.Diagnostics.Conditional("DEBUG_MODE")]        
+        [System.Diagnostics.Conditional("DEVELOPMENT_BUILD")]
         [System.Diagnostics.Conditional("UNITY_EDITOR")]
         public static void Log(object msg, LoggingMode mode = LoggingMode.Default, UnityEngine.Object context = null)
         {
@@ -48,6 +49,7 @@ namespace TH.Utils
         }
 
         [System.Diagnostics.Conditional("DEBUG_MODE")]        
+        [System.Diagnostics.Conditional("DEVELOPMENT_BUILD")]
         [System.Diagnostics.Conditional("UNITY_EDITOR")]
         public static void LogWarning(object msg, UnityEngine.Object context = null)
         {
@@ -55,11 +57,13 @@ namespace TH.Utils
         }
 
         [System.Diagnostics.Conditional("DEBUG_MODE")]
+        [System.Diagnostics.Conditional("DEVELOPMENT_BUILD")]
         [System.Diagnostics.Conditional("UNITY_EDITOR")]
         public static void LogError(object msg, UnityEngine.Object context = null) => Debug.LogError(msg, context);
         
         // Extension Version
         [System.Diagnostics.Conditional("DEBUG_MODE")]
+        [System.Diagnostics.Conditional("DEVELOPMENT_BUILD")]
         [System.Diagnostics.Conditional("UNITY_EDITOR")]
         public static void Log(this object sender, object msg, LoggingMode mode = LoggingMode.Default)
         {
@@ -69,6 +73,7 @@ namespace TH.Utils
         }
 
         [System.Diagnostics.Conditional("DEBUG_MODE")]
+        [System.Diagnostics.Conditional("DEVELOPMENT_BUILD")]
         [System.Diagnostics.Conditional("UNITY_EDITOR")]
         public static void LogWarning(this object sender, object msg, UnityEngine.Object context = null)
         {
@@ -78,6 +83,7 @@ namespace TH.Utils
         }
 
         [System.Diagnostics.Conditional("DEBUG_MODE")]
+        [System.Diagnostics.Conditional("DEVELOPMENT_BUILD")]
         [System.Diagnostics.Conditional("UNITY_EDITOR")]
         public static void LogError(this object sender, object msg, UnityEngine.Object context = null)
         {

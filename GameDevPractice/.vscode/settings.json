@@ -67,6 +67,7 @@
         "*.sln": "*.csproj",
         "*.slnx": "*.csproj"
     },
+    "vstuc.displayBackgroundProcesses": false,
     "dotnet.defaultSolution": "GameDevPractice.slnx",
     "dotnet.preferCSharpExtension": true
 }
