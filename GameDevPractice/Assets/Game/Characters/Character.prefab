@@ -65,7 +65,7 @@ NavMeshAgent:
   m_AutoBraking: 1
   m_AutoRepath: 1
   m_Height: 2
-  m_BaseOffset: -0.08
+  m_BaseOffset: -0.2
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
 --- !u!95 &216005970898446488
@@ -242,7 +242,6 @@ MonoBehaviour:
     m_SubObjectType: 
     m_SubObjectGUID: 
     m_EditorAssetChanged: 0
-  moveSpeedStatSO: {fileID: 0}
   walkSpeed: 2
   runSpeed: 6
   speedFraction: 1
@@ -258,7 +257,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0c38ccd8ebc91c547969be971fe77214, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TH.Control.State.ActionStateMachine
-  initialState: {fileID: 0}
   initialStateReference:
     m_AssetGUID: 
     m_SubObjectName: 

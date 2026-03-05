@@ -171,6 +171,10 @@ PrefabInstance:
       propertyPath: weapon
       value: 
       objectReference: {fileID: 11400000, guid: 0a600904131b2d64994bee447b8efe39, type: 2}
+    - target: {fileID: 6568686253797109238, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
+      propertyPath: lockHorizontalWhenPlanted
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7177356247128519180, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
       propertyPath: runSpeed
       value: 4

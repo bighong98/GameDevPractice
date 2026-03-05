@@ -7788,6 +7788,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Enemy (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 873599889185342099, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}
+      propertyPath: addToPool
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2395544938457194976, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}
       propertyPath: m_LocalPosition.x
       value: 86.41
@@ -7828,6 +7832,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3112644228347243440, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}
+      propertyPath: m_BaseOffset
+      value: -0.08
+      objectReference: {fileID: 0}
     - target: {fileID: 3219316665117288072, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}
       propertyPath: ignoreLocalPosition
       value: 1
@@ -7836,6 +7844,10 @@ PrefabInstance:
       propertyPath: avatarAnchorProvider
       value: 
       objectReference: {fileID: 494677534}
+    - target: {fileID: 4081182245730968892, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}
+      propertyPath: returnToPoolOnDeath
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5174886537910745246, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}
       propertyPath: uniqueIdentifier
       value: 041f8673-94fa-4c27-9942-78689dca683d
@@ -8141,6 +8153,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Enemy (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 873599889185342099, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}
+      propertyPath: addToPool
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2395544938457194976, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}
       propertyPath: m_LocalPosition.x
       value: 86.18
@@ -8181,6 +8197,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3112644228347243440, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}
+      propertyPath: m_BaseOffset
+      value: -0.08
+      objectReference: {fileID: 0}
     - target: {fileID: 3219316665117288072, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}
       propertyPath: ignoreLocalPosition
       value: 1
@@ -8189,6 +8209,10 @@ PrefabInstance:
       propertyPath: avatarAnchorProvider
       value: 
       objectReference: {fileID: 511354838}
+    - target: {fileID: 4081182245730968892, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}
+      propertyPath: returnToPoolOnDeath
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5174886537910745246, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}
       propertyPath: uniqueIdentifier
       value: a67e806c-416f-4085-942a-5abcdf7a0ae3
@@ -24331,6 +24355,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Enemy
       objectReference: {fileID: 0}
+    - target: {fileID: 873599889185342099, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}
+      propertyPath: addToPool
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1579078139897928796, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}
       propertyPath: m_Material
       value: 
@@ -24375,6 +24403,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3112644228347243440, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}
+      propertyPath: m_BaseOffset
+      value: -0.08
+      objectReference: {fileID: 0}
     - target: {fileID: 3219316665117288072, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}
       propertyPath: ignoreLocalPosition
       value: 1
@@ -24383,6 +24415,10 @@ PrefabInstance:
       propertyPath: avatarAnchorProvider
       value: 
       objectReference: {fileID: 1551059880}
+    - target: {fileID: 4081182245730968892, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}
+      propertyPath: returnToPoolOnDeath
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5174886537910745246, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}
       propertyPath: uniqueIdentifier
       value: 0ee0b1c5-d33c-4822-a772-39c0a20470cb
@@ -29579,9 +29615,13 @@ PrefabInstance:
       propertyPath: useFootPlantParameters
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 5946639740423445366, guid: 4f9ef5c6d5e2fef4180a42a9095f1ff2, type: 3}
+      propertyPath: lockHorizontalWhenPlanted
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8322183788134538792, guid: 4f9ef5c6d5e2fef4180a42a9095f1ff2, type: 3}
       propertyPath: m_BaseOffset
-      value: -0.12
+      value: -0.2
       objectReference: {fileID: 0}
     - target: {fileID: 3724518008175084204, guid: 0a65f6dae1a8e6c47ba14e8a68c8b829, type: 3}
       propertyPath: uniqueIdentifier
