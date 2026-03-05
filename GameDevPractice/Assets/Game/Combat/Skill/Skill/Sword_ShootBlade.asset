@@ -63,7 +63,7 @@ MonoBehaviour:
       m_SubObjectGUID: 
       m_EditorAssetChanged: 1
     sfxClipReference:
-      m_AssetGUID: 
+      m_AssetGUID: 80dbcb231e1605542bba4f6ba7269548
       m_SubObjectName: 
       m_SubObjectType: 
       m_SubObjectGUID: 
@@ -106,7 +106,6 @@ MonoBehaviour:
   skillEffectProfile: {fileID: 0}
   lastImportedSkillVfxProfileSignature: 0
   skillCategory: 1
-  skillSlotImage: {fileID: 0}
   skillSlotImageReference:
     m_AssetGUID: 90e99a7fde056a4418b9fe16084adb5c
     m_SubObjectName: Golden Sword

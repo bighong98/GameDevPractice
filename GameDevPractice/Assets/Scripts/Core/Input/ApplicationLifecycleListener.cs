@@ -45,7 +45,6 @@ namespace TH.Core.Input
             if (pause)
                 NotifyPointerState(false);
         }
-
         private void Update()
         {
             if (!Application.isFocused)
@@ -53,21 +52,29 @@ namespace TH.Core.Input
 
             if (Cursor.lockState == CursorLockMode.Locked)
             {
-                if (!_lastPointerInView) NotifyPointerState(true);
+                if (!_lastPointerInView)
+                    NotifyPointerState(true);
                 return;
             }
 
-            var mouse = Mouse.current;
-            if (mouse == null)
+            // Standalone 빌드 환경에서는 포인터 좌표계가 모니터/해상도 설정에 따라
+            // 게임 뷰 기준과 다를 수 있어 false 판정이 발생할 수 있다.
+            // 좌표 기반으로 false 전환하지 않고, true 복구만 수행한다.
+            var pointer = Pointer.current;
+            if (pointer == null)
+            {
+                if (!_lastPointerInView)
+                    NotifyPointerState(true);
                 return;
+            }
 
-            Vector2 pos = mouse.position.ReadValue();
+            Vector2 pos = pointer.position.ReadValue();
             bool inView =
                 pos.x >= 0 && pos.x <= Screen.width &&
                 pos.y >= 0 && pos.y <= Screen.height;
 
-            if (inView != _lastPointerInView)
-                NotifyPointerState(inView);
+            if (inView && !_lastPointerInView)
+                NotifyPointerState(true);
         }
 
 

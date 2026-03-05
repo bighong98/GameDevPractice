@@ -22,6 +22,10 @@ namespace TH.Rendering.Dissolve
             Dissolve = 2
         }
 
+        [Header("Effect Toggle")]
+        [SerializeField] private bool enableOutlineEffect = true;
+        [SerializeField] private bool enableDissolveEffect = true;
+
         [Header("Binding")]
         [SerializeField] private Health health;
         [SerializeField] private bool autoBindHealthOnAwake = true;
@@ -194,6 +198,13 @@ namespace TH.Rendering.Dissolve
 
         public bool TryApplyOutline(uint outlineRenderingLayerMask)
         {
+            // 아웃라인 기능 비활성 상태 가드
+            if (!enableOutlineEffect)
+            {
+                ClearOutline();
+                return false;
+            }
+
             // 무효 마스크 입력 시 기존 아웃라인 해제 경로
             if (outlineRenderingLayerMask == 0)
             {
@@ -253,6 +264,12 @@ namespace TH.Rendering.Dissolve
         [ContextMenu("Trigger Dissolve")]
         public void StartDeathDissolve()
         {
+            // 디졸브 기능 비활성 상태 가드
+            if (!enableDissolveEffect)
+            {
+                return;
+            }
+
             // 중복 코루틴 기동 차단 가드
             if (dissolveRoutine != null)
             {

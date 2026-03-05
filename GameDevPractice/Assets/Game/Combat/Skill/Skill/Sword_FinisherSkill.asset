@@ -53,17 +53,17 @@ MonoBehaviour:
   projectileMaxPierceTargets: 0
   projectileMaxTravelDistance: 0
   skillVfxCues:
-  - cueId: OnConsume_Grund_LongSword
+  - cueId: OnConsume_Ground_LongSword
     trigger: 0
     markerName: 
     effectPrefabReference:
-      m_AssetGUID: 
+      m_AssetGUID: b81f27256b9d6904b864940a7e0e222e
       m_SubObjectName: 
       m_SubObjectType: 
       m_SubObjectGUID: 
       m_EditorAssetChanged: 0
     sfxClipReference:
-      m_AssetGUID: 
+      m_AssetGUID: c01bbab8442e45146be860df82582360
       m_SubObjectName: 
       m_SubObjectType: 
       m_SubObjectGUID: 
@@ -78,11 +78,11 @@ MonoBehaviour:
       m_Bits: 128
     groundRayStartHeight: 1.5
     groundRayDistance: 6
-  - cueId: OnConsume_Grund_LongSword
+  - cueId: OnHit_Ground_LongSword
     trigger: 1
     markerName: 
     effectPrefabReference:
-      m_AssetGUID: 
+      m_AssetGUID: 20b27818abf007b4c91e694a1931a851
       m_SubObjectName: 
       m_SubObjectType: 
       m_SubObjectGUID: 
@@ -106,7 +106,6 @@ MonoBehaviour:
   skillEffectProfile: {fileID: 11400000, guid: 3d7ede2244ae16c44842918749054689, type: 2}
   lastImportedSkillVfxProfileSignature: 0
   skillCategory: 0
-  skillSlotImage: {fileID: 0}
   skillSlotImageReference:
     m_AssetGUID: 95052c6b62fb3de4695beaa99f842ac2
     m_SubObjectName: Silver Sword

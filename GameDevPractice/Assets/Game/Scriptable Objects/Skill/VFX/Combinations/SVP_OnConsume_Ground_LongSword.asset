@@ -13,10 +13,21 @@ MonoBehaviour:
   m_Name: SVP_OnConsume_Ground_LongSword
   m_EditorClassIdentifier: Assembly-CSharp::TH.Combat.SkillVfxProfileSO
   cues:
-  - cueId: OnConsume_Grund_LongSword
+  - cueId: OnConsume_Ground_LongSword
     trigger: 0
     markerName: 
-    effectPrefab: {fileID: 4204685358974784452, guid: b81f27256b9d6904b864940a7e0e222e, type: 3}
+    effectPrefabReference:
+      m_AssetGUID: b81f27256b9d6904b864940a7e0e222e
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    sfxClipReference:
+      m_AssetGUID: c01bbab8442e45146be860df82582360
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
     anchorType: 2
     anchorName: 
     follow: 0
@@ -27,10 +38,21 @@ MonoBehaviour:
       m_Bits: 128
     groundRayStartHeight: 1.5
     groundRayDistance: 6
-  - cueId: OnConsume_Grund_LongSword
+  - cueId: OnHit_Ground_LongSword
     trigger: 1
     markerName: 
-    effectPrefab: {fileID: 516796640606800711, guid: 3af87cf3870b72f408b6ee4c689bbc02, type: 3}
+    effectPrefabReference:
+      m_AssetGUID: 20b27818abf007b4c91e694a1931a851
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    sfxClipReference:
+      m_AssetGUID: 
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
     anchorType: 3
     anchorName: 
     follow: 0

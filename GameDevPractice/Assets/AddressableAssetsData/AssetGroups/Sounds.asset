@@ -44,6 +44,11 @@ MonoBehaviour:
     - SFX
     - Sound
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 80dbcb231e1605542bba4f6ba7269548
+    m_Address: SWORD_13.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: af2c78ece9c3f6a4b83fc3562a867d9c
     m_Address: fire_punch_finisher_06.wav
     m_ReadOnly: 0

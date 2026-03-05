@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TH.Attribute.Stat.BaseStatSO
   list:
   - key: {fileID: 11400000, guid: 9e86dca11c02ff94396bdadebb64b5cb, type: 2}
-    value: 50
+    value: 100
   - key: {fileID: 11400000, guid: 084013cbdb346d4428cb29a47d22b70e, type: 2}
     value: 50
   - key: {fileID: 11400000, guid: cf7022ca8cb84ae4395e9b8e2edbcdf2, type: 2}

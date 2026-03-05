@@ -108,7 +108,6 @@ MonoBehaviour:
   skillEffectProfile: {fileID: 0}
   lastImportedSkillVfxProfileSignature: 0
   skillCategory: 0
-  skillSlotImage: {fileID: 0}
   skillSlotImageReference:
     m_AssetGUID: 2ddf0348701148a4d8a7c6a0f7f146b3
     m_SubObjectName: Wooden Sword
