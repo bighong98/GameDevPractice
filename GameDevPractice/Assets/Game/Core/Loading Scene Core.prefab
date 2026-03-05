@@ -1,5 +1,89 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &93437224440619605
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2819402387442882789}
+  - component: {fileID: 5249957180351794489}
+  - component: {fileID: 6295637460424252948}
+  - component: {fileID: 807472261853526884}
+  m_Layer: 0
+  m_Name: FeedbackUISpawner
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2819402387442882789
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 93437224440619605}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 785334137700611097}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5249957180351794489
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 93437224440619605}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bfa7c21ba6ec70d45a424edcc8792120, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TH.UI.TouchGlowUISpawner
+  pointPrefab: {fileID: 9161163329881022701, guid: f27b7b0157dd76246a7e53574c1e3532, type: 3}
+  targetRect: {fileID: 0}
+  canvasType: 3
+  glowLifetime: 0.5
+  pointSize: 40
+--- !u!114 &6295637460424252948
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 93437224440619605}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59d359cf2a6afc94789347c80c72b71c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TH.UI.UIDragGlowSpawner
+  pointPrefab: {fileID: 9161163329881022701, guid: 8f095eb7243a6884094f29f3d0f8f5cc, type: 3}
+  targetRect: {fileID: 0}
+  canvasType: 3
+  pointSize: 60
+  blinkInterval: 0.5
+  pulseSizeScale: 0.1
+  pulseMinIntensity: 0.4
+--- !u!114 &807472261853526884
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 93437224440619605}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8005ba14d627f4348829d66b3dfab985, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TH.UI.UIDragTrailSpawner
+  trailPrefab: {fileID: 9180660716138415764, guid: 754827a05cbff294383eabfac76e23fc, type: 3}
+  canvasType: 3
 --- !u!1 &2466537272173059495
 GameObject:
   m_ObjectHideFlags: 0
@@ -33,8 +117,54 @@ Transform:
   - {fileID: 7995849314151743506}
   - {fileID: 6233026985827729621}
   - {fileID: 4336707119844515518}
+  - {fileID: 7785712106071778054}
+  - {fileID: 2819402387442882789}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &6614717744455144968
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7785712106071778054}
+  - component: {fileID: 5710114359065702840}
+  m_Layer: 0
+  m_Name: ApplicationLifecycleListener
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7785712106071778054
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6614717744455144968}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 785334137700611097}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5710114359065702840
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6614717744455144968}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8952bd4317e3442438d1781ad41593e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TH.Core.Input.ApplicationLifecycleListener
 --- !u!1 &8164728775457490156
 GameObject:
   m_ObjectHideFlags: 0

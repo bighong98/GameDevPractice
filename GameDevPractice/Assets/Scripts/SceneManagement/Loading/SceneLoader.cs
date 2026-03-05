@@ -209,10 +209,7 @@ namespace TH.SceneManagement
                 
                 // 씬 전환 후 최종 예약 작업 실행 (씬 전환 연출 포함)
                 LoadingState = SceneLoadingState.OnLastSceneChanged;                
-                await UniTask.WhenAll(
-                    OnLastSceneChanged.InvokeAllThrottledAsync(token),
-                    UniTask.DelayFrame(60, cancellationToken: token)
-                );
+                await OnLastSceneChanged.InvokeAllThrottledAsync(token);
             }
             catch (Exception e)
             {

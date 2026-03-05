@@ -45,7 +45,10 @@ namespace TH.UI
         
         [SerializeField] private float fadeInDuration = 0.5f;
         [SerializeField] private float fadeOutDuration = 0.5f;
-        
+        [SerializeField] private float maxUnscaledStep = 1f / 30f;
+        [SerializeField] private int minFadeFrames = 10;
+        [SerializeField] private float fadeInEndHoldDuration = 0.08f;
+
         public UniTask FadeIn(CancellationToken externalToken)
         {
             Logg.Log($"[{GetType().Name}] FadeIn()", Logg.LoggingMode.Completed);
@@ -58,13 +61,24 @@ namespace TH.UI
             return FadeOut(fadeOutDuration, externalToken);
         }
 
-        public UniTask FadeIn(float duration, CancellationToken externalToken) 
-            => FadeAsync(1f, 0f, duration)
-                .AttachExternalCancellation(externalToken)
-                .ContinueWith(() => { SetActive(false); });
-        public UniTask FadeOut(float duration, CancellationToken externalToken) 
+        public async UniTask FadeIn(float duration, CancellationToken externalToken)
+        {
+            await FadeAsync(1f, 0f, duration).AttachExternalCancellation(externalToken);
+
+            float holdElapsed = 0f;
+            float cappedStep = maxUnscaledStep > 0f ? maxUnscaledStep : 1f / 30f;
+            while (holdElapsed < fadeInEndHoldDuration && !externalToken.IsCancellationRequested)
+            {
+                holdElapsed += Mathf.Min(Time.unscaledDeltaTime, cappedStep);
+                await UniTask.Yield(PlayerLoopTiming.Update, externalToken);
+            }
+
+            SetActive(false);
+        }
+
+        public UniTask FadeOut(float duration, CancellationToken externalToken)
             => FadeAsync(0f, 1f, duration).AttachExternalCancellation(externalToken);
-        
+
         private async UniTask FadeAsync(float start, float end, float duration)
         {
             FadeCancel();
@@ -72,27 +86,38 @@ namespace TH.UI
             SetActive(true);
 
             Shader.SetGlobalFloat(ProgressHash, start);
-            
+
+            float safeDuration = Mathf.Max(duration, 0.0001f);
+            float cappedStep = maxUnscaledStep > 0f ? maxUnscaledStep : 1f / 30f;
+            int requiredFrames = Mathf.Max(1, minFadeFrames);
+            int frameCount = 0;
             float elapsed = 0f;
 
             try
             {
-                while (elapsed < duration && !token.IsCancellationRequested)
+                while (!token.IsCancellationRequested)
                 {
-                    elapsed += Time.unscaledDeltaTime;
-                    float t = Mathf.Clamp01(elapsed / duration);
+                    elapsed += Mathf.Min(Time.unscaledDeltaTime, cappedStep);
+                    frameCount++;
+
+                    float timeT = Mathf.Clamp01(elapsed / safeDuration);
+                    float frameT = Mathf.Clamp01((float)frameCount / requiredFrames);
+                    float t = Mathf.Min(timeT, frameT);
+
                     Shader.SetGlobalFloat(ProgressHash, Mathf.Lerp(start, end, t));
-                    
+
+                    if (timeT >= 1f && frameCount >= requiredFrames)
+                        break;
+
                     await UniTask.Yield(PlayerLoopTiming.Update, token);
                 }
             }
             finally
             {
                 if (!token.IsCancellationRequested)
-                    Shader.SetGlobalFloat(ProgressHash, end);; // 최종 값 보정
+                    Shader.SetGlobalFloat(ProgressHash, end);
             }
         }
-
 
         private CancellationToken RenewToken()
         {
@@ -108,7 +133,7 @@ namespace TH.UI
             if (ServiceLocator.Get<ISceneLoader>() is { } sceneLoader)
             {
                 sceneLoader.OnBeforeSceneChanged -= FadeOut;
-                sceneLoader.OnAfterSceneChanged -= FadeIn;
+                sceneLoader.OnLastSceneChanged -= FadeIn;
             }
         }
     }

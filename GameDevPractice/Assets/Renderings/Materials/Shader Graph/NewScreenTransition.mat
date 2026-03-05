@@ -45,9 +45,12 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _Amplitude: 0.07
     - _ColorMask: 15
+    - _Frequency: 30
     - _Progress: 0
-    - _Speed: 1.6
+    - _Progress_SetOff: 0.1
+    - _Speed: 1.7
     - _Stencil: 0
     - _StencilComp: 8
     - _StencilOp: 0
