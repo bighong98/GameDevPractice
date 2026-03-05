@@ -36,6 +36,8 @@ SpriteAtlas:
     - {fileID: 2800000, guid: c9b00ab864b403f45afb81839c9a68d5, type: 3}
     - {fileID: 2800000, guid: b6c7eaf1e91b22740bef74350a852ec2, type: 3}
     - {fileID: 2800000, guid: 3dc7f98de12cfbd4fb6d2b6f89c6ca92, type: 3}
+    - {fileID: 2800000, guid: 959ba73f633e32b4a8947c9f75afc1e2, type: 3}
+    - {fileID: 2800000, guid: 2114bd4ed703fa34eb68734d39945245, type: 3}
     bindAsDefault: 1
     isAtlasV2: 0
     cachedData: {fileID: 0}
@@ -44,17 +46,23 @@ SpriteAtlas:
     - c9b00ab864b403f45afb81839c9a68d5: 21300000
     - 1012f58a33331d24882571b8b0c4af2a: 21300000
     - 3dc7f98de12cfbd4fb6d2b6f89c6ca92: 21300000
+    - 2114bd4ed703fa34eb68734d39945245: 21300000
+    - 959ba73f633e32b4a8947c9f75afc1e2: 21300000
   m_MasterAtlas: {fileID: 0}
   m_PackedSprites:
   - {fileID: 21300000, guid: b6c7eaf1e91b22740bef74350a852ec2, type: 3}
   - {fileID: 21300000, guid: c9b00ab864b403f45afb81839c9a68d5, type: 3}
   - {fileID: 21300000, guid: 1012f58a33331d24882571b8b0c4af2a, type: 3}
   - {fileID: 21300000, guid: 3dc7f98de12cfbd4fb6d2b6f89c6ca92, type: 3}
+  - {fileID: 21300000, guid: 2114bd4ed703fa34eb68734d39945245, type: 3}
+  - {fileID: 21300000, guid: 959ba73f633e32b4a8947c9f75afc1e2, type: 3}
   m_PackedSpriteNamesToIndex:
   - P09_DemoUI_MainFrame_B
   - little_background_frame
   - inventory_frame
   - Shape_18 1
+  - basic_bar2_flipped
+  - basic_bar2
   m_RenderDataMap: {}
   m_Tag: QuickSlotPanel
   m_IsVariant: 0

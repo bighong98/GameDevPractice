@@ -577,7 +577,7 @@ namespace TH.Resource
 
                         if (guidSet.Add(guidKey))
                         {
-                            Logg.Log($"({location.PrimaryKey} - {guidKey})", Logg.LoggingMode.InProgress);
+                            Logg.Log($"({location.PrimaryKey} - {guidKey})", Logg.LoggingMode.Completed);
                         }
                     }
                 }
