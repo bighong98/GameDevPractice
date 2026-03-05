@@ -9,7 +9,7 @@ using UnityEngine;
 
 public interface IFighter : IAttacker { }
 
-public class Fighter : MonoBehaviour, IFighter
+public class Fighter : MonoBehaviour, IFighter, IAttackStateExitSignalSource
 {
     [SerializeField] private Health target;
 
@@ -32,8 +32,12 @@ public class Fighter : MonoBehaviour, IFighter
 
     public bool IsTargetValid => IsTargetUsable(target);
     public Health Target => target;
+    public bool IsAttackActive => attackStateExitRelay != null && attackStateExitRelay.IsAttackActive;
+    public int CurrentAttackEpoch => attackStateExitRelay != null ? attackStateExitRelay.CurrentAttackEpoch : 0;
+    public int LastExitedAttackEpoch => attackStateExitRelay != null ? attackStateExitRelay.LastExitedAttackEpoch : 0;
 
     private ISkillController skillController;
+    private AttackStateExitRelay attackStateExitRelay;
     private Animator animator;
     private CombatTarget subscribedCombatTarget;
     private Health pendingExecutionTarget;
@@ -51,6 +55,8 @@ public class Fighter : MonoBehaviour, IFighter
 
     private void Awake()
     {
+        attackStateExitRelay = new AttackStateExitRelay();
+
         if (!TryGetComponent(out skillController))
             Logg.LogWarning($"[{gameObject.name}.{GetType().Name}] No ISkillController found");
 
@@ -60,12 +66,14 @@ public class Fighter : MonoBehaviour, IFighter
 
     private void OnDisable()
     {
+        attackStateExitRelay?.ForceCompleteCurrentAttack();
         UnsubscribeTargetInvalidation();
         DisarmPendingStaleWatch();
     }
 
     private void Update()
     {
+        attackStateExitRelay?.Update(IsAnimatorInAttackPhase());
         TryCancelStalePendingAttack();
 
         if (!IsTargetValid) return;
@@ -112,6 +120,17 @@ public class Fighter : MonoBehaviour, IFighter
         OnTargetSet?.Invoke(target);
         LogAttackFlow(forceNotify ? "SetTarget_force" : "SetTarget", IsTargetUsable(target));
     }
+
+    public IDisposable SubscribeAttackExited(Action<int> handler)
+    {
+        if (attackStateExitRelay == null)
+        {
+            return DisposableDelegate.Empty;
+        }
+
+        return attackStateExitRelay.SubscribeAttackExited(handler);
+    }
+
 
     public bool CanAttack(GameObject attackTarget, out Health targetHealth)
     {

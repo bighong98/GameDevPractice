@@ -281,8 +281,8 @@ MonoBehaviour:
     - PreLoad_DataSO
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: dbddf25b9bd57034fb6d099ff589c863
-    m_Address: AnimateIdleSO.asset
+  - m_GUID: 443c43d320a5cc34588d7a62a146a66a
+    m_Address: AnimateIdleAfterPreviousAnimationSO.asset
     m_ReadOnly: 0
     m_SerializedLabels:
     - PreLoad_DataSO

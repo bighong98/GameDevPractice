@@ -27,6 +27,9 @@ namespace TH.Attribute.Stat
         private bool hasMutableLevel;
 
         private IEquipHandler equipHandler;
+        
+        private IEquipmentHolder equipmentHolder;
+        private bool hasReceivedTypeData;
         private bool hasEquipHandler;
 
         private static IStatRelationHandler statRelationHandler;
@@ -44,11 +47,14 @@ namespace TH.Attribute.Stat
             {
                 equipHandler.OnEquipmentChanged += this.OnEquipmentChanged;
             }
-            
-            if (!hasMutableLevel || progression == null) return; 
-            
-            levelHolder.OnLevelChanged += UpdateStatsByLevel;
-            UpdateStatsByLevel(levelHolder.GetCurrLevel);
+
+            if (hasMutableLevel && progression != null && levelHolder != null)
+            {
+                levelHolder.OnLevelChanged += UpdateStatsByLevel;
+            }
+
+            TryApplyCurrentLevelStats();
+            ReapplyEquippedModifiers();
         }
         
         private void OnDisable()
@@ -57,10 +63,11 @@ namespace TH.Attribute.Stat
             {
                 equipHandler.OnEquipmentChanged -= this.OnEquipmentChanged;
             }
-            
-            if (!hasMutableLevel || progression == null) return; 
-            
-            levelHolder.OnLevelChanged -= UpdateStatsByLevel;
+
+            if (hasMutableLevel && levelHolder != null)
+            {
+                levelHolder.OnLevelChanged -= UpdateStatsByLevel;
+            }
         }
 
         #region Initialization
@@ -72,6 +79,9 @@ namespace TH.Attribute.Stat
 
             hasEquipHandler = TryGetComponent(out IEquipHandler iEquipHandler);
             if (hasEquipHandler) equipHandler = iEquipHandler;
+
+            TryGetComponent(out IEquipmentHolder iEquipmentHolder);
+            equipmentHolder = iEquipmentHolder;
         }
 
         private void InitAfterLoad()
@@ -79,22 +89,28 @@ namespace TH.Attribute.Stat
             Logg.Log($"[StatHolder] InitAfterLoad() invoked", Logg.LoggingMode.Completed);
             progression = ResourceManager.Instance.Load<ProgressionSO>("ProgressionSO.asset");
             if (progression == null)
+            {
                 Logg.LogError($"[{gameObject.name}.{nameof(StatHolder)}] failed to load progression");
+                return;
+            }
+
+            TryApplyCurrentLevelStats();
+            ReapplyEquippedModifiers();
         }
         
         public void ReceiveType(ScriptableObject typeInfo)
         {
             if (typeInfo == null || typeInfo is not CharacterTypeSO charInfo) return;
 
+            hasReceivedTypeData = true;
             characterType = charInfo.characterType;
-            startingLevel = charInfo.startingLevel;
+            startingLevel = Mathf.Max(1, charInfo.startingLevel);
 
             InitializeStats(charInfo.characterBaseStats);
             statRelationHandler?.BindRelations(this);
 
-            if (!hasMutableLevel || progression == null) return; 
-            level = startingLevel;
-            UpdateStatsByLevel(level);
+            TryApplyCurrentLevelStats();
+            ReapplyEquippedModifiers();
         }
         
         private void InitializeStats(ScriptableObject baseStatData) // call by ReceiveType()
@@ -128,22 +144,50 @@ namespace TH.Attribute.Stat
         private readonly List<(GameStatSO, float)> progressionStatBuffer = new();
         private void UpdateStatsByLevel(int lv)
         {
-            if (level == lv) return;
-            level = lv;
-            
-            // 레벨에 비례해 변동되는 능력치 반영
-            // ProgressionSO.asset 으로부터 캐릭터의 타입/레벨에 해당하는 데이터 받아오기
+            level = Mathf.Max(1, lv);
+
             if (progression == null) return;
-            if (!progression.GetProgressionStatsNonAlloc(characterType, lv, progressionStatBuffer)
+            if (!progression.GetProgressionStatsNonAlloc(characterType, level, progressionStatBuffer)
                 || progressionStatBuffer.Count == 0) return;
-            // 받아온 데이터 캐릭터 능력치의 기본값(BaseValue)에 반영
+
             foreach ((var statSO, var statValue) in progressionStatBuffer)
             {
-                // notice: Progression.asset 데이터에는 있지만 캐릭터 능력치 목록에 없는 경우 강제로 추가함
-                if (GetOrAddStat(statSO) is not {} stat) continue;
+                if (GetOrAddStat(statSO) is not { } stat) continue;
                 stat.BaseValue = statValue;
             }
-            
+        }
+
+        private void TryApplyCurrentLevelStats()
+        {
+            if (!hasReceivedTypeData || progression == null)
+            {
+                return;
+            }
+
+            int targetLevel = hasMutableLevel && levelHolder != null
+                ? Mathf.Max(1, levelHolder.GetCurrLevel)
+                : Mathf.Max(1, startingLevel);
+
+            UpdateStatsByLevel(targetLevel);
+        }
+
+        private void ReapplyEquippedModifiers()
+        {
+            if (!hasReceivedTypeData || equipmentHolder?.ItemSlots == null)
+            {
+                return;
+            }
+
+            foreach (var slot in equipmentHolder.ItemSlots)
+            {
+                if (slot is not { HasItem: true, GetItem: IEquipmentItem equipment })
+                {
+                    continue;
+                }
+
+                RemoveModifiersFromEquipment(equipment);
+                AddModifiersFromEquipment(equipment);
+            }
         }
 
         #region Get Stat

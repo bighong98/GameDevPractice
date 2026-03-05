@@ -334,18 +334,6 @@ namespace TH.Control.State
                 return;
             }
 
-            if (nextState is InitialStateSO)
-            {
-                if (initialState == null && (initialStateReference == null || !initialStateReference.RuntimeKeyIsValid()))
-                {
-                    Logg.LogError($"[{gameObject.name}] TransitionToState - initialState and nextState is invalid", this);
-                    return;
-                }
-
-                EnterInitialStateAsync(ignoreLock).Forget();
-                return;
-            }
-
             if (!ignoreLock && IsTransitionLocked)
             {
 #if UNITY_EDITOR
@@ -355,6 +343,18 @@ namespace TH.Control.State
                 }
 #endif
                 _pendingState = nextState;
+                return;
+            }
+
+            if (nextState is InitialStateSO)
+            {
+                if (initialState == null && (initialStateReference == null || !initialStateReference.RuntimeKeyIsValid()))
+                {
+                    Logg.LogError($"[{gameObject.name}] TransitionToState - initialState and nextState is invalid", this);
+                    return;
+                }
+
+                EnterInitialStateAsync(ignoreLock).Forget();
                 return;
             }
 

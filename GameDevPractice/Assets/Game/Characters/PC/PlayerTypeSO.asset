@@ -12,7 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d2a09f1913331f64d9f41bc7fc5344e3, type: 3}
   m_Name: PlayerTypeSO
   m_EditorClassIdentifier: Assembly-CSharp::PlayerTypeSO
-  prefab: {fileID: 0}
   prefabReference:
     m_AssetGUID: ea81141bec111d44b9f0d6851b8c5c22
     m_SubObjectName: 
@@ -20,7 +19,6 @@ MonoBehaviour:
     m_SubObjectGUID: 
     m_EditorAssetChanged: 0
   nameString: player
-  sprite: {fileID: 0}
   spriteReference:
     m_AssetGUID: 
     m_SubObjectName: 

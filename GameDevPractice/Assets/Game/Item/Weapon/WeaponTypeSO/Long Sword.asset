@@ -12,7 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 361e7764f46e225498b2d9903851f06d, type: 3}
   m_Name: Long Sword
   m_EditorClassIdentifier: Assembly-CSharp::WeaponTypeSO
-  prefab: {fileID: 0}
   prefabReference:
     m_AssetGUID: e5d2ab5e01f3aa045bd855ee0c6c1dca
     m_SubObjectName: 
@@ -20,7 +19,6 @@ MonoBehaviour:
     m_SubObjectGUID: 
     m_EditorAssetChanged: 1
   nameString: "\uAE30\uBCF8 \uB871\uC18C\uB4DC"
-  sprite: {fileID: 0}
   spriteReference:
     m_AssetGUID: 95052c6b62fb3de4695beaa99f842ac2
     m_SubObjectName: Silver Sword
@@ -61,8 +59,8 @@ MonoBehaviour:
     m_EditorAssetChanged: 0
   hand: 0
   defaultSkillReferences:
-  - m_AssetGUID: 9b314ff0f32b1e440b4626b01bbbb750
+  - m_AssetGUID: 1ccb1a8a5e190bd41a17d5b1656b118e
     m_SubObjectName: 
     m_SubObjectType: 
     m_SubObjectGUID: 
-    m_EditorAssetChanged: 1
+    m_EditorAssetChanged: 0

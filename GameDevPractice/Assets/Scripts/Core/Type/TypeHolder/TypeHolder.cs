@@ -121,11 +121,12 @@ namespace TH.Resource
         public async UniTask<T> GetTypeAsync()
         {
             if (type != null) return type; // 런타임에 캐싱된 타입이 있다면 즉시 반환
-            if (typeRef != null) return null; // type AssetReference도 없다면 null 반환
+            if (typeRef == null) return null; // type AssetReference가 없다면 null 반환
 
             await InitializeTypeAsync();
             return type;
         }
+
 
         // 로드된 타입 데이터를 ITypeDependent 인터페이스를 구현한 모든 컴포넌트에 전달
         private void DeliverTypeData()

@@ -428,7 +428,6 @@ namespace TH.Resource
             if (loadedResult is IAsyncInitializer loadedInitializer)
             {
                 await loadedInitializer.InitializeAsync(token);
-       await loadedInitializer.InitializeAsync(token);
             }
 
             return loadedResult;
@@ -442,15 +441,21 @@ namespace TH.Resource
         // 로딩 완료된 리소스 목록에 접근 (key 기반)
         public bool TryLoad<T>(string key, out T resource) where T : UnityEngine.Object
         {
-            Logg.Log($"[{GetType().Name}.TryLoad] (key: {key}, resource: {resourceKeys[key].Result})", Logg.LoggingMode.Completed);
-            
+            if (string.IsNullOrEmpty(key))
+            {
+                resource = null;
+                return false;
+            }
+
             if (resourceKeys.TryGetValue(key, out var result)
+                && result.IsValid()
                 && result.Result is T cachedResource)
             {
                 resource = cachedResource;
+                Logg.Log($"[{GetType().Name}.TryLoad] (key: {key}, resource: {cachedResource})", Logg.LoggingMode.Completed);
                 return true;
             }
-            
+
             resource = null;
             return false;
         }
