@@ -1,15 +1,12 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using TH.Core.Input;
-using TH.Utils;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.SceneManagement;
 using UnityEngine.Scripting;
+using TH.Core.Input;
+using TH.Utils;
 using TH.Core.Service;
-using TH.SaveLoad;
 
 namespace TH.Core
 {
@@ -83,6 +80,16 @@ namespace TH.Core
         // 내부 플래그
         private bool isDragging = false;
         private bool wasDraggingOneFrameAgo = false;
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        #region Cam Debug
+
+        private bool _camDragDebugLogged = false;
+
+        #endregion
+#endif
+
+
         
         #region Initialization
 
@@ -92,10 +99,9 @@ namespace TH.Core
             UserInput.Global.SetCallbacks(this);
             UserInput.QuickSlot.SetCallbacks(this);
             UserInput.UI.SetCallbacks(this);
-            
 
             InitPlayerPrefsBindings();
-UserInput.Cam.SetCallbacks(this);
+            UserInput.Cam.SetCallbacks(this);
 
             // 세이브 시스템 확장 전까지는 PlayerPrefs 기반으로 바인딩 키 저장 및 적용
             // saveEntityRegistry = ServiceLocator.Get<ISaveEntityRegistry>();
@@ -109,6 +115,7 @@ UserInput.Cam.SetCallbacks(this);
             UserInput.QuickSlot.Enable();
             UserInput.Player.Enable();
             EnableCamActionMap();
+            LogCamInputDebug($"Init completed. focus={Application.isFocused}, camMapEnabled={CamActions.enabled}");
         }
 
         public UniTask BeforeSceneLoad(CancellationToken externalToken)
@@ -160,7 +167,16 @@ UserInput.Cam.SetCallbacks(this);
         public void OnDragScreen(InputAction.CallbackContext context)
         {
             Vector2 delta = context.ReadValue<Vector2>();
+            if (context.phase == InputActionPhase.Canceled)
+            {
+                ResetCamDragDebugState(delta);
+                return;
+            }
+
             if (!(delta.magnitude > 8f)) return;
+
+            LogCamDragScreenOnce(context.phase, delta);
+
 
             switch (context.phase) 
             {
@@ -429,6 +445,7 @@ UserInput.Cam.SetCallbacks(this);
                 CamActions.Enable();
 
             SetCinemachineInputControllersEnabled(true);
+            LogCamInputDebug($"EnableCamActionMap called. camMapEnabled={CamActions.enabled}");
         }
 
         public void DisableCamActionMap()
@@ -437,6 +454,8 @@ UserInput.Cam.SetCallbacks(this);
 
             if (CamActions.enabled)
                 CamActions.Disable();
+
+            LogCamInputDebug($"DisableCamActionMap called. camMapEnabled={CamActions.enabled}");
         }
 
         #endregion
@@ -473,7 +492,12 @@ UserInput.Cam.SetCallbacks(this);
         {
             var controllers = CinemachineInputAxisControllerRegistry.Controllers;
             if (controllers == null || controllers.Count == 0)
+            {
+                LogCamInputDebug($"SetCinemachineInputControllersEnabled({enabled}) skipped. registeredControllers=0");
                 return;
+            }
+
+            LogCamInputDebug($"SetCinemachineInputControllersEnabled({enabled}) controllerCount={controllers.Count}");
 
             foreach (var controller in controllers)
             {
@@ -487,6 +511,8 @@ UserInput.Cam.SetCallbacks(this);
                     var axis = axes[i];
                     axis.Enabled = enabled;
                     axes[i] = axis;
+                    LogCamInputDebug(
+                        $"controller='{controller.name}', axis='{axis.Name}', axisEnabled={axis.Enabled}, autoEnable={controller.AutoEnableInputs}, {DescribeAction(axis.Input.InputAction)}");
                 }
             }
         }
@@ -609,30 +635,99 @@ UserInput.Cam.SetCallbacks(this);
             _isFocused = Application.isFocused;
             _isPausedByOS = false;
             _isPointerInView = true;
+            LogCamInputDebug(
+                $"RegisterListener({listener.GetType().Name}) focus={_isFocused}, paused={_isPausedByOS}, pointerInView={_isPointerInView}, camMapEnabled={CamActions.enabled}");
         }
 
         private void HandleFocusChanged(bool hasFocus)
         {
             _isFocused = hasFocus;
+            LogCamInputDebug($"HandleFocusChanged({hasFocus}) camMapEnabled={CamActions.enabled}");
             //todo: 게임 포커스 대응 로직 추가
         }
 
         private void HandlePauseChanged(bool pause)
         {
             _isPausedByOS = pause;
+            LogCamInputDebug($"HandlePauseChanged({pause}) camMapEnabled={CamActions.enabled}");
             //todo: 어플리케이션 정지/해제 대응 로직 추가
         }
 
         private void HandlePointerInViewChanged(bool inView)
         {
             _isPointerInView = inView;
+            LogCamInputDebug(
+                $"HandlePointerInViewChanged({inView}) focus={_isFocused}, paused={_isPausedByOS}, pointerValid={IsPointerValid}, camMapEnabledBefore={CamActions.enabled}");
             if (_isPointerInView)
                 EnableCamActionMap();
             else 
                 DisableCamActionMap();
         }
-
         #endregion
+
+        #region Cam Debug
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        [System.Diagnostics.Conditional("UNITY_EDITOR")]
+        [System.Diagnostics.Conditional("DEVELOPMENT_BUILD")]
+        private void ResetCamDragDebugState(Vector2 delta)
+        {
+            _camDragDebugLogged = false;
+            LogCamInputDebug(
+                $"OnDragScreen canceled. delta={delta}, pointer={currentPointerPos}, camMapEnabled={CamActions.enabled}");
+        }
+
+        [System.Diagnostics.Conditional("UNITY_EDITOR")]
+        [System.Diagnostics.Conditional("DEVELOPMENT_BUILD")]
+        private void LogCamDragScreenOnce(InputActionPhase phase, Vector2 delta)
+        {
+            if (_camDragDebugLogged)
+                return;
+
+            _camDragDebugLogged = true;
+            LogCamInputDebug(
+                $"OnDragScreen {phase}. delta={delta}, pointer={currentPointerPos}, camMapEnabled={CamActions.enabled}");
+        }
+
+        [System.Diagnostics.Conditional("UNITY_EDITOR")]
+        [System.Diagnostics.Conditional("DEVELOPMENT_BUILD")]
+        private static void LogCamInputDebug(string message)
+        {
+            Logg.Log($"[CamDebug][InputManager] {message}", Logg.LoggingMode.Completed);
+        }
+
+        private static string DescribeAction(InputActionReference actionReference)
+        {
+            if (actionReference == null)
+                return "actionRef=null";
+
+            var action = actionReference.action;
+            if (action == null)
+                return "action=null";
+
+            return
+                $"actionMap={action.actionMap?.name ?? "null"}, action={action.name}, enabled={action.enabled}, phase={action.phase}, activeControl={action.activeControl?.path ?? "null"}";
+        }
+#else
+        [System.Diagnostics.Conditional("UNITY_EDITOR")]
+        [System.Diagnostics.Conditional("DEVELOPMENT_BUILD")]
+        private void ResetCamDragDebugState(Vector2 delta) { }
+
+        [System.Diagnostics.Conditional("UNITY_EDITOR")]
+        [System.Diagnostics.Conditional("DEVELOPMENT_BUILD")]
+        private void LogCamDragScreenOnce(InputActionPhase phase, Vector2 delta) { }
+
+        [System.Diagnostics.Conditional("UNITY_EDITOR")]
+        [System.Diagnostics.Conditional("DEVELOPMENT_BUILD")]
+        private static void LogCamInputDebug(string message) { }
+
+        private static string DescribeAction(InputActionReference actionReference)
+        {
+            return string.Empty;
+        }
+#endif
+        #endregion
+
 
 
     }

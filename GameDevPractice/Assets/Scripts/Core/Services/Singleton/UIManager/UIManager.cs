@@ -345,32 +345,28 @@ namespace TH.Core.Service
         /// 키로 UI를 풀에 반환.
         /// activeUIByKey에서 제거하고 풀에 반환하여 재사용 가능하게 함.
         /// </summary>
-        /// <param name="key">Addressables 리소스 키</param>
-        public void ReleaseUI(string key)
-        {
-            if (string.IsNullOrWhiteSpace(key)) return;
-            if (!activeUIByKey.TryGetValue(key, out var ui)) return;
-
-            ReleaseUI(ui);
-            activeUIByKey.Remove(key);
-        }
-
-        /// <summary>
-        /// UI 오브젝트를 풀에 직접 반환.
-        /// uiPools에 등록된 풀이 있으면 해당 풀에, 없으면 PoolManager로 반환.
-        /// activeUIByKey에서도 제거.
-        /// </summary>
         /// <param name="ui">반환할 UI 오브젝트</param>
         public void ReleaseUI(IPoolObject ui)
         {
             if (ui == null) return;
+
+            if (ui.Origin == null)
+            {
+                PoolManager.Instance.ReleaseFromPool(ui);
+                RemoveActiveUIKey(ui);
+                return;
+            }
 
             if (TryGetUIPool(ui, out var pool))
                 pool.Release(ui);
             else
                 PoolManager.Instance.ReleaseFromPool(ui);
 
+            RemoveActiveUIKey(ui);
+        }
 
+        private void RemoveActiveUIKey(IPoolObject ui)
+        {
             string removeKey = null;
             foreach (var (key, value) in activeUIByKey)
             {
@@ -380,9 +376,12 @@ namespace TH.Core.Service
                     break;
                 }
             }
+
             if (removeKey != null)
                 activeUIByKey.Remove(removeKey);
         }
+
+
 
         private bool TryGetUIPool(IPoolObject ui, out ObjectPool<IPoolObject> pool)
         {
@@ -410,7 +409,17 @@ namespace TH.Core.Service
         }
 
         #endregion
-    }
+    
+
+        public void ReleaseUI(string key)
+        {
+            if (string.IsNullOrWhiteSpace(key)) return;
+            if (!activeUIByKey.TryGetValue(key, out var ui)) return;
+
+            ReleaseUI(ui);
+            activeUIByKey.Remove(key);
+        }
+}
 }
 
 namespace TH.UI

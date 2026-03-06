@@ -808,7 +808,7 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
                     ""path"": ""OneModifier(modifiersOrder=1)"",
                     ""interactions"": """",
                     ""processors"": """",
-                    ""groups"": """",
+                    ""groups"": ""Keyboard&Mouse"",
                     ""action"": ""DragScreen"",
                     ""isComposite"": true,
                     ""isPartOfComposite"": false
@@ -816,10 +816,10 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
                 {
                     ""name"": ""modifier"",
                     ""id"": ""c9135094-521b-472d-96dd-cad7784d450b"",
-                    ""path"": ""<Pointer>/press"",
+                    ""path"": ""<Mouse>/leftButton"",
                     ""interactions"": """",
                     ""processors"": """",
-                    ""groups"": """",
+                    ""groups"": ""Keyboard&Mouse"",
                     ""action"": ""DragScreen"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": true
@@ -827,10 +827,43 @@ public partial class @UserInput: IInputActionCollection2, IDisposable
                 {
                     ""name"": ""binding"",
                     ""id"": ""23000f04-a8ea-46c3-9e19-80cacb9f0c68"",
-                    ""path"": ""<Pointer>/delta"",
+                    ""path"": ""<Mouse>/delta"",
                     ""interactions"": """",
                     ""processors"": ""DeltaTimeScale,ScaleVector2(x=0.1,y=0.1)"",
-                    ""groups"": """",
+                    ""groups"": ""Keyboard&Mouse"",
+                    ""action"": ""DragScreen"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""One Modifier"",
+                    ""id"": ""492f15fb-f6aa-47fb-a96d-aa831ca1aaf0"",
+                    ""path"": ""OneModifier(modifiersOrder=1)"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Touch"",
+                    ""action"": ""DragScreen"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""modifier"",
+                    ""id"": ""10e0c852-41d8-4847-b18d-5117ef7a6b48"",
+                    ""path"": ""<Touchscreen>/primaryTouch/press"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Touch"",
+                    ""action"": ""DragScreen"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""binding"",
+                    ""id"": ""996e331f-3308-4d34-a75d-fb383e14c28c"",
+                    ""path"": ""<Touchscreen>/primaryTouch/delta"",
+                    ""interactions"": """",
+                    ""processors"": ""DeltaTimeScale,ScaleVector2(x=0.1,y=0.1)"",
+                    ""groups"": ""Touch"",
                     ""action"": ""DragScreen"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": true

@@ -1,4 +1,5 @@
 using System;
+using TH.Utils;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -27,11 +28,13 @@ namespace TH.Core.Input
         private void Awake()
         {
             InputManager.Instance.RegisterListener(this);
+            LogLifecycleDebug($"Awake registered listener. focused={Application.isFocused}, pointerInView={_lastPointerInView}");
         }
 
         private void OnApplicationFocus(bool hasFocus)
         {
             OnFocusChanged?.Invoke(hasFocus);
+            LogLifecycleDebug($"OnApplicationFocus({hasFocus})");
 
             // 포커스를 잃은 경우, 포인터는 무조건 유효하지 않다고 보는 게 안전
             if (!hasFocus)
@@ -41,6 +44,7 @@ namespace TH.Core.Input
         private void OnApplicationPause(bool pause)
         {
             OnPauseChanged?.Invoke(pause);
+            LogLifecycleDebug($"OnApplicationPause({pause})");
 
             if (pause)
                 NotifyPointerState(false);
@@ -53,7 +57,10 @@ namespace TH.Core.Input
             if (Cursor.lockState == CursorLockMode.Locked)
             {
                 if (!_lastPointerInView)
+                {
+                    LogLifecycleDebug("Update detected locked cursor. Restoring pointer-in-view=true");
                     NotifyPointerState(true);
+                }
                 return;
             }
 
@@ -64,7 +71,10 @@ namespace TH.Core.Input
             if (pointer == null)
             {
                 if (!_lastPointerInView)
+                {
+                    LogLifecycleDebug("Update detected missing pointer. Restoring pointer-in-view=true");
                     NotifyPointerState(true);
+                }
                 return;
             }
 
@@ -74,14 +84,28 @@ namespace TH.Core.Input
                 pos.y >= 0 && pos.y <= Screen.height;
 
             if (inView && !_lastPointerInView)
+            {
+                LogLifecycleDebug($"Update detected pointer re-entry at {pos}");
                 NotifyPointerState(true);
+            }
         }
 
 
         private void NotifyPointerState(bool inView)
         {
             _lastPointerInView = inView;
+            LogLifecycleDebug(
+                $"NotifyPointerState({inView}) focused={Application.isFocused}, lockState={Cursor.lockState}, screen=({Screen.width},{Screen.height})");
             OnPointerInGameViewChanged?.Invoke(inView);
         }
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        private static void LogLifecycleDebug(string message)
+        {
+            Logg.Log($"[CamDebug][Lifecycle] {message}", Logg.LoggingMode.Completed);
+        }
+#else
+        private static void LogLifecycleDebug(string message) { }
+#endif
     }
 }

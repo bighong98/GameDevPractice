@@ -107,7 +107,7 @@ namespace TH.Attribute
 
         private void ReleaseHPBar()
         {
-            HPBar.Release(this);
+            HPBar.Release(this, skipPooling: Util.IsQuitting);
         }
 
         // 최대 체력 + 현재 체력 조정 (현재 미사용)

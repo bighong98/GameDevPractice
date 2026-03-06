@@ -1,12 +1,13 @@
 using System.Collections.Generic;
 using TMPro;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
 #if UNITY_EDITOR
+using UnityEditor;
 using UnityEditor.SceneManagement;
 #endif
+
 
 namespace TouchEffectSystem
 {
@@ -265,7 +266,7 @@ namespace TouchEffectSystem
         private float radialArcAngleRange = 35f;
 
         /// <summary>
-        /// Center angle in degrees for RadialArc animation (90° = upward).
+        /// Center angle in degrees for RadialArc animation (90ï¿½ = upward).
         /// </summary>
         private float radialArcCenterAngle = 90f;
 
@@ -785,12 +786,12 @@ namespace TouchEffectSystem
             bulletStyle.fontSize = 10;
             bulletStyle.wordWrap = true;
 
-            EditorGUILayout.LabelField("• Separate PC/mobile optimization settings, multitouch support, Canvas coordinate conversion", bulletStyle);
-            EditorGUILayout.LabelField("• 25+ shader effects: heat trails, blades, expanding rings, neon shapes, lightning, etc", bulletStyle);
-            EditorGUILayout.LabelField("• Advanced trail system with spacing, pooling, sharp edges", bulletStyle);
-            EditorGUILayout.LabelField("• Sprite-based particle system with dispersion patterns", bulletStyle);
-            EditorGUILayout.LabelField("• Preview system compatible with Automatic Tutorial Maker", bulletStyle);
-            EditorGUILayout.LabelField("• Technical support and custom development services", bulletStyle);
+            EditorGUILayout.LabelField("ï¿½ Separate PC/mobile optimization settings, multitouch support, Canvas coordinate conversion", bulletStyle);
+            EditorGUILayout.LabelField("ï¿½ 25+ shader effects: heat trails, blades, expanding rings, neon shapes, lightning, etc", bulletStyle);
+            EditorGUILayout.LabelField("ï¿½ Advanced trail system with spacing, pooling, sharp edges", bulletStyle);
+            EditorGUILayout.LabelField("ï¿½ Sprite-based particle system with dispersion patterns", bulletStyle);
+            EditorGUILayout.LabelField("ï¿½ Preview system compatible with Automatic Tutorial Maker", bulletStyle);
+            EditorGUILayout.LabelField("ï¿½ Technical support and custom development services", bulletStyle);
 
             GUILayout.Space(3);
 

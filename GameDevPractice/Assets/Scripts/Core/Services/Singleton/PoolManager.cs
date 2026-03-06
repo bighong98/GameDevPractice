@@ -203,17 +203,31 @@ namespace TH.Core.Service
         // 오브젝트를 풀에 반납
         // IPoolObject.Origin을 기준으로 소속 풀을 탐색
         // Origin은 반드시 prefab 게임 오브젝트여야 함
-        public void ReleaseFromPool(IPoolObject obj, bool releaseToDefaultContainer = false)
+public void ReleaseFromPool(IPoolObject obj, bool releaseToDefaultContainer = false)
         {
             if (!obj.IsNotNull())
             {
                 Logg.LogError($"[{nameof(PoolManager)}.{nameof(ReleaseFromPool)}] Object is null");
                 return;
             }
-            
+
             if (obj.Origin == null)
             {
-                Logg.LogError($"[{nameof(PoolManager)}.{nameof(ReleaseFromPool)}] Object.Origin is null. Object: {(obj as UnityEngine.Object)?.name ?? "Unknown"}");
+                try
+                {
+                    obj.OnReleaseFromPool();
+                }
+                catch (Exception e)
+                {
+                    Logg.LogWarning($"[{nameof(PoolManager)}.{nameof(ReleaseFromPool)}] Fallback cleanup failed: {e}");
+                }
+
+                if (obj is Component detachedComponent && !Util.IsQuitting)
+                {
+                    Logg.LogWarning($"[{nameof(PoolManager)}.{nameof(ReleaseFromPool)}] Object.Origin is null. Destroy detached pooled object: {detachedComponent.name}");
+                    UnityEngine.Object.Destroy(detachedComponent.gameObject);
+                }
+
                 return;
             }
 
@@ -225,8 +239,7 @@ namespace TH.Core.Service
                 Logg.LogWarning($"[{nameof(PoolManager)}.{nameof(ReleaseFromPool)}] Pool not found for origin: {obj.Origin.name}");
                 return;
             }
-            
-            // 기본 컨테이너로 부모 변경 후 풀에 반납
+
             if (releaseToDefaultContainer && obj is Component component)
             {
                 var defaultContainer = poolContainer.GetPoolContainer(obj.Origin, CacheAndGetType(obj.Origin));

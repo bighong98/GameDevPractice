@@ -289,10 +289,31 @@ namespace TH.UI
             ClearPoolingState(disposeTokenSource: true);
         }
 
+        private void ReleaseWithoutPooling()
+        {
+            if (isReleasing) return;
+
+            isReleasing = true;
+            ClearPoolingState(disposeTokenSource: false);
+
+            if (this && gameObject.activeSelf)
+                gameObject.SetActive(false);
+
+            isReleasing = false;
+        }
+
+
         public void ReleaseSelf()
         {
             if (isReleasing) return;
             if (!gameObject.activeSelf) return;
+
+            if (Util.IsQuitting || Origin == null)
+            {
+                ReleaseWithoutPooling();
+                return;
+            }
+
             isReleasing = true;
             UIManager.Instance.ReleaseUI(this);
             isReleasing = false;
@@ -319,13 +340,20 @@ namespace TH.UI
             return ui;
         }
 
-        public static void Release(Health owner)
+        public static void Release(Health owner, bool skipPooling = false)
         {
             if (owner == null) return;
             if (!ActiveByOwner.TryGetValue(owner, out var ui) || ui == null) return;
 
-            UIManager.Instance.ReleaseUI(ui);
             ActiveByOwner.Remove(owner);
+
+            if (skipPooling || Util.IsQuitting || ui.Origin == null)
+            {
+                ui.ReleaseWithoutPooling();
+                return;
+            }
+
+            UIManager.Instance.ReleaseUI(ui);
         }
 
         private void ClearOwnerMap()
