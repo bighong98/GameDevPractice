@@ -113,6 +113,8 @@ namespace TH.Core.Service
 
             cs.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             cs.referenceResolution = new Vector2(1920, 1080);
+            cs.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+            cs.matchWidthOrHeight = 1f;
         }
         // GraphicRaycaster 추가 (상호작용이 필요한 경우에만 적용)
         private void ConfigureGraphicRaycaster(GameObject go, bool isInteractable)
