@@ -9,6 +9,7 @@
   <Project Path="Unity.Cinemachine.Editor.csproj" />
   <Project Path="Unity.Addressables.Editor.csproj" />
   <Project Path="Unity.Collections.csproj" />
+  <Project Path="CodeStage.AFPSCounter.Runtime.csproj" />
   <Project Path="Unity.PerformanceTesting.Editor.csproj" />
   <Project Path="Unity.VisualScripting.Core.Editor.csproj" />
   <Project Path="Unity.Splines.csproj" />
@@ -37,6 +38,7 @@
   <Project Path="Unity.AI.Navigation.Updater.csproj" />
   <Project Path="LineworkLite.csproj" />
   <Project Path="Unity.Performance.Profile-Analyzer.Editor.csproj" />
+  <Project Path="CodeStage.AFPSCounter.Editor.csproj" />
   <Project Path="Unity.AI.Navigation.Editor.csproj" />
   <Project Path="LineworkLite.Editor.csproj" />
   <Project Path="MCPForUnity.Runtime.csproj" />

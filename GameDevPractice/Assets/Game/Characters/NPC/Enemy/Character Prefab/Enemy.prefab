@@ -172,6 +172,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 11400000, guid: 0a600904131b2d64994bee447b8efe39, type: 2}
     - target: {fileID: 6568686253797109238, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6568686253797109238, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
       propertyPath: lockHorizontalWhenPlanted
       value: 0
       objectReference: {fileID: 0}
@@ -299,6 +303,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c2b0f6b41f494584e95a4561a5c6687c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TH.Rendering.Dissolve.CharacterSpecialEffectController
+  enableOutlineEffect: 1
+  enableDissolveEffect: 1
   health: {fileID: 4081182245730968892}
   autoBindHealthOnAwake: 1
   autoCollectRenderers: 1
