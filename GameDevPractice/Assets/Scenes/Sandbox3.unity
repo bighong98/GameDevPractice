@@ -23012,19 +23012,6 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 4300000, guid: 2e716c43576f71b4aa87e6cb4ebeaeab, type: 3}
---- !u!134 &1446402507
-PhysicsMaterial:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: 
-  serializedVersion: 2
-  m_DynamicFriction: 0.6
-  m_StaticFriction: 0.6
-  m_Bounciness: 0
-  m_FrictionCombine: 0
-  m_BounceCombine: 0
 --- !u!1001 &1447608179
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -24879,10 +24866,6 @@ PrefabInstance:
       propertyPath: addToPool
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 1579078139897928796, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}
-      propertyPath: m_Material
-      value: 
-      objectReference: {fileID: 1446402507}
     - target: {fileID: 2395544938457194976, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}
       propertyPath: m_LocalPosition.x
       value: 80.1
@@ -24941,10 +24924,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3668142223287289448, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}
       propertyPath: enableDissolveEffect
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4081182245730968892, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}
-      propertyPath: returnToPoolOnDeath
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5174886537910745246, guid: d3ab42f9d33a8bf4cbebcbc94f5b10ab, type: 3}

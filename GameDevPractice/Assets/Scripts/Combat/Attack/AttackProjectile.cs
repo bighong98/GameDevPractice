@@ -17,6 +17,16 @@ public class AttackProjectile : MonoBehaviour, IPoolObject
     [SerializeField] private Health target;
     [SerializeField] private float speed = 12;
     [SerializeField] private float maxLifeTime = 5f;
+    [Header("Aim Assist")]
+    [SerializeField] private bool enableCloseRangePitchClamp = true;
+    [SerializeField, Min(0f)] private float closeRangeThreshold = 2f;
+    [SerializeField, Min(0f)] private float maxSlopeForPitchClamp = 0.35f;
+    [SerializeField, Range(-89f, 0f)] private float minPitchAngle = -10f;
+    [SerializeField] private float aimPointVerticalOffset = 0.15f;
+
+    private Collider targetCollider;
+    private Renderer targetRenderer;
+
     
     private CancellationTokenSource projectileCTS;
     private TimeSpan lifeTimeSpan;
@@ -75,17 +85,19 @@ public class AttackProjectile : MonoBehaviour, IPoolObject
     public void SetTargetAndShoot(Health newTarget, bool homing)
     {
         if (newTarget == null) return;
-        
-        target = newTarget;
-        transform.LookAt(GetAim());
-        launchStartPosition = transform.position;
 
+        target = newTarget;
+        CacheTargetAimComponents();
+
+        TryApplyAimRotation();
+        launchStartPosition = transform.position;
 
         ResetProjectileCTS();
         ResetPierceState();
 
         Launch(homing);
     }
+
 
     private void ResetProjectileCTS()
     {
@@ -111,11 +123,109 @@ public class AttackProjectile : MonoBehaviour, IPoolObject
 
     private Vector3 GetAim() // todo: 로직 최적화/보완
     {
-        if (target.GetComponent<CapsuleCollider>() is { } targetColl)
+        if (target == null)
         {
-            return target.transform.position + (Vector3.up * targetColl.height / 2);
+            return transform.position + transform.forward;
         }
-        return target.transform.position;
+
+        if (targetCollider != null)
+        {
+            return targetCollider.bounds.center + (Vector3.up * aimPointVerticalOffset);
+        }
+
+        if (targetRenderer != null)
+        {
+            return targetRenderer.bounds.center + (Vector3.up * aimPointVerticalOffset);
+        }
+
+        return target.transform.position + (Vector3.up * aimPointVerticalOffset);
+    }
+
+    private void CacheTargetAimComponents()
+    {
+        if (target == null)
+        {
+            targetCollider = null;
+            targetRenderer = null;
+            return;
+        }
+
+        targetCollider = target.GetComponent<Collider>();
+        if (targetCollider == null)
+        {
+            targetCollider = target.GetComponentInChildren<Collider>();
+        }
+
+        if (targetCollider != null)
+        {
+            targetRenderer = null;
+            return;
+        }
+
+        targetRenderer = target.GetComponent<Renderer>();
+        if (targetRenderer == null)
+        {
+            targetRenderer = target.GetComponentInChildren<Renderer>();
+        }
+    }
+
+    private bool TryApplyAimRotation()
+    {
+        Vector3 toAim = GetAim() - transform.position;
+        if (toAim.sqrMagnitude <= 0.000001f)
+        {
+            return false;
+        }
+
+        Vector3 aimDirection = ResolveAimDirection(toAim);
+        transform.rotation = Quaternion.LookRotation(aimDirection, Vector3.up);
+        return true;
+    }
+
+    private Vector3 ResolveAimDirection(Vector3 toAim)
+    {
+        Vector3 rawDirection = toAim.normalized;
+        if (!ShouldApplyCloseRangePitchClamp(toAim))
+        {
+            return rawDirection;
+        }
+
+        return ClampMinPitch(rawDirection, minPitchAngle);
+    }
+
+    private bool ShouldApplyCloseRangePitchClamp(Vector3 toAim)
+    {
+        if (!enableCloseRangePitchClamp)
+        {
+            return false;
+        }
+
+        float horizontalDistance = new Vector2(toAim.x, toAim.z).magnitude;
+        if (horizontalDistance > closeRangeThreshold)
+        {
+            return false;
+        }
+
+        float slope = Mathf.Abs(toAim.y) / Mathf.Max(horizontalDistance, 0.01f);
+        return slope <= maxSlopeForPitchClamp;
+    }
+
+    private static Vector3 ClampMinPitch(Vector3 direction, float minPitchDegree)
+    {
+        float pitch = Mathf.Asin(Mathf.Clamp(direction.y, -1f, 1f)) * Mathf.Rad2Deg;
+        if (pitch >= minPitchDegree)
+        {
+            return direction;
+        }
+
+        float yaw = Mathf.Atan2(direction.x, direction.z);
+        float clampedPitch = minPitchDegree * Mathf.Deg2Rad;
+        float cosPitch = Mathf.Cos(clampedPitch);
+
+        return new Vector3(
+            Mathf.Sin(yaw) * cosPitch,
+            Mathf.Sin(clampedPitch),
+            Mathf.Cos(yaw) * cosPitch).normalized;
     }
 
     private async UniTaskVoid WaitForLifeTimeAsync()
@@ -130,10 +240,11 @@ public class AttackProjectile : MonoBehaviour, IPoolObject
         var token = projectileCTS.Token;
         while (!token.IsCancellationRequested)
         {
-            transform.LookAt(GetAim());
+            TryApplyAimRotation();
             await UniTask.Yield(PlayerLoopTiming.PreLateUpdate, token).SuppressCancellationThrow();
         }
     }
+
 
     private void SetTimeSpan() // 최초 초기화 이후 maxLifeTime이 변동되는 케이스에 대한 처리 없음
     {
@@ -254,10 +365,13 @@ public class AttackProjectile : MonoBehaviour, IPoolObject
     public void OnReleaseFromPool()
     {
         target = null;
+        targetCollider = null;
+        targetRenderer = null;
         isLaunched = false;
         launchStartPosition = default;
         ResetPierceState();
     }
+
 
     public void OnDestroyFromPool()
     {
