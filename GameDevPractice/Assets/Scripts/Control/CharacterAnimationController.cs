@@ -246,12 +246,14 @@ namespace TH.Control
                 return attackSpeedStat;
             }
 
-            if (GameStats.AttackSpeed.IsNotNull())
+            if (GameStats.TryGetByLegacyId(AttackSpeedLegacyId, out var cachedAttackSpeedStat) &&
+                cachedAttackSpeedStat.IsNotNull())
             {
-                return GameStats.AttackSpeed;
+                return cachedAttackSpeedStat;
             }
 
-            // Fallback when GameStats cache is not ready yet.
+            // ResolveAttackSpeedStat() 호출 시점에 StatHolder 내부 초기화가 되지 않은 경우 fallback 
+            // todo: 초기화 순서에 의한 레이스 컨디션 조정 후 fallback 제거
             if (statHolder is StatHolder concreteHolder)
             {
                 foreach (var pair in concreteHolder.Stats)
