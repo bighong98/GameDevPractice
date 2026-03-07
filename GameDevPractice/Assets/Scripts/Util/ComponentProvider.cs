@@ -19,7 +19,7 @@ namespace TH.Utils
             return component;
         }
 
-        public bool TryGet<T>(out T value) where T : class
+        public bool TryGet<T>(out T value, bool alert = true) where T : class
         {
             // 캐시 우선 탐색
             if (_cache.TryGetValue(typeof(T), out var val) && val is T castVal)

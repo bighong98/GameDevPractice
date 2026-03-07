@@ -10,33 +10,26 @@ namespace TH.Control.Editor
 {
     public static class EnemyNavMeshTools
     {
-        private const string SnapAllEnemiesMenuPath = "Tools/Control/NavMesh/Snap All Scene Enemies To NavMesh";
+        private const string SnapAllEnemiesMenuPath = "Tools/Control/NavMesh/Snap All Scene Agents To NavMesh";
         private const float SampleDistance = 4f;
 
         [MenuItem(SnapAllEnemiesMenuPath)]
-        private static void SnapAllSceneEnemiesToNavMesh()
+        private static void SnapAllSceneAgentsToNavMesh()
         {
-            EnemyController[] enemies = Object.FindObjectsByType<EnemyController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            NavMeshAgent[] agents = Object.FindObjectsByType<NavMeshAgent>(FindObjectsInactive.Include, FindObjectsSortMode.None);
 
             int total = 0;
             int snapped = 0;
             int skippedAlreadyOnNavMesh = 0;
-            int skippedNoAgent = 0;
             int failed = 0;
             var dirtyScenes = new HashSet<Scene>();
 
-            foreach (EnemyController enemy in enemies)
+            foreach (var agent in agents)
             {
-                if (!IsSceneEnemyInstance(enemy))
+                if (!IsSceneInstance(agent))
                     continue;
 
                 total++;
-
-                if (!enemy.TryGetComponent<NavMeshAgent>(out var agent) || agent == null)
-                {
-                    skippedNoAgent++;
-                    continue;
-                }
 
                 if (agent.isOnNavMesh)
                 {
@@ -44,20 +37,20 @@ namespace TH.Control.Editor
                     continue;
                 }
 
-                Vector3 origin = enemy.transform.position;
+                Vector3 origin = agent.transform.position;
                 if (!NavMesh.SamplePosition(origin, out var hit, SampleDistance, NavMesh.AllAreas))
                 {
                     failed++;
-                    Debug.LogWarning($"[{nameof(EnemyNavMeshTools)}] Failed to sample NavMesh near '{enemy.name}' (distance={SampleDistance}).", enemy);
+                    Debug.LogWarning($"[{nameof(EnemyNavMeshTools)}] Failed to sample NavMesh near '{agent.name}' (distance={SampleDistance}).", agent);
                     continue;
                 }
 
-                Undo.RecordObject(enemy.transform, "Snap Enemy To NavMesh");
-                enemy.transform.position = hit.position;
-                EditorUtility.SetDirty(enemy.transform);
+                Undo.RecordObject(agent.transform, "Snap Agent To NavMesh");
+                agent.transform.position = hit.position;
+                EditorUtility.SetDirty(agent.transform);
 
-                if (enemy.gameObject.scene.IsValid())
-                    dirtyScenes.Add(enemy.gameObject.scene);
+                if (agent.gameObject.scene.IsValid())
+                    dirtyScenes.Add(agent.gameObject.scene);
 
                 snapped++;
             }
@@ -65,27 +58,27 @@ namespace TH.Control.Editor
             foreach (Scene scene in dirtyScenes)
                 EditorSceneManager.MarkSceneDirty(scene);
 
-            Debug.Log($"[{nameof(EnemyNavMeshTools)}] Completed. total={total}, snapped={snapped}, skippedAlreadyOnNavMesh={skippedAlreadyOnNavMesh}, skippedNoAgent={skippedNoAgent}, failed={failed}");
+            Debug.Log($"[{nameof(EnemyNavMeshTools)}] Completed. total={total}, snapped={snapped}, skippedAlreadyOnNavMesh={skippedAlreadyOnNavMesh}, failed={failed}");
         }
 
         [MenuItem(SnapAllEnemiesMenuPath, true)]
-        private static bool ValidateSnapAllSceneEnemiesToNavMesh()
+        private static bool ValidateSnapAllSceneAgentsToNavMesh()
         {
             return !EditorApplication.isPlayingOrWillChangePlaymode;
         }
 
-        private static bool IsSceneEnemyInstance(EnemyController enemy)
+        private static bool IsSceneInstance(NavMeshAgent agent)
         {
-            if (enemy == null)
+            if (agent == null)
                 return false;
 
-            if (EditorUtility.IsPersistent(enemy))
+            if (EditorUtility.IsPersistent(agent))
                 return false;
 
-            if (PrefabStageUtility.GetPrefabStage(enemy.gameObject) != null)
+            if (PrefabStageUtility.GetPrefabStage(agent.gameObject) != null)
                 return false;
 
-            Scene scene = enemy.gameObject.scene;
+            Scene scene = agent.gameObject.scene;
             return scene.IsValid() && scene.isLoaded;
         }
     }

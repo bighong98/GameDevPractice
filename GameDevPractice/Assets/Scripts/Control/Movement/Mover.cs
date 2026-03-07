@@ -17,6 +17,7 @@ namespace TH.Control.Movement
     public struct MoverSaveData
     {
         // 월드 좌표 저장 필드
+        public string sceneId;
         public SerializableVector3 position;
         // 오일러 회전값 저장 필드
         public SerializableVector3 rotation;
@@ -315,6 +316,7 @@ namespace TH.Control.Movement
         {
             MoverSaveData data = new MoverSaveData
             {
+                sceneId = GameSceneManager.Instance.CurrentSceneId,
                 position = new SerializableVector3(transform.position),
                 rotation = new SerializableVector3(transform.eulerAngles)
             };
@@ -326,6 +328,16 @@ namespace TH.Control.Movement
         public bool RestoreState(object state)
         {
             if (state is not MoverSaveData data) return false;
+
+            string currentSceneId = GameSceneManager.Instance.CurrentSceneId;
+            if (!string.IsNullOrEmpty(data.sceneId)
+                && !string.IsNullOrEmpty(currentSceneId)
+                && !string.Equals(data.sceneId, currentSceneId, StringComparison.Ordinal))
+            {
+                this.Log($"({gameObject.name}) - skip position restore. saved sceneId: {data.sceneId}, current sceneId: {currentSceneId}", Logg.LoggingMode.Completed);
+                return true;
+            }
+
             if (!TryGetComponent(out navMeshAgent)) return false;
 
             Vector3 restoredPosition = data.position.ToVector();

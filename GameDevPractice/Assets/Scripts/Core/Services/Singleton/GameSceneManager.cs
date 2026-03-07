@@ -18,19 +18,54 @@ namespace TH.Core.Service
     {
         private readonly Queue<Func<CancellationToken, UniTask>> beforeSceneLoadTasks = new();
         private readonly Queue<Func<CancellationToken, UniTask>> afterSceneLoadTasks = new();
-        
+
         private readonly ISceneLoader sceneLoader;
         private readonly IResourceLoader resourceLoader;
         private SceneCatalogSO sceneCatalog;
+        private TH.SaveLoad.SceneEntry currentSceneEntry;
 
         private const string SceneCatalogKey = "SceneCatalogSO";
-        
+
         private GameSceneManager()
         {
             sceneLoader = ServiceLocator.Get<ISceneLoader>();
             resourceLoader = ServiceLocator.Get<IResourceLoader>();
+
+            sceneLoader.OnSceneChanged += HandleSceneChanged;
+            TryResolveCurrentSceneEntryFromCatalog(out currentSceneEntry);
         }
-        
+
+        public string CurrentSceneId
+        {
+            get
+            {
+                if (TryGetCurrentSceneEntry(out var sceneEntry))
+                {
+                    return sceneEntry.sceneId;
+                }
+
+                return string.Empty;
+            }
+        }
+
+        public bool TryGetCurrentSceneEntry(out TH.SaveLoad.SceneEntry sceneEntry)
+        {
+            if (currentSceneEntry != null)
+            {
+                sceneEntry = currentSceneEntry;
+                return true;
+            }
+
+            if (!TryResolveCurrentSceneEntryFromCatalog(out sceneEntry))
+            {
+                sceneEntry = null;
+                return false;
+            }
+
+            currentSceneEntry = sceneEntry;
+            return true;
+        }
+
         public async UniTask LoadSceneAsync(object key, bool reload = false)
         {
             if (!reload && key is string strKey && SceneManager.GetActiveScene().name == strKey
@@ -50,7 +85,52 @@ namespace TH.Core.Service
         {
             afterSceneLoadTasks.Enqueue(afterSceneLoadTask);
         }
-        
+
+        private void HandleSceneChanged(Scene scene)
+        {
+            if (!scene.IsValid()) return;
+            if (!TryGetSceneCatalog(out var catalog)) return;
+            if (!catalog.TryGetSceneEntry(scene, out var sceneEntry)) return;
+
+            currentSceneEntry = sceneEntry;
+        }
+
+        private bool TryResolveCurrentSceneEntryFromCatalog(out TH.SaveLoad.SceneEntry sceneEntry)
+        {
+            sceneEntry = null;
+
+            if (!TryGetSceneCatalog(out var catalog))
+            {
+                return false;
+            }
+
+            if (!catalog.TryGetCurrentSceneEntry(out sceneEntry))
+            {
+                return false;
+            }
+
+            return sceneEntry != null;
+        }
+
+        private bool TryGetSceneCatalog(out SceneCatalogSO catalog)
+        {
+            catalog = sceneCatalog;
+            if (catalog != null)
+            {
+                return true;
+            }
+
+            if (!resourceLoader.TryLoad(SceneCatalogKey, out SceneCatalogSO loadedCatalog)
+                || loadedCatalog == null)
+            {
+                return false;
+            }
+
+            sceneCatalog = loadedCatalog;
+            catalog = loadedCatalog;
+            return true;
+        }
+
         #region ISingleton
 
         public async UniTask BeforeSceneLoad(CancellationToken externalToken)
@@ -79,7 +159,7 @@ namespace TH.Core.Service
         }
 
         #endregion
-        
+
         public async UniTask LoadMainMenuSceneAsync(bool reload = false, CancellationToken token = default)
         {
             sceneCatalog ??= await resourceLoader.LoadAsync<SceneCatalogSO>(SceneCatalogKey, token);

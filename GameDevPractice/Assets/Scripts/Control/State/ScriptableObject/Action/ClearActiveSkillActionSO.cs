@@ -17,7 +17,7 @@ namespace TH.Control.Data
 
         public override void Execute(IActionStateController controller)
         {
-            if (!controller.Components.TryGet(out IPlayerController _)) return;
+            if (!controller.Components.TryGet(out IPlayerController _, alert: false)) return;
             if (!controller.Components.TryGet(out ISkillController skillController)) return;
 
             if (skipWhenFollowingTarget &&

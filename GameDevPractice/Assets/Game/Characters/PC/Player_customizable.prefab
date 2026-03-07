@@ -112,6 +112,18 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player_customizable
       objectReference: {fileID: 0}
+    - target: {fileID: 5718989991818351405, guid: 7d316606e40584a4fbf760ebdbd62c6d, type: 3}
+      propertyPath: raycastDistance
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 5718989991818351405, guid: 7d316606e40584a4fbf760ebdbd62c6d, type: 3}
+      propertyPath: applyOnlyWhenMoving
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5718989991818351405, guid: 7d316606e40584a4fbf760ebdbd62c6d, type: 3}
+      propertyPath: lockHorizontalWhenPlanted
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7253599445613321251, guid: 7d316606e40584a4fbf760ebdbd62c6d, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -213,7 +225,7 @@ MonoBehaviour:
   outfitParts: []
   slotDefaultKeys:
   - partTypeReference:
-      m_AssetGUID: 
+      m_AssetGUID: cb295a351ce0b53498efda497244bcbd
       m_SubObjectName: 
       m_SubObjectType: 
       m_SubObjectGUID: 
@@ -225,13 +237,25 @@ MonoBehaviour:
       m_SubObjectGUID: 
       m_EditorAssetChanged: 0
   - partTypeReference:
-      m_AssetGUID: 
+      m_AssetGUID: fd30e9a5a190fdd4091932361debee0f
       m_SubObjectName: 
       m_SubObjectType: 
       m_SubObjectGUID: 
       m_EditorAssetChanged: 0
     keyReference:
       m_AssetGUID: 4297273c4d185a64b8fdff535f121938
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - partTypeReference:
+      m_AssetGUID: 018ab45b87d87104a96213ffcf5f4599
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 1
+    keyReference:
+      m_AssetGUID: e803b4d9bf050944086b8f1c5e480eed
       m_SubObjectName: 
       m_SubObjectType: 
       m_SubObjectGUID: 
