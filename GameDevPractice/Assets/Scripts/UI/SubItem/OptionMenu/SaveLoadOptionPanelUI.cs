@@ -54,13 +54,13 @@ public class SaveLoadOptionPanelUI : OptionPanelUIBase
         if (saveFileHandler == null)
         {
             Logg.LogWarning("[SaveLoadOptionPanelUI] ISaveFileHandler is not available");
-            loadSlotPanel.ShowLoadSlots(null);
+            ShowLoadSlotsWithOptionMenuToken(null);
             return;
         }
 
         saveFileHandler.RefreshSaveFileList();
         var slots = BuildSlotViewData(saveFileHandler.SaveFiles);
-        loadSlotPanel.ShowLoadSlots(slots);
+        ShowLoadSlotsWithOptionMenuToken(slots);
     }
 
     protected override void SyncFromSettings()
@@ -82,6 +82,20 @@ public class SaveLoadOptionPanelUI : OptionPanelUIBase
         optionMenuUI ??= GetComponentInParent<OptionMenuUI>(true);
     }
 
+    private void ShowLoadSlotsWithOptionMenuToken(IReadOnlyList<SaveSlotViewData> slots)
+    {
+        if (loadSlotPanel == null)
+            return;
+
+        if (optionMenuUI != null && optionMenuUI.TryGetPopupToken(out var optionMenuToken))
+        {
+            loadSlotPanel.ShowLoadSlots(slots, optionMenuToken);
+            return;
+        }
+
+        loadSlotPanel.ShowLoadSlots(slots);
+    }
+
     private void HandleSlotSelected(string saveFile)
     {
         EnsureReferences();
@@ -99,7 +113,7 @@ public class SaveLoadOptionPanelUI : OptionPanelUIBase
             saveFile,
             confirmedSaveFile => LoadFromSlotAsync(confirmedSaveFile).Forget());
     }
-    
+
     private async UniTask LoadFromSlotAsync(string saveFile)
     {
         EnsureReferences();

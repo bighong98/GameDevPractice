@@ -35,6 +35,8 @@ public class OptionMenuUI : PopupUI
     private readonly Dictionary<Enums.OptionCategory, GameObject> categoryPanels = new();
     private Enums.OptionCategory? activeCategory;
 
+    #region Constant values
+
     private const string OptionCategoryPanelMapSOKey = "OptionCategoryPanelMapSO";
     private const float CategoryButtonLabelMinFontSize = 12f;
     private const float CategoryButtonLabelHorizontalPadding = 10f;
@@ -44,6 +46,8 @@ public class OptionMenuUI : PopupUI
     private const string DefaultResetConfirmText = "옵션을 기본값으로 초기화하시겠습니까?";
     private const string ExitGameConfirmText = "게임을 저장하고 종료하시겠습니까?";
     private const string MainMenuConfirmText = "게임을 저장하고 메인 화면으로 이동하시겠습니까?";
+
+    #endregion
 
     protected override void Awake()
     {
@@ -295,7 +299,6 @@ public class OptionMenuUI : PopupUI
     // 현재 활성 패널 인스턴스에서 OptionPanelUIBase 탐색
     private OptionPanelUIBase GetActivePanel()
     {
-        // 아직 선택된 카테고리가 없으면 패널도 없다.
         if (!activeCategory.HasValue)
             return null;
 

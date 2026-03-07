@@ -6,7 +6,7 @@ namespace TH.UI
 {
     public sealed class LoadSlotConfirmModule
     {
-        private const string DefaultLoadConfirmQuestion = "Load the selected save file?";
+        private const string DefaultLoadConfirmQuestion = "해당 세이브 파일을 불러오시겠습니까?";
 
         private readonly string loadConfirmQuestion;
         private CancellationTokenSource requestCTS;

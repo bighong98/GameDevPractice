@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using TH.Core.Service;
 using TH.Resource;
@@ -12,11 +13,13 @@ namespace TH.UI
     public class LoadSlotPanelEmbeddedUI : BaseUI
     {
         [SerializeField] private RectTransform loadSlotContent;
-        [SerializeField] private GameObject loadSlotTemplate;
         [SerializeField] private AssetReferenceGameObject loadSlotTemplateReference;
         [SerializeField] private TMP_Text loadSlotEmptyLabel;
 
+        [NonSerialized] private GameObject loadSlotTemplate;
         private LoadSlotListModule loadSlotListModule;
+        private CancellationTokenSource showLoadSlotsRequestCTS;
+        private CancellationTokenSource linkedShowLoadSlotsRequestCTS;
 
         public event Action<string> SlotSelected;
 
@@ -33,34 +36,80 @@ namespace TH.UI
             loadSlotListModule?.Clear();
         }
 
-        public void ShowLoadSlots(IReadOnlyList<SaveSlotViewData> slots)
+        private void OnDestroy()
         {
-            ShowLoadSlotsAsync(slots).Forget();
+            CancelShowLoadSlotsRequest();
         }
 
-        private async UniTaskVoid ShowLoadSlotsAsync(IReadOnlyList<SaveSlotViewData> slots)
+        public void ShowLoadSlots(IReadOnlyList<SaveSlotViewData> slots, CancellationToken ownerToken = default)
         {
-            EnsureReferences();
+            var requestToken = CreateShowLoadSlotsToken(ownerToken);
+            ShowLoadSlotsAsync(slots, requestToken).Forget();
+        }
 
-            int slotCount = slots?.Count ?? 0;
-            this.Log($"ShowLoadSlots() slots.Count: {slotCount}", Logg.LoggingMode.Completed);
-
-            if (loadSlotTemplate == null)
+        private async UniTaskVoid ShowLoadSlotsAsync(IReadOnlyList<SaveSlotViewData> slots, CancellationToken requestToken)
+        {
+            try
             {
-                await EnsureLoadSlotTemplateAsync();
-            }
+                EnsureReferences();
 
-            if (loadSlotListModule == null || !loadSlotListModule.IsValid)
-            {
-                InitLoadSlotListModule();
+                int slotCount = slots?.Count ?? 0;
+                this.Log($"ShowLoadSlots() slots.Count: {slotCount}", Logg.LoggingMode.Completed);
+
+                if (loadSlotTemplate == null)
+                {
+                    await EnsureLoadSlotTemplateAsync().AttachExternalCancellation(requestToken);
+                }
+
+                requestToken.ThrowIfCancellationRequested();
+
                 if (loadSlotListModule == null || !loadSlotListModule.IsValid)
                 {
-                    return;
+                    InitLoadSlotListModule();
+                    if (loadSlotListModule == null || !loadSlotListModule.IsValid)
+                    {
+                        return;
+                    }
                 }
-            }
 
-            loadSlotListModule.Populate(slots, HandleSlotSelected);
-            gameObject.SetActive(true);
+                requestToken.ThrowIfCancellationRequested();
+                loadSlotListModule.Populate(slots, HandleSlotSelected);
+            }
+            catch (OperationCanceledException)
+            {
+                // Ignore cancellation when the option menu closes or a newer request is issued.
+            }
+        }
+
+        private CancellationToken CreateShowLoadSlotsToken(CancellationToken ownerToken)
+        {
+            CancelShowLoadSlotsRequest();
+
+            showLoadSlotsRequestCTS = new CancellationTokenSource();
+            if (!ownerToken.CanBeCanceled)
+                return showLoadSlotsRequestCTS.Token;
+
+            linkedShowLoadSlotsRequestCTS =
+                CancellationTokenSource.CreateLinkedTokenSource(showLoadSlotsRequestCTS.Token, ownerToken);
+            return linkedShowLoadSlotsRequestCTS.Token;
+        }
+
+        private void CancelShowLoadSlotsRequest()
+        {
+            CancelAndDispose(ref linkedShowLoadSlotsRequestCTS);
+            CancelAndDispose(ref showLoadSlotsRequestCTS);
+        }
+
+        private static void CancelAndDispose(ref CancellationTokenSource cts)
+        {
+            if (cts == null)
+                return;
+
+            if (!cts.IsCancellationRequested)
+                cts.Cancel();
+
+            cts.Dispose();
+            cts = null;
         }
 
         private void EnsureReferences()
@@ -94,7 +143,9 @@ namespace TH.UI
                 return false;
             }
 
-            var loadedTemplate = await ResourceManager.Instance.ExtractAssetRefAsync<GameObject>(loadSlotTemplateReference, destroyCancellationToken);
+            var loadedTemplate = await ResourceManager.Instance.ExtractAssetRefAsync<GameObject>(
+                loadSlotTemplateReference,
+                destroyCancellationToken);
             if (loadedTemplate == null)
             {
                 return false;

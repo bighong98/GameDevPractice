@@ -91,3 +91,7 @@ GameDevPractice/[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/link.xml.meta
 GameDevPractice/Assets/Resources/GameBootSetting.asset
 GameDevPractice/Assets/Resources/GameBootSetting.asset.meta
 GameDevPractice/Assets/AddressableAssetsData/Windows/addressables_content_state.bin.meta
+GameDevPractice/Assets/Resources/PerformanceTestRunInfo.json
+GameDevPractice/Assets/Resources/PerformanceTestRunInfo.json.meta
+GameDevPractice/Assets/Resources/PerformanceTestRunSettings.json
+GameDevPractice/Assets/Resources/PerformanceTestRunSettings.json.meta
