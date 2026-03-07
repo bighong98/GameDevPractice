@@ -22,6 +22,12 @@ MonoBehaviour:
     - PreLoad_Prefab
     - UI
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 10c6df638add9f340bfca587ac5634af
+    m_Address: InventoryItemIcons.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_Atlas
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 1bfea1188da51f44e9a32ec6be370c0a
     m_Address: TooltipUI.prefab
     m_ReadOnly: 0
@@ -47,6 +53,12 @@ MonoBehaviour:
     m_SerializedLabels:
     - PreLoad_Prefab
     - UI
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6e3092dc5a5b1f4449e8f84cba801296
+    m_Address: QuickSlotPanel.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_Atlas
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 8aa63baa8eb8d7b43bc219b70f06f61f
     m_Address: LoadSlotPanel
@@ -83,6 +95,12 @@ MonoBehaviour:
     - PreLoad_Prefab
     - UI
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: dd3ba9ba19e04ac4caa221cf98d53361
+    m_Address: PlayerStatusBar.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_Atlas
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e5dd94e856534ffc88bbdd06bcb0d0b5
     m_Address: UI_SkillTooltip.prefab
     m_ReadOnly: 0
@@ -117,11 +135,6 @@ MonoBehaviour:
     m_SerializedLabels:
     - PreLoad_Prefab
     - UI
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: f8bcd29e5e9e4ec429f513dd24ec2bfb
-    m_Address: Assets/Resources/Audio/extenz - Endless Summer.wav
-    m_ReadOnly: 0
-    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: ba2aeaf5da86ad943b7448d84aa19f98, type: 2}

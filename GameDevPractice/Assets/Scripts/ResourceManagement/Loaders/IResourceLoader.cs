@@ -3,6 +3,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using TH.SceneManagement;
 using UnityEngine.AddressableAssets;
+using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace TH.Resource
@@ -15,6 +16,8 @@ namespace TH.Resource
         // 동기 리소스 로드 (캐싱된 리소스가 있는 경우 true 반환)
         bool TryLoad<T>(string key, out T resource) where T : Object;
         bool TryLoad<T>(AssetReference assetRef, out T resource) where T : Object;
+        UniTask<Sprite> LoadSpriteFromAtlasAsync(string atlasTagOrAddress, string spriteName, CancellationToken token = default);
+        bool TryLoadSpriteFromAtlas(string atlasTagOrAddress, string spriteName, out Sprite sprite);
         // 라벨 별 리소스 일괄 로드 대기
         // 가급적 OnLabelResourcesLoadedAll에 직접 등록하기보다 waitForPreLoad() 사용 권장 (초기화 순서 꼬임 방지)
         void WaitForPreLoad(string label, Action callback);

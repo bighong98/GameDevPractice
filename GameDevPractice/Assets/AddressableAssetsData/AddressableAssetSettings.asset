@@ -15,7 +15,7 @@ MonoBehaviour:
   m_DefaultGroup: 3b559008265abd04ba68b9cac872e7db
   m_currentHash:
     serializedVersion: 2
-    Hash: bde7550a6bda77593ca3930f6fde65c3
+    Hash: 00000000000000000000000000000000
   m_OptimizeCatalogSize: 0
   m_BuildRemoteCatalog: 0
   m_CatalogRequestsTimeout: 0
@@ -122,6 +122,7 @@ MonoBehaviour:
     - PreLoad_CatalogSO
     - PreLoad_Prefab
     - PreLoad_Asset
+    - PreLoad_Atlas
   m_SchemaTemplates: []
   m_GroupTemplateObjects:
   - {fileID: 11400000, guid: 69703238730e7ee44b502850f9032d2a, type: 2}

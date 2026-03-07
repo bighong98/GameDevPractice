@@ -7,6 +7,7 @@ using Cysharp.Threading.Tasks;
 using TH.SceneManagement;
 using TH.Utils;
 using UnityEngine;
+using UnityEngine.U2D;
 
 namespace TH.Resource
 {
@@ -31,6 +32,10 @@ namespace TH.Resource
         // 라벨별 프리로드 완료 대기 후속 작업 큐 목록 캐시
         // -> 라벨 완료 시점 일괄 실행용
         private readonly Dictionary<string, Queue<Action>> reservedPreLoadTasks = new();
+        private readonly Dictionary<string, string> atlasTagToPrimaryKey = new(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, SpriteAtlas> atlasTagToAtlas = new(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, List<Action<SpriteAtlas>>> atlasRequestWaiters = new(StringComparer.OrdinalIgnoreCase);
+
         
         #region Enums
         // 어드레서블 프리로드 라벨
@@ -38,6 +43,7 @@ namespace TH.Resource
         enum PreLoadLabels
         {
             PreLoad_First, // 구분 무시하고 가장 처음에 로드해야할 리소스
+            PreLoad_Atlas,
             PreLoad_Asset, // 일반 에셋 (AudioClip, Texture, Material, etc)
             PreLoad_DataSO, // 데이터 컨테이너 Scriptable Object
             PreLoad_CatalogSO, // DataSO의 목록(AssetReference 형태)을 가지고 있는 Scriptable Object
@@ -70,6 +76,8 @@ namespace TH.Resource
             {
                 InitForLabel(label);
             }
+
+            RegisterSpriteAtlasRequestHandler();
         }
         
         private void InitForLabel(string label)
@@ -98,7 +106,14 @@ namespace TH.Resource
                 float labelStartedAt = Time.realtimeSinceStartup;
                 Logg.Log($"[ResourceLoader][PreLoad] label start: {label}", Logg.LoggingMode.Completed);
 
-                await LoadAllAsync<UnityEngine.Object>(label);
+                if (label == nameof(PreLoadLabels.PreLoad_Atlas))
+                {
+                    await LoadAllAsync<SpriteAtlas>(label);
+                }
+                else
+                {
+                    await LoadAllAsync<UnityEngine.Object>(label);
+                }
 
                 float labelElapsed = Time.realtimeSinceStartup - labelStartedAt;
                 Logg.Log($"[ResourceLoader][PreLoad] label end: {label} ({labelElapsed:F2}s)", Logg.LoggingMode.Completed);
@@ -275,6 +290,10 @@ namespace TH.Resource
                             if (handle.IsValid() && handle.Status == AsyncOperationStatus.Succeeded)
                             {
                                 CacheGuidHandlesByPrimaryKey(key, handle);
+                                if (handle.Result is SpriteAtlas loadedAtlas)
+                                {
+                                    CacheAtlasMapping(key, loadedAtlas);
+                                }
                             }
 
                             Interlocked.Increment(ref loadCount);
@@ -366,8 +385,18 @@ namespace TH.Resource
         {
             if (resourceKeys.TryGetValue(key, out AsyncOperationHandle cachedHandle))
             {
-                CacheGuidHandlesByPrimaryKey(key, cachedHandle);
-                return (T)cachedHandle.Result;
+                if (cachedHandle.IsValid() && cachedHandle.Status == AsyncOperationStatus.Succeeded)
+                {
+                    CacheGuidHandlesByPrimaryKey(key, cachedHandle);
+                    if (cachedHandle.Result is SpriteAtlas cachedAtlas)
+                    {
+                        CacheAtlasMapping(key, cachedAtlas);
+                    }
+
+                    return cachedHandle.Result as T;
+                }
+
+                RemoveFailedResourceHandle(key);
             }
 
             var op = Addressables.LoadAssetAsync<T>(key);
@@ -378,8 +407,14 @@ namespace TH.Resource
                 await asyncInitializer.InitializeAsync(token);
 
             CacheGuidHandlesByPrimaryKey(key, op);
+            if (result is SpriteAtlas loadedAtlas)
+            {
+                CacheAtlasMapping(key, loadedAtlas);
+            }
+
             return result;
         }
+
 
         // AssetReference로 단일 리소스를 비동기 로드
         // 이미 캐시에 있으면 즉시 반환
@@ -400,12 +435,19 @@ namespace TH.Resource
                 return null;
             }
 
+            string runtimeKeyText = assetRef.RuntimeKey?.ToString();
+
             if (resourceGuids.TryGetValue(assetRef.AssetGUID, out var cachedHandle) && cachedHandle.IsValid())
             {
                 var cachedResult = cachedHandle.Result as T;
                 if (cachedResult is IAsyncInitializer cachedInitializer)
                 {
                     await cachedInitializer.InitializeAsync(token);
+                }
+
+                if (cachedResult is SpriteAtlas cachedAtlas)
+                {
+                    CacheAtlasMapping(runtimeKeyText, cachedAtlas);
                 }
 
                 return cachedResult;
@@ -430,13 +472,58 @@ namespace TH.Resource
                 await loadedInitializer.InitializeAsync(token);
             }
 
+            if (loadedResult is SpriteAtlas loadedAtlas)
+            {
+                CacheAtlasMapping(runtimeKeyText, loadedAtlas);
+            }
+
             return loadedResult;
         }
 
 
+
+        public async UniTask<Sprite> LoadSpriteFromAtlasAsync(string atlasTagOrAddress, string spriteName, CancellationToken token = default)
+        {
+            if (string.IsNullOrWhiteSpace(spriteName))
+            {
+                return null;
+            }
+
+            var atlas = await LoadAtlasByTagOrAddressAsync(atlasTagOrAddress, token);
+            if (atlas == null)
+            {
+                return null;
+            }
+
+            var sprite = atlas.GetSprite(spriteName);
+            if (sprite == null)
+            {
+                Logg.LogWarning($"[ResourceLoader][SpriteAtlas] sprite not found. atlas: {atlas.name}, sprite: {spriteName}");
+            }
+
+            return sprite;
+        }
+
         #endregion
 
         #region TryLoad (Sync)
+
+        public bool TryLoadSpriteFromAtlas(string atlasTagOrAddress, string spriteName, out Sprite sprite)
+        {
+            sprite = null;
+            if (string.IsNullOrWhiteSpace(spriteName))
+            {
+                return false;
+            }
+
+            if (!TryResolveCachedAtlas(atlasTagOrAddress, out var atlas) || atlas == null)
+            {
+                return false;
+            }
+
+            sprite = atlas.GetSprite(spriteName);
+            return sprite != null;
+        }
 
         // 로딩 완료된 리소스 목록에 접근 (key 기반)
         public bool TryLoad<T>(string key, out T resource) where T : UnityEngine.Object
@@ -648,6 +735,272 @@ namespace TH.Resource
             }
 
             return false;
+        }
+
+        private void RegisterSpriteAtlasRequestHandler()
+        {
+            SpriteAtlasManager.atlasRequested -= HandleSpriteAtlasRequested;
+            SpriteAtlasManager.atlasRequested += HandleSpriteAtlasRequested;
+        }
+
+        private void HandleSpriteAtlasRequested(string requestedTag, Action<SpriteAtlas> callback)
+        {
+            if (string.IsNullOrWhiteSpace(requestedTag))
+            {
+                callback?.Invoke(null);
+                return;
+            }
+
+            if (TryResolveCachedAtlas(requestedTag, out var cachedAtlas))
+            {
+                callback?.Invoke(cachedAtlas);
+                return;
+            }
+
+            if (!atlasRequestWaiters.TryGetValue(requestedTag, out var waiters))
+            {
+                waiters = new List<Action<SpriteAtlas>>(1);
+                atlasRequestWaiters[requestedTag] = waiters;
+                LoadAtlasForRequestedTagAsync(requestedTag).Forget();
+            }
+
+            if (callback != null)
+            {
+                waiters.Add(callback);
+            }
+        }
+
+        private async UniTaskVoid LoadAtlasForRequestedTagAsync(string requestedTag)
+        {
+            SpriteAtlas atlas = null;
+            try
+            {
+                atlas = await LoadAtlasByTagOrAddressAsync(requestedTag);
+            }
+            catch (Exception e)
+            {
+                Logg.LogWarning($"[ResourceLoader][SpriteAtlas] atlas request failed: {requestedTag} - {e.Message}");
+            }
+            finally
+            {
+                if (atlasRequestWaiters.TryGetValue(requestedTag, out var waiters))
+                {
+                    atlasRequestWaiters.Remove(requestedTag);
+                    for (int i = 0; i < waiters.Count; i++)
+                    {
+                        try
+                        {
+                            waiters[i]?.Invoke(atlas);
+                        }
+                        catch (Exception callbackException)
+                        {
+                            Logg.LogWarning($"[ResourceLoader][SpriteAtlas] atlas callback failed: {callbackException.Message}");
+                        }
+                    }
+                }
+            }
+        }
+
+        private async UniTask<SpriteAtlas> LoadAtlasByTagOrAddressAsync(string atlasTagOrAddress, CancellationToken token = default)
+        {
+            if (string.IsNullOrWhiteSpace(atlasTagOrAddress))
+            {
+                return null;
+            }
+
+            if (TryResolveCachedAtlas(atlasTagOrAddress, out var cachedAtlas))
+            {
+                return cachedAtlas;
+            }
+
+            var attemptedAddresses = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            if (atlasTagToPrimaryKey.TryGetValue(atlasTagOrAddress, out var mappedAddress)
+                && !string.IsNullOrWhiteSpace(mappedAddress)
+                && attemptedAddresses.Add(mappedAddress))
+            {
+                var mappedAtlas = await TryLoadAtlasByAddressAsync(mappedAddress, token);
+                if (mappedAtlas != null)
+                {
+                    return mappedAtlas;
+                }
+            }
+
+            foreach (var candidateAddress in EnumerateAtlasAddressCandidates(atlasTagOrAddress))
+            {
+                if (!attemptedAddresses.Add(candidateAddress))
+                {
+                    continue;
+                }
+
+                var atlas = await TryLoadAtlasByAddressAsync(candidateAddress, token);
+                if (atlas != null)
+                {
+                    return atlas;
+                }
+            }
+
+            Logg.LogWarning($"[ResourceLoader][SpriteAtlas] atlas resolve failed: {atlasTagOrAddress}, candidates: {string.Join(", ", attemptedAddresses)}");
+            return null;
+        }
+
+        private static async UniTask<bool> HasAtlasLocationAsync(string atlasAddress, CancellationToken token)
+        {
+            if (string.IsNullOrWhiteSpace(atlasAddress))
+            {
+                return false;
+            }
+
+            var locationsHandle = Addressables.LoadResourceLocationsAsync(atlasAddress, typeof(SpriteAtlas));
+            try
+            {
+                var locations = await locationsHandle.ToUniTask(cancellationToken: token);
+                return locations != null && locations.Count > 0;
+            }
+            catch
+            {
+                return false;
+            }
+            finally
+            {
+                if (locationsHandle.IsValid())
+                {
+                    Addressables.Release(locationsHandle);
+                }
+            }
+        }
+
+
+        private async UniTask<SpriteAtlas> TryLoadAtlasByAddressAsync(string atlasAddress, CancellationToken token)
+        {
+            if (string.IsNullOrWhiteSpace(atlasAddress))
+            {
+                return null;
+            }
+
+            if (TryResolveCachedAtlas(atlasAddress, out var cachedAtlas))
+            {
+                return cachedAtlas;
+            }
+
+            if (!await HasAtlasLocationAsync(atlasAddress, token))
+            {
+                return null;
+            }
+
+            try
+            {
+                var atlas = await LoadAsync<SpriteAtlas>(atlasAddress, token);
+                if (atlas != null)
+                {
+                    CacheAtlasMapping(atlasAddress, atlas);
+                }
+
+                return atlas;
+            }
+            catch
+            {
+                RemoveFailedResourceHandle(atlasAddress);
+                return null;
+            }
+        }
+
+        private bool TryResolveCachedAtlas(string atlasTagOrAddress, out SpriteAtlas atlas)
+        {
+            atlas = null;
+            if (string.IsNullOrWhiteSpace(atlasTagOrAddress))
+            {
+                return false;
+            }
+
+            if (atlasTagToAtlas.TryGetValue(atlasTagOrAddress, out var atlasByTag) && atlasByTag != null)
+            {
+                atlas = atlasByTag;
+                return true;
+            }
+
+            if (atlasTagToPrimaryKey.TryGetValue(atlasTagOrAddress, out var mappedAddress)
+                && resourceKeys.TryGetValue(mappedAddress, out var mappedHandle)
+                && mappedHandle.IsValid()
+                && mappedHandle.Status == AsyncOperationStatus.Succeeded
+                && mappedHandle.Result is SpriteAtlas atlasByMappedAddress)
+            {
+                CacheAtlasMapping(mappedAddress, atlasByMappedAddress);
+                atlas = atlasByMappedAddress;
+                return true;
+            }
+
+            if (resourceKeys.TryGetValue(atlasTagOrAddress, out var addressHandle)
+                && addressHandle.IsValid()
+                && addressHandle.Status == AsyncOperationStatus.Succeeded
+                && addressHandle.Result is SpriteAtlas atlasByAddress)
+            {
+                CacheAtlasMapping(atlasTagOrAddress, atlasByAddress);
+                atlas = atlasByAddress;
+                return true;
+            }
+
+            return false;
+        }
+
+        private void CacheAtlasMapping(string atlasAddress, SpriteAtlas atlas)
+        {
+            if (atlas == null)
+            {
+                return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(atlasAddress))
+            {
+                atlasTagToPrimaryKey[atlasAddress] = atlasAddress;
+                atlasTagToAtlas[atlasAddress] = atlas;
+            }
+
+            if (!string.IsNullOrWhiteSpace(atlas.tag))
+            {
+                atlasTagToAtlas[atlas.tag] = atlas;
+
+                if (!string.IsNullOrWhiteSpace(atlasAddress))
+                {
+                    atlasTagToPrimaryKey[atlas.tag] = atlasAddress;
+                }
+            }
+        }
+
+        private static IEnumerable<string> EnumerateAtlasAddressCandidates(string atlasTagOrAddress)
+        {
+            if (string.IsNullOrWhiteSpace(atlasTagOrAddress))
+            {
+                yield break;
+            }
+
+            yield return atlasTagOrAddress;
+
+            if (!atlasTagOrAddress.EndsWith(".spriteatlas", StringComparison.OrdinalIgnoreCase))
+            {
+                yield return $"{atlasTagOrAddress}.spriteatlas";
+            }
+
+            if (!atlasTagOrAddress.EndsWith(".spriteatlasv2", StringComparison.OrdinalIgnoreCase))
+            {
+                yield return $"{atlasTagOrAddress}.spriteatlasv2";
+            }
+        }
+
+        private void RemoveFailedResourceHandle(string key)
+        {
+            if (string.IsNullOrWhiteSpace(key)
+                || !resourceKeys.TryGetValue(key, out var handle))
+            {
+                return;
+            }
+
+            if (handle.IsValid() && handle.Status != AsyncOperationStatus.Succeeded)
+            {
+                Addressables.Release(handle);
+            }
+
+            resourceKeys.Remove(key);
         }
 
         #endregion

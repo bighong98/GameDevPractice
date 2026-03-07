@@ -63,6 +63,16 @@ namespace TH.Core.Service
         // 필요한 리소스가 프리팹인 경우에 사용
         // 리소스 로드 후 즉시 Instantiate() 실행하여 결과 게임오브젝트 반환
         // 오브젝트 풀링 적용x
+        public bool TryLoadSpriteFromAtlas(string atlasTagOrAddress, string spriteName, out Sprite sprite)
+        {
+            return resourceLoader.TryLoadSpriteFromAtlas(atlasTagOrAddress, spriteName, out sprite);
+        }
+
+        public UniTask<Sprite> LoadSpriteFromAtlasAsync(string atlasTagOrAddress, string spriteName, CancellationToken token = default)
+        {
+            return resourceLoader.LoadSpriteFromAtlasAsync(atlasTagOrAddress, spriteName, token);
+        }
+
         public GameObject Instantiate(string key, Transform parent = null)
         {
             if (TryLoad<UnityEngine.Object>(key, out var result) && result is GameObject origin)
