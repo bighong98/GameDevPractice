@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0a93e84632f2bff46b77e6a3ccf086e3, type: 3}
-  m_Name: DirectHit_Default
+  m_Name: DirectHit_GuaranteeHit
   m_EditorClassIdentifier: Assembly-CSharp::TH.Combat.DirectHitSkillActionSO
   startDelay: 0
   repeatCount: 1
   repeatInterval: 0
   damageScale: 1
   hitCountOverride: 0
-  recheckRangeAtHitTiming: 1
+  recheckRangeAtHitTiming: 0
