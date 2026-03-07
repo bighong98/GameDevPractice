@@ -176,6 +176,10 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6568686253797109238, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
+      propertyPath: applyOnlyWhenMoving
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6568686253797109238, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
       propertyPath: lockHorizontalWhenPlanted
       value: 0
       objectReference: {fileID: 0}
@@ -289,8 +293,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TH.Control.AIControllerRefactoring
   chaseDistance: 8
-  patrolPath: {fileID: 0}
-  waypointTolerance: 2
+  patrolModule:
+    patrolPathProvider:
+      waypoints: []
+    waypointTolerance: 2
+    autoGenerateWhenWaypointsEmpty: 1
+    navMeshSurface: {fileID: 0}
+    autoWaypointCount: 4
+    autoWaypointRadius: 6
+    navMeshSampleDistance: 4
+    minWaypointDistance: 1.5
 --- !u!114 &3668142223287289448
 MonoBehaviour:
   m_ObjectHideFlags: 0

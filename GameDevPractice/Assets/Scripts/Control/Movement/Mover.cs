@@ -64,12 +64,13 @@ namespace TH.Control.Movement
         private Vector3 currentDestination = Vector3.zero;
         // 도착 판정 거리 임계값
         private const float distanceTolerance = 2.0f;
-        // 거리 비교 안정화 버퍼값
+        
         
         private static bool CanControlAgent(NavMeshAgent agent)
         {
             return agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh;
         }
+        // 거리 비교 안정화 버퍼값
         private const float distanceCompareBuffer = 0.1f;
 
 
