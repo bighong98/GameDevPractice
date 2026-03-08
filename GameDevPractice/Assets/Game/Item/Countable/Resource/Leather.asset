@@ -12,9 +12,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c883f9b1e725d0142a4c2b8df41ec1b4, type: 3}
   m_Name: Leather
   m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.ItemTypeSO
-  prefab: {fileID: 0}
+  prefabReference:
+    m_AssetGUID: 07cea4c69292e96499052bbc05e432e9
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
   nameString: "\uAC00\uC8FD"
-  sprite: {fileID: 0}
+  spriteReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
   itemType: 2
   maxAmount: 50
   desc: "\uBC29\uC5B4\uAD6C\uC640 \uAC00\uBC29 \uC81C\uC791\uC5D0 \uC801\uD569\uD55C

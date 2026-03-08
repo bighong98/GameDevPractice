@@ -12,15 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2127a28afdb0e474781023dba74f3231, type: 3}
   m_Name: HeadArmor
   m_EditorClassIdentifier: Assembly-CSharp::ArmorTypeSO
-  prefab: {fileID: 0}
   prefabReference:
-    m_AssetGUID: 
+    m_AssetGUID: 07cea4c69292e96499052bbc05e432e9
     m_SubObjectName: 
     m_SubObjectType: 
     m_SubObjectGUID: 
     m_EditorAssetChanged: 0
   nameString: "\uD14C\uC2A4\uD2B8 \uBA38\uB9AC \uBC29\uC5B4\uAD6C"
-  sprite: {fileID: 0}
   spriteReference:
     m_AssetGUID: 5ff9b869a12e70b4db7a137f84ed920b
     m_SubObjectName: Leather Helmet

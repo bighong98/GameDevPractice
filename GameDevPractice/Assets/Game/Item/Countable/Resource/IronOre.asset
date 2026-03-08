@@ -12,9 +12,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c883f9b1e725d0142a4c2b8df41ec1b4, type: 3}
   m_Name: IronOre
   m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.ItemTypeSO
-  prefab: {fileID: 0}
+  prefabReference:
+    m_AssetGUID: 07cea4c69292e96499052bbc05e432e9
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
   nameString: "\uCCA0\uAD11\uC11D"
-  sprite: {fileID: 0}
+  spriteReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
   itemType: 2
   maxAmount: 99
   desc: "\uC81C\uB828 \uC804 \uC0C1\uD0DC\uC758 \uCCA0\uAD11\uC11D\uC774\uB2E4. \uCCA0

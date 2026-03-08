@@ -12,15 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c883f9b1e725d0142a4c2b8df41ec1b4, type: 3}
   m_Name: HealthPotion
   m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.ItemTypeSO
-  prefab: {fileID: 0}
   prefabReference:
-    m_AssetGUID: 
+    m_AssetGUID: 07cea4c69292e96499052bbc05e432e9
     m_SubObjectName: 
     m_SubObjectType: 
     m_SubObjectGUID: 
     m_EditorAssetChanged: 0
   nameString: "\uCCB4\uB825 \uBB3C\uC57D"
-  sprite: {fileID: 0}
   spriteReference:
     m_AssetGUID: 44dc65116207f4b46aa85443dae5ad96
     m_SubObjectName: Red Potion 2

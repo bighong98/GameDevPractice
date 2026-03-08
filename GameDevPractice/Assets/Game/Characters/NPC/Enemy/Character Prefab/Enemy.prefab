@@ -262,6 +262,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6061633697407881761, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3668142223287289448}
+    - targetCorrespondingSourceObject: {fileID: 6061633697407881761, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -8169712719588060524}
   m_SourcePrefab: {fileID: 100100000, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}
 --- !u!1 &431537241663738169 stripped
 GameObject:
@@ -298,11 +301,12 @@ MonoBehaviour:
       waypoints: []
     waypointTolerance: 2
     autoGenerateWhenWaypointsEmpty: 1
-    navMeshSurface: {fileID: 0}
     autoWaypointCount: 4
     autoWaypointRadius: 6
     navMeshSampleDistance: 4
     minWaypointDistance: 1.5
+    autoAngleJitterDegrees: 8
+    autoRadiusJitterRatio: 0.1
 --- !u!114 &3668142223287289448
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -337,6 +341,24 @@ MonoBehaviour:
   remapColorToBaseColor: 1
   remapBumpToNormal: 1
   forceOpaqueBaseColorAlpha: 1
+--- !u!114 &-8169712719588060524
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 431537241663738169}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b61c0086462f794c95e3fdccafba1b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TH.Combat.Drop.EnemyDropOnKill
+  dropTable: {fileID: 0}
+  spawnOffset: {x: 0, y: 0.5, z: 0}
+  scatterRadius: 0.75
+  scatterHorizontalForce: 1.5
+  scatterUpForce: 1.25
+  applyScatterForce: 1
 --- !u!4 &2395544938457194976 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8132568554257588984, guid: 4c4c0b1a5033ef94787877804703d093, type: 3}

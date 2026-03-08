@@ -12,15 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2127a28afdb0e474781023dba74f3231, type: 3}
   m_Name: Armor_M_Knight_Bottom
   m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.ArmorTypeSO
-  prefab: {fileID: 0}
   prefabReference:
-    m_AssetGUID: 
+    m_AssetGUID: 07cea4c69292e96499052bbc05e432e9
     m_SubObjectName: 
     m_SubObjectType: 
     m_SubObjectGUID: 
     m_EditorAssetChanged: 0
   nameString: "\uAE30\uC0AC\uC758 \uAC15\uD654 \uACBD\uAC11"
-  sprite: {fileID: 0}
   spriteReference:
     m_AssetGUID: 99b5705d28a2ae541bb9f8e9175b47c6
     m_SubObjectName: M_Knight_Bottom

@@ -15,6 +15,21 @@ MonoBehaviour:
   m_GroupName: Character Data
   m_GUID: ae3812f07b177484cbc394c6beec7393
   m_SerializeEntries:
+  - m_GUID: 10f9468c9ae0aae449bff040ee0b2eff
+    m_Address: Tough Enemy_DropTable.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 788f772a451aaf84a84a28fe0a0e2d61
+    m_Address: Enemy_fighter_DropTable.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 820e3da79dc2f4948bacfc8c3455087a
+    m_Address: Enemy_DropTable.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 846c10040e9c6eb4c9a3a41c999b7a9c
     m_Address: Tough Enemy.prefab
     m_ReadOnly: 0
@@ -42,7 +57,9 @@ MonoBehaviour:
   - m_GUID: d3ab42f9d33a8bf4cbebcbc94f5b10ab
     m_Address: Enemy.prefab
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - PreLoad_CatalogSO
+    - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f99a9c8d0583cc04d9cb6f82405b6c9e
     m_Address: PlayerTypeSO

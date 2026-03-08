@@ -22,10 +22,21 @@ namespace TH.Control
 
         private void OnTriggerEnter(Collider other)
         {
-            if (other.TryGetComponent(out IInteractable i))
-            {
-                HandleInteraction(i);
-            }
+            TryHandleInteraction(other);
+        }
+
+        private void OnTriggerStay(Collider other)
+        {
+            TryHandleInteraction(other);
+        }
+
+        private void TryHandleInteraction(Collider other)
+        {
+            if (other == null)
+                return;
+
+            if (other.TryGetComponent(out IInteractable interactable))
+                HandleInteraction(interactable);
         }
 
         private void HandleInteraction(IInteractable interact)
@@ -35,7 +46,7 @@ namespace TH.Control
                 case IDropItem dropItem:
                     StoreDropItem(dropItem);
                     break;
-                //todo: 필요한 상호작용 추가
+                // todo: add more interactable cases
                 default:
                     break;
             }
@@ -43,12 +54,26 @@ namespace TH.Control
 
         private void StoreDropItem(IDropItem dropItem)
         {
-            if (itemBuilder.GetItemFromData(dropItem.ItemData, dropItem.Amount) is not { } item) return;
-            if ((dropItem.UseImmediately && playerStorage.TryStoreAndUse(item))
-                || (!dropItem.UseImmediately && playerStorage.TryStore(item)))
+            if (dropItem == null || dropItem.ItemData == null)
+                return;
+
+            if (itemBuilder.GetItemFromData(dropItem.ItemData, dropItem.Amount) is not { } item)
+                return;
+
+            bool stored = false;
+            if (dropItem.UseImmediately)
             {
-                dropItem.Interact();
+                stored = playerStorage.TryStoreAndUse(item);
+                if (!stored)
+                    stored = playerStorage.TryStore(item);
             }
+            else
+            {
+                stored = playerStorage.TryStore(item);
+            }
+
+            if (stored)
+                dropItem.Interact();
         }
     }
 }

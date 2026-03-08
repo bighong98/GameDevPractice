@@ -274,6 +274,12 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 505bc91d0d288704cb1a06a098a1b0b6
+    m_Address: Assets/Asset Packs/Synty - Polygon Student Sample/Materials/PolyKnights_Object_Mat_GPU
+      Instancing.mat
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5596485a8a28d434d9b0fe4a9b1f1b05
     m_Address: Shape_16.png
     m_ReadOnly: 0

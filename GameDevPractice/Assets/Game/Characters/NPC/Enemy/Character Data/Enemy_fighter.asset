@@ -12,7 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2476518239c701645bee3cfe621016e6, type: 3}
   m_Name: Enemy_fighter
   m_EditorClassIdentifier: Assembly-CSharp::NpcTypeSO
-  prefab: {fileID: 0}
   prefabReference:
     m_AssetGUID: 846c10040e9c6eb4c9a3a41c999b7a9c
     m_SubObjectName: 
@@ -20,7 +19,6 @@ MonoBehaviour:
     m_SubObjectGUID: 
     m_EditorAssetChanged: 1
   nameString: Tough Enemy
-  sprite: {fileID: 0}
   spriteReference:
     m_AssetGUID: 
     m_SubObjectName: 
@@ -39,3 +37,9 @@ MonoBehaviour:
     m_SubObjectType: 
     m_SubObjectGUID: 
     m_EditorAssetChanged: 1
+  enemyDropTableReference:
+    m_AssetGUID: 788f772a451aaf84a84a28fe0a0e2d61
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0

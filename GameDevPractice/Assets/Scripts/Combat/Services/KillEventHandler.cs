@@ -1,5 +1,6 @@
 using TH.Attribute;
 using TH.Attribute.Stat;
+using TH.Combat.Drop;
 using TH.Utils;
 using UnityEngine;
 
@@ -41,6 +42,16 @@ namespace TH.Combat.Service
 #else
             attackerExpHolder.GainXp(rewardXpAmount.Value);
 #endif
+
+            TryDropItems(vc);
+        }
+
+        private static void TryDropItems(Component victimComponent)
+        {
+            if (victimComponent.IsNull() || 
+                !victimComponent.TryGetComponent(out EnemyDropOnKill dropOnKill)) return;
+
+            dropOnKill.TryDrop();
         }
     }
 }

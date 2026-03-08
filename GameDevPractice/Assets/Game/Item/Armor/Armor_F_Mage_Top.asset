@@ -12,15 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2127a28afdb0e474781023dba74f3231, type: 3}
   m_Name: Armor_F_Mage_Top
   m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.ArmorTypeSO
-  prefab: {fileID: 0}
   prefabReference:
-    m_AssetGUID: 
+    m_AssetGUID: 07cea4c69292e96499052bbc05e432e9
     m_SubObjectName: 
     m_SubObjectType: 
     m_SubObjectGUID: 
     m_EditorAssetChanged: 0
   nameString: "\uB9C8\uBC95\uC0AC\uC758 \uB8EC\uBB38\uC790 \uB85C\uBE0C"
-  sprite: {fileID: 0}
   spriteReference:
     m_AssetGUID: e35012f72a9d01341bba40b6ce786a51
     m_SubObjectName: F_Mage_Top

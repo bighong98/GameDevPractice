@@ -12,15 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2127a28afdb0e474781023dba74f3231, type: 3}
   m_Name: Armor_F_Witch_Bottom
   m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.ArmorTypeSO
-  prefab: {fileID: 0}
   prefabReference:
-    m_AssetGUID: 
+    m_AssetGUID: 07cea4c69292e96499052bbc05e432e9
     m_SubObjectName: 
     m_SubObjectType: 
     m_SubObjectGUID: 
     m_EditorAssetChanged: 0
   nameString: "\uB9C8\uB140\uC758 \uC2E0\uC18D\uD55C \uACBD\uAC11"
-  sprite: {fileID: 0}
   spriteReference:
     m_AssetGUID: b17850e7e7347a949a90b8c22d8cc8a4
     m_SubObjectName: F_Witch_Bottom

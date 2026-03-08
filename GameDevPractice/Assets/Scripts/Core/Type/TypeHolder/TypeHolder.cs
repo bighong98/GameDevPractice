@@ -22,6 +22,9 @@ namespace TH.Resource
         [SerializeField] private bool addToPool; // 씬에 배치된 오브젝트 오브젝트 풀에 합류 여부
         
         public GameObject Origin { get; set; } // 오브젝트 풀링 적용시 원본 프리팹 참조 저장 목적
+        
+
+        protected virtual bool CanSkipTypeReferenceValidation => false;
         public T Type => type;
 
         private bool isInit; // 최초 1회 초기화 여부 (OnCreateFromPool()에서 갱신)
@@ -65,11 +68,18 @@ namespace TH.Resource
 
         private bool InitializeType()
         {
-            if (type != null) return false; // 이미 type 로드가 완료된 경우 실행x
+            if (type != null)
+                return false;
+
             if (typeRef == null || !typeRef.RuntimeKeyIsValid())
+            {
+                if (CanSkipTypeReferenceValidation)
+                    return false;
+
                 throw new InvalidOperationException(
                     $"[{gameObject.name}.{nameof(InitializeTypeAsync)}] invalid AssetReference for type data");
-            
+            }
+
             bool result = ResourceManager.Instance.TryLoad(typeRef, out type);
             this.Log($"InitializeType() - result: {type}", Logg.LoggingMode.Completed);
             return result;
@@ -79,23 +89,28 @@ namespace TH.Resource
         // 동일한 참조를 중복 로드하지 않도록 내부적으로 캐싱함
         protected async UniTask<bool> InitializeTypeAsync()
         {
-            // 이미 type 데이터 로드가 완료된 경우 실행x
-            if (type != null) return false; 
+            if (type != null)
+                return false;
+
             if (typeRef == null || !typeRef.RuntimeKeyIsValid())
+            {
+                if (CanSkipTypeReferenceValidation)
+                    return false;
+
                 throw new InvalidOperationException(
                     $"[{gameObject.name}] InitializeTypeAsync - invalid AssetReference for type data");
-            
-            // 타입 데이터 비동기 로드 시작
+            }
+
             try
             {
                 type = await ResourceManager.Instance.ExtractAssetRefAsync<T>(typeRef, token);
                 Logg.Log($"[{gameObject.name}] InitializeTypeAsync - " +
-                     $"type: {(type.IsNotNull() ? type : default)}", Logg.LoggingMode.Completed);
+                         $"type: {(type.IsNotNull() ? type : default)}", Logg.LoggingMode.Completed);
                 return type != null;
             }
-            catch (Exception e) 
+            catch (Exception e)
             {
-                this.LogWarning($"InitializeTypeAsync() interrupted - {e}"); 
+                this.LogWarning($"InitializeTypeAsync() interrupted - {e}");
                 return false;
             }
         }
@@ -126,6 +141,20 @@ namespace TH.Resource
             await InitializeTypeAsync();
             return type;
         }
+
+        protected bool TryForceInjectTypeInternal(T runtimeType, bool notifyDependents = true)
+        {
+            if (runtimeType == null)
+                return false;
+
+            type = runtimeType;
+
+            if (notifyDependents)
+                DeliverTypeData();
+
+            return true;
+        }
+
 
 
         // 로드된 타입 데이터를 ITypeDependent 인터페이스를 구현한 모든 컴포넌트에 전달

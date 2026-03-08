@@ -12,15 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c883f9b1e725d0142a4c2b8df41ec1b4, type: 3}
   m_Name: WaterBottle
   m_EditorClassIdentifier: Assembly-CSharp::ItemTypeSO
-  prefab: {fileID: 0}
   prefabReference:
-    m_AssetGUID: 
+    m_AssetGUID: 07cea4c69292e96499052bbc05e432e9
     m_SubObjectName: 
     m_SubObjectType: 
     m_SubObjectGUID: 
     m_EditorAssetChanged: 0
-  nameString: "\uC2DC\uD5D8\uD56D\uBAA9 \uBB3C\uBCD1"
-  sprite: {fileID: 0}
+  nameString: "\uBB3C\uBCD1"
   spriteReference:
     m_AssetGUID: 3a481bc5b3972b54ab4918d5226622af
     m_SubObjectName: Water Bottle

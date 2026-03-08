@@ -14,5 +14,11 @@ namespace TH.Resource
         UniTask<T> GetTypeAsync();
         UniTask SetTypeAsync(AssetReferenceT<T> typeReference);
     }
+    public interface IRuntimeTypeInjectable<T> where T : BaseTypeSO
+    {
+        bool AllowRuntimeTypeInjection { get; }
+        bool TryForceInjectType(T runtimeType, bool notifyDependents);
+    }
+
 }
 

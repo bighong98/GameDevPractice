@@ -12,15 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c883f9b1e725d0142a4c2b8df41ec1b4, type: 3}
   m_Name: Skull
   m_EditorClassIdentifier: Assembly-CSharp::ItemTypeSO
-  prefab: {fileID: 0}
   prefabReference:
-    m_AssetGUID: 
+    m_AssetGUID: 07cea4c69292e96499052bbc05e432e9
     m_SubObjectName: 
     m_SubObjectType: 
     m_SubObjectGUID: 
     m_EditorAssetChanged: 0
-  nameString: "\uD14C\uC2A4\uD2B8 \uC544\uC774\uD15C \uD574\uACE8"
-  sprite: {fileID: 0}
+  nameString: "\uD574\uACE8"
   spriteReference:
     m_AssetGUID: 587503b6015abc741ad5147fff8f4a06
     m_SubObjectName: Skull

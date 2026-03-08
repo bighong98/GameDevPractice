@@ -36,6 +36,11 @@ MonoBehaviour:
     - PreLoad_DataSO
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 07cea4c69292e96499052bbc05e432e9
+    m_Address: Item Data Folder/Weapon/DroppedWeapon/DropItem Default.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 082c55684a630da47a4fc9ab541f96bc
     m_Address: Fireball_Explosion.asset
     m_ReadOnly: 0

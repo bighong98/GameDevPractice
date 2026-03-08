@@ -12,15 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2127a28afdb0e474781023dba74f3231, type: 3}
   m_Name: Armor_M_Archer_Top
   m_EditorClassIdentifier: Assembly-CSharp::TH.Resource.ArmorTypeSO
-  prefab: {fileID: 0}
   prefabReference:
-    m_AssetGUID: 
+    m_AssetGUID: 07cea4c69292e96499052bbc05e432e9
     m_SubObjectName: 
     m_SubObjectType: 
     m_SubObjectGUID: 
     m_EditorAssetChanged: 0
   nameString: "\uAD81\uC218\uC758 \uD310\uAE08 \uD749\uAC11"
-  sprite: {fileID: 0}
   spriteReference:
     m_AssetGUID: 34186fab1480ebb4c824eb27374d1bef
     m_SubObjectName: M_Archer_Top

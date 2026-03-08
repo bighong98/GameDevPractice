@@ -14,6 +14,7 @@ namespace TH.Control
         ItemTypeSO ItemData { get; }
         int Amount { get; }
         bool UseImmediately { get; }
+        void ApplyScatterForce(float horizontalForce, float upwardForce);
     }
 }
 

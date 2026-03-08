@@ -12,7 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2476518239c701645bee3cfe621016e6, type: 3}
   m_Name: Enemy
   m_EditorClassIdentifier: Assembly-CSharp::NpcTypeSO
-  prefab: {fileID: 0}
   prefabReference:
     m_AssetGUID: d3ab42f9d33a8bf4cbebcbc94f5b10ab
     m_SubObjectName: 
@@ -20,7 +19,6 @@ MonoBehaviour:
     m_SubObjectGUID: 
     m_EditorAssetChanged: 1
   nameString: Enemy
-  sprite: {fileID: 0}
   spriteReference:
     m_AssetGUID: 
     m_SubObjectName: 
@@ -39,3 +37,9 @@ MonoBehaviour:
     m_SubObjectType: 
     m_SubObjectGUID: 
     m_EditorAssetChanged: 1
+  enemyDropTableReference:
+    m_AssetGUID: 820e3da79dc2f4948bacfc8c3455087a
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
