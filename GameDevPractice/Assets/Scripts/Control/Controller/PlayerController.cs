@@ -93,6 +93,8 @@ namespace TH.Control
             }
         }
 
+
+
         private bool CanProcessInput()
         {
             return Time.timeScale > float.Epsilon && health?.IsDead != true;

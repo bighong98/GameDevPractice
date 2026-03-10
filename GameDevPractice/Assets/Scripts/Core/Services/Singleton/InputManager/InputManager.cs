@@ -51,6 +51,7 @@ namespace TH.Core
         public event Action<Vector2> OnScreenDragStarted; // 게임 스크린 드래그 시작 시 
         public event Action<Vector2> OnScreenDragging; // 게임 스크린 드래그 시 (팝업UI와 상호작용은 OnDragStarted 혹은 pointerEvent 기반으로 처리 )
         public event Action<Vector2> OnScreenDragEnded; // 게임 스크린 드래그 종료 시
+        public event Action OnJumped;
         // UI.Click
         public event Action<Vector2> OnUIPointerMoved; // UI 팝업이 활성화된 상태에서 포인터 움직임 발생시
         public event Action<Vector2> OnSingleClicked;
@@ -151,6 +152,13 @@ namespace TH.Core
         public void OnZoom(InputAction.CallbackContext context)
         {
             
+        }
+
+        public void OnJump(InputAction.CallbackContext context)
+        {
+            if (context.phase != InputActionPhase.Performed) return;
+            Logg.Log($"OnJump invoked", Logg.LoggingMode.InProgress);
+            OnJumped?.Invoke();
         }
 
         // public void OnDragScreen(InputAction.CallbackContext context)
@@ -708,6 +716,8 @@ namespace TH.Core
             return
                 $"actionMap={action.actionMap?.name ?? "null"}, action={action.name}, enabled={action.enabled}, phase={action.phase}, activeControl={action.activeControl?.path ?? "null"}";
         }
+
+
 #else
         [System.Diagnostics.Conditional("UNITY_EDITOR")]
         [System.Diagnostics.Conditional("DEVELOPMENT_BUILD")]

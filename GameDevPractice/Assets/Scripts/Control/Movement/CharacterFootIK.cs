@@ -12,6 +12,11 @@ namespace TH.Control.Movement
         [SerializeField] private Animator animator;
         [SerializeField] private NavMeshAgent navMeshAgent;
 
+
+        [Header("Jump IK")]
+        [SerializeField] private bool disableIkWhileJumping = true;
+        private IJumpMotor jumpMotor;
+        private bool hasJumpMotor;
         [Header("Ground Raycast")]
         [SerializeField, Min(0.01f)] private float raycastStartHeight = 0.6f;
         [SerializeField, Min(0.05f)] private float raycastDistance = 1.5f;
@@ -93,7 +98,7 @@ namespace TH.Control.Movement
         private Vector2 rightFootLockedXZ;
 
 
-        private void Awake()
+private void Awake()
         {
             if (animator == null)
             {
@@ -105,22 +110,26 @@ namespace TH.Control.Movement
                 TryGetComponent(out navMeshAgent);
             }
 
+            CacheJumpMotorReference();
             CacheAnimatorParameters();
         }
 
-        private void OnEnable()
+private void OnEnable()
         {
             CacheAnimatorParameters();
+            CacheJumpMotorReference();
+
             isLeftFootPlanted = false;
             isRightFootPlanted = false;
             isLeftFootXZLocked = false;
             isRightFootXZLocked = false;
         }
 
-        private void Reset()
+private void Reset()
         {
             TryGetComponent(out animator);
             TryGetComponent(out navMeshAgent);
+            CacheJumpMotorReference();
 
             int environmentLayerIndex = LayerMask.NameToLayer("Environment");
             if (environmentLayerIndex >= 0)
@@ -128,6 +137,17 @@ namespace TH.Control.Movement
                 environmentLayer = environmentLayerIndex;
             }
         }
+
+private void CacheJumpMotorReference()
+        {
+            if (jumpMotor == null)
+            {
+                TryGetComponent(out jumpMotor);
+            }
+
+            hasJumpMotor = jumpMotor != null;
+        }
+
 
         private void OnAnimatorIK(int layerIndex)
         {
@@ -170,10 +190,11 @@ namespace TH.Control.Movement
                 Time.deltaTime);
         }
 
-        private bool CanApplyIK()
+private bool CanApplyIK()
         {
-            if (animator == null) return false;
-            if (!animator.isHuman) return false;
+            if (animator == null || !animator.isHuman) return false;
+            if (disableIkWhileJumping && hasJumpMotor && jumpMotor.IsJumping) return false;
+
             return true;
         }
 

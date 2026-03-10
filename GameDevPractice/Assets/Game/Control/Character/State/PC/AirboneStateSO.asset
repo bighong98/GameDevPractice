@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 252cb82da5b419b4895c33b761ba170c, type: 3}
+  m_Name: AirboneStateSO
+  m_EditorClassIdentifier: Assembly-CSharp::TH.Control.Data.AirboneStateSO
+  onEnterActionReferences:
+  - m_AssetGUID: beb7d112d3cf2b844a58f6711173c515
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
+  updateActionReferences: []
+  onExitActionReferences:
+  - m_AssetGUID: 7e0bd19c0c3a4a64ab8ceaa072776286
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
+  transitions:
+  - conditionReference:
+      m_AssetGUID: 0bf510fdbb7f24d48b0df9475a5ec00b
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 1
+    destinationStateReference:
+      m_AssetGUID: 16deb90229b9bec408b94b3510134c35
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 1
+  allowSelfTransition: 0
+  transitionLockRequired: 0

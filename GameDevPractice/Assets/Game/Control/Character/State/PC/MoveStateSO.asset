@@ -105,5 +105,19 @@ MonoBehaviour:
       m_SubObjectType: 
       m_SubObjectGUID: 
       m_EditorAssetChanged: 1
+  - condition: {fileID: 0}
+    conditionReference:
+      m_AssetGUID: d7b746cb2f6b0674eac910eebc762801
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 1
+    destinationState: {fileID: 0}
+    destinationStateReference:
+      m_AssetGUID: ee8ba50b6bbf8564fa6ddb1143bf410e
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 1
   allowSelfTransition: 0
   transitionLockRequired: 0

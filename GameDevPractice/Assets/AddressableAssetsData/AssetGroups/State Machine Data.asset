@@ -29,6 +29,13 @@ MonoBehaviour:
     - PreLoad_DataSO
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0bf510fdbb7f24d48b0df9475a5ec00b
+    m_Address: LandedConditionSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 0eac0195a140710469b7ed270094357a
     m_Address: WaitForSecondConditionSO.asset
     m_ReadOnly: 0
@@ -50,6 +57,20 @@ MonoBehaviour:
     - PreLoad_DataSO
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 259d53904c2edc745a7ec029d2fc663b
+    m_Address: UpdateJumpBlendParamActionSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2a370910982d5d342828e78adab4140b
+    m_Address: FallingConditionSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 2f3006aa2383a1a4da945f469742075f
     m_Address: ClearFollowTargetActionSO.asset
     m_ReadOnly: 0
@@ -66,6 +87,20 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 43554658d5d70f4489ad260e29a3ccb5
     m_Address: AnimateReviveSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 443c43d320a5cc34588d7a62a146a66a
+    m_Address: AnimateIdleAfterPreviousAnimationSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4530d3d2915a6714092a1681e51abedc
+    m_Address: StartJumpActionSO.asset
     m_ReadOnly: 0
     m_SerializedLabels:
     - PreLoad_DataSO
@@ -106,6 +141,13 @@ MonoBehaviour:
     - PreLoad_DataSO
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 689fb27e0e0648c44ac18b1218ed6957
+    m_Address: AirboneStateSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 6ad8b0b46e757f64d9dbb76b4f89d062
     m_Address: IdleStateSO.asset
     m_ReadOnly: 0
@@ -126,6 +168,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - PreLoad_DataSO
     - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7e0bd19c0c3a4a64ab8ceaa072776286
+    m_Address: Assets/Game/Control/Character/Action/AnimateAction/Test/JumpExitSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 7e7e93bfb3dfa8f40a30639a63aefa01
     m_Address: InitialStateSO.asset
@@ -183,6 +230,11 @@ MonoBehaviour:
     - PreLoad_DataSO
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a2a027ac1096b614bb4798031f800e09
+    m_Address: Assets/Game/Control/Character/Action/AnimateAction/Test/JumpUpSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a33ed81b398c1c64d9270f02ee06d2ef
     m_Address: InRangeConditionSO.asset
     m_ReadOnly: 0
@@ -217,6 +269,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - PreLoad_DataSO
     - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: beb7d112d3cf2b844a58f6711173c515
+    m_Address: Assets/Game/Control/Character/Action/AnimateAction/Test/JumpDownSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: c81a42815fff3c9498b7fb7f247e88a5
     m_Address: RunActionSO.asset
@@ -267,6 +324,13 @@ MonoBehaviour:
     - PreLoad_DataSO
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d7b746cb2f6b0674eac910eebc762801
+    m_Address: JumpReadyConditionSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: d8a51050e6bf8ae47873aac1d15d0d99
     m_Address: AnimateStopSO.asset
     m_ReadOnly: 0
@@ -281,8 +345,8 @@ MonoBehaviour:
     - PreLoad_DataSO
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 443c43d320a5cc34588d7a62a146a66a
-    m_Address: AnimateIdleAfterPreviousAnimationSO.asset
+  - m_GUID: dbddf25b9bd57034fb6d099ff589c863
+    m_Address: AnimateIdleSO.asset
     m_ReadOnly: 0
     m_SerializedLabels:
     - PreLoad_DataSO
@@ -297,6 +361,13 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e3b2979e803480a45976113e73009e7f
     m_Address: StopConditionSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ee8ba50b6bbf8564fa6ddb1143bf410e
+    m_Address: JumpStateSO.asset
     m_ReadOnly: 0
     m_SerializedLabels:
     - PreLoad_DataSO

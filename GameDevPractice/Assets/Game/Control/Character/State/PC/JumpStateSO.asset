@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ddbbe8f484598d46abd10348e1e9285, type: 3}
+  m_Name: JumpStateSO
+  m_EditorClassIdentifier: Assembly-CSharp::TH.Control.Data.JumpStateSO
+  onEnterActionReferences:
+  - m_AssetGUID: 4530d3d2915a6714092a1681e51abedc
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 1
+  - m_AssetGUID: a2a027ac1096b614bb4798031f800e09
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
+  updateActionReferences: []
+  onExitActionReferences: []
+  transitions:
+  - conditionReference:
+      m_AssetGUID: 2a370910982d5d342828e78adab4140b
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 1
+    destinationStateReference:
+      m_AssetGUID: 689fb27e0e0648c44ac18b1218ed6957
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 1
+  allowSelfTransition: 0
+  transitionLockRequired: 0

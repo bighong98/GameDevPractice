@@ -531,7 +531,7 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 9faee9631d9c9dd4db58de6fbe9435f3
-    m_Address: Assets/Game/Characters/Character.controller
+    m_Address: CharacterAnimatorController.controller
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

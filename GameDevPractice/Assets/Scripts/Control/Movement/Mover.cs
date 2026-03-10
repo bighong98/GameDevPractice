@@ -43,6 +43,8 @@ namespace TH.Control.Movement
         private Health health;
         // 스탯 바인딩 제공자 참조
         private IStatHolder statHolder;
+        // 점프 상태 확인용 점프 모터 참조
+        private IJumpMotor jumpMotor;
         // 이동속도 스탯 런타임 캐시
 
         private bool isResolvingMoveSpeedStatReference;
@@ -81,6 +83,7 @@ namespace TH.Control.Movement
             TryGetComponent(out navMeshAgent);
             TryGetComponent(out health);
             TryGetComponent(out statHolder);
+            TryGetComponent(out jumpMotor);
 
             if ((moveSpeedStatSO.IsNull() || moveSpeedStatSO.LegacyId == default) &&
                 (moveSpeedStatReference == null || !moveSpeedStatReference.RuntimeKeyIsValid()))
@@ -197,6 +200,9 @@ namespace TH.Control.Movement
         {
             // 목적지 미설정 상태 조기 종료 가드
             if (currentDestination == Vector3.zero) return;
+            // 점프 중에는 NavMeshAgent의 위치 갱신을 막기 위해 이동 명령 무시
+            if (jumpMotor is { IsJumping: true }) return;
+            if (!CanControlAgent(navMeshAgent)) return;
 
             navMeshAgent.destination = currentDestination;
             navMeshAgent.speed = (moveType == MoveType.Run ? runSpeed : walkSpeed) * Mathf.Clamp01(speedFraction);
@@ -206,6 +212,8 @@ namespace TH.Control.Movement
         // 네비게이션 이동 정지 처리
         public void Stop()
         {
+            if (!CanControlAgent(navMeshAgent)) return;
+
             navMeshAgent.isStopped = true;
         }
 
