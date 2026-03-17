@@ -88,6 +88,28 @@ namespace TH.Control.Data
                 {
                     Logg.LogWarning($"[ActionStateSO:{name}] transitions list is null");
                 }
+                else
+                {
+                    for (int i = 0; i < transitions.Count; i++)
+                    {
+                        var transition = transitions[i];
+                        if (transition == null)
+                        {
+                            Logg.LogWarning($"[ActionStateSO:{name}] transition[{i}] is null");
+                            continue;
+                        }
+
+                        await transition.InitializeAsync(token);
+                        transitions[i] = transition;
+
+                        var condition = transition.Condition;
+                        var destination = transition.DestinationState;
+                        if (condition == null || destination == null)
+                        {
+                            Logg.LogWarning($"[ActionStateSO:{name}] transition[{i}] unresolved after initialize. condition={(condition == null ? "null" : condition.GetType().Name)}, destination={(destination == null ? "null" : destination.GetType().Name)}");
+                        }
+                    }
+                }
 
                 initialized = true;
                 Logg.Log($"[ActionStateSO:{name}] InitializeAsync complete", Logg.LoggingMode.Completed);

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TH.Control.Data.ApproachStateSO
   onEnterActions: []
   onEnterActionReferences:
-  - m_AssetGUID: 81c49f06e0fa7ed4dbfad3d52bfcb47f
+  - m_AssetGUID: dbd866f3d9f532c45bd03627d419421f
     m_SubObjectName: 
     m_SubObjectType: 
     m_SubObjectGUID: 
