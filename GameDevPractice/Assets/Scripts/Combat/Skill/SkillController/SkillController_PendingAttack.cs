@@ -22,15 +22,23 @@ namespace TH.Combat
         {
             attackSource = default;
 
-            // 공격자 미유효 가드
-            if (attacker.IsNull()) return false;
+            if (attacker.IsNull())
+            {
+                return false;
+            }
 
-            // 스킬 소비 시점에 활성 스킬을 지연 보정
-            if (!HasActiveSkill && !TryRequestActiveSkill()) return false;
-            if (!HasActiveSkill) return false;
+            if (!HasActiveSkill && !TryRequestActiveSkill())
+            {
+                return false;
+            }
+
+            if (!HasActiveSkill)
+            {
+                return false;
+            }
+
             LogConsumeState("begin");
 
-            // 보류 공격 존재 시 재사용 우선 경로
             if (hasPendingAttack)
             {
                 if (!attacker.IsNull() &&
@@ -41,20 +49,18 @@ namespace TH.Combat
                     return false;
                 }
 
-                // 재사용 실패 보류 상태 정리
                 LogConsumeState("reuse_pending_failed_before_cancel");
                 CancelPendingAttack(PendingCancelReason.InvalidatedOnConsume, refreshResolvedFromPreview: true);
                 LogConsumeState("reuse_pending_failed_after_cancel");
             }
 
             var baseSkill = skillBook.ActiveSkill;
-            // 쿨다운 미준비 가드
             if (!skillCaster.IsReady(baseSkill))
             {
                 LogConsumeState("blocked_not_ready", baseSkill: baseSkill);
                 return false;
             }
-            // 현재 콤보 단계 기준 해석 실패 가드
+
             if (!TryResolveSkillPreview(baseSkill, out var resolved, out var stepIndex, out var stepCount))
             {
                 LogConsumeState("resolve_preview_failed", baseSkill: baseSkill);
@@ -63,6 +69,7 @@ namespace TH.Combat
 
             LogConsumeState("resolved_preview", baseSkill, resolved, stepIndex, stepCount);
             SetPendingAttack(attacker, resolved, baseSkill, stepIndex, stepCount);
+            OnSkillUseRequested?.Invoke(baseSkill);
             executingSkill = resolved;
             LogConsumeState("pending_armed", baseSkill, resolved, stepIndex, stepCount);
             UpdateResolvedSkillFromPreview(forceNotify: true);

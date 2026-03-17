@@ -1,6 +1,8 @@
 // 상태 컨트롤러 계약 인터페이스 스크립트
 using System.Threading;
 using System;
+
+using Cysharp.Threading.Tasks;
 using TH.Utils;
 
 namespace TH.Control.State
@@ -17,6 +19,8 @@ namespace TH.Control.State
         // 런타임 전이 잠금 획득 API
         IDisposable AcquireTransitionLock(object owner = null);
         // 이벤트 트리거 조건 기반 전이 처리 API
+        
+        bool TryRunOnEnterLoopOnce(object key, Func<CancellationToken, UniTask> loopFactory);
         void HandleConditionTriggered(
             IActionStateCondition condition,
             IActionState destination,

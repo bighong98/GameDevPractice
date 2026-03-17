@@ -14,7 +14,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
   m_GroupName: Default Local Group
   m_GUID: 3b559008265abd04ba68b9cac872e7db
-  m_SerializeEntries: []
+  m_SerializeEntries:
+  - m_GUID: 6ccdc12987a48bc4e8b84a6bcf434696
+    m_Address: Assets/Game/Control/Character/Condition/MoveCancelCastConditionSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a559da97f06c1ff47a0e23212a14b7a3
+    m_Address: Assets/Game/Control/Character/Condition/ApproachSkillUseRequestedConditionSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: ba2aeaf5da86ad943b7448d84aa19f98, type: 2}
   m_SchemaSet:

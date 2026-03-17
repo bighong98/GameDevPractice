@@ -142,6 +142,13 @@ namespace TH.Combat
 
         #endregion
 
+        // 현재 활성화된 스킬의 사정거리 내에서 가장 가까운 자동 공격 대상을 찾음
+        [Obsolete("Use CanUseActiveSkillOnTarget/TryGetActiveSkillTargetLayerMask/TryGetValidOrRefreshAutoTargetCandidate instead.")]
+        public bool TryFindAutoTarget(IAttacker attacker, out Health target)
+        {
+            return TryGetValidOrRefreshAutoTargetCandidate(attacker, out target);
+        }
+
         // 타게팅 평가기 지연 생성/재사용
         private SkillTargetingEvaluator GetTargetingEvaluator()
         {
@@ -287,5 +294,71 @@ namespace TH.Combat
             return new AttackSource(source.Attacker, null, scaledBaseDamage, source.DamageType, source.AttackInstanceId,
                 null, source.Skill);
         }
+    
+
+        public bool TryGetActiveSkillTargetLayerMask(IAttacker attacker, out int layerMask)
+        {
+            layerMask = 0;
+            if (!TryBuildActiveSkillTargetingContext(attacker, out var context, out _, out _))
+            {
+                return false;
+            }
+
+            layerMask = ResolveTargetLayerMask(context);
+            return layerMask != 0;
+        }
+
+
+        public bool CanUseActiveSkillOnTarget(IAttacker attacker, Health target)
+        {
+            if (!TryBuildActiveSkillTargetingContext(attacker, out var context, out var originPos, out float range))
+            {
+                return false;
+            }
+
+            return CanUseActiveSkillOnTarget(context, originPos, range, target);
+        }
+
+
+        private bool TryBuildActiveSkillTargetingContext(IAttacker attacker, out SkillExecutionContext context, out Vector3 originPos, out float range)
+        {
+            context = default;
+            originPos = Vector3.zero;
+            range = 0f;
+
+            if (attacker.IsNull() || !HasActiveSkill)
+            {
+                return false;
+            }
+
+            range = ActiveSkillRange;
+            if (range <= 0f)
+            {
+                return false;
+            }
+
+            context = new SkillExecutionContext(attacker, null, ActiveSkill, default);
+            originPos = attacker is Component comp ? comp.transform.position : Vector3.zero;
+            return true;
+        }
+
+
+        private bool CanUseActiveSkillOnTarget(in SkillExecutionContext context, Vector3 originPos, float range, Health target)
+        {
+            if (target.IsNull())
+            {
+                return false;
+            }
+
+            float rangeSqr = range * range;
+            float targetDistanceSqr = (target.transform.position - originPos).sqrMagnitude;
+            if (targetDistanceSqr > rangeSqr)
+            {
+                return false;
+            }
+
+            return CanTargetWithPolicy(context, target);
+        }
     }
+
 }

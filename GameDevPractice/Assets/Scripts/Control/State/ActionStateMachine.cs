@@ -58,6 +58,9 @@ namespace TH.Control.State
         // 현재 활성 런타임 전이 락 식별자 집합
 
         private ISceneLoader sceneLoader;
+        
+        private int _stateEpoch;
+        private readonly Dictionary<object, int> _activeOnEnterLoopKeys = new();
         private readonly HashSet<int> _runtimeLockIds = new();
 
         // 컴포넌트 제공자 준비와 초기 상태 토큰 생성
@@ -112,6 +115,7 @@ namespace TH.Control.State
             // 씬 이동 경로 포함 비활성화 시점에 남은 구독/대기 토큰 정리
             UnbindTransitions();
             ResetTransitionLocksOnStateChange();
+            ClearOnEnterLoopGate();
             TryCancelDisposeStateToken();
         }
 
@@ -314,6 +318,7 @@ namespace TH.Control.State
             _globalArmed.Clear();
             UnbindTransitions();
             ResetTransitionLocksOnStateChange();
+            ClearOnEnterLoopGate();
             TryCancelDisposeStateToken();
             stateGraphInitializing = false;
             stateGraphInitialized = false;
@@ -377,8 +382,8 @@ namespace TH.Control.State
 #if UNITY_EDITOR
             if (logStateTransition)
             {
-                this.Log($"[{gameObject.name}] TransitionToState({prevState?.GetType().Name} " +
-                        $"-> {nextState.GetType().Name})", Logg.LoggingMode.InProgress);
+                this.Log($"[{gameObject.name}] TransitionToState({(prevState.IsNotNull() ? (prevState as UnityEngine.Object).name : null)} " +
+                        $"-> {(nextState.IsNotNull() ? (nextState as UnityEngine.Object).name : null)})", Logg.LoggingMode.InProgress);
             }
 #endif
             if (currentState.IsNotNull())
@@ -398,6 +403,54 @@ namespace TH.Control.State
 
             return new DisposableDelegate(() => ReleaseRuntimeTransitionLock(lockId));
         }
+
+        public bool TryRunOnEnterLoopOnce(object key, Func<CancellationToken, UniTask> loopFactory)
+        {
+            if (key == null || loopFactory == null)
+            {
+                return false;
+            }
+
+            int epoch = _stateEpoch;
+            if (_activeOnEnterLoopKeys.TryGetValue(key, out int activeEpoch) && activeEpoch == epoch)
+            {
+                return false;
+            }
+
+            _activeOnEnterLoopKeys[key] = epoch;
+            RunOnEnterLoopGuardedAsync(key, epoch, loopFactory, StateToken).Forget();
+            return true;
+        }
+
+        private async UniTaskVoid RunOnEnterLoopGuardedAsync(object key, int epoch, Func<CancellationToken, UniTask> loopFactory, CancellationToken token)
+        {
+            try
+            {
+                await loopFactory(token);
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception e)
+            {
+                Logg.LogError($"[{gameObject.name}] on-enter loop failed - {e}");
+            }
+            finally
+            {
+                if (_activeOnEnterLoopKeys.TryGetValue(key, out int activeEpoch) && activeEpoch == epoch)
+                {
+                    _activeOnEnterLoopKeys.Remove(key);
+                }
+            }
+        }
+
+        private void ClearOnEnterLoopGate()
+        {
+            _activeOnEnterLoopKeys.Clear();
+        }
+
+
+
 
 
         #endregion
@@ -719,6 +772,9 @@ namespace TH.Control.State
         // 상태 전이 단위 취소 토큰 갱신
         private void RenewStateToken()
         {
+            _stateEpoch++;
+            ClearOnEnterLoopGate();
+
             // 이전 토큰은 Cancel, Dispose
             TryCancelDisposeStateToken();
             _stateTokenSource = new CancellationTokenSource();

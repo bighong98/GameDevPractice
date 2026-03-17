@@ -13,9 +13,10 @@ namespace TH.Control.Data
     {
         private static readonly int ForwardSpeed = Animator.StringToHash("forwardSpeed");
 
-        [SerializeField, Range(0f, 1f)] private float idleTransitionDuration = 0.1f;
+        [SerializeField, Range(0f, 1f)] private float idleTransitionDuration = 0.3f;
         [SerializeField, Min(0f)] private float maxWaitSeconds = 1.5f;
         [SerializeField] private bool skipWaitWhenAlreadyLocomotion = true;
+        [SerializeField, Min(0f)] private float forwardSpeedBlendOutDuration = 0.12f;
 
         public override void Execute(IActionStateController controller)
         {
@@ -29,7 +30,7 @@ namespace TH.Control.Data
             if (!controller.Components.TryGet(out IAttackStateExitSignalSource attackExitSignal) ||
                 attackExitSignal == null)
             {
-                ApplyIdle(animator);
+                ApplyIdle(animator, controller.StateToken);
                 return;
             }
 
@@ -48,14 +49,14 @@ namespace TH.Control.Data
             int initialStateHash = animator.GetCurrentAnimatorStateInfo(AnimatorBaseLayer).shortNameHash;
             if (skipWaitWhenAlreadyLocomotion && initialStateHash == LocomotionASSHash)
             {
-                ApplyIdle(animator);
+                ApplyIdle(animator, token);
                 return;
             }
 
             int snapshotEpoch = attackExitSignal.CurrentAttackEpoch;
             if (!ShouldWaitForAttackExit(attackExitSignal, snapshotEpoch))
             {
-                ApplyIdle(animator);
+                ApplyIdle(animator, token);
                 return;
             }
 
@@ -92,7 +93,7 @@ namespace TH.Control.Data
                 return;
             }
 
-            ApplyIdle(animator);
+            ApplyIdle(animator, token);
 
             void OnAttackExited(int exitedEpoch)
             {
@@ -108,13 +109,44 @@ namespace TH.Control.Data
             return attackExitSignal.IsAttackActive && attackExitSignal.LastExitedAttackEpoch < attackEpoch;
         }
 
-        private void ApplyIdle(Animator animator)
+        private void ApplyIdle(Animator animator, CancellationToken token)
         {
-            animator.CrossFade(
-                stateHashName: LocomotionASSHash,
-                normalizedTransitionDuration: Mathf.Clamp01(idleTransitionDuration),
-                layer: AnimatorBaseLayer);
-            animator.SetFloat(ForwardSpeed, 0f);
+            if (animator.GetCurrentAnimatorStateInfo(AnimatorBaseLayer).shortNameHash != LocomotionASSHash)
+            {
+                animator.CrossFade(
+                    stateHashName: LocomotionASSHash,
+                    normalizedTransitionDuration: Mathf.Clamp01(idleTransitionDuration),
+                    layer: AnimatorBaseLayer);
+            }
+
+            BlendForwardSpeedToZeroAsync(animator, token).Forget();
+        }
+
+        private async UniTaskVoid BlendForwardSpeedToZeroAsync(Animator animator, CancellationToken token)
+        {
+            float duration = Mathf.Max(0f, forwardSpeedBlendOutDuration);
+            if (duration <= Mathf.Epsilon)
+            {
+                animator.SetFloat(ForwardSpeed, 0f);
+                return;
+            }
+
+            float startForwardSpeed = animator.GetFloat(ForwardSpeed);
+            float elapsed = 0f;
+
+            while (!token.IsCancellationRequested && animator != null && elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                animator.SetFloat(ForwardSpeed, Mathf.Lerp(startForwardSpeed, 0f, t));
+                await UniTask.Yield(PlayerLoopTiming.Update, token).SuppressCancellationThrow();
+            }
+
+            if (!token.IsCancellationRequested && animator != null)
+            {
+                animator.SetFloat(ForwardSpeed, 0f);
+            }
         }
     }
 }
+

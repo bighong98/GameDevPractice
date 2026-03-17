@@ -13,7 +13,7 @@ namespace TH.Combat
         event Action<SkillTypeSO> OnActiveSkillChanged;
         // 실제 실행 예정 스킬 변경 알림 이벤트
         event Action<SkillTypeSO> OnResolvedSkillChanged;
-        // 쿨다운 종료 준비 완료 알림 이벤트
+        event Action<SkillTypeSO> OnSkillUseRequested;
         event Action<SkillTypeSO> OnSkillReady;
         // 등록 스킬 목록 변경 알림 이벤트
         event Action OnSkillBookChanged;
@@ -51,6 +51,7 @@ namespace TH.Combat
         bool HasPendingAttack { get; }
         // 현재 프리뷰 기준 유효 사거리
         float ActiveSkillRange { get; }
+        bool CanMoveWhileCasting { get; }
         // 현재 콤보 단계 인덱스
         int CurrentComboStepIndex { get; }
         // 현재 콤보 총 단계 수
@@ -107,6 +108,19 @@ namespace TH.Combat
         bool TryExecutePendingAttack(IAttacker attacker, Health target);
         // stale 판단으로 보류 공격 취소 시도
         bool TryCancelPendingAttackIfStale();
+        // 특정 대상에게 현재 활성 스킬 사용 가능 여부 확인
+        bool CanUseActiveSkillOnTarget(IAttacker attacker, Health target);
+        // 현재 활성 스킬 타게팅 레이어 마스크 조회
+        bool TryGetActiveSkillTargetLayerMask(IAttacker attacker, out int layerMask);
+        // 현재 활성 스킬 기준 자동 타겟 후보 재탐색 + 캐시 갱신
+        bool TryRefreshAutoTargetCandidate(IAttacker attacker);
+        // 캐시된 자동 타겟 후보 유효성 검증
+        bool TryGetValidAutoTargetCandidate(IAttacker attacker, out Health target);
+        // 캐시 후보 유효성 검증 실패 시 재탐색 후 반환
+        bool TryGetValidOrRefreshAutoTargetCandidate(IAttacker attacker, out Health target);
+        // 현재 활성화된 스킬의 사정거리 내에서 자동 공격 대상을 찾음
+        [Obsolete("Use CanUseActiveSkillOnTarget/TryGetActiveSkillTargetLayerMask/TryGetValidOrRefreshAutoTargetCandidate instead.")]
+        bool TryFindAutoTarget(IAttacker attacker, out Health target);
         // 투사체 실행기 등록
         void SetProjectileExecutor(ISkillProjectileExecutor executor);
         // 투사체 실행기 해제

@@ -10,14 +10,17 @@ namespace TH.Control.Data
     {
         public abstract void Execute(IActionStateController controller);
 
-
         protected static readonly int AnimatorBaseLayer = 0;
+        protected static readonly int AnimatorSkillUpperLayer = 1;
+        protected static readonly int AnimatorSkillFullBodyLayer = 2;
+        protected static readonly int AnimatorSkillLayer = AnimatorSkillUpperLayer;
+
         // Animator.StringToHash()
         // 실제 파라미터 이름이 바뀌면 작동하지 않음에 주의
         protected static readonly int CancelAllowHash = Animator.StringToHash("CancelAllow");
         
         protected static readonly int AttackASSHash = Animator.StringToHash("Attack");
-        protected static readonly int LocomotionASSHash =  Animator.StringToHash("Locomotion");
+        protected static readonly int LocomotionASSHash =  Animator.StringToHash("Movement");
         protected static readonly int DeathASSHash =  Animator.StringToHash("Death");
         
         protected const float CancelAllowThreshold = 0.9f;

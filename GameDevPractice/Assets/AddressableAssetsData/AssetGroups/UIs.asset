@@ -45,7 +45,8 @@ MonoBehaviour:
   - m_GUID: 27d218dc4fcb49348a1052b96a949bd2
     m_Address: SaveLoadPanelUI.prefab
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - PreLoad_Prefab
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 57c170d5560197d418b8f2778b1b8949
     m_Address: FloatingText

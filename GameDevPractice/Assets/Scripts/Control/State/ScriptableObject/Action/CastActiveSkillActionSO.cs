@@ -10,12 +10,27 @@ namespace TH.Control.Data
     public class CastActiveSkillActionSO : CharacterActionSO
     {
         // 컨트롤러에서 IAttacker를 찾아 Attack을 호출
-        public override void Execute(IActionStateController controller)
+public override void Execute(IActionStateController controller)
         {
-            if (controller.Components.TryGet(out IAttacker attacker))
+            if (!controller.Components.TryGet(out IAttacker attacker))
             {
-                attacker.Attack();
+                return;
             }
+
+            if (!controller.Components.TryGet(out ISkillController skillController))
+            {
+                return;
+            }
+
+            if (!skillController.HasActiveSkill ||
+                !skillController.IsActiveSkillReady ||
+                skillController.HasPendingAttack ||
+                skillController.HasExecutingSkill)
+            {
+                return;
+            }
+
+            attacker.Attack();
         }
     }
 }

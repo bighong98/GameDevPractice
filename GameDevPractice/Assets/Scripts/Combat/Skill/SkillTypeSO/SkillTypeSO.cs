@@ -62,6 +62,9 @@ public partial class SkillTypeSO : ScriptableObject, IAsyncInitializer
     [Header("Targeting")]
     [SerializeField] private SkillTargetPolicy targetPolicy = SkillTargetPolicy.EnemyOnlyDefault;
 
+    [Header("Casting")]
+    [SerializeField] private bool allowMoveWhileCasting = false;
+
     [Header("Animation Speed")]
     [SerializeField, Min(0.01f)] private float animationSpeedMultiplier = 1f;
     [SerializeField] private bool affectedByAttackSpeed = true;
@@ -113,6 +116,7 @@ public partial class SkillTypeSO : ScriptableObject, IAsyncInitializer
     public bool HasSubSkills => subSkills != null && subSkills.Exists(skill => skill != null);
     public IReadOnlyList<SkillTypeSO> SubSkills => subSkills;
     public SkillTargetPolicy TargetPolicy => targetPolicy;
+    public bool AllowMoveWhileCasting => allowMoveWhileCasting;
     public float AnimationSpeedMultiplier => Mathf.Max(0.01f, animationSpeedMultiplier);
     public bool AffectedByAttackSpeed => affectedByAttackSpeed;
     public SkillCategory SkillCategory => skillCategory;

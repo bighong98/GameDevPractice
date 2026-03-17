@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f1098dcf165dbc0438ca354ede539bb2, type: 3}
   m_Name: AnimateJumpUpSO
   m_EditorClassIdentifier: Assembly-CSharp::TH.Control.Data.AnimateActionSO
-  targetAnimatorController: {fileID: 9100000, guid: 9faee9631d9c9dd4db58de6fbe9435f3, type: 2}
+  targetAnimatorController: {fileID: 9100000, guid: 9faee9631d9c9dd4db58de6fbe9435f3,
+    type: 2}
   controllerMatchMode: 2
   searchInChildrenWhenControllerSpecified: 0
   applyOverrideController: 1
@@ -22,7 +23,7 @@ MonoBehaviour:
   skipWhenBaseControllerMismatch: 1
   skipWhenControllerMismatch: 1
   playState: 1
-  preferredStateName: Base Layer.Jump
+  stateName: 
   layerIndex: 0
   statePlayMode: 0
   transitionDuration: 0.05

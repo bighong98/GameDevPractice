@@ -1,0 +1,90 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 73f0782e769b69a45a09ad472fb8428e, type: 3}
+  m_Name: CastSkillStateSO
+  m_EditorClassIdentifier: 
+  onEnterActionReferences:
+  - m_AssetGUID: f74d07e8a295fb9499c63066d465bdb9
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_EditorAssetChanged: 0
+  - m_AssetGUID: a68038a294969554a9c9b536c112d164
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_EditorAssetChanged: 1
+  - m_AssetGUID: 1ae8a8d9e54a66749944c4318d7c5b1a
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_EditorAssetChanged: 0
+  - m_AssetGUID: c81a42815fff3c9498b7fb7f247e88a5
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_EditorAssetChanged: 1
+  - m_AssetGUID: fa6c49b098404cc449013816ddd04dcf
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_EditorAssetChanged: 0
+  updateActionReferences: []
+  onExitActionReferences: []
+  transitions:
+  - conditionReference:
+      m_AssetGUID: 4cf2e9d6bf42a18449c08ab688bb405a
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_EditorAssetChanged: 1
+    destinationStateReference:
+      m_AssetGUID: aafd914b36a871c4abc74d8863f1c8f0
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_EditorAssetChanged: 1
+  - conditionReference:
+      m_AssetGUID: 046f474f308a4b240b63b32a81bc314a
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_EditorAssetChanged: 0
+    destinationStateReference:
+      m_AssetGUID: 0e717ec9850fbd24b87ec131875b7a36
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_EditorAssetChanged: 0
+  - conditionReference:
+      m_AssetGUID: 99915f28cdf03fb44b522e2c3679638e
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_EditorAssetChanged: 1
+    destinationStateReference:
+      m_AssetGUID: 7e7e93bfb3dfa8f40a30639a63aefa01
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_EditorAssetChanged: 1
+  - conditionReference:
+      m_AssetGUID: 7a37636c8cf8c1948bd7cf28d2256d31
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_EditorAssetChanged: 0
+    destinationStateReference:
+      m_AssetGUID: 0e717ec9850fbd24b87ec131875b7a36
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_EditorAssetChanged: 0
+  - conditionReference:
+      m_AssetGUID: 6ccdc12987a48bc4e8b84a6bcf434696
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_EditorAssetChanged: 0
+    destinationStateReference:
+      m_AssetGUID: 67fe6c7fed4108f478cf2e4dfb2b1e93
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_EditorAssetChanged: 0
+  allowSelfTransition: 1
+  transitionLockRequired: 1

@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 73f0782e769b69a45a09ad472fb8428e, type: 3}
+  m_Name: DeadStateSO
+  m_EditorClassIdentifier: 
+  onEnterActionReferences: []
+  updateActionReferences: []
+  onExitActionReferences: []
+  transitions:
+  - conditionReference:
+      m_AssetGUID: cebf38c8f05b4d14288eee55a183ac5b
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_EditorAssetChanged: 0
+    destinationStateReference:
+      m_AssetGUID: 228c1e97b55b091448dd27c7429bd3ae
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_EditorAssetChanged: 0
+  allowSelfTransition: 0
+  transitionLockRequired: 0

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 852dc75d6eb068a4db032f15f4274092, type: 3}
   m_Name: AnimateIdleAfterPreviousAnimationSO
   m_EditorClassIdentifier: Assembly-CSharp::TH.Control.Data.AnimateIdleAfterPreviousAnimationSO
-  idleTransitionDuration: 0.1
-  previousAnimationEndThreshold: 0.98
+  idleTransitionDuration: 0.3
   maxWaitSeconds: 1.5
   skipWaitWhenAlreadyLocomotion: 1
+  forwardSpeedBlendOutDuration: 0.2

@@ -12,3 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8a3b436f8aed8042842306c0b21b4e3, type: 3}
   m_Name: AnimateAttackSO
   m_EditorClassIdentifier: Assembly-CSharp::TH.Control.Data.CombatActionSO
+  retriggerTransitionDuration: 0.2
+  retriggerNormalizedTimeOffset: 0.1
+  stateUnlockNormalizedTime: 0.85
+  cancelAllowThreshold: 0.8

@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ceca247a7c89b61408db7eff78c91e19, type: 3}
   m_Name: InitialStateSO
   m_EditorClassIdentifier: Assembly-CSharp::TH.Control.Data.InitialStateSO
-  onEnterActions: []
-  updateActions: []
-  onExitActions: []
+  onEnterActionReferences: []
+  updateActionReferences: []
+  onExitActionReferences: []
   transitions: []
   allowSelfTransition: 0
   transitionLockRequired: 0

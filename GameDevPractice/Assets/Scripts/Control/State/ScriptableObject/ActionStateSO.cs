@@ -111,7 +111,23 @@ namespace TH.Control.Data
         // 상태 진입 시점 등록된 액션 일괄 실행
         public void EnterState(IActionStateController controller)
         {
-            ExecuteActions(controller, onEnterActions);
+            if (onEnterActions == null || onEnterActions.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var action in onEnterActions)
+            {
+                if (action is IOnEnterLoopAction onEnterLoopAction)
+                {
+                    controller.TryRunOnEnterLoopOnce(
+                        key: action,
+                        loopFactory: token => onEnterLoopAction.ExecuteLoopAsync(controller, token));
+                    continue;
+                }
+
+                action.Execute(controller);
+            }
         }
 
         // 상태 유지 중 매 프레임마다 호출 필요한 액션 일괄 실행
@@ -136,7 +152,7 @@ namespace TH.Control.Data
             if (register == null) throw new ArgumentNullException(nameof(register));
             if (transitions == null || transitions.Count == 0)
             {
-                Logg.LogWarning($"[ActionStateSO:{name}] BindTransitions skipped - transitions is null or empty");
+                Logg.LogWarning($"[ActionStateSO:{name}] BindTransitions skipped - transitions is null or empty", context: this);
                 return;
             }
 
@@ -154,7 +170,7 @@ namespace TH.Control.Data
 
                 if (transition.Condition is not { } condition || !condition.IsNotNull())
                 {
-                    Logg.LogWarning($"[ActionStateSO:{name}] BindTransitions transition[{i}] skipped - condition is null");
+                    Logg.LogWarning($"[ActionStateSO:{name}] BindTransitions transition[{i}] skipped - condition is null", context: this);
                     continue;
                 }
 

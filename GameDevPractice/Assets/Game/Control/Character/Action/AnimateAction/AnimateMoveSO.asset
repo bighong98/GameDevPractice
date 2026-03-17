@@ -9,6 +9,30 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ab64209f77003044d9ffb7811028b037, type: 3}
+  m_Script: {fileID: 11500000, guid: f1098dcf165dbc0438ca354ede539bb2, type: 3}
   m_Name: AnimateMoveSO
-  m_EditorClassIdentifier: Assembly-CSharp::TH.Control.Data.AnimateMoveSO
+  m_EditorClassIdentifier: 
+  targetAnimatorController: {fileID: 9100000, guid: d443fe9a3f793e54faa310f036809b6a,
+    type: 2}
+  controllerMatchMode: 2
+  searchInChildrenWhenControllerSpecified: 0
+  applyOverrideController: 0
+  overrideController: {fileID: 0}
+  requireMatchingBaseController: 0
+  skipWhenOverrideControllerMissing: 1
+  skipWhenBaseControllerMismatch: 1
+  skipWhenControllerMismatch: 1
+  playState: 1
+  stateName: Movement Layer.Movement
+  layerIndex: 0
+  statePlayMode: 0
+  transitionDuration: 0.1
+  useNormalizedTimeOffset: 0
+  normalizedTimeOffset: 0
+  skipWhenAlreadyInState: 0
+  skipWhenStateNotFound: 1
+  applyParameters: 0
+  parameterApplyOrder: 0
+  skipMissingOrInvalidParameter: 1
+  parameterCommands: []
+  enableDebugLog: 0

@@ -36,12 +36,24 @@ MonoBehaviour:
     - PreLoad_DataSO
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0e717ec9850fbd24b87ec131875b7a36
+    m_Address: ApproachStateSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 0eac0195a140710469b7ed270094357a
     m_Address: WaitForSecondConditionSO.asset
     m_ReadOnly: 0
     m_SerializedLabels:
     - PreLoad_DataSO
     - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1255f51b93dd4b447843726e3ab59b96
+    m_Address: ScanActionSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 16deb90229b9bec408b94b3510134c35
     m_Address: MoveStateSO.asset
@@ -50,12 +62,24 @@ MonoBehaviour:
     - PreLoad_DataSO
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 19d61007f809f63408b4fdff9f79236f
+    m_Address: DeadStateSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 1ae8a8d9e54a66749944c4318d7c5b1a
     m_Address: AnimateAttackSO.asset
     m_ReadOnly: 0
     m_SerializedLabels:
     - PreLoad_DataSO
     - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 228c1e97b55b091448dd27c7429bd3ae
+    m_Address: ReviveStateSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 259d53904c2edc745a7ec029d2fc663b
     m_Address: UpdateJumpBlendParamActionSO.asset
@@ -141,6 +165,17 @@ MonoBehaviour:
     - PreLoad_DataSO
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5e1a53aa879dcbd43852cc11c6706b30
+    m_Address: Assets/Game/Control/Character/Condition/AutoTargetFoundConditionSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 67fe6c7fed4108f478cf2e4dfb2b1e93
+    m_Address: MoveStateSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 689fb27e0e0648c44ac18b1218ed6957
     m_Address: AirboneStateSO.asset
     m_ReadOnly: 0
@@ -162,6 +197,18 @@ MonoBehaviour:
     - PreLoad_DataSO
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 70055dd6b68157544b66d582604e7ec2
+    m_Address: ActiveSkillReadyConditionSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 75e4a4d53499bab448321d0a052ae691
+    m_Address: IdleStateSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 7a37636c8cf8c1948bd7cf28d2256d31
     m_Address: ApproachConditionSO.asset
     m_ReadOnly: 0
@@ -170,9 +217,10 @@ MonoBehaviour:
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 7e0bd19c0c3a4a64ab8ceaa072776286
-    m_Address: Assets/Game/Control/Character/Action/AnimateAction/Test/JumpExitSO.asset
+    m_Address: JumpExitSO.asset
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - PreLoad_DataSO
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 7e7e93bfb3dfa8f40a30639a63aefa01
     m_Address: InitialStateSO.asset
@@ -188,12 +236,11 @@ MonoBehaviour:
     - PreLoad_DataSO
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 81c49f06e0fa7ed4dbfad3d52bfcb47f
-    m_Address: AnimateMoveSO.asset
+  - m_GUID: 890a627360f80df4f80cf34660f737dc
+    m_Address: IdleAlwaysStateSO.asset
     m_ReadOnly: 0
     m_SerializedLabels:
     - PreLoad_DataSO
-    - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 894816fddf9585a4bb93d74746650a64
     m_Address: LostTargetConditionSO.asset
@@ -231,9 +278,10 @@ MonoBehaviour:
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a2a027ac1096b614bb4798031f800e09
-    m_Address: Assets/Game/Control/Character/Action/AnimateAction/Test/JumpUpSO.asset
+    m_Address: JumpUpSO.asset
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - PreLoad_DataSO
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a33ed81b398c1c64d9270f02ee06d2ef
     m_Address: InRangeConditionSO.asset
@@ -256,6 +304,12 @@ MonoBehaviour:
     - PreLoad_DataSO
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: aafd914b36a871c4abc74d8863f1c8f0
+    m_Address: CastSkillStateSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: aebd0b6c5f806a346a562df8927ab54d
     m_Address: ApproachStateSO.asset
     m_ReadOnly: 0
@@ -271,9 +325,10 @@ MonoBehaviour:
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: beb7d112d3cf2b844a58f6711173c515
-    m_Address: Assets/Game/Control/Character/Action/AnimateAction/Test/JumpDownSO.asset
+    m_Address: JumpDownSO.asset
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - PreLoad_DataSO
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: c81a42815fff3c9498b7fb7f247e88a5
     m_Address: RunActionSO.asset
@@ -345,6 +400,12 @@ MonoBehaviour:
     - PreLoad_DataSO
     - Scriptable Object
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: dbd866f3d9f532c45bd03627d419421f
+    m_Address: AnimateMoveSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: dbddf25b9bd57034fb6d099ff589c863
     m_Address: AnimateIdleSO.asset
     m_ReadOnly: 0
@@ -393,6 +454,12 @@ MonoBehaviour:
     m_SerializedLabels:
     - PreLoad_DataSO
     - Scriptable Object
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fd5cce5355eff5245aef921b4b4b4701
+    m_Address: AutoSkillCastStateSO.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - PreLoad_DataSO
     FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: ba2aeaf5da86ad943b7448d84aa19f98, type: 2}

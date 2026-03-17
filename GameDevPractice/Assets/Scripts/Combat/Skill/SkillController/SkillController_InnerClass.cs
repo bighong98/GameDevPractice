@@ -477,6 +477,46 @@ namespace TH.Combat
             }
         }
 
+        
+        // 자동 타겟 후보 검색/캐시 상태 컨테이너
+        private sealed class AutoTargetSearchCache
+        {
+            private const int DefaultScanCapacity = 32;
+
+            private Health cachedTarget;
+            private int cachedFrame = -1;
+            private Collider[] overlapBuffer = new Collider[DefaultScanCapacity];
+
+            public bool TryGetCandidate(out Health target)
+            {
+                target = cachedTarget;
+                return target.IsNotNull();
+            }
+
+            public void SetCandidate(Health target)
+            {
+                cachedTarget = target;
+                cachedFrame = Time.frameCount;
+            }
+
+            public void Invalidate()
+            {
+                cachedTarget = null;
+                cachedFrame = -1;
+            }
+
+            public Collider[] GetOverlapBuffer(int requiredSize)
+            {
+                if (requiredSize <= overlapBuffer.Length)
+                {
+                    return overlapBuffer;
+                }
+
+                int resized = Mathf.NextPowerOfTwo(requiredSize);
+                overlapBuffer = new Collider[Mathf.Max(DefaultScanCapacity, resized)];
+                return overlapBuffer;
+            }
+        }
         // 콤보 단계 진행 컨텍스트
         private sealed class ComboContext
         {

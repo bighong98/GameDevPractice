@@ -1,0 +1,85 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 73f0782e769b69a45a09ad472fb8428e, type: 3}
+  m_Name: IdleStateSO
+  m_EditorClassIdentifier: 
+  onEnterActionReferences:
+  - m_AssetGUID: 443c43d320a5cc34588d7a62a146a66a
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
+  updateActionReferences: []
+  onExitActionReferences: []
+  transitions:
+  - conditionReference:
+      m_AssetGUID: 046f474f308a4b240b63b32a81bc314a
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    destinationStateReference:
+      m_AssetGUID: 0e717ec9850fbd24b87ec131875b7a36
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - conditionReference:
+      m_AssetGUID: 7a37636c8cf8c1948bd7cf28d2256d31
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    destinationStateReference:
+      m_AssetGUID: 0e717ec9850fbd24b87ec131875b7a36
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - conditionReference:
+      m_AssetGUID: 4cf2e9d6bf42a18449c08ab688bb405a
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 1
+    destinationStateReference:
+      m_AssetGUID: aafd914b36a871c4abc74d8863f1c8f0
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - conditionReference:
+      m_AssetGUID: 5d08da84b4f664c4890db4f51a1d5086
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+    destinationStateReference:
+      m_AssetGUID: 67fe6c7fed4108f478cf2e4dfb2b1e93
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - conditionReference:
+      m_AssetGUID: d7b746cb2f6b0674eac910eebc762801
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 1
+    destinationStateReference:
+      m_AssetGUID: ee8ba50b6bbf8564fa6ddb1143bf410e
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 1
+  allowSelfTransition: 0
+  transitionLockRequired: 0

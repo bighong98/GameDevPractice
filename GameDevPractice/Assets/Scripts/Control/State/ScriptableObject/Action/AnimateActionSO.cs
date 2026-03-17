@@ -72,7 +72,7 @@ namespace TH.Control.Data
 
         [Header("State")]
         [SerializeField] private bool playState = true;
-        [SerializeField] private string preferredStateName = "";
+        [SerializeField] private string stateName = "";
         [SerializeField, Min(0)] private int layerIndex = AnimatorBaseLayer;
         [SerializeField] private StatePlayMode statePlayMode = StatePlayMode.CrossFade;
         [SerializeField, Min(0f)] private float transitionDuration = 0.1f;
@@ -85,7 +85,7 @@ namespace TH.Control.Data
         [SerializeField] private bool applyParameters = true;
         [SerializeField] private ParameterApplyOrder parameterApplyOrder = ParameterApplyOrder.BeforeState;
         [SerializeField] private bool skipMissingOrInvalidParameter = true;
-        [SerializeField] private ParameterCommand[] parameterCommands = Array.Empty<ParameterCommand>();
+        [SerializeField] private List<ParameterCommand> parameterCommands = new();
 
         [Header("Debug")]
         
@@ -93,7 +93,7 @@ namespace TH.Control.Data
         [NonSerialized] private static readonly object RuntimeStringHashCacheLock = new();
         [SerializeField] private bool enableDebugLog = false;
 
-public override void Execute(IActionStateController controller)
+        public override void Execute(IActionStateController controller)
         {
             if (!TryResolveAnimator(controller, out Animator animator))
             {
@@ -297,11 +297,11 @@ public override void Execute(IActionStateController controller)
                 return false;
             }
 
-            if (!TryResolveStateHash(animator, safeLayerIndex, preferredStateName, out int stateHash))
+            if (!TryResolveStateHash(animator, safeLayerIndex, stateName, out int stateHash))
             {
                 if (enableDebugLog)
                 {
-                    Logg.LogWarning($"[AnimateActionSO] Failed to resolve state '{preferredStateName}' at layer {safeLayerIndex}.", this);
+                    Logg.LogWarning($"[AnimateActionSO] Failed to resolve state '{stateName}' at layer {safeLayerIndex}.", this);
                 }
                 return skipWhenStateNotFound;
             }
@@ -354,12 +354,12 @@ public override void Execute(IActionStateController controller)
 
         private bool ApplyParameterCommands(Animator animator)
         {
-            if (animator == null || parameterCommands == null || parameterCommands.Length == 0)
+            if (animator == null || parameterCommands == null || parameterCommands.Count == 0)
             {
                 return true;
             }
 
-            for (int i = 0; i < parameterCommands.Length; i++)
+            for (int i = 0; i < parameterCommands.Count; i++)
             {
                 ParameterCommand command = parameterCommands[i];
                 if (!command.enabled)

@@ -140,14 +140,15 @@ namespace TH.Combat
         private readonly List<Health> areaTargetsBuffer = new();
         // OverlapSphere 결과 버퍼
         private Collider[] overlapBuffer = new Collider[32];
+        // 자동 타겟 후보 검색/캐시 상태
+        private readonly AutoTargetSearchCache autoTargetCache = new();
 
         // 활성 스킬 변경 알림
         public event Action<SkillTypeSO> OnActiveSkillChanged;
         // 해석 스킬 변경 알림
         public event Action<SkillTypeSO> OnResolvedSkillChanged;
-        // 스킬 소비 알림
         public event Action<SkillTypeSO> OnSkillConsumed;
-        // 스킬 준비 완료 알림
+        public event Action<SkillTypeSO> OnSkillUseRequested;
         public event Action<SkillTypeSO> OnSkillReady;
         // 스킬북 변경 알림
         public event Action OnSkillBookChanged;
@@ -194,6 +195,35 @@ namespace TH.Combat
         }
 
         // 현재 콤보 단계 인덱스
+        public bool CanMoveWhileCasting
+        {
+            get
+            {
+                SkillTypeSO movementPolicySkill = ResolveMovementPolicySkill();
+                return movementPolicySkill != null && movementPolicySkill.AllowMoveWhileCasting;
+            }
+        }
+
+        private SkillTypeSO ResolveMovementPolicySkill()
+        {
+            if (executingSkill != null)
+            {
+                return executingSkill;
+            }
+
+            if (resolvedSkill != null)
+            {
+                return resolvedSkill;
+            }
+
+            if (skillBook != null && skillBook.ActiveSkill != null)
+            {
+                return skillBook.ActiveSkill;
+            }
+
+            return null;
+        }
+
         public int CurrentComboStepIndex => currentComboStepIndex;
         // 현재 콤보 총 단계 수
         public int CurrentComboStepCount => currentComboStepCount;
@@ -284,6 +314,10 @@ namespace TH.Combat
 
             // 활성 콤보 타임아웃 예약 정리
             CancelActiveComboTimeoutRoutine();
+
+            // 자동 타겟 캐시 초기화
+            
+            autoTargetCache.Invalidate();
         }
 
         // 프레임 단위 상태 무결성 검사 및 준비 이벤트 처리
